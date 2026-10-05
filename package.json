@@ -1,0 +1,53 @@
+{
+  "name": "relay-local",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "dev": "node --import ./scripts/development.mjs --import tsx --watch server/main.ts",
+    "dev:web": "vite --host 127.0.0.1",
+    "start": "node dist-server/main.js",
+    "typecheck": "tsc --noEmit",
+    "build": "npm run typecheck && vite build && esbuild server/main.ts --bundle --platform=node --target=node24 --format=esm --packages=external --outfile=dist-server/main.js",
+    "package": "node scripts/notices.mjs && node scripts/package.mjs",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "check": "npm run typecheck && npm test"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "0.5.8",
+    "@fastify/cookie": "11.1.2",
+    "@fastify/static": "10.1.5",
+    "@fontsource/ibm-plex-mono": "5.3.0",
+    "@fontsource/ibm-plex-sans": "5.3.0",
+    "@napi-rs/keyring": "2.1.0",
+    "@tanstack/react-query": "5.104.1",
+    "diff": "9.0.0",
+    "fastify": "5.12.5",
+    "jose": "6.2.12",
+    "lucide-react": "1.51.0",
+    "pg": "8.23.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-markdown": "10.1.0",
+    "systeminformation": "5.33.15",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@playwright/test": "1.63.0",
+    "@types/node": "26.6.4",
+    "@types/pg": "8.23.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.1",
+    "esbuild": "0.28.2",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "vite": "8.3.2",
+    "vitest": "5.0.3"
+  }
+}

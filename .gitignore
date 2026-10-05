@@ -1,0 +1,13 @@
+node_modules/
+dist/
+dist-server/
+release/
+.data/
+.env
+.env.*
+!.env.example
+output/
+test-results/
+playwright-report/
+.playwright-cli/
+*.log

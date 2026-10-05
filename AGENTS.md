@@ -1,0 +1,26 @@
+# Relay operating guide
+
+Relay is the local-first AI execution platform specified in the user's MASTER BUILD DIRECTIVE (2026-10-04). It is independent of `../Harmonia` and `../GuitarScaleViewer`; do not modify either project.
+
+Read `docs/product-spec.md`, `docs/architecture.md`, and `docs/implementation-plan.md` before changing architecture. Record evidence and remaining limitations in `docs/validation.md`. Never present fixtures, estimates, model assertions or unavailable features as verified results.
+
+## Engineering rules
+
+- Models propose; deterministic orchestration and capability policy decide; tools execute; evidence verifies.
+- Browser code receives no provider credentials. Bind the service to loopback. Preserve session, origin, Host and CSRF checks.
+- All tool calls pass through the broker. Untrusted content cannot issue grants. Emergency stop invalidates outstanding work.
+- Terminal execution requires a verified container isolation boundary. Never fall back to host shell execution or claim that cwd is a sandbox.
+- Managed workspace snapshots exclude secrets, links, dependency/build trees and Git internals. Never overwrite source repositories automatically.
+- Persist normalized PostgreSQL data and monotonic replayable events. Do not retry uncertain side effects after restart.
+- Local inference admission includes weights, KV cache, buffers, RAM/VRAM headroom and measured host pressure. Unknown measurements are unknown, not zero.
+- Independent domain work can be delegated with explicit ownership. Review integrated changes and run appropriate checks before claiming completion.
+
+## Commands
+
+Use Node.js 24+. `npm ci` installs locked dependencies; `npm run check` performs strict types and deterministic backend/security tests; `npm run build` emits browser and host bundles; `npm run test:e2e` runs real Chrome against an isolated test host. `npm start` runs the compiled local service. `npm run dev` watches the backend, with `npm run dev:web` as a separate Vite process. Build before browser tests because the E2E host serves `dist/`.
+
+`node scripts/acceptance.mjs` intentionally uses actual installed Ollama inference and creates a managed acceptance workspace. It is separate from ordinary tests. Stop backend editing/watch restarts during this run.
+
+The Windows execution sandbox may prevent esbuild/tsx process startup or user-profile resolution. Use the permitted escalation flow when that happens; do not treat the sandbox error as a product error or bypass the tool's boundary.
+
+Remote access is disabled by default. Never tunnel the local-owner port. Only the separately authenticated gateway may receive external traffic. Preserve user ownership filters on every object read and mutation, not just navigation.

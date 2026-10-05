@@ -1,0 +1,18 @@
+[Unit]
+Description=Relay local AI execution platform
+After=network.target
+
+[Service]
+Type=simple
+# Replace installation and Node paths. Install as a USER service, never root.
+WorkingDirectory=%h/.local/opt/relay
+ExecStart=/usr/bin/node %h/.local/opt/relay/dist-server/main.js
+Environment=RELAY_PACKAGED=1
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=default.target

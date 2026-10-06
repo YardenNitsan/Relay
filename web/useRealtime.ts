@@ -11,7 +11,10 @@ export function useRealtime(enabled: boolean, reconnectGeneration = 0) {
   const [text, setText] = useState<Record<string, StreamText>>({});
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) {
+      setEvents([]); setText({}); setConnection('connecting');
+      return;
+    }
     let cursor = 0;
     try { cursor = Number(sessionStorage.getItem('relay:event-cursor:v1') ?? 0); } catch { /* Browser storage may be disabled. */ }
     if (!Number.isSafeInteger(cursor) || cursor < 0) cursor = 0;

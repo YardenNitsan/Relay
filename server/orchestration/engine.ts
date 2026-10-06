@@ -3,10 +3,16 @@ import type { Approval, ModelMessage, ModelProfile, ProviderGateway, TaskRecord,
 import type { User } from '../auth/policy.js';
 import { AppError, checkSignal, publicError } from '../core/errors.js';
 import { row, Store } from '../db/store.js';
-import { buildContext } from './context.js';
+import { buildContext, buildReviewContext, fitContext } from './context.js';
 import { actionCheckKey } from './checks.js';
 import { buildGraph, readySteps, terminalStates } from './lifecycle.js';
 import { LocalLease } from './lease.js';
+import { adaptPlan } from './planning.js';
+import { beginRepair, reviewPassed } from './repair.js';
+import { boundedReceipt } from './receipts.js';
+import { invalidateCommandChecks, invalidateWorkspaceCommandChecks } from './verification.js';
+import { UncertainToolEffect } from '../tools/errors.js';
+import { recordRequiredReads } from './required-reads.js';
 import { hardwareAdmission, selectModel, type Admit } from './router.js';
 
 export interface ExecutionTools {
@@ -15,7 +21,8 @@ export interface ExecutionTools {
   changes(taskId:string):Promise<{checkpointId:string;path:string}[]>;
 }
 export class Engine {
-  private running=new Map<string,{controller:AbortController;promise:Promise<void>;userId:string}>();
+  private running=new Map<string,{controller:AbortController;promise:Promise<void>;userId:string;workspaceId:string|null}>();
+  private workspaceMaintenance=new Set<string>();
   private queue:string[]=[];
   private lease=new LocalLease();
   private draining=false;
@@ -39,16 +46,21 @@ export class Engine {
       for(const task of pending) {
         if(this.running.size>=3||this.closed||this.stopping)break;
         if([...this.running.values()].some(run=>run.userId===task.userId)&&task.userId!=='owner')continue;
+        if(task.options.workspaceId&&(this.workspaceMaintenance.has(task.options.workspaceId)||[...this.running.values()].some(run=>run.workspaceId===task.options.workspaceId)))continue;
         this.queue=this.queue.filter(id=>id!==task.id);
         const controller=new AbortController();
         const promise=this.run(task.id,controller).catch(async error=>{
+          await this.store.db.transaction(async tx=>{
+            await tx.query("UPDATE agent_runs SET status='interrupted',finished_at=now() WHERE task_id=$1 AND status='running'",[task.id]);
+            await tx.query("UPDATE task_steps SET status='pending' WHERE task_id=$1 AND status='running'",[task.id]);
+          });
           const latest=await this.store.task(task.id);
           if(!terminalStates.includes(latest.status)&&latest.status!=='paused') {
-            const cancelled=controller.signal.aborted&&!['time_budget','shutdown'].includes(String(controller.signal.reason));
+            const cancelled=controller.signal.aborted&&!['time_budget','shutdown','sibling_failure'].includes(String(controller.signal.reason));
             await this.store.transition(task.id,cancelled?'cancelled':'paused',{error:publicError(error)});
           }
         }).finally(()=>{this.running.delete(task.id);this.taskGrants.delete(task.id);void this.drain();});
-        this.running.set(task.id,{controller,promise,userId:task.userId});
+        this.running.set(task.id,{controller,promise,userId:task.userId,workspaceId:task.options.workspaceId});
       }
     } finally {this.draining=false;}
   }
@@ -69,31 +81,45 @@ export class Engine {
         await this.store.saveGraph(steps);
         await this.store.transition(id,'executing');
       } else if(task.status==='paused') await this.store.transition(id,'executing');
+      while(true) {
       while(steps.some(s=>s.status!=='completed')) {
         checkSignal(signal);
+        steps=await adaptPlan(this.store,task,steps);
         const ready=readySteps(steps);if(!ready.length)throw new AppError('GRAPH_BLOCKED','No graph step can make progress. Review failed dependencies.');
         // Only independent read-only analysis runs concurrently. Worker mutations remain sequential.
-        await Promise.all(ready.map(step=>this.runStep(task,user,step,signal)));
+        // Do not leave independent agents running after one branch fails. Join
+        // every cancellation before the task can pause or release its slot.
+        const outcomes=await Promise.allSettled(ready.map(async step=>{
+          try{return await this.runStep(task,user,step,signal);}
+          catch(error){if(!signal.aborted)controller.abort('sibling_failure');throw error;}
+        }));
+        const failed=outcomes.find(outcome=>outcome.status==='rejected');
+        if(failed?.status==='rejected')throw failed.reason;
         steps=await this.store.steps(id);
       }
       checkSignal(signal);
       if(!(await this.isAuthorized(task,user)))throw new AppError('REVOKED','The user policy or execution grant was revoked',403);
       await this.store.transition(id,'verifying');
+      await recordRequiredReads(this.store,task);
       const evidence=await this.store.verification(id);
       const failures=await this.store.unresolvedChecks(id);
       const review=steps.find(s=>s.role==='reviewer');
       const result=steps.find(s=>s.role==='worker')?.output??'';
       if(!result.trim())throw new AppError('EMPTY_RESULT','The model did not produce a usable answer.');
-      if(failures.length||review?.output?.includes('REVIEW: REVISE')) {
-        await this.store.transition(id,'waiting_for_user',{error:'The review or objective checks found unfinished work. Inspect the evidence before continuing.'});
+      if(failures.length||!reviewPassed(review)) {
+        if(await beginRepair(this.store,task,failures,review,user.sessionVersion)) {steps=await this.store.steps(id);continue;}
+        await this.store.transition(id,'waiting_for_user',{error:'The review or objective checks still show unfinished work. Automatic repair is unavailable or its budget is exhausted. Inspect the evidence before continuing.'});
         await this.store.db.query('UPDATE tasks SET result=$1 WHERE id=$2',[result,id]);return;
       }
       if(!evidence.length) await this.store.verify(id,'response','Response generated; no objective external verification was available for this task.',true,{objectiveVerification:false,claim:'generation_only'});
       if(review) await this.store.verify(id,'model_review','Independent review completed; this is a model assessment, not an executed test.',true,{objectiveVerification:false,modelId:review.modelId});
       await this.store.complete(id,result);
+      break;
+      }
     } finally {clearTimeout(timer);}
   }
   private async runStep(task:TaskRecord,user:User,step:TaskStep,signal:AbortSignal) {
+    if(step.role==='worker'&&task.options.verification?.requiredReads.length&&!this.tools.definitions().some(tool=>tool.name==='file_read'))throw new AppError('VERIFICATION_CAPABILITY','The required file_read capability is unavailable. No model call was started.');
     const excluded=new Set<string>();
     const admit=this.options.admit??hardwareAdmission;
     let selected=await selectModel(this.gateway,task,user,step.role,admit,excluded);
@@ -101,8 +127,13 @@ export class Engine {
     await this.store.append(task.id,'MODEL_SELECTED',{stepId:step.id,modelId:selected.model.id,reasons:selected.reasons});
     const agentId=await this.store.startAgent(step,selected.model.id);
     const details=await this.store.conversation(task.conversationId,user.id);
-    const findings=(await this.store.steps(task.id)).filter(s=>step.dependencies.includes(s.id)&&s.output).map(s=>`${s.role}: ${s.output}`);
-    let context=await this.store.stepContext(step.id)??buildContext(step.role,task.objective,details.messages.filter(m=>m.taskId!==task.id),findings,task.options.contextTokens);
+    const dependencies=(await this.store.steps(task.id)).filter(s=>step.dependencies.includes(s.id)&&s.output);
+    const findings=dependencies.map(s=>`${s.role}: ${s.output}`);
+    const savedContext=await this.store.stepContext(step.id);
+    let context=step.role==='reviewer'
+      ?buildReviewContext(task.objective,dependencies.find(s=>s.role==='worker')?.output??'',await this.store.verification(task.id),task.options.contextTokens,savedContext??[])
+      :savedContext??buildContext(step.role,task.objective,details.messages.filter(m=>m.taskId!==task.id),findings,task.options.contextTokens);
+    if(step.role==='worker'&&task.options.verification&&!context[0].content.includes('\nRequired task verification contract:'))context[0]={...context[0],content:`${context[0].content}\nRequired task verification contract: ${JSON.stringify(task.options.verification)}. Before the final answer, invoke file_read for each required path after all workspace changes. Its actual whole-file SHA-256 must match. Tool prose or an earlier write's own read-back does not satisfy this contract. These requirements grant no additional capabilities.`};
     // A crash between saving proposals and starting a tool must not automatically
     // replay those proposals. Supply explicit interruption receipts for the model.
     for(const message of [...context]) {
@@ -115,10 +146,14 @@ export class Engine {
       }
     }
     await this.store.saveContext(step.id,context);
-    const defs=task.options.workspaceId?this.tools.definitions().filter(d=>step.role==='worker'||/read|list|search|status|diff/.test(d.name)):[];
+    const defs=task.options.workspaceId&&step.role!=='planner'?this.tools.definitions().filter(d=>step.role==='worker'||/read|list|search|status|diff/.test(d.name)):[];
     for(let turn=0;turn<task.options.budget.maxIterations;turn++) {
       checkSignal(signal);
       if(!(await this.isAuthorized(task,user)))throw new AppError('REVOKED','The user policy or execution grant was revoked',403);
+      const maxOutputTokens=Math.min(2048,Math.floor(task.options.contextTokens/3));
+      const fitted=fitContext(context,defs,task.options.contextTokens,maxOutputTokens);
+      if(fitted.removed)await this.store.append(task.id,'CONTEXT_COMPACTED',{stepId:step.id,removedMessages:fitted.removed,toolReceiptsPreserved:true});
+      context=fitted.messages;
       const model=selected.model;
       let release:()=>void=()=>{};
       if(model.local) {await this.store.append(task.id,'MODEL_QUEUED',{modelId:model.id,stepId:step.id});release=await this.lease.acquire(signal);}
@@ -138,7 +173,7 @@ export class Engine {
         callId=await this.store.startCall(task.id,agentId,model.id,context,{cloud:!model.local,amountUsd:reserve,provider:model.provider,sessionVersion:user.sessionVersion});
         await this.store.saveContext(step.id,context);
         let buffer='';let lastFlush=0;let done=false;
-        for await(const chunk of this.gateway.stream({model,messages:context,tools:defs,contextTokens:task.options.contextTokens,maxOutputTokens:Math.min(2048,Math.floor(task.options.contextTokens/3)),signal,execution})) {
+        for await(const chunk of this.gateway.stream({model,messages:context,tools:defs,contextTokens:task.options.contextTokens,maxOutputTokens,signal,execution})) {
           checkSignal(signal);
           if(chunk.type==='text') {
             answer+=chunk.text;buffer+=chunk.text;
@@ -163,12 +198,24 @@ export class Engine {
         if(excluded.size>=3)throw error;
         try {selected=await selectModel(this.gateway,task,user,step.role,admit,excluded);}
         catch {throw error;}
-        await this.store.append(task.id,'MODEL_REROUTED',{from:model.id,to:selected.model.id,reason:publicError(error)});
+        step.modelId=selected.model.id;
+        await this.store.db.transaction(async tx=>{
+          await tx.query('UPDATE task_steps SET model_id=$1 WHERE id=$2',[selected.model.id,step.id]);
+          await tx.query('UPDATE agent_runs SET model_id=$1 WHERE id=$2',[selected.model.id,agentId]);
+        });
+        await this.store.append(task.id,'MODEL_REROUTED',{agentId,stepId:step.id,from:model.id,to:selected.model.id,reason:publicError(error)});
         context=context.map(message=>{const {providerData:_private,...plain}=message;return plain;});
         continue;
       } finally {release();}
       if(!requests.length) {
         context.push({role:'assistant',content:answer,...(providerData?{providerData}:{})});
+        if(step.role==='worker'){
+          const missing=(await recordRequiredReads(this.store,task)).filter(result=>!result.passed);
+          if(missing.length){
+            context.push({role:'user',content:`Required verification is incomplete. The host has no successful file_read receipt with the expected whole-file SHA-256 after the latest workspace change for: ${JSON.stringify(missing.map(({path,expectedSha256})=>({path,expectedSha256})))}. Use the granted file_read tool to inspect these paths, repair any content mismatch using existing permissions, and verify again. Do not repeat already successful writes merely to satisfy this check. Your previous answer has not been accepted as the task result.`});
+            await this.store.saveContext(step.id,context);await this.store.append(task.id,'REQUIRED_VERIFICATION_PENDING',{stepId:step.id,paths:missing.map(result=>result.path)});continue;
+          }
+        }
         await this.store.saveContext(step.id,context);
         await this.store.finishAgent(step,agentId,answer);return;
       }
@@ -211,7 +258,7 @@ export class Engine {
     if(!(await this.isAuthorized(task,user)))throw new AppError('REVOKED','The user policy or execution grant was revoked',403);
     const invocationId=randomUUID();
     const checkKey=actionCheckKey(task.options.workspaceId,request);
-    const receipt=(content:string):ModelMessage=>({role:'tool',toolCallId:request.id,content:content.slice(0,Math.max(500,Math.floor(task.options.contextTokens/4)))});
+    const receipt=(content:string):ModelMessage=>({role:'tool',toolCallId:request.id,content:boundedReceipt(content,Math.max(500,Math.floor(task.options.contextTokens/4)))});
     const scope=JSON.stringify([request.name,request.arguments]);
     const grants=this.taskGrants.get(task.id)??new Set<string>();this.taskGrants.set(task.id,grants);
     const context:ToolContext={taskId:task.id,agentId,workspaceId:task.options.workspaceId,access:task.options.access,allowedTools,signal,approved:grants.has(scope)};
@@ -238,9 +285,10 @@ export class Engine {
     try {
       const result=await this.tools.execute(context,request);
       executed=true;
+      await invalidateCommandChecks(this.store,task.id,request,result,invocationId);
       for(const evidence of result.evidence)await this.store.verify(task.id,evidence.kind,evidence.summary,evidence.passed,{...evidence.details,toolCallId:invocationId},checkKey);
       const passed=result.evidence.length>0&&result.evidence.every(evidence=>evidence.passed);
-      await this.store.verify(task.id,'tool_outcome',`${request.name}: ${passed?'checks passed':'unverified or failed checks'}`,passed,{toolCallId:invocationId,tool:request.name},checkKey);
+      await this.store.verify(task.id,'tool_outcome',`${request.name}: ${passed?'checks passed':'unverified or failed checks'}`,passed,{toolCallId:invocationId,tool:request.name,...(request.name==='terminal'?{argv:request.arguments.argv}:{})},checkKey);
       if(result.artifact)await this.store.db.query('INSERT INTO artifacts(id,task_id,name,path,mime) VALUES ($1,$2,$3,$4,$5)',[randomUUID(),task.id,result.artifact.name,result.artifact.path,result.artifact.mime]);
       const completed=[...messages,receipt(result.content)];
       await this.store.finishTool(invocationId,stepId,completed,'completed',result.content);
@@ -248,8 +296,10 @@ export class Engine {
       await this.store.append(task.id,'TOOL_COMPLETED',{toolCallId:invocationId,agentId,tool:request.name,output:result.content.slice(0,16000)});
     } catch(error) {
       const message=publicError(error);
-      if(executed||signal.aborted) {
+      if(executed||signal.aborted||error instanceof UncertainToolEffect) {
         await this.store.db.query("UPDATE tool_calls SET status='uncertain',result=$1,finished_at=now() WHERE id=$2 AND status='running'",[message,invocationId]);
+        await this.store.audit(task.id,'TOOL_UNCERTAIN',{toolCallId:invocationId,agentId,tool:request.name,error:message});
+        await this.store.append(task.id,'TOOL_FAILED',{toolCallId:invocationId,tool:request.name,error:message,uncertain:true});
         throw error;
       }
       await this.store.verify(task.id,'tool_failed',`${request.name}: ${message}`,false,{toolCallId:invocationId,tool:request.name},checkKey);
@@ -283,6 +333,19 @@ export class Engine {
     const current=await this.store.task(id);
     if(!terminalStates.includes(current.status))await this.store.transition(id,'cancelled');
     await this.store.db.query("UPDATE approvals SET status='denied' WHERE task_id=$1 AND status='pending'",[id]);
+  }
+  /** Reserve the workspace before checking active work. A task admitted during
+   * this operation stays queued until the maintenance reservation is released. */
+  async mutateWorkspace<T>(workspaceId:string,operation:()=>Promise<T>):Promise<T> {
+    if(this.closed||this.stopping)throw new AppError('STOPPED','Resume scheduling before changing a workspace',409);
+    if(this.workspaceMaintenance.has(workspaceId)||[...this.running.values()].some(run=>run.workspaceId===workspaceId))throw new AppError('WORKSPACE_BUSY','Stop active workspace tasks before changing workspace files',409);
+    this.workspaceMaintenance.add(workspaceId);
+    try {
+      const busy=await this.store.db.query("SELECT id FROM tasks WHERE options->>'workspaceId'=$1 AND status NOT IN ('completed','failed','cancelled','paused','waiting_for_user') LIMIT 1",[workspaceId]);
+      if(busy.length)throw new AppError('WORKSPACE_BUSY','Stop active workspace tasks before changing workspace files',409);
+      await invalidateWorkspaceCommandChecks(this.store,workspaceId,`maintenance-${randomUUID()}`);
+      return await operation();
+    } finally {this.workspaceMaintenance.delete(workspaceId);void this.drain();}
   }
   async stopAll() {
     this.stopping=true;await this.store.setStopped(true);

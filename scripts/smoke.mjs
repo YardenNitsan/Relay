@@ -1,11 +1,10 @@
 // Read-only acceptance of the compiled host and previously persisted real task.
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { pairLocalSession } from './local-session.mjs';
 const base = process.env.RELAY_ACCEPTANCE_URL ?? 'http://127.0.0.1:4317';
 const acceptance = JSON.parse(await readFile('output/local-acceptance.json', 'utf8'));
-const session = await fetch(`${base}/api/session`);
-if (!session.ok) throw new Error('The compiled host did not establish a session');
-const cookie = session.headers.get('set-cookie')?.split(';')[0];
-if (!cookie) throw new Error('Expected a fresh session cookie');
+if (acceptance.passed !== true) throw new Error('Restart verification requires a successful real-runtime acceptance report');
+const {cookie}=await pairLocalSession(base);
 const headers = { cookie };
 async function get(path) {
   const response = await fetch(`${base}/api${path}`, { headers });
@@ -24,17 +23,23 @@ const stream = await fetch(`${base}/api/events?after=${conversation.cursor}`, { 
 if (!stream.ok) throw new Error('Activity stream was rejected');
 const reader = stream.body.getReader();
 let bytes = 0;
+let heartbeatObserved = false;
+let tail = '';
+const decoder = new TextDecoder();
 const timer = setTimeout(() => controller.abort(), 17000);
 try {
   while (true) {
     const chunk = await reader.read();
     if (chunk.done) throw new Error('Activity stream ended before its idle heartbeat');
     bytes += chunk.value.byteLength;
+    tail = (tail + decoder.decode(chunk.value, { stream: true })).slice(-4096);
+    heartbeatObserved ||= tail.includes(': heartbeat\n\n');
   }
 } catch (error) {
   if (!controller.signal.aborted) throw error;
 } finally { clearTimeout(timer); await reader.cancel().catch(() => {}); }
-const report = { testedAt: new Date().toISOString(), passed: true, database: status.database, taskId: detail.task.id, persistedMessages: conversation.messages.length, measurementPersistence: measured?.tokensPerSecond ? 'observed' : 'not_observed', measuredTokensPerSecond: measured?.tokensPerSecond ?? null, measuredAt: measured?.details.performance?.measuredAt ?? null, idleStreamMs: Date.now() - started, streamBytes: bytes };
+if (!heartbeatObserved) throw new Error('No actual idle heartbeat was observed');
+const report = { testedAt: new Date().toISOString(), passed: true, database: status.database, taskId: detail.task.id, persistedMessages: conversation.messages.length, measurementPersistence: measured?.tokensPerSecond ? 'observed' : 'not_observed', measuredTokensPerSecond: measured?.tokensPerSecond ?? null, measuredAt: measured?.details.performance?.measuredAt ?? null, idleStreamMs: Date.now() - started, streamBytes: bytes, heartbeatObserved };
 await mkdir('output', { recursive: true });
 await writeFile('output/production-smoke.json', JSON.stringify(report, null, 2));
 console.log(JSON.stringify(report, null, 2));

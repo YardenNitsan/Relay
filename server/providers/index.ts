@@ -4,6 +4,7 @@ import { anthropicStream, cloudBody, CLOUD_ENDPOINTS, geminiStream, openaiStream
 import { compatibleStream, localBody, ollamaStream } from './local.js';
 import { cloudModels, lmstudioModels, ollamaModel } from './registry.js';
 import { array, object, ProviderError, requireSuccess, string, type JsonObject } from './transport.js';
+import { residentSnapshot, type ResidentModelsSnapshot } from './residency.js';
 
 export interface ProvidersOptions { secrets?: SecretManager; fetch?: typeof fetch; ollamaUrl?: string; lmstudioUrl?: string; discoveryTimeoutMs?: number; }
 const ids: ProviderId[] = ['ollama', 'lmstudio', 'openai', 'anthropic', 'gemini'];
@@ -86,6 +87,15 @@ export class Providers implements ProviderGateway {
   }
   async listModels(): Promise<ModelProfile[]> { await this.refresh(); return [...this.models.values()].flat().map(model => ({ ...model, details: { ...model.details } })); }
   async statuses(): Promise<ProviderStatus[]> { await this.refresh(); return ids.map(id => ({ ...this.health.get(id)! })); }
+  /** Read-only observation; does not acquire ownership or load/unload a model. */
+  async residentModels(): Promise<ResidentModelsSnapshot> {
+    const unavailable = (disabled: boolean): ResidentModelsSnapshot => ({ state: disabled ? 'disabled' : 'unavailable', source: 'ollama/api/ps', sampledAt: new Date().toISOString(), models: [], truncated: false, error: disabled ? 'Ollama is disabled' : 'Runtime resident inventory is unavailable' });
+    if (this.disabled.has('ollama')) return unavailable(true);
+    try {
+      const inventory = await this.json('ollama', '/api/ps');
+      return this.disabled.has('ollama') ? unavailable(true) : residentSnapshot(inventory);
+    } catch { return unavailable(this.disabled.has('ollama')); }
+  }
   async *stream(request: ModelRequest): AsyncGenerator<ModelChunk> {
     request.signal.throwIfAborted(); const provider = request.model.provider;
     if (this.disabled.has(provider)) throw new ProviderError('disabled', 'Provider is disabled');

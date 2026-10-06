@@ -1,8 +1,10 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { openCommands, pairBrowser } from './helpers';
 
 test.beforeEach(async({page})=>{
   await page.goto('/');
+  await pairBrowser(page);
   await expect(page.getByRole('heading',{name:/What should we/})).toBeVisible();
   await expect(page.getByText('Local service connected',{exact:true})).toBeVisible();
 });
@@ -55,16 +57,16 @@ for(const viewport of [{width:1920,height:1080},{width:1440,height:900},{width:1
     await page.setViewportSize(viewport);
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
     await expect(page.getByRole('textbox',{name:'Objective'})).toBeVisible();
-    await page.getByRole('button',{name:'Open command palette'}).click();
+    await openCommands(page);
     await expect(page.getByRole('dialog')).toBeVisible();await page.keyboard.press('Escape');
     const themeButton=page.getByRole('button',{name:/Switch to dark theme/});
     if(await themeButton.isVisible())await themeButton.click();
     else {
-      await page.getByRole('button',{name:'Open command palette'}).click();
+      await openCommands(page);
       await page.getByRole('option',{name:/Switch to dark theme/}).click();
     }
     await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
-    await page.screenshot({path:`output/playwright/relay-${viewport.width}x${viewport.height}.png`,fullPage:true});
+    await page.screenshot({path:`output/playwright/relay-${viewport.width}x${viewport.height}.png`,fullPage:true,animations:'disabled'});
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
   });
 }

@@ -1,6 +1,6 @@
 # Cross-platform operations
 
-The shared Node.js host and browser run on Windows, Linux and macOS. `server/host/platform.ts` isolates application-data paths and native credential backend descriptions. Inference is delegated to supported runtimes rather than compiled into the host. Actual development acceptance was performed on Windows; Linux/macOS runtime and installer acceptance remain release gates.
+The shared Node.js host and browser target Windows, Linux and macOS. `server/host/platform.ts` isolates application-data paths and native credential backend descriptions. Inference is delegated to supported runtimes rather than compiled into the host. Actual development acceptance was performed on Windows, and the native Linux core was exercised under Ubuntu WSL2; see [Linux validation](linux-validation.md). Native macOS acceptance, Linux GPU/browser testing and signed installers remain release gates.
 
 | Concern | Windows | Linux | macOS |
 | --- | --- | --- | --- |
@@ -29,11 +29,17 @@ Do not commit credentials or store them in ordinary configuration. Prefer the UI
 
 ## Lifecycle
 
+Before opening private data, a local browser must pair. For a source checkout run `npm run pair`; for a portable installation run `node launch.mjs --pair`. The command prints the path of an account-protected file containing a five-minute single-use code. Enter the code in the browser; do not paste it into a URL or chat. A custom data directory must also be supplied to the pairing command using `--data-dir`. The first upgrade to pairing invalidates old unauthenticated local sessions; newly paired sessions survive restarts until their normal expiry or revocation.
+
 `npm start` runs the compiled host in the foreground. The local listener always binds `127.0.0.1`. Do not change it to `0.0.0.0` to obtain remote access. One host process may own a data directory; a process lock prevents concurrent embedded database writers. Logs are structured JSON on stdout/stderr. Terminal output and model-native continuation have independent limits and are not dumped into host logs.
 
 Ctrl+C/SIGTERM cancels active transports, stops managed containers and pauses unfinished tasks. Restart recovers persisted tasks, graphs, approval history and events. A browser reconnect replays only incremental events after its cursor. An in-flight operation without a committed receipt is marked uncertain; Relay requires inspection and a new objective rather than replaying it.
 
+Model-call/cost counters and automatic repair counts persist across manual resume. Time and per-agent iteration limits currently bound each active execution attempt; manual resume starts another bounded attempt under the remaining call/cost budget. Cumulative active-time accounting across restarts remains release work.
+
 The global stop latch persists across restart. A provider may retain its cached model allocation after cancellation; Relay does not unload models belonging to another application. Runtime model retention currently uses a five-minute keep-alive.
+
+The Hardware view exposes Safe, Balanced, Performance and bounded Custom resource policies. The saved owner policy applies to every user's next inference admission; it does not terminate an already running generation. Runtime resident allocation is reported separately from estimated model peak memory. See [local inference](local-inference.md).
 
 ## Startup templates
 

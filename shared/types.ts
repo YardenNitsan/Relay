@@ -4,7 +4,8 @@ export type AccessMode = 'read_only' | 'supervised' | 'workspace' | 'unrestricte
 export type TaskStatus = 'created' | 'analyzing' | 'planning' | 'executing' | 'verifying' | 'completed' | 'waiting_for_approval' | 'waiting_for_user' | 'failed' | 'replanning' | 'cancelled' | 'paused';
 export type AgentRole = 'supervisor' | 'planner' | 'worker' | 'researcher' | 'architect' | 'coder' | 'reviewer' | 'security_reviewer';
 export interface Budget { maxCalls: number; maxSeconds: number; maxIterations: number; maxCostUsd: number | null; localOnly: boolean; }
-export interface TaskOptions { depth: Depth; modelId: string | null; access: AccessMode; workspaceId: string | null; contextTokens: number; budget: Budget; cloudPolicy?: 'local_only' | 'allow' | 'ask'; }
+export interface RequiredRead { path:string; expectedSha256:string; }
+export interface TaskOptions { depth: Depth; modelId: string | null; access: AccessMode; workspaceId: string | null; contextTokens: number; budget: Budget; cloudPolicy?: 'local_only' | 'allow' | 'ask'; verification?: {requiredReads:RequiredRead[]}; }
 export interface Conversation { id: string; title: string; createdAt: string; updatedAt: string; }
 export interface Message { id: string; conversationId: string; taskId: string | null; role: 'user' | 'assistant'; content: string; createdAt: string; }
 export interface TaskRecord { id: string; conversationId: string; objective: string; status: TaskStatus; options: TaskOptions; createdAt: string; updatedAt: string; result: string | null; error: string | null; callsUsed: number; stopGeneration: number; }

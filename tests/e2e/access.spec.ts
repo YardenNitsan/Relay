@@ -1,8 +1,10 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { pairBrowser } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
+  await pairBrowser(page);
   await expect(page.getByText('Local service connected', { exact: true })).toBeVisible();
 });
 

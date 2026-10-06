@@ -4,7 +4,7 @@ A local AI execution host with a conversational browser interface. Models propos
 
 Relay is a working implementation under active development, not a claim that every requirement in the master directive has shipped. Read [validation and release gates](docs/validation.md) before granting access to other people or relying on unattended execution.
 
-The local-owner listener currently trusts native programs on the host. Browser-origin protections do not authenticate other OS accounts; do not deploy this build on a machine with untrusted local users. Remote access uses a separate authenticated listener.
+Local browsers require a one-use owner pairing code delivered through an OS-account-protected file. Knowing the local URL does not grant owner access. Remote access uses a separate authenticated listener. A compromised owner OS account remains outside this browser security boundary.
 
 ## Start from this source checkout
 
@@ -16,7 +16,7 @@ npm run build
 npm start
 ```
 
-Open **http://127.0.0.1:4317**. Keep the host process running. The source checkout stores data in `.data/`; neither an external database nor Docker is required for conversations, local inference and managed file tools. Stop with Ctrl+C before making a filesystem backup of that directory.
+Open **http://127.0.0.1:4317**. In another terminal, run `npm run pair`, open the private file whose path it reports, and enter its code in the pairing screen. The code expires after five minutes and works once; the resulting browser session lasts up to twelve hours. Keep the host process running. The source checkout stores data in `.data/`; neither an external database nor Docker is required for conversations, local inference and managed file tools. Stop with Ctrl+C before making a filesystem backup of that directory.
 
 Install a model that fits your machine. On the development host, `ollama pull qwen3:4b-instruct` supplied the model used for actual tool/approval/read-back acceptance. This is an example, not a universal hardware recommendation. Relay discovers installed models and checks current memory before each call. Ollama must be running. Set `OLLAMA_NO_CLOUD=1` in Ollama's own environment if you also want to disable its cloud features; Relay rejects runtime models marked as cloud forwarding.
 
@@ -24,11 +24,12 @@ For UI development, run `npm run dev` and `npm run dev:web` in separate terminal
 
 ## Use it
 
-1. Send an objective. Auto routing considers currently available, permitted models and hardware. Fast uses a worker; deeper modes add planning, specialists and review.
+1. Send an objective. Auto routing considers currently available, permitted models and hardware. Fast uses a worker; deeper modes add validated planning, selected specialists and review. Balanced/deeper execution can repair failed checks within a persistent round limit and the task's remaining budgets.
 2. To work with files, choose **Bring a project**. Import creates a managed copy; it excludes credentials, links, Git internals and generated dependency trees. The original repository stays untouched. A blank workspace is also supported.
 3. Choose **Read only**, **Supervised**, or **Autonomous workspace**. Supervised mutations wait for a concrete approval. Allow-for-task applies to the exact operation and arguments, not arbitrary future actions.
 4. Open **Activity** for roles, models, tool results, verification and file diffs. A successful model response is labelled as generation, not objective verification. Failed tool checks prevent a successful verification claim.
 5. **Stop all** immediately latches scheduling off, cancels generation and stops managed commands. Only the local owner can resume global scheduling.
+6. **Hardware** exposes owner-controlled resource profiles and runtime-reported resident models. Safe is the default; all profiles enforce minimum reserves. A saved policy applies at each new model admission, including the next call of an active task.
 
 The model manager supports optional OpenAI, Anthropic and Gemini API credentials. A consumer ChatGPT/Claude subscription is not API authentication. Credentials are kept on the server in the OS credential vault, an explicit session-only store or the service environment. Cloud data transmission is a separate policy from choosing a model. Local-only is the default; unknown pricing cannot pass a strict monetary budget.
 
@@ -57,7 +58,7 @@ From Linux or macOS:
 sh start.sh --install-dependencies
 ```
 
-Later starts omit dependency installation. The Windows CMD/Node launcher works without changing PowerShell execution policy; `start.ps1` is an optional alternative when your existing policy allows it. Packaged startup uses the OS application-data directory. See [cross-platform operations](docs/operations.md) for paths, configuration, service templates, backups and current platform validation limits. Initial dependency/model installation may require Internet access; installed local operation does not.
+Later starts omit dependency installation. For browser pairing from an extracted package, run `node launch.mjs --pair` so it uses the same native data directory as the packaged host. An explicit location is also supported: `node dist-server/pair.js --data-dir <absolute-host-data-directory>`. The Windows CMD/Node launcher works without changing PowerShell execution policy; `start.ps1` is an optional alternative when your existing policy allows it. Packaged startup uses the OS application-data directory. See [cross-platform operations](docs/operations.md) for paths, configuration, service templates, backups and current platform validation limits. Initial dependency/model installation may require Internet access; installed local operation does not.
 
 ## Development and verification
 

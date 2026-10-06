@@ -15,6 +15,7 @@ import { SecretManager } from '../server/providers/secrets.js';
 import { Engine } from '../server/orchestration/engine.js';
 import { chatPermissions } from '../server/auth/policy.js';
 import { RemoteIdentity } from '../server/auth/remote.js';
+import { LocalPairing } from '../server/auth/pairing.js';
 import type { TaskOptions } from '../shared/types.js';
 
 let app:FastifyInstance,store:Store,engine:Engine,broker:ToolBroker,dir:string;
@@ -30,7 +31,7 @@ beforeEach(async()=>{
   broker=new ToolBroker(dir,()=>engine?.isStopped()??false);engine=new Engine(store,providers,broker);
   const remote={publicOrigin:'https://relay.example',issuer:'https://team.cloudflareaccess.com',audience:'aud',port:4318};
   const identity=new RemoteIdentity(store,remote);vi.spyOn(identity,'authenticateContext').mockImplementation(async token=>{if(!token?.startsWith('verified-fixture'))throw new Error('Authentication required');return {userId:token.split(':')[1]??'friend',expiresAtMs:Date.now()+3600000};});
-  remoteControl={config:remote,enabled:true,listening:true};services={store,providers,broker,engine,remoteControl};
+  remoteControl={config:remote,enabled:true,listening:true};services={store,providers,broker,engine,remoteControl,pairing:new LocalPairing(dir)};
   app=await createApp(services,{remote,remoteIdentity:identity,staticRoot:join(dir,'missing')});
   const session=await app.inject({url:'/api/session',headers});cookie=session.headers['set-cookie']!.toString().split(';')[0];csrf=session.json().csrfToken;
   expect(session.headers['set-cookie']).toContain('Secure');expect(session.headers['set-cookie']).toContain('HttpOnly');
@@ -45,12 +46,22 @@ async function openEvents(url:string,sessionCookie=cookie,identity='verified-fix
   return {response,controller};
 }
 describe('remote API isolation',()=>{
+  it('cannot redeem a local owner code at the remote gateway',async()=>{
+    const issued=await services.pairing!.issue();
+    const response=await app.inject({method:'POST',url:'/api/session/pair',headers:{...headers,cookie,origin:'https://relay.example'},payload:{token:issued.token}});
+    expect(response.statusCode).toBe(403);await services.pairing!.redeem(issued.token);
+  });
   it('a remote identity never bootstraps owner authority or guesses private conversation IDs',async()=>{
     const privateConversation=await store.createConversation('Owner private');
     expect((await app.inject({url:`/api/conversations/${privateConversation.id}`,headers:{...headers,cookie}})).statusCode).toBe(404);
     expect((await app.inject({url:'/api/admin/users',headers:{...headers,cookie}})).statusCode).toBe(403);
     expect((await app.inject({method:'POST',url:'/api/stop',headers:{...headers,cookie,'x-relay-csrf':csrf}})).statusCode).toBe(403);
     const session=await app.inject({url:'/api/session',headers:{...headers,cookie}});expect(session.json().user.id).toBe('friend');
+  });
+  it('does not allow remote users to inspect resident allocation or relax host resource policy',async()=>{
+    for(const url of ['/api/hardware/policy','/api/models/resident'])expect((await app.inject({url,headers:{...headers,cookie}})).statusCode).toBe(403);
+    expect((await app.inject({method:'POST',url:'/api/hardware/policy',headers:{...headers,cookie,'x-relay-csrf':csrf},payload:{profile:'performance'}})).statusCode).toBe(403);
+    expect(await store.db.query('SELECT value FROM settings WHERE key=$1',['resource_policy'])).toEqual([]);
   });
   it('current workspace and write grants are rechecked before reverting an old checkpoint',async()=>{
     const workspace=await broker.createWorkspace('Previously granted');const c=await store.createConversation('Friend work','friend');
@@ -77,7 +88,7 @@ describe('remote API isolation',()=>{
   it('reports the shared remote control state through the local owner gateway',async()=>{
     const local=await createApp(services,{staticRoot:join(dir,'missing')});extraApps.push(local);
     const localHeaders={host:'127.0.0.1:4317'};
-    const session=await local.inject({url:'/api/session',headers:localHeaders});const localCookie=session.headers['set-cookie']!.toString().split(';')[0];
+    const issued=await services.pairing!.issue();const session=await local.inject({method:'POST',url:'/api/session/pair',headers:{...localHeaders,origin:'http://127.0.0.1:4317'},payload:{token:issued.token}});const localCookie=session.headers['set-cookie']!.toString().split(';')[0];
     const status=()=>local.inject({url:'/api/status',headers:{...localHeaders,cookie:localCookie}});
     expect((await status()).json().remoteEnabled).toBe(true);
     expect((await local.inject({url:'/api/admin/remote',headers:{host:'127.0.0.1:4317',cookie:localCookie}})).json()).toMatchObject({enabled:true,configured:true,listening:true});

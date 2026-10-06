@@ -30,6 +30,8 @@ CREATE TABLE IF NOT EXISTS users (id text PRIMARY KEY, name text NOT NULL, email
 INSERT INTO users(id,name,role,permissions) VALUES ('owner','Local owner','owner','{"providers":["ollama","lmstudio","openai","anthropic","gemini"],"workspaceIds":[],"maxAccess":"workspace","maxConcurrentTasks":4,"maxCallsPerTask":64,"maxSecondsPerTask":3600,"dailyCloudBudgetUsd":0}') ON CONFLICT DO NOTHING;
 ALTER TABLE conversations ADD COLUMN IF NOT EXISTS user_id text NOT NULL DEFAULT 'owner' REFERENCES users(id);
 ALTER TABLE tasks ADD COLUMN IF NOT EXISTS user_id text NOT NULL DEFAULT 'owner' REFERENCES users(id);
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS repair_attempts integer NOT NULL DEFAULT 0;
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS plan_decision jsonb;
 CREATE TABLE IF NOT EXISTS sessions (id text PRIMARY KEY, user_id text NOT NULL REFERENCES users(id), csrf_token text NOT NULL, remote boolean NOT NULL, user_agent text NOT NULL, version integer NOT NULL, expires_at timestamptz NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), last_active_at timestamptz NOT NULL DEFAULT now());
 ALTER TABLE users ADD COLUMN IF NOT EXISTS external_subject text;
 CREATE INDEX IF NOT EXISTS tasks_user ON tasks(user_id,status);

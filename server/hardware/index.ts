@@ -2,8 +2,8 @@ import os from 'node:os';
 import si from 'systeminformation';
 import type { Admission, HardwareSnapshot, ModelProfile } from '../../shared/types.js';
 import { number, object, string } from '../providers/transport.js';
+import { reserveBytes, resolveResourcePolicy, resourcePolicyReason, type ResourcePolicyConfig } from './policy.js';
 
-const GiB = 1024 ** 3;
 const MiB = 1024 ** 2;
 const positive = (value: unknown): number | null => { const n = number(value); return n !== null && n > 0 ? n : null; };
 
@@ -37,8 +37,9 @@ export async function getHardware(): Promise<HardwareSnapshot> {
 }
 
 /** Estimates are admission policy, not guarantees of allocation or benchmarks. */
-export function assessModel(model: ModelProfile, hardware: HardwareSnapshot, contextTokens: number): Admission {
-  const result: Admission = { allowed: false, decision: 'alternative', reasons: [], estimatedRamBytes: null, estimatedVramBytes: null, contextTokens, confidence: 'unknown' };
+export function assessModel(model: ModelProfile, hardware: HardwareSnapshot, contextTokens: number, config?: ResourcePolicyConfig): Admission {
+  const policy = resolveResourcePolicy(config);
+  const result: Admission = { allowed: false, decision: 'alternative', reasons: [resourcePolicyReason(policy)], estimatedRamBytes: null, estimatedVramBytes: null, contextTokens, confidence: 'unknown' };
   const reject = (reason: string, decision: Admission['decision'] = 'alternative'): Admission => ({ ...result, decision, reasons: [...result.reasons, reason] });
   if (!Number.isSafeInteger(contextTokens) || contextTokens < 1) return reject('Context must be a positive whole token count');
   if (model.contextWindow !== null && contextTokens > model.contextWindow) return reject('Requested context exceeds the discovered model limit', 'reduce_context');
@@ -63,7 +64,7 @@ export function assessModel(model: ModelProfile, hardware: HardwareSnapshot, con
   const dedicated = hardware.gpus.filter(gpu => !gpu.memoryShared);
   result.confidence = 'estimated'; result.estimatedRamBytes = peak;
   result.reasons.push('Includes quantized weights, f16 KV cache, runtime/load buffers and operating-system headroom; local calls must be serialized.');
-  const ramReserve = Math.max(4 * GiB, hardware.memory.totalBytes * 0.2);
+  const ramReserve = reserveBytes(hardware.memory.totalBytes, policy.ramReserveGiB, policy.ramReservePercent);
   if (hardware.memory.availableBytes - ramReserve < peak) return reject('Insufficient available physical RAM after safety reserve; swap/pagefile is not inference capacity', 'queue');
   if ((hardware.memory.swapUsedBytes ?? 0) > hardware.memory.totalBytes * 0.25) return reject('Substantial swap/pagefile use indicates unsafe memory pressure', 'queue');
   if (shared) {
@@ -77,13 +78,13 @@ export function assessModel(model: ModelProfile, hardware: HardwareSnapshot, con
     const fits = dedicated.some(gpu => {
       const total = gpu.totalBytes!; const used = gpu.usedBytes!;
       const available = total - used + Math.min(resident, used);
-      return peak <= available - Math.max(GiB, total * 0.15);
+      return peak <= available - reserveBytes(total, policy.vramReserveGiB, policy.vramReservePercent);
     });
     if (!fits) {
       if (model.provider === 'ollama') return { ...result, allowed: true, decision: 'run', execution: { numGpu: 0 }, estimatedVramBytes: 0, reasons: [...result.reasons, 'GPU headroom is insufficient. Enforce CPU-only execution with num_gpu=0; physical RAM passed the complete weight/KV/buffer estimate. Throughput is unmeasured.'] };
       return reject('Estimated weights, KV and buffers exceed available VRAM after safety reserve; queue, reduce context or choose a smaller model', 'queue');
     }
-    result.reasons.push('Fits one discrete GPU with at least 15% or 1 GiB VRAM reserved. Existing same-context allocation is credited only for a single GPU.');
+    result.reasons.push(`Fits one discrete GPU with at least ${policy.vramReservePercent}% or ${policy.vramReserveGiB} GiB VRAM reserved. Existing same-context allocation is credited only for a single GPU.`);
   } else result.reasons.push('CPU-only inference uses physical RAM; speed has not been benchmarked.');
   return { ...result, allowed: true, decision: 'run' };
 }

@@ -130,6 +130,30 @@ describe('provider wire boundaries', () => {
     } });
     expect((await providers.listModels()).find(item => item.provider === 'ollama')).toMatchObject({ state: 'available', capabilities: { tools: true }, contextWindow: 32768, tokensPerSecond: null });
   });
+  it('observes resident allocation using only a fresh read-only runtime request', async () => {
+    const requests: string[] = [];
+    const providers = new Providers({ secrets: new SecretManager({ env: {}, keyring: null }), fetch: async (url, options) => {
+      requests.push(`${options?.method} ${new URL(String(url)).pathname}`);
+      return Response.json({ models: [{ name: 'test:4b', digest: 'digest', size: 3_000_000_000, size_vram: 2_500_000_000, context_length: 8192, expires_at: '2026-10-05T20:00:00Z' }] });
+    } });
+    const snapshot = await providers.residentModels();
+    expect(requests).toEqual(['GET /api/ps']);
+    expect(snapshot).toMatchObject({ state: 'observed', source: 'ollama/api/ps', models: [{ id: 'ollama/test:4b', digest: 'digest', reportedBytes: 3_000_000_000, gpuBytes: 2_500_000_000, contextTokens: 8192 }] });
+    expect(Number.isFinite(Date.parse(snapshot.sampledAt))).toBe(true);
+    expect(JSON.stringify(snapshot)).not.toMatch(/peak|calibrated/);
+  });
+  it('keeps unavailable resident measurements unknown and never invents allocation', async () => {
+    const providers = new Providers({ secrets: new SecretManager({ env: {}, keyring: null }), fetch: async () => Response.json({ models: [{ name: 'test:4b', size: -1, size_vram: '1000', context_length: 0 }] }) });
+    expect((await providers.residentModels()).models[0]).toMatchObject({ reportedBytes: null, gpuBytes: null, contextTokens: null, digest: null, expiresAt: null });
+    providers.setEnabled('ollama', false);
+    expect(await providers.residentModels()).toMatchObject({ state: 'disabled', models: [] });
+  });
+  it('reports an unavailable resident inventory without exposing runtime error text', async () => {
+    const providers = new Providers({ secrets: new SecretManager({ env: {}, keyring: null }), fetch: async () => new Response('private-error-content', { status: 503 }) });
+    const snapshot = await providers.residentModels();
+    expect(snapshot).toMatchObject({ state: 'unavailable', models: [] });
+    expect(JSON.stringify(snapshot)).not.toContain('private-error-content');
+  });
   it('reports authentication failure without returning provider response secrets', async () => {
     const providers = new Providers({ secrets: new SecretManager({ env: { OPENAI_API_KEY: 'key' }, keyring: null }), fetch: async () => new Response('secret-server-body', { status: 401 }) });
     const status = await providers.verify('openai');

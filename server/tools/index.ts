@@ -7,6 +7,7 @@ import { decide, definitions, parseRequest } from './policy';
 import { FILE_COUNT_LIMIT, inspectPath, OUTPUT_LIMIT, safePath, sourceRoot, WORKSPACE_LIMIT } from './platform';
 import { DockerSandbox } from './sandbox';
 import { ToolStore, type ChangeEntry, type Checkpoint } from './store';
+import { UncertainToolEffect } from './errors';
 
 export class ToolBroker {
   private readonly store: ToolStore;
@@ -109,10 +110,12 @@ export class ToolBroker {
     await this.capacity(root, entries); guard();
     const checkpoint: Checkpoint = { id: randomUUID(), taskId: context.taskId, workspaceId: context.workspaceId!, createdAt: new Date().toISOString(), state: 'prepared', entries };
     await this.store.saveCheckpoint(checkpoint);
-    for (const entry of entries) await replaceText(root, entry.path, entry.after, hashOrNull(entry.before), guard);
-    checkpoint.state = 'committed'; await this.store.saveCheckpoint(checkpoint);
-    const { record } = await this.workspace(context.workspaceId!); record.fileCount = (await listTextFiles(root)).length; await this.store.saveWorkspace(record);
-    return checkpoint;
+    try {
+      for (const entry of entries) await replaceText(root, entry.path, entry.after, hashOrNull(entry.before), guard);
+      checkpoint.state = 'committed'; await this.store.saveCheckpoint(checkpoint);
+      const { record } = await this.workspace(context.workspaceId!); record.fileCount = (await listTextFiles(root)).length; await this.store.saveWorkspace(record);
+      return checkpoint;
+    } catch(error) { throw new UncertainToolEffect(error); }
   }
   private async terminal(context: ToolContext, root: string, argv: string[], timeoutSeconds: number, guard: Guard): Promise<ToolResult> {
     const status = await this.sandbox.status(); if (!status.available) throw new Error(status.reason);

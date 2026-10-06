@@ -21,6 +21,10 @@ Use Node.js 24+. `npm ci` installs locked dependencies; `npm run check` performs
 
 `node scripts/acceptance.mjs` intentionally uses actual installed Ollama inference and creates a managed acceptance workspace. It is separate from ordinary tests. Stop backend editing/watch restarts during this run.
 
+`npm run pair` issues a one-use owner pairing code into an OS-account-protected file after building. In a portable package use `node launch.mjs --pair`, or supply the running host's explicit `--data-dir`. Never print the code or commit authentication state. Acceptance scripts use the same native pairing path; run them as the host's OS account.
+
+`node scripts/smoke.mjs` verifies the latest successful real acceptance after a compiled-host restart, including persisted messages/files, measurement provenance and an actual SSE heartbeat. `bash scripts/linux-verify.sh` runs isolated native Linux installation, types/tests/build and compiled-host acceptance; the existing Windows Ubuntu WSL host can invoke it through `wsl.exe -d Ubuntu -- bash /mnt/c/Users/yarde/Documents/codexp/Relay/scripts/linux-verify.sh`. It preserves a hashed source snapshot and exports sanitized evidence only.
+
 The Windows execution sandbox may prevent esbuild/tsx process startup or user-profile resolution. Use the permitted escalation flow when that happens; do not treat the sandbox error as a product error or bypass the tool's boundary.
 
 Remote access is disabled by default. Never tunnel the local-owner port. Only the separately authenticated gateway may receive external traffic. Preserve user ownership filters on every object read and mutation, not just navigation.

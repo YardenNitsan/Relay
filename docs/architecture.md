@@ -36,7 +36,7 @@ LangGraph provides persistence/checkpoint and interrupt primitives; PydanticAI a
 
 ## ADR004: Same-origin HTTP and SSE
 
-Commands use validated HTTP mutations. Ordered persisted events stream over SSE with event IDs, heartbeat, reconnect/replay and bounded batches. Browser websocket bidirectionality is unnecessary. Host/origin checks, strict HttpOnly session cookies and a per-session mutation CSRF token protect the local service against hostile browser origins. Local-owner bootstrap still trusts native loopback callers and does not distinguish OS accounts. Owner pairing/per-account authentication is a release gate for untrusted multi-account hosts; the remote gateway has a separate signed-identity boundary.
+Commands use validated HTTP mutations. Ordered persisted events stream over SSE with event IDs, heartbeat, reconnect/replay and bounded batches. Browser websocket bidirectionality is unnecessary. Host/origin checks, strict HttpOnly session cookies and a per-session mutation CSRF token protect the local service against hostile browser origins. Local owner sessions require a five-minute single-use pairing code delivered through OS-account-protected storage; unpaired native loopback requests cannot bootstrap owner authority. The remote gateway has a separate signed-identity boundary. See [pairing security and native platform limits](security-model.md).
 
 ## ADR005: Tools cannot borrow host authority
 
@@ -61,3 +61,15 @@ The initial supported public architecture is Cloudflare Tunnel + Access, with si
 ## ADR010: Fail closed on unknown evidence and cost
 
 A model's confidence is never a passing test. Actual tool checks have stable identities and an ordered ledger; successful repair supersedes an earlier failure without deleting history. A response without external verification is labelled generation-only. Interrupted side effects require inspection. Cloud costs are reserved atomically before requests; unknown usage retains its reservation. A strict budget rejects unknown model prices. This sacrifices availability where metadata is missing in exchange for honoring the owner's boundaries.
+
+## ADR011: Constrained adaptive planning and durable repair
+
+Deep and maximum execution can adapt the specialist graph after planning. The planner proposes only a list of permitted specialist roles, acceptance criteria and a short justification. A strict schema rejects extra fields, privileged/duplicate roles and roles outside the selected depth. The core constructs all dependencies and retains the worker and final reviewer. Invalid proposals keep the original bounded graph. The proposal decision and resulting graph are committed together and are not regenerated on resume.
+
+Balanced and deep tasks permit at most two automatic repair rounds; maximum permits three and fast permits none. Repairs preserve worker tool receipts and append review/check feedback, reset the reviewer, and consume the same task call/time/cost budgets. The round count persists across restarts. Denied capabilities and ambiguous interrupted effects do not become retry invitations. A review must end with an explicit passing verdict, which remains a model assessment; unresolved actual checks prevent completion independently. Failure of a parallel branch cancels and joins siblings before releasing the task slot.
+
+This follows the useful orchestrator/worker and evaluator/optimizer patterns in [LangGraph's workflow documentation](https://docs.langchain.com/oss/javascript/langgraph/workflows-agents), while retaining Relay's normalized evidence, policy and execution authority. It is bounded adaptive planning, not arbitrary model-authored executable DAGs or unrestricted debate.
+
+## ADR013: Explicit required evidence
+
+Authenticated callers may add bounded `verification.requiredReads` predicates to task options. Each binds a permitted relative path to an expected whole-file SHA-256. Actual successful broker read receipts after the latest workspace change satisfy the contract; model prose cannot. A missing predicate causes bounded factual continuation and prevents the final assistant message. Database completion independently checks these predicates. See [ADR013](adr-013-required-verification-contracts.md) for failure behavior, shared-workspace invalidation and the API-only scope of initial contract declaration.

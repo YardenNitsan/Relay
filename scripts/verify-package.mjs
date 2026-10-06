@@ -18,7 +18,7 @@ for (const record of records) {
   for (const path of files) {
     if (!path.startsWith(prefix) || path.split('/').includes('..') || /\/(?:\.data|\.env|\.git|node_modules)(?:\/|$|\.)/.test(path)) throw new Error(`Unexpected archive member: ${path}`);
   }
-  for (const required of ['dist/index.html', 'dist-server/main.js', 'package.json', 'package-lock.json', 'README.md', 'THIRD_PARTY_NOTICES.md', 'launch.mjs', 'start.cmd', 'start.ps1', 'start.sh']) {
+  for (const required of ['dist/index.html', 'dist-server/main.js', 'dist-server/pair.js', 'package.json', 'package-lock.json', 'README.md', 'THIRD_PARTY_NOTICES.md', 'launch.mjs', 'start.cmd', 'start.ps1', 'start.sh']) {
     if (!files.includes(prefix + required)) throw new Error(`Missing ${required}: ${name}`);
   }
   console.log(`${name}: checksum and ${files.length} archive entries verified`);

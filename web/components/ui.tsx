@@ -10,7 +10,15 @@ export function Modal({ title, children, onClose, wide = false, className = '' }
   useEffect(() => {
     const dialog = ref.current;
     if (dialog && !dialog.open) dialog.showModal();
-    return () => { if (dialog?.open) dialog.close(); if (returnFocus.current?.isConnected) returnFocus.current.focus(); };
+    return () => {
+      if (dialog?.open) dialog.close();
+      const origin = returnFocus.current;
+      if (origin?.isConnected && origin !== document.body && origin.getClientRects().length && !origin.closest('dialog:not([open])')) origin.focus();
+      else {
+        const visibleNavigation = Array.from(document.querySelectorAll<HTMLButtonElement>('.mobile-navigation, .command-trigger')).find(element => element.getClientRects().length > 0);
+        (visibleNavigation ?? document.querySelector<HTMLButtonElement>('.brand'))?.focus();
+      }
+    };
   }, []);
   return <dialog ref={ref} className={`modal ${wide ? 'modal-wide' : ''} ${className}`} aria-label={title} onCancel={event => { event.preventDefault(); onClose(); }} onClick={event => {
     if (event.target !== event.currentTarget) return;
@@ -32,6 +40,10 @@ export function ErrorNotice({ error, retry }: { error: unknown; retry?: () => vo
 
 export function Loading({ children = 'Loading…' }: { children?: ReactNode }) {
   return <p className="loading" role="status"><LoaderCircle size={17} className="spin" />{children}</p>;
+}
+
+export function ConversationSkeleton() {
+  return <div className="conversation-skeleton" role="status" aria-label="Opening conversation"><span className="sr-only">Opening conversation…</span><div aria-hidden="true"><span className="skeleton-label" /><span className="skeleton-line skeleton-title" /><span className="skeleton-line" /><div className="skeleton-receipt" /><span className="skeleton-label" /><span className="skeleton-line" /><span className="skeleton-line" /><span className="skeleton-line skeleton-short" /></div></div>;
 }
 
 export const isActive = (status: TaskStatus) => ['created', 'analyzing', 'planning', 'executing', 'verifying', 'replanning', 'waiting_for_approval'].includes(status);

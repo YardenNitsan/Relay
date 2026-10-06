@@ -1,12 +1,14 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Activity as ActivityIcon, ArrowUpRight, ChevronDown, Command as CommandIcon, Cpu, History, Layers, Moon, PanelRightClose, Plus, Radio, Search, ShieldCheck, Square, Sun, X } from 'lucide-react';
+import { Activity as ActivityIcon, ArrowUpRight, ChevronDown, Command as CommandIcon, Cpu, History, Layers, Menu, Moon, PanelRightClose, Plus, Radio, Search, ShieldCheck, Square, Sun, X } from 'lucide-react';
 import type { Conversation as ConversationRecord, ConversationDetail, SystemStatus, TaskOptions, TaskRecord, Workspace } from '../shared/types';
-import { api, errorMessage, initializeSession, mutation, refreshSession } from './api';
+import { api, ApiError, errorMessage, initializeSession, mutation, onSessionInvalidated, refreshSession } from './api';
 import { useRealtime } from './useRealtime';
 import Composer from './components/Composer';
 import Conversation from './components/Conversation';
 import Activity from './components/Activity';
+import Connection from './components/Connection';
+import Navigation from './components/Navigation';
 import CommandPalette, { type Command } from './components/CommandPalette';
 import { Empty, ErrorNotice, isActive, Loading, Modal, shortDate } from './components/ui';
 import type { ModelList } from './components/Models';
@@ -15,7 +17,7 @@ const Models = lazy(() => import('./components/Models'));
 const Hardware = lazy(() => import('./components/Hardware'));
 const Workspaces = lazy(() => import('./components/Workspaces'));
 const Access = lazy(() => import('./components/Access'));
-type Panel = 'history' | 'models' | 'hardware' | 'workspaces' | 'commands' | 'access' | null;
+type Panel = 'history' | 'models' | 'hardware' | 'workspaces' | 'commands' | 'access' | 'navigation' | null;
 const defaults: TaskOptions = { depth: 'balanced', modelId: null, access: 'read_only', workspaceId: null, contextTokens: 8192, cloudPolicy: 'local_only', budget: { maxCalls: 12, maxSeconds: 600, maxIterations: 5, maxCostUsd: null, localOnly: true } };
 
 function currentConversation() { return new URLSearchParams(window.location.search).get('conversation'); }
@@ -42,8 +44,15 @@ export default function App() {
   const [notice, setNotice] = useState<{ message: string; error: boolean } | null>(null);
   const [stopBusy, setStopBusy] = useState(false);
   const [streamGeneration, setStreamGeneration] = useState(0);
-  const session = useQuery({ queryKey: ['session'], queryFn: initializeSession, retry: 1, staleTime: Infinity });
-  const ready = session.isSuccess;
+  const [sessionFailure, setSessionFailure] = useState<ApiError | null>(null);
+  useEffect(() => onSessionInvalidated(error => {
+    setSessionFailure(error); setPanel(null); setActivity(false); setTaskId(null);
+    setOptions(defaults); setNotice(null);
+    void client.cancelQueries();
+    client.clear();
+  }), [client]);
+  const session = useQuery({ queryKey: ['session'], queryFn: initializeSession, enabled: !sessionFailure, retry: (count, error) => !(error instanceof ApiError && [401, 403].includes(error.status)) && count < 1, staleTime: Infinity });
+  const ready = session.isSuccess && sessionFailure === null;
   const owner = session.data?.user?.role === 'owner' && session.data.remote === false;
   const permissions = session.data?.user?.permissions;
   const remote = session.data?.remote === true;
@@ -118,9 +127,10 @@ export default function App() {
   const reconnect = async () => {
     try {
       const renewed = await refreshSession(); client.setQueryData(['session'], renewed);
+      setSessionFailure(null);
       setStreamGeneration(value => value + 1);
       await Promise.all(['status', 'conversation', 'task', 'models'].map(key => client.invalidateQueries({ queryKey: [key] })));
-    } catch (error) { setNotice({ message: errorMessage(error), error: true }); }
+    } catch (error) { setNotice({ message: errorMessage(error), error: true }); await client.resetQueries({ queryKey: ['session'], exact: true }); }
   };
   const commands: Command[] = [
     { id: 'new', label: 'New conversation', description: 'Start a new objective', action: () => selectConversation(null) },
@@ -134,13 +144,15 @@ export default function App() {
     ...(owner && stopped ? [{ id: 'resume', label: 'Resume Relay service', description: 'Allow new work; existing tasks remain stopped', action: () => { void resumeService(); } }] : []),
   ];
 
-  return <div className="app"><a className="skip-link" href="#main">Skip to conversation</a><header className="app-header"><button className="brand" onClick={() => selectConversation(null)} aria-label="Relay home"><span className="brand-mark" aria-hidden="true"><i /><i /><i /></span><span>relay</span></button><span className="header-divider" /><button className="conversation-switcher" aria-label="Open conversation history" onClick={() => setPanel('history')}><span>{conversation.data?.conversation.title ?? 'New conversation'}</span><ChevronDown size={14} /></button><button className="icon-button new-conversation" aria-label="New conversation" onClick={() => selectConversation(null)}><Plus size={18} /></button><nav className="main-nav" aria-label="Workspace navigation"><button onClick={() => setPanel('models')} aria-label="Models"><Layers size={16} /><span>Models</span></button>{owner && <><button onClick={() => setPanel('hardware')} aria-label="Machine"><Cpu size={16} /><span>Machine</span></button><button onClick={() => setPanel('access')} aria-label="Access"><ShieldCheck size={16} /><span>Access</span></button></>}<button className="command-trigger" onClick={() => setPanel('commands')} aria-label="Open command palette"><CommandIcon size={16} /><span>Commands</span><kbd>Ctrl K</kbd></button></nav><button className="icon-button theme-button" aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`} onClick={() => setTheme(value => value === 'light' ? 'dark' : 'light')}>{theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}</button>{owner && <button className="stop-all" onClick={() => { void emergencyStop(); }} disabled={!ready || stopped || stopBusy}><Square size={12} fill="currentColor" /><span>{stopBusy ? 'Stopping…' : stopped ? 'Stopped' : 'Stop all'}</span></button>}</header>
+  if (!ready) return <Connection pending={!sessionFailure && session.isPending} error={sessionFailure ?? session.error} onPaired={data => { client.setQueryData(['session'], data); setSessionFailure(null); setNotice(null); }} onRetry={() => { void reconnect(); }} />;
+
+  return <div className="app"><a className="skip-link" href="#main">Skip to conversation</a><header className="app-header"><button className="brand" onClick={() => selectConversation(null)} aria-label="Relay home"><span className="brand-mark" aria-hidden="true"><i /><i /><i /></span><span>relay</span></button><span className="header-divider" /><button className="conversation-switcher" aria-label="Open conversation history" onClick={() => setPanel('history')}><span>{conversation.data?.conversation.title ?? 'New conversation'}</span><ChevronDown size={14} /></button><button className="icon-button new-conversation" aria-label="New conversation" onClick={() => selectConversation(null)}><Plus size={18} /></button><nav className="main-nav" aria-label="Workspace navigation"><button onClick={() => setPanel('models')} aria-label="Models"><Layers size={16} /><span>Models</span></button>{owner && <><button onClick={() => setPanel('hardware')} aria-label="Machine"><Cpu size={16} /><span>Machine</span></button><button onClick={() => setPanel('access')} aria-label="Access"><ShieldCheck size={16} /><span>Access</span></button></>}<button className="command-trigger" onClick={() => setPanel('commands')} aria-label="Open command palette"><CommandIcon size={16} /><span>Commands</span><kbd>Ctrl K</kbd></button></nav><button className="mobile-navigation" onClick={() => setPanel('navigation')} aria-label="Open navigation"><Menu size={19} /><span>Menu</span></button><button className="icon-button theme-button" aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`} onClick={() => setTheme(value => value === 'light' ? 'dark' : 'light')}>{theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}</button>{owner && <button className="stop-all" onClick={() => { void emergencyStop(); }} disabled={!ready || stopped || stopBusy}><Square size={12} fill="currentColor" /><span>{stopBusy ? 'Stopping…' : stopped ? 'Stopped' : 'Stop all'}</span></button>}</header>
     {backendUnavailable && <div className="service-banner error" role="alert"><span>The service is unavailable or this session has expired. Your draft stays in this browser.</span><button onClick={() => { void reconnect(); }}>Reconnect</button></div>}
     {!backendUnavailable && realtime.connection === 'reconnecting' && <div className="service-banner"><span>Live activity is reconnecting. Persisted work remains available.</span><button onClick={() => { void reconnect(); }}>Reconnect activity</button></div>}
     {stopped && <div className="service-banner warning" role="status"><span><strong>All work is stopped.</strong> {owner ? 'Resume the service to allow new objectives.' : 'The host owner can resume the service.'}</span>{owner && <button disabled={stopBusy} onClick={() => { void resumeService(); }}>Resume Relay</button>}</div>}
     {notice && <div className={`service-banner ${notice.error ? 'error' : ''}`} role={notice.error ? 'alert' : 'status'}><span>{notice.message}</span><button className="icon-button" aria-label="Dismiss notification" onClick={() => setNotice(null)}><X size={16} /></button></div>}
     <div className={`workspace-layout ${activity ? 'has-inspector' : ''}`}><main id="main" className="conversation-main"><div className="conversation-toolbar"><div className="connection-status"><span className={`connection-dot ${ready && realtime.connection === 'live' && !backendUnavailable ? 'connected' : ''}`} /><span>{backendUnavailable ? 'Service disconnected' : !ready ? 'Connecting to Relay' : realtime.connection === 'live' ? remote ? `Connected to ${session.data?.hostName ?? 'shared host'}` : 'Local service connected' : realtime.connection === 'reconnecting' ? 'Reconnecting to activity…' : 'Connecting activity…'}</span></div><button id="activity-toggle" className={`activity-toggle ${activity ? 'active' : ''}`} onClick={() => setActivity(value => !value)} aria-expanded={activity}>{activity ? <PanelRightClose size={16} /> : <ActivityIcon size={16} />}<span>Activity</span>{running && <span className="activity-dot" />}</button></div>
-      <Conversation detail={conversation.data} loading={Boolean(conversationId) && conversation.isPending} error={conversation.isError ? conversation.error : null} streams={realtime.text} models={modelList} onInspect={inspect} onModels={() => setPanel('models')} onWorkspace={() => setPanel('workspaces')} />
+      <Conversation detail={conversation.data} loading={Boolean(conversationId) && conversation.isPending} error={conversation.isError ? conversation.error : null} onRetry={() => { void conversation.refetch(); }} streams={realtime.text} models={modelList} onInspect={inspect} onModels={() => setPanel('models')} onWorkspace={() => setPanel('workspaces')} />
       <Composer key={`${session.data?.user?.id ?? 'pending'}:${conversationId ?? 'new'}`} conversationId={conversationId} options={options} onOptions={setOptions} models={modelList} workspaces={workspaces.data ?? []} onWorkspace={() => setPanel('workspaces')} onSend={send} disabled={!ready || backendUnavailable} stopped={stopped} running={running} status={status.data} owner={owner} permissions={permissions} userId={session.data?.user?.id ?? 'pending'} />
     </main>{activity && <Activity taskId={selectedTaskId} tasks={tasks} events={realtime.events} workspaces={workspaces.data ?? []} hostName={session.data?.hostName} onSelect={setTaskId} onClose={() => { setActivity(false); requestAnimationFrame(() => document.getElementById('activity-toggle')?.focus()); }} stopped={stopped} />}</div>
     <footer className="app-footer"><span><Radio size={12} />Your work stays accountable.</span><span>{status.data ? `Relay ${status.data.version}` : 'Relay'}<span className="footer-separator" />{options.cloudPolicy === 'local_only' ? 'Local inference only' : 'Cloud access controlled'}</span></footer>
@@ -150,5 +162,6 @@ export default function App() {
     {panel === 'workspaces' && <Modal title="Workspaces" onClose={() => setPanel(null)}><Suspense fallback={<Loading>Opening workspaces…</Loading>}><Workspaces owner={owner} selected={options.workspaceId} onSelect={id => setOptions(value => ({ ...value, workspaceId: id }))} /></Suspense></Modal>}
     {panel === 'access' && owner && <Modal title="Access & remote connections" onClose={() => setPanel(null)} wide><Suspense fallback={<Loading>Opening access controls…</Loading>}><Access /></Suspense></Modal>}
     {panel === 'commands' && <CommandPalette commands={commands} onClose={() => setPanel(null)} />}
+    {panel === 'navigation' && <Navigation owner={owner} theme={theme} hostName={session.data?.hostName} onDestination={setPanel} onNew={() => selectConversation(null)} onActivity={() => { setPanel(null); setActivity(true); }} onTheme={() => setTheme(value => value === 'light' ? 'dark' : 'light')} onClose={() => setPanel(null)} />}
   </div>;
 }

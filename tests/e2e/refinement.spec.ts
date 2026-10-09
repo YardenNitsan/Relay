@@ -19,7 +19,7 @@ test('phone navigation exposes real destinations and every composer control rema
   await expect(page.getByLabel('Compute depth')).toBeVisible();
   await page.getByLabel('Compute depth').selectOption('deep');
   await expect(page.getByLabel('Compute depth')).toHaveValue('deep');
-  for (const target of [navigation, page.getByRole('button', { name: 'Stop all', exact: true }), page.getByRole('button', { name: 'Attach a text file' }), page.getByRole('button', { name: 'Execution options' }), page.getByRole('button', { name: 'Send objective' }), page.getByLabel('Computer access'), page.getByRole('button', { name: 'Choose workspace', exact: true })]) {
+  for (const target of [navigation, page.getByRole('button', { name: 'Stop all', exact: true }), page.getByRole('button', { name: 'Attach files' }), page.getByRole('button', { name: 'Execution options' }), page.getByRole('button', { name: 'Send objective' }), page.getByLabel('Computer access'), page.getByRole('button', { name: 'Choose workspace', exact: true })]) {
     const box = await target.boundingBox();
     expect(box?.height).toBeGreaterThanOrEqual(44);
   }

@@ -2,6 +2,12 @@
 
 Relay separates browser authentication, user authorization, model proposals, and deterministic tool execution. A model never grants access. Local and remote gateways share task storage and policy while using separate authentication paths and cookies.
 
+## Personal workspace authority
+
+Approved accounts may provision bounded empty personal workspaces. Ownership is server-derived and stored with workspace metadata; an upload cannot specify another owner or a host import path. Personal ownership permits manual file management independently of the agent access mode. It permits read-only, supervised or autonomous workspace tasks only for that matching workspace; host, network, provider, quota and MCP authority remain separate. Personal workspaces are not shareable through another user's ordinary workspace grant list. Existing host-managed workspaces retain their prior policy.
+
+Authorization is checked at file routes, durable task admission/resume/model reservation and durable broker execution. File edits/deletes require an expected content hash and use the existing bounded broker checkpoint path. Browser folder connections require user selection and explicit reviewed writeback; they are not remote authority over arbitrary client paths or processes. Browser file APIs do not provide an atomic compare-and-swap against external desktop applications. See [file behavior and limits](personal-files.md).
+
 ## Local owner pairing
 
 Reaching loopback does **not** grant owner authority. `GET /api/session` returns `401 PAIRING_REQUIRED` without a valid paired local session. The hostname and account details are returned only after authentication. Other private API routes require the session cookie; mutations also require the session CSRF token.
@@ -27,6 +33,12 @@ The code is stored briefly in an ACL-protected control file rather than an encry
 ## Remote access and execution
 
 Remote requests require verified, invited Cloudflare Access application identities and a separate secure cookie. Owner configuration is unavailable remotely. Live remote activity streams close at the signature-verified JWT expiry, on session revocation, or when remote access is disabled. Concurrent streams are bounded and release capacity when disconnected.
+
+Version 0.1.1 adds optional approval registration: a valid new identity receives a disabled, zero-grant account until the owner approves it. Pending/denied identities can fetch the inert browser shell only. All APIs and session creation remain denied. Registration capacity is bounded; remote identity work has an aggregate admission limit in addition to per-user limits. Accounts bind issuer and subject, not email alone. Browser sessions have a transactional 20-session cap and current-browser logout.
+
+Cloud gateways and OS-vault namespaces are per account. Routing resolves from durable task ownership; browser-supplied IDs cannot choose a credential owner. Local inventory is shared without invoking owner cloud discovery. Credential changes invalidate caches and cancel requests before a delayed credential read can dispatch. User revocation discards volatile connections; persistent vault entries remain stored. Strict pricing fails closed, except an explicit owner-authorized personal billing mode with no task dollar cap; unknown charges are never claimed to be zero.
+
+Remote cross-site top-level GET navigation may load only `/` or `/index.html`, allowing an Access/Google sign-in return. API requests, embedded documents and subresources retain cross-site rejection. Host/Origin, signed identity, session and CSRF checks remain independent. This follows [Google's Fetch Metadata guidance](https://web.dev/articles/fetch-metadata); it is not an OAuth callback accepting model credentials.
 
 Task creation and resume recheck current user permissions, session version, task/conversation occupancy, and quotas inside transactions. Cloud calls reserve task and user budgets before dispatch. Unknown costs remain conservatively reserved. Tool capabilities and workspace paths are enforced by the broker; arbitrary native commands remain unavailable. See [tool boundary research](research-security.md) and [remote deployment](remote-access.md) for the implemented isolation and deployment limits.
 

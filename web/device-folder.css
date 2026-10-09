@@ -1,0 +1,16 @@
+.device-folder { border-top: 1px solid var(--border); margin-top: 24px; padding-top: 20px; }
+.device-folder h3 { display: flex; align-items: center; gap: 8px; }
+.device-folder p, .device-folder-dialog p { overflow-wrap: anywhere; }
+.device-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-block: 16px; }
+.device-actions .button, .device-folder > .button { min-height: 44px; }
+.device-file-list { list-style: none; padding: 0; max-height: 42dvh; overflow: auto; }
+.device-file-list li { display: flex; justify-content: space-between; gap: 12px; padding-block: 8px; border-bottom: 1px solid var(--border); }
+.device-file-list code, .device-change code { overflow-wrap: anywhere; word-break: break-word; }
+.device-file-list span { white-space: nowrap; }
+.device-change { padding-block: 12px; border-bottom: 1px solid var(--border); }
+.device-change > label, .device-delete { display: flex; align-items: center; gap: 12px; min-height: 48px; cursor: pointer; }
+.device-change input, .device-delete input { width: 20px; height: 20px; flex: 0 0 20px; }
+.device-change summary { cursor: pointer; padding: 12px 0; }
+.device-comparison { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.device-comparison pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 36dvh; overflow: auto; font-size: 12px; border: 1px solid var(--border); padding: 12px; }
+@media (max-width: 640px) { .device-folder-dialog { width: 100%; max-width: 100%; height: 100dvh; max-height: 100dvh; margin: 0; border-radius: 0; } .device-comparison { grid-template-columns: minmax(0, 1fr); } .device-actions .button { min-height: 48px; flex: 1 1 160px; } }

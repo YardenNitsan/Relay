@@ -2,6 +2,8 @@
 
 The local owner can select **Unrestricted · host files** and confirm **Enable host access**. This grants direct operations on real host text files for the submitted task, without repeated action approvals. It does not require importing a managed copy. Use an absolute native path in your objective.
 
+Confirmation clears the selected managed-copy workspace so the task begins with the host-file tool scope. This prevents an automatically prepared workspace from silently adding a second tool catalog and overflowing the default context. Select a managed workspace again explicitly if the objective also needs its tools; larger combined catalogs may require a larger context budget and must still pass memory admission.
+
 Available operations are a bounded directory listing, UTF-8 file read, file write and single-file delete. Replacements and deletions require the current SHA-256; writes and deletes save private recovery checkpoints and return verified receipts. Directory deletion, process launch, installations and arbitrary native shell execution are not provided by this mode. Commands continue to require a managed workspace and the existing verified Docker boundary.
 
 ## Authority and protection

@@ -10,6 +10,8 @@ Run it with local models alone, or explicitly connect cloud providers. Your host
 
 [Get started](#get-started) · [User guide](docs/user-guide.md) · [Architecture](docs/architecture.md) · [Security](docs/security-model.md) · [Validation](docs/validation.md)
 
+[0.1.1 release report: changes, verification and remaining work](docs/release-0.1.1.md)
+
 > **Project status:** Relay is a working, actively developed application. The repository includes persistent tasks, local inference, controlled tools and a responsive interface. Some host integrations and deployment paths still need native validation; arbitrary native command execution and signed installers are not available. See [Current boundaries](#current-boundaries) before choosing a deployment.
 
 ## What you can do
@@ -17,15 +19,38 @@ Run it with local models alone, or explicitly connect cloud providers. Your host
 | Workflow | What Relay provides |
 | --- | --- |
 | Have a conversation | Stream answers, reopen saved conversations, search history and navigate older messages. |
+| Bring your files | Attach or drag text/code, PDF and modern Word files into a private workspace. Documents import a text copy; originals remain unchanged. |
 | Work on a project | Import a managed copy, authorize file tools, inspect changes and restore recorded checkpoints when safe. |
 | Coordinate agents | Use bounded worker, planner, specialist and reviewer graphs. Agents and their assigned models are separate concepts. |
-| Choose available intelligence | Discover Ollama and LM Studio models; optionally connect OpenAI, Anthropic or Gemini APIs. |
+| Choose available intelligence | Discover Ollama and LM Studio models; optionally connect OpenAI, Anthropic, Gemini, Grok (xAI) or DeepSeek APIs. |
+| Inspect token usage | Open the Usage side panel for your recorded tokens and last-observed provider rate limits, where reported. |
 | Respect the computer | Inspect real hardware, assess model fit, reserve memory headroom and collect local performance samples. |
 | Inspect execution | Follow factual activity, tool requests, approvals, model assignments and verification receipts. |
+| Get completion alerts | See in-app completion notices and opt into private browser notifications while Relay remains open. |
 | Research with controlled tools | Allow selected public HTTPS origins, inspect managed-workspace Git changes, or pin approved MCP tool contracts. |
 | Share a host deliberately | Configure an optional authenticated remote gateway, then grant each user specific models, workspaces, budgets and capabilities. |
 
 No cloud account is required. Local inference needs a running supported runtime and an installed model; Relay does not ship model weights.
+
+## 0.1.1 · Your host, any browser
+
+Share Relay through a stable HTTPS hostname. People authenticate at Cloudflare Access, then use their own Relay account from a desktop, tablet or phone. **Local inference and in-app agent tools run on your host PC.** External coding clients use a separate model API and execute their own tools on their own computers.
+
+- **Personal accounts:** private conversations, owner-approved access requests, revocable sessions and explicit workspace/model grants.
+- **Personal files:** users create private workspaces, upload supported text files, edit, download and delete them. Agent autonomy inside an owned workspace is independent of the owner's shared-folder grants. Supported desktop browsers can connect a device folder, import a reviewed copy and explicitly apply selected changes back. [Files and permissions](docs/personal-files.md).
+- **Personal cloud connections:** each user connects their own permitted OpenAI, Anthropic, Gemini, Grok (xAI) or DeepSeek API account. Credentials, model catalogs and provider settings are isolated by user; visitors never borrow the owner's cloud keys. Owners explicitly grant provider access to remote accounts under **Access**.
+- **Usage drawer:** use **Usage** in the header, phone navigation or command palette. See today's reported input/output tokens per model. Where OpenAI or Anthropic returns remaining rate-window capacity, the panel shows the observation and reset information. Other balances are labelled unavailable; consumer subscription allowances are not exposed by these API connections. [Usage details](docs/usage.md).
+- **Stable address:** use a protected `workers.dev` gateway with a fixed private Tunnel binding, or a named tunnel with your own domain. Keep the Worker name/account subdomain or domain configuration stable across updates. The host must remain awake and connected.
+- **Local independence:** an Internet or tunnel outage does not disable the local owner's browser service.
+- **LAN accounts:** a separate optional HTTPS listener accepts short-lived, owner-issued account invitations. Being on the Wi-Fi grants no host authority. [LAN setup](docs/lan-access.md).
+- **Specialists:** choose Email, Calendar, Research, Coding, File Management, Personal Assistant, Browser, Finance, Learning or Computer. Each profile constrains available tools; it never increases permissions. Personal task lists are persisted per user. Gmail, Google Calendar, browser automation and desktop automation are not yet connected.
+- **External clients:** expiring account tokens authorize local-model inference without saving external conversation content. Client tool execution stays on the client computer. [API, limits and compatibility](docs/external-clients.md).
+
+**No domain purchase needed for the current free option:** [Cloudflare free setup](docs/cloudflare-free.md) uses a `workers.dev` address, Access email PINs or configured Google login, and Workers VPC. VPC is currently free **in beta**, not a promise of permanent free pricing. The browser Worker does not expose the external inference API. Public deployment and real remote-device acceptance are separate setup steps.
+
+Start in **Access → Remote gateway** on the host. Save the public address, Access issuer and application audience, restart Relay, then enable the gateway after configuring the protected tunnel. [Step-by-step Google login and permanent URL setup →](docs/remote-setup.md)
+
+Google sign-in identifies a Relay user; it does not automatically authorize model inference or another company's subscription. **Gemini supports Connect Google after one-time owner setup**, using a separately authorized quota project. Read the [setup guide](docs/google-connection-setup.md) before enabling shared project usage. Live consent and quota eligibility still require your configured Google application. OpenAI's eligible local/open-source ChatGPT sign-in needs a separate Relay adapter and shared-host eligibility review; Anthropic, xAI and DeepSeek retain supported API-key connections. [Provider sign-in research](docs/research-provider-signin.md). Gmail/Calendar agent access requires separate connectors. The development host has a deployed authenticated Worker and a verified remote session; new installations require their own account and deployment configuration.
 
 ## Get started
 
@@ -85,7 +110,7 @@ Open the private file reported by the pairing command, then enter the code at ht
 
 ### 3. Make a local model available
 
-Start **Ollama** or **LM Studio** with an installed model, then open **Models & providers** in Relay. Refresh discovery, inspect the model and select **Check hardware fit**. Tool work requires a model that reports tool-calling support.
+Start **Ollama** or **LM Studio** with an installed model, then open **Models & providers** in Relay. Opening this panel fetches the installed local catalog from the runtimes; newly downloaded models are not maintained in a static list. Refresh is also available while the panel remains open. Inspect the model and select **Check hardware fit**. Tool work requires a model that reports tool-calling support.
 
 Relay does not automatically install runtimes or download models. Pick a model appropriate for your available memory; a model's weight-file size is only part of its memory requirement. [Local inference details →](docs/local-inference.md)
 
@@ -111,7 +136,7 @@ flowchart TD
     Tasks --> Supervisor[Supervisor and bounded task graphs]
     Supervisor --> Router[Model router and resource admission]
     Router --> Local[Ollama / LM Studio]
-    Router --> Cloud[Optional OpenAI / Anthropic / Gemini]
+    Router --> Cloud[Optional OpenAI / Anthropic / Gemini / xAI / DeepSeek]
     Supervisor --> Broker[Capability and permission broker]
     Broker --> Tools[Managed files / Git / HTTPS / MCP / isolated terminal]
     Tools --> Evidence[Checkpoints, receipts and verification]
@@ -138,6 +163,10 @@ The orchestration core constructs and validates task graphs, accounts for budget
 
 Hardware admission considers RAM, dedicated or unified GPU memory, model weights, KV cache, runtime buffers, concurrent pressure and safety headroom. Missing measurements remain unknown. A safety pause is a meaningful outcome, not a reason to ignore memory limits.
 
+**Auto applies to specialists too.** Agent roles select from the same authorized, hardware-admitted intelligence pool as normal conversations. Selection reasons are recorded in Activity. Owner-run task-fit probes can supply small, verifiable coding/reasoning/extraction observations tied to the installed model artifact; they are not a comprehensive intelligence benchmark. [Routing comparisons and limitations](docs/model-routing-comparison.md).
+
+**Use fewer wasted tokens.** Execution options offer Efficient/Standard and a per-call output ceiling. Efficient requests concise, complete answers and omits tools forbidden by the current access mode. Required verification and evidence are preserved; a truncated answer pauses instead of being presented as finished. [Token policy and research](docs/research-token-efficiency.md).
+
 ## Security and privacy
 
 - **Local by default.** Cloud providers and remote access are optional. No Internet service is required for an already prepared local installation and local inference.
@@ -161,9 +190,9 @@ Relay's implementation and its validation coverage are different things:
 | Computer control | Managed copies and owner-confirmed [direct host file operations](docs/host-access.md) are implemented. Arbitrary native commands remain unavailable; terminal execution stays isolated. |
 | Terminal / native database | Isolation and native PostgreSQL paths have implementation and deterministic coverage; consult the validation ledger for actual native integration evidence. |
 | Local inference | Ollama has actual-host execution evidence. Hardware fit is conservative admission, not a peak-memory guarantee; calibration is a bounded throughput sample, not a model-quality benchmark. |
-| Cloud / remote / MCP | Adapters and policy enforcement exist. Live credentialed cloud acceptance, public remote deployment and broad external MCP interoperability remain to be validated. MCP currently supports constrained anonymous public HTTPS only. |
+| Cloud / remote / MCP | Adapters and policy enforcement exist. Public Access sign-in, a healthy tunnel and a real remote session are verified on the development host. Live credentialed cloud inference, full remote task acceptance and broad external MCP interoperability remain separate checks. MCP currently supports constrained anonymous public HTTPS only. |
 | Retrieval | Local full-text history search and bounded retrieval from the current conversation exist. Semantic embeddings, automatic conversation summaries and arbitrary cross-project memory are not implemented. |
-| Attachments / tools | UTF-8 text attachments and managed project copies are supported. General image/PDF workflows, browser automation and arbitrary host application control are not implemented. |
+| Attachments / tools | UTF-8 text, bounded PDF/DOCX text extraction and managed project copies are supported. Scanned-document OCR, general image/binary editing, browser automation and arbitrary host application control are not implemented. |
 
 See the [validation ledger](docs/validation.md) for dated results and the [project report](docs/project-report.md) for remaining work. Deterministic test providers are used in ordinary tests and are not represented as real inference.
 
@@ -189,6 +218,7 @@ Browser tests use Chrome by default. `PLAYWRIGHT_CHANNEL=chromium` selects an in
 | [User guide](docs/user-guide.md) | [Architecture](docs/architecture.md) · [API contract](docs/api-contract.md) |
 | [Setup, data and operations](docs/operations.md) | [Security model](docs/security-model.md) · [Security research](docs/research-security.md) |
 | [Local inference and memory](docs/local-inference.md) | [Calibration](docs/calibration.md) · [Durable budgets](docs/adr-014-durable-execution-budgets.md) |
+| [Model-routing tools evaluated](docs/research-model-routing-tools.md) | llmfit, LiteLLM, RouteLLM and vLLM Semantic Router: reuse options, privacy boundaries and tradeoffs |
 | [History and search](docs/history.md) | [Controlled MCP](docs/controlled-mcp.md) · [HTTPS and Git tools](docs/research-and-git-tools.md) |
 | [Remote access](docs/remote-access.md) | [Frontend research](docs/frontend-research.md) · [Design system](docs/design-system.md) |
 | [Validation evidence](docs/validation.md) | [Product requirements](docs/product-spec.md) · [Implementation plan](docs/implementation-plan.md) |

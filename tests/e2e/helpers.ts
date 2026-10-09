@@ -1,6 +1,7 @@
 import { execFile } from 'node:child_process';
-import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { readFile, unlink } from 'node:fs/promises';
+import { basename, dirname, join, resolve } from 'node:path';
+import { tmpdir } from 'node:os';
 import { promisify } from 'node:util';
 import { expect, type Cookie, type Page } from '@playwright/test';
 
@@ -17,6 +18,14 @@ export async function issuePairingToken(): Promise<string> {
 }
 
 export async function pairBrowser(page: Page) {
+  // The browser contexts are isolated; the fixture host is shared. Clear only
+  // its disposable workspace catalog so preceding scenarios cannot exhaust
+  // the real per-account quota. Files remain in the temporary fixture until
+  // server teardown; saved history is intentionally retained for history tests.
+  const fixture = JSON.parse(await readFile(resolve('.e2e-data/host/fixture-workspace-root.json'), 'utf8')) as { root: string };
+  const root = resolve(fixture.root);
+  if (dirname(root) !== resolve(tmpdir()) || !/^relay-e2e-[\w-]+$/.test(basename(root))) throw new Error('Unexpected browser fixture directory');
+  await unlink(join(root, 'workspaces.json')).catch(error => { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; });
   // This one-host suite runs much faster than interactive use. Pace scenario
   // admission (not UI assertions) to retain the real local API rate limiter.
   const remaining = 4000 - (Date.now() - previousScenarioAt);
@@ -38,9 +47,13 @@ export async function pairBrowser(page: Page) {
 
 export async function openCommands(page: Page) {
   const trigger = page.getByRole('button', { name: 'Open command palette', exact: true });
+  const navigation = page.getByRole('button', { name: 'Open navigation', exact: true });
+  // Reload can resolve before React restores the authenticated application.
+  // Wait for an actual navigation control before choosing its responsive layout.
+  await expect(trigger.or(navigation).first()).toBeVisible();
   if (await trigger.isVisible()) await trigger.click();
   else {
-    await page.getByRole('button', { name: 'Open navigation', exact: true }).click();
+    await navigation.click();
     await page.getByRole('button', { name: /Command palette/ }).click();
   }
 }

@@ -1,0 +1,25 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  // Keep this Worker name and your account subdomain stable to keep the address.
+  "name": "relay-host",
+  "main": "worker.ts",
+  "compatibility_date": "2026-10-09",
+  "workers_dev": true,
+  "preview_urls": false,
+  "routes": [],
+  // Do not enable payload logs, tracing, extra bindings or a paid plan here.
+  "observability": { "enabled": false },
+  "vars": {
+    "RELAY_PUBLIC_ORIGIN": "https://relay-host.YOUR-SUBDOMAIN.workers.dev",
+    "RELAY_ACCESS_ISSUER": "https://YOUR-TEAM.cloudflareaccess.com",
+    "RELAY_ACCESS_AUDIENCE": "REPLACE_WITH_BROWSER_ACCESS_APPLICATION_AUD"
+  },
+  "vpc_services": [
+    {
+      "binding": "RELAY_HOST",
+      // Replace with the HTTP service ID: 127.0.0.1, port 4318, your host tunnel.
+      // Never bind the owner UI, inference, database, model runtimes or a network.
+      "service_id": "00000000-0000-0000-0000-000000000000"
+    }
+  ]
+}

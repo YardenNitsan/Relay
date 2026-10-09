@@ -16,10 +16,15 @@ export async function event(tx:Sql,taskId:string|null,type:string,data:Record<st
 }
 export interface CallReservation { cloud:boolean; amountUsd:number|null; provider:ProviderId; sessionVersion:number; }
 const unresolvedChecksSql='SELECT * FROM (SELECT DISTINCT ON (COALESCE(check_key,id)) * FROM verification WHERE task_id=$1 ORDER BY COALESCE(check_key,id),sequence DESC) latest WHERE NOT passed ORDER BY sequence';
-function admissionOptions(user:User,options:TaskOptions,expectedSessionVersion?:number):TaskOptions {
+async function admissionOptions(tx:Sql,user:User,options:TaskOptions,expectedSessionVersion?:number):Promise<TaskOptions> {
   if(!user.enabled)throw new AppError('USER_DISABLED','This account is disabled',403);
   if(expectedSessionVersion!==undefined&&user.sessionVersion!==expectedSessionVersion)throw new AppError('REVOKED','The requesting session was revoked',403);
-  return authorizeOptions({user,remote:user.role!=='owner',sessionId:'task-admission'},options);
+  return authorizeOptions({user,remote:user.role!=='owner',sessionId:'task-admission'},options,await workspaceScope(tx,options.workspaceId));
+}
+export async function workspaceScope(tx:Sql,id:string|null):Promise<Workspace|undefined> {
+  if(!id)return undefined;
+  const found=(await tx.query('SELECT * FROM workspaces WHERE id=$1',[id]))[0];
+  return found?row<Workspace>(found):undefined;
 }
 export class Store {
   constructor(public readonly db:Database) {}
@@ -67,7 +72,7 @@ export class Store {
       if(control.stopped) throw new AppError('STOPPED','Emergency stop is active. Resume scheduling before starting a task.',409);
       const found=(await tx.query('SELECT * FROM users WHERE id=$1 FOR UPDATE',[userId]))[0];
       if(!found)throw new AppError('USER_DISABLED','This account is disabled',403);
-      const user=row<User>(found);const authorized=admissionOptions(user,options,expectedSessionVersion);
+      const user=row<User>(found);const authorized=await admissionOptions(tx,user,options,expectedSessionVersion);
       if(newConversation) {
         const hash=createHash('sha256').update(JSON.stringify({objective,options})).digest('hex');
         const existing=(await tx.query('SELECT * FROM conversations WHERE id=$1',[conversationId]))[0];
@@ -107,7 +112,7 @@ export class Store {
       if(task.status!=='paused'&&task.status!=='waiting_for_user')throw new AppError('NOT_PAUSED','This task is not paused',409);
       const timing=(await tx.query('SELECT execution_used_ms,execution_reserved_ms FROM tasks WHERE id=$1',[id]))[0];
       if(Number(timing.execution_used_ms)+Number(timing.execution_reserved_ms)>=task.options.budget.maxSeconds*1000)throw new AppError('TIME_BUDGET','Task execution time budget is exhausted. Start a new objective.',409);
-      const authorized=admissionOptions(user,task.options,expectedSessionVersion);
+      const authorized=await admissionOptions(tx,user,task.options,expectedSessionVersion);
       const active=Number((await tx.query("SELECT COUNT(*) AS count FROM tasks WHERE user_id=$1 AND id<>$2 AND status NOT IN ('completed','failed','cancelled','paused')",[user.id,id]))[0].count);
       if(active>=user.permissions.maxConcurrentTasks)throw new AppError('USER_TASK_QUOTA','Your active task limit is reached. Wait or stop a task.',429);
       if((await tx.query("SELECT id FROM tasks WHERE conversation_id=$1 AND id<>$2 AND status NOT IN ('completed','failed','cancelled','paused') LIMIT 1",[task.conversationId,id])).length)throw new AppError('CONVERSATION_BUSY','This conversation already has active work',409);
@@ -196,6 +201,7 @@ export class Store {
       const user=row<User>((await tx.query('SELECT * FROM users WHERE id=$1 FOR UPDATE',[owner.user_id]))[0]);
       const task=row<TaskRecord>((await tx.query('SELECT * FROM tasks WHERE id=$1 FOR UPDATE',[taskId]))[0]);
       if(control.stopped||control.generation!==task.stopGeneration||!user.enabled||reservation&&user.sessionVersion!==reservation.sessionVersion)throw new AppError('REVOKED','Execution grant was revoked',403);
+      await admissionOptions(tx,user,task.options,reservation?.sessionVersion);
       if(task.callsUsed>=task.options.budget.maxCalls) throw new AppError('CALL_BUDGET','Model call budget exhausted. Review the partial work.',409);
       if(terminalStates.includes(task.status)||task.status==='paused') throw new AppError('CANCELLED','Task is not running',409);
       if(reservation&&!user.permissions.providers.includes(reservation.provider))throw new AppError('PROVIDER_DENIED','Provider is no longer granted to this account',403);
@@ -204,10 +210,11 @@ export class Store {
       if(reservation?.cloud) {
         if(task.options.budget.localOnly||task.options.cloudPolicy!=='allow'&&task.options.cloudPolicy!=='ask')throw new AppError('EGRESS_DENIED','Cloud execution is not authorized',403);
         const cap=task.options.budget.maxCostUsd;
-        if(amount===null&&(cap!==null||user.role!=='owner'))throw new AppError('UNKNOWN_PRICE','A strict cloud budget requires verified model pricing',409);
+        const personalUncapped=user.role!=='owner'&&user.permissions.allowUnpricedCloud===true&&cap===null;
+        if(amount===null&&(cap!==null||user.role!=='owner'&&!personalUncapped))throw new AppError('UNKNOWN_PRICE','A strict cloud budget requires verified model pricing',409);
         const spent=Number((await tx.query('SELECT COALESCE(SUM(cost_usd),0) AS cost FROM model_calls WHERE task_id=$1',[taskId]))[0].cost);
         if(cap!==null&&spent+(amount??0)>cap)throw new AppError('COST_BUDGET','The next call could exceed the task cloud budget',409);
-        if(user.role!=='owner') {
+        if(user.role!=='owner'&&!personalUncapped) {
           const daily=Number((await tx.query("SELECT COALESCE(SUM(m.cost_usd),0) AS cost FROM model_calls m JOIN tasks t ON t.id=m.task_id WHERE t.user_id=$1 AND (m.started_at>now()-interval '24 hours' OR m.cost_state IN ('reserved','uncertain'))",[user.id]))[0].cost);
           if(daily+(amount??0)>user.permissions.dailyCloudBudgetUsd)throw new AppError('USER_COST_BUDGET','Your daily cloud budget is exhausted',403);
         }
@@ -267,7 +274,7 @@ export class Store {
     });
   }
   async audit(taskId:string|null,operation:string,metadata:Record<string,unknown>) { await this.db.query('INSERT INTO audit_events(task_id,operation,metadata) VALUES ($1,$2,$3)',[taskId,operation,JSON.stringify(metadata)]); }
-  async saveWorkspace(w:Workspace) { await this.db.query('INSERT INTO workspaces(id,name,source_path,file_count,created_at) VALUES ($1,$2,$3,$4,$5) ON CONFLICT(id) DO UPDATE SET file_count=excluded.file_count',[w.id,w.name,w.sourcePath,w.fileCount,w.createdAt]); }
+  async saveWorkspace(w:Workspace) { await this.db.query('INSERT INTO workspaces(id,name,source_path,file_count,created_at,owner_user_id) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT(id) DO UPDATE SET file_count=excluded.file_count',[w.id,w.name,w.sourcePath,w.fileCount,w.createdAt,w.ownerUserId??null]); }
   async recover() {
     await this.db.transaction(async tx=>{
       await tx.query('UPDATE tasks SET execution_used_ms=execution_used_ms+execution_reserved_ms,execution_reserved_ms=0,execution_lease_id=NULL WHERE execution_lease_id IS NOT NULL');

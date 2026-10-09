@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { Depth, TaskStatus, TaskStep, AgentRole } from '../../shared/types.js';
+import type { Depth, TaskStatus, TaskStep, AgentRole, TaskOptions } from '../../shared/types.js';
 import { AppError } from '../core/errors.js';
 
 export const terminalStates: TaskStatus[] = ['completed', 'failed', 'cancelled'];
@@ -29,6 +29,15 @@ export function buildGraph(taskId: string, depth: Depth): TaskStep[] {
   const work=add('worker','Synthesize findings and execute',inputs);
   add('reviewer','Critique result against original objective',[work]);
   return steps;
+}
+export function buildTaskGraph(taskId:string,options:TaskOptions):TaskStep[] {
+  // Depth is a budget preference, not a requirement to critique every greeting.
+  // Only ordinary Balanced conversation omits review. Any specialist, tool scope
+  // or explicit verification retains the existing graph and its safety checks.
+  const ordinaryConversation=options.depth==='balanced'&&!options.assistantId&&!options.workspaceId&&
+    options.access!=='unrestricted'&&!options.hostAccessConfirmed&&
+    (!options.network||options.network.mode==='deny')&&!options.mcpServerIds?.length&&!options.verification?.requiredReads.length;
+  return buildGraph(taskId,ordinaryConversation?'fast':options.depth);
 }
 export function readySteps(steps:TaskStep[]):TaskStep[] {
   const completed=new Set(steps.filter(s=>s.status==='completed').map(s=>s.id));

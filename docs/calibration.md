@@ -9,3 +9,9 @@ For Ollama, nanosecond timings are converted to milliseconds. Generation through
 Durable throughput identity includes model digest, runtime/provider and reported runtime version, plus CPU/GPU/driver and physical-memory identity. A runtime version change invalidates the previous identity. When the runtime does not expose a version the identity records that limitation. Historical records remain available but do not override current capabilities, availability or safety admission. No prompt, private continuation, hostname or provider credential is written into model-profile metadata.
 
 HTTP routes are owner-only: `POST /api/models/calibrations` with `{modelId,contextTokens}` and `GET /api/models/calibrations`. The response links the real task and conversation. Calibration does not bypass active-task quotas or revive a stopped scheduler.
+
+## Optional task-fit probes
+
+**Run task-fit probes** selects `protocol: "relay-task-fit-v1"`. One fixed public JSON prompt contains two tiny coding, two arithmetic/reasoning and two extraction probes. Deterministic code compares the answers with known results. Invalid JSON is a failed format check, not a favorable model opinion. Scores appear separately from throughput and can influence Auto's ranking for an explicitly disclosed specialist/keyword category.
+
+Only completed owner-run probes with matching model ID, digest, provider, runtime and runtime version attach to current model discovery. Changed artifacts invalidate the match. This small protocol is not a benchmark of broad coding/reasoning ability, does not cover multilingual quality and does not prove a model is best. It currently does not bind task-fit scores to every generation/hardware/context setting or use age-based decay. Hardware admission and user/privacy policy remain mandatory regardless of scores. Read [the comparison and evaluation plan](model-routing-comparison.md) before extending the router.

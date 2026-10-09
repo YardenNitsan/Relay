@@ -24,6 +24,19 @@ beforeEach(async () => {
 afterEach(async () => { await broker.stopAll(); await rm(directory, { recursive: true, force: true }); });
 
 describe('deterministic authority', () => {
+  it('preserves UTF-8 BOM bytes through upload, read, hash-checked edit and deletion', async () => {
+    const original='\uFEFFOriginal Windows text\r\n';
+    await broker.upload(context.workspaceId!, 'bom.txt', original);
+    const read=await broker.readFile(context.workspaceId!, 'bom.txt');
+    expect(read).toEqual({path:'bom.txt',content:original,sha256:digest(original)});
+    expect(await readFile(join(directory,'data','workspaces',context.workspaceId!,'files','bom.txt'))).toEqual(Buffer.from(original,'utf8'));
+    const changed='\uFEFFChanged text\r\n';
+    const result=await broker.changeFile(context.workspaceId!, 'bom.txt', changed, read.sha256);
+    expect(result.sha256).toBe(digest(changed));
+    expect((await broker.readFile(context.workspaceId!, 'bom.txt')).content).toBe(changed);
+    await broker.changeFile(context.workspaceId!, 'bom.txt', null, result.sha256);
+    expect(await broker.listFiles(context.workspaceId!)).toEqual([]);
+  });
   it('requires supervised mutation approval and refuses read-only mutation even with approval', async () => {
     const write = request('file_write', { path: 'hello.txt', content: 'hello', expectedHash: null });
     expect(broker.decide({ ...context, access: 'supervised' }, write).decision).toBe('approval');
@@ -106,7 +119,7 @@ describe('verified changes and recovery', () => {
     await broker.execute(context, request('file_write', { path: 'created.txt', content: 'agent version', expectedHash: null }));
     const [change] = await broker.changes(context.taskId);
     await expect(broker.revert('other-task', change.checkpointId)).rejects.toThrow(/task|checkpoint/i);
-    await broker.upload(context.workspaceId!, 'created.txt', 'user version');
+    await broker.changeFile(context.workspaceId!, 'created.txt', 'user version', digest('agent version'));
     await expect(broker.revert(context.taskId, change.checkpointId)).rejects.toThrow(/conflict/i);
     expect(JSON.parse((await broker.execute(context, request('file_read', { path: 'created.txt' }))).content).content).toBe('user version');
   });

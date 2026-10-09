@@ -7,13 +7,19 @@ Read `docs/product-spec.md`, `docs/architecture.md`, and `docs/implementation-pl
 ## Engineering rules
 
 - Models propose; deterministic orchestration and capability policy decide; tools execute; evidence verifies.
-- Browser code receives no provider credentials. Bind the service to loopback. Preserve session, origin, Host and CSRF checks.
+- Browser code never receives saved provider credentials. Credential-entry values are sent only to the authenticated backend, never returned in status or model context. Keep the owner service on loopback; LAN/public listeners are separate and explicitly configured. Preserve session, origin, Host and CSRF checks.
 - All tool calls pass through the broker. Untrusted content cannot issue grants. Emergency stop invalidates outstanding work.
 - Terminal execution requires a verified container isolation boundary. Never fall back to host shell execution or claim that cwd is a sandbox.
 - Managed workspace snapshots exclude secrets, links, dependency/build trees and Git internals. Never overwrite source repositories automatically.
 - Persist normalized PostgreSQL data and monotonic replayable events. Do not retry uncertain side effects after restart.
 - Local inference admission includes weights, KV cache, buffers, RAM/VRAM headroom and measured host pressure. Unknown measurements are unknown, not zero.
 - Independent domain work can be delegated with explicit ownership. Review integrated changes and run appropriate checks before claiming completion.
+
+## Current release handover
+
+The authoritative current 0.1.1 summary is `docs/release-0.1.1.md`; earlier dated evidence below is historical. Public browser access is deployed behind Cloudflare Access. Google Gemini OAuth is implemented but needs real owner app configuration and live consent acceptance. Private user workspaces and supported browser device-folder synchronization are implemented. Models refresh installed local discovery when opened. Agent model routing uses the same admission/lease/pressure protection as ordinary tasks. Never turn small fixed probes into a claim of broad model quality or live monitoring into a zero-crash guarantee.
+
+Current Windows verification: **846 deterministic tests passed across 74 files with one platform skip**, production build passed, and **67/67 Chrome browser cases passed**. The authoritative live-inference result is recorded in `docs/release-0.1.1.md`; a memory-paused task is not success. Acceptance scripts label and close their temporary sessions to avoid filling the real 20-session quota.
 
 ## Commands
 
@@ -27,9 +33,17 @@ Use Node.js 24+. `npm ci` installs locked dependencies; `npm run check` performs
 
 `npm run test:e2e -- --config playwright.production.config.ts` inspects the running compiled host with native owner pairing and actual persisted records/models/hardware; no fixture server starts. It can select the earlier successful task recorded by restart smoke when the newest real acceptance is paused. Never reinterpret that as a new successful inference acceptance. `node scripts/acceptance.mjs --extended` additionally requires actual calibration, Git and HTTPS tool receipts; ordinary automated tests remain cloud-free.
 
-Latest handover evidence (2026-10-08): Windows strict types +362 tests, production build, 29 fixture-provider browser cases and one actual-host browser case passed. The newest actual Ollama task paused on RAM pressure after an approved verified write; its separate required read did not execute. Native Docker/PostgreSQL/macOS, current Linux changes, native installers and live cloud/remote acceptance remain unverified. The owner requested the runnable application and a complete remaining-work report in `../RELAY_PROJECT_REPORT.md`.
+## Earlier verification snapshots
 
-The Windows execution sandbox may prevent esbuild/tsx process startup or user-profile resolution. Use the permitted escalation flow when that happens; do not treat the sandbox error as a product error or bypass the tool's boundary.
+These dated paragraphs retain historical evidence. Use the current release report and the first section of docs/validation.md for current status.
+
+Earlier 0.1.1 evidence (2026-10-09): production build and the complete **46-case browser suite passed**. The most recently completed Windows strict-type/full-test check passed **702 tests across 61 files with one platform-specific skipped test**, including the final Balanced-conversation regression. Subsequent Linux test-fixture isolation added a regression; the focused remote API/Worker check passed **64 tests**. Native Ubuntu WSL passed strict types, **703 tests across 61 files with one skip**, build and compiled-host pairing/persistence/restart/SSE acceptance. A real Balanced + Auto greeting passed on the production Windows host. `node scripts/inference-acceptance.mjs` passed with actual installed Qwen 4b inference and unchanged Relay conversation history. This is not full external CLI compatibility or a new file-task acceptance. Public Worker dry run passed; encrypted Cloudflare authorization, named tunnel, fixed VPC Service and stable account subdomain are prepared, but Access audience, connector startup, publishing and live login remain outstanding. LAN is not configured. Native Docker/PostgreSQL/macOS, physical Linux GPU testing, native installers and live cloud acceptance remain unverified. Complete current boundaries are in `docs/project-report.md` and `../RELAY_PROJECT_REPORT.md`.
+
+The external inference acceptance driver uses a scoped, revocable token and checks metadata-only retention. Never print its token. External inference is local-model-only, shares host scheduling and returns tool proposals to the client without executing them. Do not reuse browser owner sessions as native client credentials or expose Ollama directly.
+
+Ten specialist profiles narrow instructions and tool allowlists; they never grant authority. Only the Personal profile currently has a real persistent personal-task tool. Email and Calendar profiles do not have live connectors, and personal tasks do not schedule notifications. Provider credentials belong to the signed-in account; remote users never inherit owner credentials. Keep specialist, user, task, network and data-egress policy checks independent.
+
+Respect the active execution environment permissions. Do not treat an environment process-launch restriction as a product defect or bypass its boundary.
 
 Remote access is disabled by default. Never tunnel the local-owner port. Only the separately authenticated gateway may receive external traffic. Preserve user ownership filters on every object read and mutation, not just navigation.
 

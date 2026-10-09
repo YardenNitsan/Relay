@@ -1,7 +1,7 @@
 import type { ModelChunk, ModelMessage, ModelRequest, ProviderId, ToolRequest } from '../../shared/types.js';
-import { array, number, object, ProviderError, sse, string, toolArguments, type JsonObject } from './transport.js';
+import { array, number, object, ProviderError, outputLimitError, sse, string, toolArguments, type JsonObject } from './transport.js';
 
-export const CLOUD_ENDPOINTS = { openai: 'https://api.openai.com/v1', anthropic: 'https://api.anthropic.com/v1', gemini: 'https://generativelanguage.googleapis.com/v1beta' } as const;
+export const CLOUD_ENDPOINTS = { openai: 'https://api.openai.com/v1', anthropic: 'https://api.anthropic.com/v1', gemini: 'https://generativelanguage.googleapis.com/v1beta', xai: 'https://api.x.ai/v1', deepseek: 'https://api.deepseek.com' } as const;
 export function rawModelId(request: ModelRequest): string { return request.model.id.startsWith(`${request.model.provider}/`) ? request.model.id.slice(request.model.provider.length + 1) : request.model.name; }
 const native = (message: ModelMessage, provider: ProviderId): unknown[] | null => message.role === 'assistant' && message.providerData?.provider === provider && Array.isArray(message.providerData.data) ? message.providerData.data : null;
 const system = (request: ModelRequest) => request.messages.filter(x => x.role === 'system').map(x => x.content).join('\n\n');
@@ -10,13 +10,25 @@ function toolName(request: ModelRequest, id?: string): string { return request.m
 export function cloudBody(request: ModelRequest): JsonObject {
   const provider = request.model.provider;
   const messages = request.messages.filter(x => x.role !== 'system');
-  if (provider === 'openai') {
+  if (provider === 'openai' || provider === 'xai') {
     const input = messages.flatMap<unknown>(message => {
       const original = native(message, provider); if (original) return original;
       if (message.role === 'tool') return [{ type: 'function_call_output', call_id: message.toolCallId, output: message.content }];
       return [{ role: message.role, content: message.content }, ...(message.toolCalls ?? []).map(call => ({ type: 'function_call', call_id: call.id, name: call.name, arguments: JSON.stringify(call.arguments) }))];
     });
-    return { model: rawModelId(request), instructions: system(request), input, tools: request.tools.map(tool => ({ type: 'function', ...tool, strict: false })), max_output_tokens: request.maxOutputTokens, stream: true, store: false, include: ['reasoning.encrypted_content'] };
+    return { model: rawModelId(request), ...(provider === 'xai' ? { input: [...(system(request) ? [{ role: 'system', content: system(request) }] : []), ...input] } : { instructions: system(request), input }), tools: request.tools.map(tool => ({ type: 'function', ...tool, strict: false })), max_output_tokens: request.maxOutputTokens, stream: true, store: false, include: ['reasoning.encrypted_content'] };
+  }
+  if (provider === 'deepseek') {
+    // Tool-enabled thinking requires every historical assistant turn's original
+    // reasoning. Ordinary chat history, rerouting and redaction can lack it.
+    // Use the documented non-thinking mode instead of inventing private state.
+    const missingReasoning = request.tools.length > 0 && request.messages.some(message => message.role === 'assistant' &&
+      (message.providerData?.provider !== 'deepseek' || typeof object(message.providerData.data).reasoning_content !== 'string'));
+    return { model: rawModelId(request), messages: request.messages.map(message => {
+      if (message.role === 'assistant' && message.providerData?.provider === 'deepseek') return message.providerData.data;
+      if (message.role === 'tool') return { role: 'tool', tool_call_id: message.toolCallId, content: message.content };
+      return { role: message.role, content: message.content, ...(message.toolCalls?.length ? { tool_calls: message.toolCalls.map(call => ({ id: call.id, type: 'function', function: { name: call.name, arguments: JSON.stringify(call.arguments) } })) } : {}) };
+    }), ...(request.tools.length ? { tools: request.tools.map(tool => ({ type: 'function', function: tool })) } : {}), ...(missingReasoning ? { thinking: { type: 'disabled' } } : {}), max_tokens: request.maxOutputTokens, stream: true, stream_options: { include_usage: true } };
   }
   if (provider === 'anthropic') {
     return { model: rawModelId(request), system: system(request), messages: messages.map(message => {
@@ -52,14 +64,14 @@ export async function* openaiStream(response: Response, request: ModelRequest): 
   for await (const data of sse(response)) {
     request.signal.throwIfAborted();
     if (data.type === 'response.output_text.delta') yield { type: 'text', text: string(data.delta) };
-    if (data.type === 'error' || data.type === 'response.failed') throw new ProviderError('provider_failed', 'OpenAI generation failed');
-    if (data.type === 'response.incomplete') incomplete();
+    if (data.type === 'error' || data.type === 'response.failed') throw new ProviderError('provider_failed', 'Responses provider generation failed');
+    if (data.type === 'response.incomplete') {const response=object(data.response),stats=object(response.usage),measured=usage(stats.input_tokens,stats.output_tokens);if(measured)yield measured;if(object(response.incomplete_details).reason==='max_output_tokens')throw outputLimitError();incomplete();}
     if (data.type === 'response.completed') { terminal = object(data.response); break; }
   }
   if (!terminal || terminal.status !== 'completed') incomplete();
   const output = array(terminal.output);
   const calls = output.map(object).filter(item => item.type === 'function_call').map(item => validateCall(item.call_id, item.name, item.arguments, request));
-  yield { type: 'continuation', providerData: { provider: 'openai', data: output } };
+  yield { type: 'continuation', providerData: { provider: request.model.provider, data: output } };
   const stats = object(terminal.usage); const measured = usage(stats.input_tokens, stats.output_tokens); if (measured) yield measured;
   for (const call of calls) yield { type: 'tool_call', call };
   yield { type: 'done', finishReason: calls.length ? 'tool_calls' : 'stop' };
@@ -83,12 +95,13 @@ export async function* anthropicStream(response: Response, request: ModelRequest
       if (delta.type === 'thinking_delta') block.thinking = string(block.thinking) + string(delta.thinking);
       if (delta.type === 'signature_delta') block.signature = string(block.signature) + string(delta.signature);
     }
-    if (data.type === 'content_block_stop') { const block = blocks.get(index); if (!block) incomplete(); if (partial.has(index)) block.input = toolArguments(partial.get(index)); open.delete(index); }
+    if (data.type === 'content_block_stop') { const block = blocks.get(index); if (!block) incomplete(); open.delete(index); }
     if (data.type === 'message_delta') { finish = string(object(data.delta).stop_reason); output = number(object(data.usage).output_tokens) ?? output; }
     if (data.type === 'message_stop') { stopped = true; break; }
   }
+  if(finish==='max_tokens'){const measured=usage(input,output);if(measured)yield measured;throw outputLimitError();}
   if (!stopped || open.size || !['end_turn', 'tool_use', 'stop_sequence'].includes(finish)) incomplete();
-  const content = [...blocks.entries()].sort((a, b) => a[0] - b[0]).map(([, block]) => block);
+  const content = [...blocks.entries()].sort((a, b) => a[0] - b[0]).map(([index, block]) => partial.has(index)?{...block,input:toolArguments(partial.get(index))}:block);
   const calls = content.filter(block => block.type === 'tool_use').map(block => validateCall(block.id, block.name, block.input, request));
   yield { type: 'continuation', providerData: { provider: 'anthropic', data: content } };
   const measured = usage(input, output); if (measured) yield measured;
@@ -114,14 +127,16 @@ export async function* geminiStream(response: Response, request: ModelRequest): 
       if (delta.type === 'thought_signature') step.signature = string(delta.signature);
       if (delta.type === 'thought_summary') step.summary = [...array(step.summary), delta.content];
     }
-    if (data.event_type === 'step.stop') { const step = steps.get(index); if (!step) incomplete(); if (partial.has(index)) step.arguments = toolArguments(partial.get(index)); open.delete(index); }
+    if (data.event_type === 'step.stop') { if (!steps.has(index)) incomplete(); open.delete(index); }
     if (data.event_type === 'interaction.completed') { terminal = object(data.interaction); break; }
   }
-  if (!terminal || open.size || !['completed', 'requires_action'].includes(string(terminal.status))) incomplete();
+  if(!terminal)incomplete();
+  const stats = object(terminal.usage); const measured = usage(stats.total_input_tokens, stats.total_output_tokens); if (measured) yield measured;
+  if (open.size || !['completed', 'requires_action'].includes(string(terminal.status))) incomplete();
+  for(const [index,args] of partial){const step=steps.get(index);if(!step)incomplete();step.arguments=toolArguments(args);}
   const content = [...steps.entries()].sort((a, b) => a[0] - b[0]).map(([, step]) => step);
   const calls = content.filter(step => step.type === 'function_call').map(step => validateCall(step.id, step.name, step.arguments, request));
   yield { type: 'continuation', providerData: { provider: 'gemini', data: content } };
-  const stats = object(terminal.usage); const measured = usage(stats.total_input_tokens, stats.total_output_tokens); if (measured) yield measured;
   for (const call of calls) yield { type: 'tool_call', call };
   yield { type: 'done', finishReason: string(terminal.status) };
 }

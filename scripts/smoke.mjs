@@ -4,7 +4,8 @@ import { pairLocalSession } from './local-session.mjs';
 const base = process.env.RELAY_ACCEPTANCE_URL ?? 'http://127.0.0.1:4317';
 const acceptance = JSON.parse(await readFile('output/local-acceptance.json', 'utf8'));
 if (acceptance.passed !== true) throw new Error('Restart verification requires a successful real-runtime acceptance report');
-const {cookie}=await pairLocalSession(base);
+const {cookie,close}=await pairLocalSession(base);
+try {
 const headers = { cookie };
 async function get(path) {
   const response = await fetch(`${base}/api${path}`, { headers });
@@ -43,3 +44,4 @@ const report = { testedAt: new Date().toISOString(), passed: true, database: sta
 await mkdir('output', { recursive: true });
 await writeFile('output/production-smoke.json', JSON.stringify(report, null, 2));
 console.log(JSON.stringify(report, null, 2));
+} finally { await close(); }

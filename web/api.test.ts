@@ -76,4 +76,26 @@ describe('browser session invalidation', () => {
     await expect(api.initializeSession()).rejects.toMatchObject({ code: 'NOT_INVITED' });
     expect(fetcher).toHaveBeenCalledTimes(3);
   });
+
+  it.each(['REMOTE_PENDING', 'REMOTE_DENIED', 'REMOTE_DISABLED'])('clears a remote session and stops private polling after %s', async code => {
+    const fetcher = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ csrfToken: 'csrf-remote', remote: true, user: { id: 'remote-user' } })))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ code, error: 'Access needs owner action.' }), { status: 403 }));
+    vi.stubGlobal('fetch', fetcher);
+    const api = await import('./api'); const listener = vi.fn(); api.onSessionInvalidated(listener);
+    await expect(api.api('/status')).rejects.toMatchObject({ code });
+    expect(listener).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ code }));
+    await expect(api.api('/models')).rejects.toMatchObject({ code });
+    await expect(api.initializeSession()).rejects.toMatchObject({ code });
+    expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+
+  it('returns LAN invitation recovery rather than local owner pairing after LAN revocation', async () => {
+    const fetcher = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ csrfToken: 'csrf-lan', remote: true, connection: 'lan', user: { id: 'guest' } }))).mockResolvedValueOnce(expired());
+    vi.stubGlobal('fetch', fetcher);
+    const api = await import('./api'); const listener = vi.fn(); api.onSessionInvalidated(listener);
+    await expect(api.api('/status')).rejects.toMatchObject({ status: 401 });
+    expect(listener).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ code: 'LAN_PAIRING_REQUIRED' }));
+    await expect(api.api('/models')).rejects.toMatchObject({ code: 'LAN_PAIRING_REQUIRED' });
+    expect(fetcher).toHaveBeenCalledTimes(2);
+  });
 });

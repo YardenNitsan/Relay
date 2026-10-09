@@ -4,12 +4,14 @@ import { safePath } from './platform';
 import { boundedText } from './files';
 import { validateNetworkUrl } from './network-policy';
 import { mcpCallSchema } from '../mcp/schema';
+import { personalTaskSchema } from './personal-schema';
 
 const pathSchema = z.string().max(2048).refine(path => { try { safePath(path); return true; } catch { return false; } }, 'Unsafe or protected workspace path');
 const rootSchema = z.string().max(2048).refine(path => { try { safePath(path, true); return true; } catch { return false; } }, 'Unsafe or protected workspace path');
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
 const content = z.string().refine(value => { try { boundedText(value); return true; } catch { return false; } }, 'Content exceeds limits or is not text');
 export const toolSchemas = {
+  personal_tasks: personalTaskSchema,
   host_list: z.object({path:z.string().min(1).max(2048)}).strict(),
   host_read: z.object({path:z.string().min(1).max(2048)}).strict(),
   host_write: z.object({path:z.string().min(1).max(2048),content,expectedHash:hash.nullable()}).strict(),
@@ -27,6 +29,7 @@ export const toolSchemas = {
 };
 export type ToolName = keyof typeof toolSchemas;
 const descriptions: Record<ToolName, string> = {
+  personal_tasks: 'Manage the authenticated user\'s personal task list without a workspace. action=list permits optional completed, limit (1–100) and cursor (the prior nextCursor). action=create requires title (1–500 characters) and permits dueAt (UTC ISO timestamp ending in Z or null). action=complete and action=delete require id. Do not mix fields from different actions. Changes require supervised approval or autonomous workspace mode. Saves records only: no scheduled notifications, email or calendar events.',
   host_list: 'List one real host directory using an absolute native path. Owner-only host mode. Protected secrets, system and Relay paths are excluded. This is not the managed workspace.',
   host_read: 'Read one real host UTF-8 text file using its absolute native path; returns SHA-256. Owner-only host mode. Protected paths and links are denied.',
   host_write: 'Create or replace one real host text file with a private recovery checkpoint and verified hash. Requires an absolute native path and expectedHash from host_read, or null only for a new file. No directory or arbitrary command operations.',
@@ -51,7 +54,7 @@ export function parseRequest(request: ToolRequest): { name: ToolName; args: Reco
   return { name, args: toolSchemas[name].parse(request.arguments) };
 }
 export function decide(context: ToolContext, request: ToolRequest, stopped: boolean, mcp?:{decide(context:ToolContext,request:ToolRequest):ToolDecision}): ToolDecision {
-  const risk = ['terminal','mcp_call'].includes(request.name) ? 'execute' : ['file_write', 'file_delete','host_write','host_delete'].includes(request.name) ? 'write' : 'read';
+  const risk = ['terminal','mcp_call'].includes(request.name) ? 'execute' : ['file_write', 'file_delete','host_write','host_delete'].includes(request.name) || request.name === 'personal_tasks' && request.arguments.action !== 'list' ? 'write' : 'read';
   const deny = (reason: string): ToolDecision => ({ decision: 'deny', reason, risk });
   if (stopped) return deny('Emergency stop is active');
   if (context.signal.aborted) return deny('Task was cancelled');
@@ -59,6 +62,13 @@ export function decide(context: ToolContext, request: ToolRequest, stopped: bool
   if (!context.taskId || !context.agentId || !context.allowedTools.includes(request.name)) return deny('Agent has no capability for this tool');
   try {
     const parsed = parseRequest(request);
+    if (parsed.name === 'personal_tasks') {
+      if (!context.userId || !Number.isSafeInteger(context.sessionVersion) || context.sessionVersion! < 0) return deny('Personal tasks require an authenticated account capability');
+      if (risk === 'read') return { decision: 'allow', reason: 'Authenticated personal task-list read; durable ownership is rechecked before execution', risk };
+      if (context.access === 'read_only' || context.access === 'unrestricted') return deny('Personal task changes require supervised approval or autonomous workspace mode');
+      if (context.access === 'supervised' && !context.approved) return { decision: 'approval', reason: 'This exact personal task change requires task-controller approval', risk };
+      return { decision: 'allow', reason: context.access === 'workspace' ? 'Authorized personal task mutation within the account scope' : 'Exact personal task change approved by the task controller', risk };
+    }
     if(parsed.name.startsWith('host_'))return context.access==='unrestricted'&&context.hostAccess===true?{decision:'allow',reason:'Confirmed local-owner host-file capability; native broker validates the target',risk}:deny('Host tools require confirmed local-owner host access');
     if(parsed.name==='mcp_call')return mcp?.decide(context,request)??deny('MCP is not configured');
     if (parsed.name === 'http_get') {

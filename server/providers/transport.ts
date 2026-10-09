@@ -8,6 +8,8 @@ export class ProviderError extends Error {
   constructor(public readonly code: string, message: string, public readonly status?: number) { super(message); this.name = 'ProviderError'; }
 }
 
+export function outputLimitError():ProviderError {return new ProviderError('output_limit','Response incomplete: the output-token ceiling was reached. No partial tool proposals were dispatched. Start a new task with a larger output allowance or a narrower objective.');}
+
 async function* lines(response: Response, maxBytes: number): AsyncGenerator<string> {
   if (!response.body) throw new ProviderError('empty_stream', 'Provider returned no stream');
   const reader = response.body.getReader();

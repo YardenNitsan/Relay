@@ -25,6 +25,14 @@ beforeEach(async()=>{
 });
 afterEach(async()=>{await engine.shutdown();await app.close();await store.close();await rm(dir,{recursive:true,force:true});});
 describe('local HTTP boundary',()=>{
+  it('creates an explicitly personal local-owner workspace without converting host imports into private folders',async()=>{
+    const request={method:'POST' as const,url:'/api/workspaces',headers:{host,cookie,'x-relay-csrf':csrf}};
+    const personal=await app.inject({...request,payload:{name:'My uploaded files',personal:true}});
+    expect(personal.statusCode,personal.body).toBe(200);expect(personal.json().ownerUserId).toBe('owner');
+    const shared=await app.inject({...request,payload:{name:'Host workspace'}});
+    expect(shared.statusCode).toBe(200);expect(shared.json().ownerUserId??null).toBeNull();
+    expect((await app.inject({...request,payload:{name:'Invalid import',personal:true,sourcePath:dir}})).statusCode).toBe(403);
+  });
   it('requires authenticated CSRF-protected deletion and hides deleted conversations',async()=>{
     const conversation=await store.createConversation('Remove this conversation');
     const url=`/api/conversations/${conversation.id}`;
@@ -32,6 +40,14 @@ describe('local HTTP boundary',()=>{
     expect((await app.inject({method:'DELETE',url,headers:{host,cookie}})).statusCode).toBe(403);
     expect((await app.inject({method:'DELETE',url,headers:{host,cookie,'x-relay-csrf':csrf}})).json()).toEqual({deleted:true});
     expect((await app.inject({url,headers:{host,cookie}})).statusCode).toBe(404);
+  });
+  it('saves remote deployment identifiers only for the owner and requires gateway restart',async()=>{
+    const payload={publicOrigin:'https://relay.example',issuer:'https://team.cloudflareaccess.com',audience:'application-id',registration:'approval'};
+    const request={method:'POST' as const,url:'/api/admin/remote/config',payload,headers:{host,cookie,'x-relay-csrf':csrf}};
+    expect((await app.inject({...request,headers:{host}})).statusCode).toBe(401);
+    expect((await app.inject({...request,payload:{...payload,publicOrigin:'http://relay.example'}})).statusCode).toBe(400);
+    expect((await app.inject(request)).json()).toMatchObject({enabled:false,restartRequired:true,savedConfig:{...payload,port:4318}});
+    expect((await store.db.query('SELECT value FROM settings WHERE key=$1',['remote_enabled']))[0].value).toBe(false);
   });
   it('starts a conversation atomically and makes repeated first-message requests idempotent',async()=>{
     vi.spyOn(engine,'enqueue').mockImplementation(()=>{});

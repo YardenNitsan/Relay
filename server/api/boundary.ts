@@ -11,7 +11,13 @@ export function installBoundary(app:FastifyInstance,origins:string[],remote=fals
     if(!host||!hosts.has(host))throw new AppError('BAD_HOST','Unrecognized host header',403);
     const origin=request.headers.origin;
     if(origin&&!allowed.has(origin))throw new AppError('BAD_ORIGIN','Cross-origin requests are not permitted',403);
-    if(request.headers['sec-fetch-site']==='cross-site')throw new AppError('CROSS_SITE','Cross-site access is not permitted',403);
+    // Google/Access returns through a cross-site top-level navigation. Only the
+    // inert remote entry or exact local OAuth entry permits this; APIs and subresources do not.
+    const oauthEntry=new URL(request.url,origins[0]).searchParams.get('relay_google')==='1';
+    const remoteEntry=(remote||oauthEntry)&&request.method==='GET'&&['/','/index.html'].includes(request.url.split('?')[0])&&request.headers['sec-fetch-mode']==='navigate'&&request.headers['sec-fetch-dest']==='document';
+    reply.header('Vary','Sec-Fetch-Site, Sec-Fetch-Mode, Sec-Fetch-Dest');
+    reply.header('Cross-Origin-Opener-Policy','same-origin');
+    if(request.headers['sec-fetch-site']==='cross-site'&&!remoteEntry)throw new AppError('CROSS_SITE','Cross-site access is not permitted',403);
     if(request.url.startsWith('/api/'))reply.header('Cache-Control','no-store');
   });
 }

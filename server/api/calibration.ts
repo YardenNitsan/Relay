@@ -6,5 +6,5 @@ import { calibrationHistory,calibrationInput,startCalibration } from '../models/
 
 export function calibrationRoutes(app:FastifyInstance,store:Store,engine:Engine,providers:Providers,owner:(request:FastifyRequest)=>unknown) {
   app.get('/api/models/calibrations',async request=>{owner(request);return calibrationHistory(store);});
-  app.post('/api/models/calibrations',async request=>{owner(request);const input=calibrationInput.parse(request.body);return startCalibration(store,engine,providers,input.modelId,input.contextTokens);});
+  app.post('/api/models/calibrations',async request=>{owner(request);const input=calibrationInput.parse(request.body);return startCalibration(store,engine,providers,input.modelId,input.contextTokens,input.protocol);});
 }

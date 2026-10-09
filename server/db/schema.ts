@@ -28,6 +28,8 @@ CREATE TABLE IF NOT EXISTS audit_events (id bigserial PRIMARY KEY, task_id text,
 CREATE TABLE IF NOT EXISTS settings (key text PRIMARY KEY, value jsonb NOT NULL);
 CREATE TABLE IF NOT EXISTS users (id text PRIMARY KEY, name text NOT NULL, email text UNIQUE, role text NOT NULL, enabled boolean NOT NULL DEFAULT true, permissions jsonb NOT NULL, session_version integer NOT NULL DEFAULT 0, created_at timestamptz NOT NULL DEFAULT now(), last_active_at timestamptz);
 INSERT INTO users(id,name,role,permissions) VALUES ('owner','Local owner','owner','{"providers":["ollama","lmstudio","openai","anthropic","gemini"],"workspaceIds":[],"maxAccess":"workspace","maxConcurrentTasks":4,"maxCallsPerTask":64,"maxSecondsPerTask":3600,"dailyCloudBudgetUsd":0}') ON CONFLICT DO NOTHING;
+ALTER TABLE workspaces ADD COLUMN IF NOT EXISTS owner_user_id text REFERENCES users(id);
+CREATE INDEX IF NOT EXISTS workspaces_owner ON workspaces(owner_user_id);
 ALTER TABLE conversations ADD COLUMN IF NOT EXISTS user_id text NOT NULL DEFAULT 'owner' REFERENCES users(id);
 ALTER TABLE conversations ADD COLUMN IF NOT EXISTS deleted_at timestamptz;
 ALTER TABLE conversations ADD COLUMN IF NOT EXISTS start_request_hash text;
@@ -43,7 +45,17 @@ CREATE INDEX IF NOT EXISTS messages_cursor ON messages(conversation_id,created_a
 CREATE INDEX IF NOT EXISTS conversations_cursor ON conversations(user_id,created_at DESC,id DESC);
 CREATE TABLE IF NOT EXISTS sessions (id text PRIMARY KEY, user_id text NOT NULL REFERENCES users(id), csrf_token text NOT NULL, remote boolean NOT NULL, user_agent text NOT NULL, version integer NOT NULL, expires_at timestamptz NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), last_active_at timestamptz NOT NULL DEFAULT now());
 ALTER TABLE users ADD COLUMN IF NOT EXISTS external_subject text;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS registration_status text NOT NULL DEFAULT 'approved';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS access_requested_at timestamptz;
+CREATE TABLE IF NOT EXISTS user_provider_connections (user_id text NOT NULL REFERENCES users(id), provider text NOT NULL, enabled boolean NOT NULL DEFAULT true, PRIMARY KEY(user_id,provider));
+CREATE TABLE IF NOT EXISTS lan_invitations (token_hash text PRIMARY KEY,user_id text NOT NULL REFERENCES users(id),session_version integer NOT NULL,expires_at timestamptz NOT NULL,created_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS inference_tokens (id text PRIMARY KEY,user_id text NOT NULL REFERENCES users(id),token_hash text NOT NULL UNIQUE,label text NOT NULL,session_version integer NOT NULL,expires_at timestamptz NOT NULL,created_at timestamptz NOT NULL DEFAULT now(),last_used_at timestamptz);
+CREATE TABLE IF NOT EXISTS inference_requests (id text PRIMARY KEY,user_id text NOT NULL REFERENCES users(id),token_id text NOT NULL,model_id text NOT NULL,status text NOT NULL,input_tokens integer,output_tokens integer,created_at timestamptz NOT NULL DEFAULT now(),finished_at timestamptz);
+CREATE INDEX IF NOT EXISTS inference_usage_user ON inference_requests(user_id,created_at);
+CREATE TABLE IF NOT EXISTS personal_tasks (id text PRIMARY KEY,user_id text NOT NULL REFERENCES users(id),title text NOT NULL,due_at timestamptz,completed boolean NOT NULL DEFAULT false,created_at timestamptz NOT NULL DEFAULT now(),updated_at timestamptz NOT NULL DEFAULT now());
+CREATE INDEX IF NOT EXISTS personal_tasks_user ON personal_tasks(user_id,created_at,id);
 CREATE INDEX IF NOT EXISTS tasks_user ON tasks(user_id,status);
+CREATE INDEX IF NOT EXISTS model_calls_task_started ON model_calls(task_id,started_at);
 ALTER TABLE model_calls ADD COLUMN IF NOT EXISTS reserved_cost_usd double precision;
 ALTER TABLE model_calls ADD COLUMN IF NOT EXISTS cost_state text NOT NULL DEFAULT 'unknown';
 ALTER TABLE model_calls ADD COLUMN IF NOT EXISTS usage jsonb;
@@ -54,4 +66,12 @@ CREATE INDEX IF NOT EXISTS verification_checks ON verification(task_id,check_key
 INSERT INTO settings(key,value) VALUES ('control','{"stopped":false,"generation":0}') ON CONFLICT DO NOTHING;
 INSERT INTO schema_migrations(version) VALUES (1) ON CONFLICT DO NOTHING;
 INSERT INTO schema_migrations(version) VALUES (2) ON CONFLICT DO NOTHING;
+-- New adapters do not grant existing remote accounts any additional providers.
+-- The local owner receives their explicitly requested provider expansion once.
+WITH migration AS (INSERT INTO schema_migrations(version) VALUES (3) ON CONFLICT DO NOTHING RETURNING version)
+UPDATE users SET permissions=jsonb_set(permissions,'{providers}',
+  permissions->'providers' ||
+  CASE WHEN permissions->'providers' ? 'xai' THEN '[]'::jsonb ELSE '["xai"]'::jsonb END ||
+  CASE WHEN permissions->'providers' ? 'deepseek' THEN '[]'::jsonb ELSE '["deepseek"]'::jsonb END)
+WHERE id='owner' AND role='owner' AND EXISTS (SELECT 1 FROM migration);
 `;

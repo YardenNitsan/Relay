@@ -20,7 +20,7 @@ export function Modal({ title, children, onClose, wide = false, className = '' }
       }
     };
   }, []);
-  return <dialog ref={ref} className={`modal ${wide ? 'modal-wide' : ''} ${className}`} aria-label={title} onCancel={event => { event.preventDefault(); onClose(); }} onClick={event => {
+  return <dialog ref={ref} className={`modal ${wide ? 'modal-wide' : ''} ${className}`} aria-label={title} onCancel={event => { event.preventDefault(); event.stopPropagation(); onClose(); }} onClick={event => {
     if (event.target !== event.currentTarget) return;
     const rect = event.currentTarget.getBoundingClientRect();
     if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) onClose();

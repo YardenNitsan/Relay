@@ -17,6 +17,20 @@ async function taskFor(userId='owner') {
   await store.saveGraph([step]);const agentId=await store.startAgent(step,'openai/test');return {task,agentId};
 }
 describe('atomic cloud budget reservations',()=>{
+  it('requires an explicit personal billing grant for unpriced remote calls and preserves strict caps',async()=>{
+    await init();await store.db.query('INSERT INTO users(id,name,role,permissions) VALUES ($1,$2,$3,$4)',['friend','Friend','trusted',JSON.stringify({...chatPermissions,providers:['openai'],dailyCloudBudgetUsd:1})]);
+    const {task,agentId}=await taskFor('friend');
+    const uncapped={...task.options,budget:{...task.options.budget,maxCostUsd:null}};
+    await store.db.query('UPDATE tasks SET options=$1 WHERE id=$2',[JSON.stringify(uncapped),task.id]);
+    await expect(store.startCall(task.id,agentId,'openai/test',[],{...reservation,amountUsd:null})).rejects.toThrow(/pricing/i);
+    await store.db.query('UPDATE users SET permissions=$1 WHERE id=$2',[JSON.stringify({...chatPermissions,providers:['openai'],allowUnpricedCloud:true}),'friend']);
+    const call=await store.startCall(task.id,agentId,'openai/test',[],{...reservation,amountUsd:null});
+    expect((await store.db.query('SELECT cost_usd,cost_state FROM model_calls WHERE id=$1',[call]))[0]).toEqual({cost_usd:null,cost_state:'unpriced'});
+    await store.db.query('UPDATE tasks SET options=$1 WHERE id=$2',[JSON.stringify(task.options),task.id]);
+    // Full current policy is rechecked before reservation; zero daily spending
+    // denies a strict cap even earlier than unknown-price admission.
+    await expect(store.startCall(task.id,agentId,'openai/test',[],{...reservation,amountUsd:null})).rejects.toThrow(/pricing|spending/i);
+  });
   it('admits only one of two concurrent calls when the task can afford one',async()=>{
     await init();const {task,agentId}=await taskFor();
     const results=await Promise.allSettled([store.startCall(task.id,agentId,'openai/test',[],reservation),store.startCall(task.id,agentId,'openai/test',[],reservation)]);

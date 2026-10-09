@@ -35,15 +35,15 @@ describe('actual Git inspection of managed snapshots',()=>{
     const evil=join(directory,'evil-config');await writeFile(evil,'[core]\nrepositoryFormatVersion = invalid\n[diff "evil"]\ncommand = malicious-nonexistent-helper\n[filter "evil"]\nrequired = true\nclean = malicious-nonexistent-helper\n');
     Object.assign(process.env,{GIT_CONFIG_COUNT:'1',GIT_CONFIG_KEY_0:'core.repositoryFormatVersion',GIT_CONFIG_VALUE_0:'invalid',GIT_CONFIG_GLOBAL:evil,GIT_EXTERNAL_DIFF:'malicious-nonexistent-helper',GIT_DIR:join(directory,'source','.git')});
     try {
-      await broker.upload(context.workspaceId!,'hello.txt','Raw bytes\n');const diff=JSON.parse((await broker.execute(context,request('git_diff'))).content);
+      await broker.changeFile(context.workspaceId!,'hello.txt','Raw bytes\n',sha256('Before\n'));const diff=JSON.parse((await broker.execute(context,request('git_diff'))).content);
       expect(diff.content).toContain('+Raw bytes');expect(diff.engine).toMatch(/^git /);
     } finally {for(const key of keys){if(original[key]===undefined)delete process.env[key];else process.env[key]=original[key];}}
   });
   it('labels first inspection of a legacy workspace honestly and persists that baseline',async()=>{
     await rm(join(directory,'data','baselines',context.workspaceId!),{recursive:true,force:true});
-    await broker.upload(context.workspaceId!,'hello.txt','Legacy now\n');const first=JSON.parse((await broker.execute(context,request('git_status'))).content);
+    await broker.changeFile(context.workspaceId!,'hello.txt','Legacy now\n',sha256('Before\n'));const first=JSON.parse((await broker.execute(context,request('git_status'))).content);
     expect(first.baseline.kind).toBe('first_inspection');expect(first.files).toEqual([]);
-    broker=new ToolBroker(join(directory,'data'),()=>false);await broker.upload(context.workspaceId!,'hello.txt','Later\n');
+    broker=new ToolBroker(join(directory,'data'),()=>false);await broker.changeFile(context.workspaceId!,'hello.txt','Later\n',sha256('Legacy now\n'));
     expect(JSON.parse((await broker.execute(context,request('git_diff'))).content).content).toContain('-Legacy now');
   });
   it('rejects path traversal, no workspace and cancellation before invoking Git',async()=>{

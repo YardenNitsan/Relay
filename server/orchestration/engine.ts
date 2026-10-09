@@ -1,3 +1,5 @@
+import type {MemoryWatch,MemoryWatchFactory} from '../hardware/watchdog.js';
+import { getAssistantDefinition } from '../../shared/assistants.js';
 import { createHash, randomUUID } from 'node:crypto';
 import { homedir, platform } from 'node:os';
 import type { Approval, ModelMessage, ModelProfile, ProviderGateway, TaskRecord, TaskStep, ToolContext, ToolDefinition, ToolRequest, ToolResult, ToolDecision } from '../../shared/types.js';
@@ -5,8 +7,9 @@ import type { User } from '../auth/policy.js';
 import { AppError, checkSignal, publicError } from '../core/errors.js';
 import { row, Store } from '../db/store.js';
 import { buildContext, buildReviewContext, fitContext } from './context.js';
+import {callBudget,efficientTools,efficientInstruction,outputTruncated,type CallBudget} from './token-policy.js';
 import { actionCheckKey } from './checks.js';
-import { buildGraph, readySteps, terminalStates } from './lifecycle.js';
+import { buildTaskGraph, readySteps, terminalStates } from './lifecycle.js';
 import { LocalLease } from './lease.js';
 import { adaptPlan } from './planning.js';
 import { beginRepair, reviewPassed } from './repair.js';
@@ -32,13 +35,13 @@ export class Engine {
   private running=new Map<string,{controller:AbortController;promise:Promise<void>;userId:string;workspaceId:string|null;hostAccess:boolean}>();
   private workspaceMaintenance=new Set<string>();
   private queue:string[]=[];
-  private lease=new LocalLease();
+  private lease:LocalLease;
   private draining=false;
   private closed=false;
   private stopping=false;
   private approvalSignals=new Map<string,()=>void>();
   private taskGrants=new Map<string,Set<string>>();
-  constructor(readonly store:Store,readonly gateway:ProviderGateway,readonly tools:ExecutionTools,private options:{admit?:Admit}={}) {}
+  constructor(readonly store:Store,readonly gateway:ProviderGateway,readonly tools:ExecutionTools,private options:{admit?:Admit;lease?:LocalLease;watchMemory?:MemoryWatchFactory}={}) {this.lease=options.lease??new LocalLease();}
   isStopped() {return this.stopping||this.closed;}
   enqueue(taskId:string) { if(!this.queue.includes(taskId)&&!this.running.has(taskId)){this.queue.push(taskId);void this.drain();} }
   approvalChanged(id:string) {this.approvalSignals.get(id)?.();}
@@ -83,9 +86,10 @@ export class Engine {
       let steps=await this.store.steps(id);
       if(!steps.length) {
         await this.store.transition(id,'analyzing');
-        await this.store.append(id,'TASK_ANALYZED',{depth:task.options.depth,workspace:task.options.workspaceId,cloudPolicy:task.options.cloudPolicy??'local_only',strategy:task.options.depth==='fast'?'Single worker':'Bounded specialist graph'});
+        steps=buildTaskGraph(id,task.options);
+        const strategy=steps.length===1?'Single worker':steps.length===2?'Worker and reviewer':'Bounded specialist graph';
+        await this.store.append(id,'TASK_ANALYZED',{depth:task.options.depth,workspace:task.options.workspaceId,cloudPolicy:task.options.cloudPolicy??'local_only',strategy});
         await this.store.transition(id,'planning');
-        steps=buildGraph(id,task.options.depth);
         if(steps.length>task.options.budget.maxCalls)throw new AppError('PLAN_BUDGET','This depth needs more model calls than the selected budget. Choose a lighter depth or increase the budget.');
         await this.store.saveGraph(steps);
         await this.store.transition(id,'executing');
@@ -132,7 +136,8 @@ export class Engine {
     if(step.role==='worker'&&task.options.verification?.requiredReads.length&&!this.tools.definitions().some(tool=>tool.name==='file_read'))throw new AppError('VERIFICATION_CAPABILITY','The required file_read capability is unavailable. No model call was started.');
     const excluded=new Set<string>();
     const admit=this.options.admit??hardwareAdmission;
-    let selected=await selectModel(this.gateway,task,user,step.role,admit,excluded);
+    const gateway=this.gateway.forUser?await this.gateway.forUser(user.id):this.gateway;
+    let selected=await selectModel(gateway,task,user,step.role,admit,excluded);
     step.modelId=selected.model.id;
     await this.store.append(task.id,'MODEL_SELECTED',{stepId:step.id,modelId:selected.model.id,reasons:selected.reasons});
     const agentId=await this.store.startAgent(step,selected.model.id);
@@ -156,6 +161,9 @@ export class Engine {
     let context=step.role==='reviewer'
       ?buildReviewContext(task.objective,dependencies.find(s=>s.role==='worker')?.output??'',await this.store.verification(task.id),task.options.contextTokens,savedContext??[])
       :savedContext??buildContext(step.role,task.objective,recent,findings,task.options.contextTokens);
+    if(task.options.efficiency!=='standard'&&!context[0].content.includes('\nToken efficiency:'))context[0]={...context[0],content:`${context[0].content}\n${efficientInstruction}`};
+    const assistant=getAssistantDefinition(task.options.assistantId);
+    if(assistant&&!context[0].content.includes('\nSelected specialist:'))context[0]={...context[0],content:`${context[0].content}\nSelected specialist: ${assistant.name}. ${assistant.instructions}`};
     if(task.options.access==='unrestricted'&&!context[0].content.includes('\nDirect host file access:'))context[0]={...context[0],content:`${context[0].content}\nDirect host file access: explicitly confirmed by the local owner for this task. Host platform: ${platform()}; owner home: ${homedir()}. host_list/read/write/delete act on real host files using absolute native paths, outside managed copies. Credentials, system paths and Relay itself remain protected. Do not claim unrestricted shell access: terminal still runs only in the isolated managed-workspace container. Host writes require matching hashes and create private recovery checkpoints. Use supplied tools and verify actual results.`};
     if(step.role==='worker'&&task.options.verification&&!context[0].content.includes('\nRequired task verification contract:'))context[0]={...context[0],content:`${context[0].content}\nRequired task verification contract: ${JSON.stringify(task.options.verification)}. Before the final answer, invoke file_read for each required path after all workspace changes. Its actual whole-file SHA-256 must match. Tool prose or an earlier write's own read-back does not satisfy this contract. These requirements grant no additional capabilities.`};
     // A crash between saving proposals and starting a tool must not automatically
@@ -171,21 +179,24 @@ export class Engine {
     }
     await this.store.saveContext(step.id,context);
     const readTools=new Set(['host_read','host_list','file_read','file_list','file_search','git_status','git_diff','http_get']);
-    const defs=step.role==='planner'?[]:this.tools.definitions().filter(d=>
-      (d.name.startsWith('host_')?task.options.access==='unrestricted'&&task.options.hostAccessConfirmed===true&&user.role==='owner':d.name==='http_get'?task.options.network&&task.options.network.mode!=='deny':d.name==='mcp_call'?!!task.options.mcpServerIds?.length:!!task.options.workspaceId)&&
+    const availableDefinitions=step.role==='planner'?[]:this.tools.definitions().filter(d=>
+      (!assistant||assistant.allowedTools.includes(d.name))&&
+      (d.name==='personal_tasks'?step.role==='worker'&&task.options.assistantId==='personal':d.name.startsWith('host_')?task.options.access==='unrestricted'&&task.options.hostAccessConfirmed===true&&user.role==='owner':d.name==='http_get'?task.options.network&&task.options.network.mode!=='deny':d.name==='mcp_call'?!!task.options.mcpServerIds?.length:!!task.options.workspaceId)&&
       (step.role==='worker'||readTools.has(d.name)));
+    const defs=efficientTools(task.options,availableDefinitions);
     for(let turn=0;turn<task.options.budget.maxIterations;turn++) {
       budget.assertActive();
       await claimStepIteration(this.store,step.id,task.options.budget.maxIterations);
       if(!(await this.isAuthorized(task,user)))throw new AppError('REVOKED','The user policy or execution grant was revoked',403);
-      const maxOutputTokens=Math.min(2048,Math.floor(task.options.contextTokens/3));
+      const model=selected.model;
+      const policy=callBudget(task.options,model),maxOutputTokens=policy.maxOutputTokens;
       const fitted=fitContext(context,defs,task.options.contextTokens,maxOutputTokens);
       if(fitted.removed)await this.store.append(task.id,'CONTEXT_COMPACTED',{stepId:step.id,removedMessages:fitted.removed,toolReceiptsPreserved:true});
       context=fitted.messages;
-      const model=selected.model;
+      await this.store.append(task.id,'CALL_BUDGET',{stepId:step.id,modelId:model.id,efficiency:task.options.efficiency??'efficient',...policy,serializedInputBytes:Buffer.byteLength(JSON.stringify(context))+Buffer.byteLength(JSON.stringify(defs)),removedToolCount:availableDefinitions.length-defs.length,toolSchemaBytesRemoved:Buffer.byteLength(JSON.stringify(availableDefinitions))-Buffer.byteLength(JSON.stringify(defs)),usageSource:'Provider-reported usage is recorded separately after execution.'});
       let release:()=>void=()=>{};
       if(model.local) {await this.store.append(task.id,'MODEL_QUEUED',{modelId:model.id,stepId:step.id});release=await this.lease.acquire(signal);}
-      let callId:string|null=null;
+      let callId:string|null=null;let memoryWatch:MemoryWatch|undefined;
       let answer='';const requests:ToolRequest[]=[];
       let providerData:ModelMessage['providerData'];
       let inputTokens:number|null=null;let outputTokens:number|null=null;
@@ -198,11 +209,13 @@ export class Engine {
           if(!admission.allowed)throw new AppError('RESOURCE_PRESSURE',admission.reasons.join('; '),409);
           execution=admission.execution;
         } else await this.authorizeCloud(task,agentId,model,context,signal);
-        const reserve=this.estimateCost(task,model);
+        if(model.local)memoryWatch=this.options.watchMemory?.(signal,execution);
+        const reserve=this.estimateCost(model,policy);
         callId=await this.store.startCall(task.id,agentId,model.id,context,{cloud:!model.local,amountUsd:reserve,provider:model.provider,sessionVersion:user.sessionVersion});
         await this.store.saveContext(step.id,context);
-        let buffer='';let lastFlush=0;let done=false;
-        for await(const chunk of this.gateway.stream({model,messages:context,tools:defs,contextTokens:task.options.contextTokens,maxOutputTokens,signal,execution})) {
+        let buffer='';let lastFlush=0;let done=false;let finishReason='';
+        for await(const chunk of gateway.stream({model,messages:context,tools:defs,contextTokens:task.options.contextTokens,maxOutputTokens,signal:memoryWatch?.signal??signal,execution})) {
+          checkSignal(memoryWatch?.signal??signal);
           budget.assertActive();
           if(chunk.type==='text') {
             answer+=chunk.text;buffer+=chunk.text;
@@ -211,21 +224,27 @@ export class Engine {
           } else if(chunk.type==='tool_call')requests.push(chunk.call);
           else if(chunk.type==='continuation')providerData=chunk.providerData;
           else if(chunk.type==='usage') {inputTokens=chunk.inputTokens;outputTokens=chunk.outputTokens;usage=usageRecord(chunk);}
-          else if(chunk.type==='done')done=true;
+          else if(chunk.type==='done'){done=true;finishReason=chunk.finishReason;}
         }
         if(buffer)await this.store.append(task.id,'MODEL_TEXT',{text:buffer,stepId:step.id,role:step.role,modelId:model.id,callId});
+        if(outputTruncated(finishReason))throw new AppError('OUTPUT_LIMIT','The response reached its output-token ceiling before completion. No partial tool proposals were executed. Start a new task with a larger output allowance or a narrower objective.',409);
         if(!done)throw new AppError('INCOMPLETE_STREAM','Provider disconnected before completing the response.');
         const cost=model.local?0:inputTokens!==null&&outputTokens!==null&&model.inputPricePerMillion!==null&&model.outputPricePerMillion!==null?(inputTokens*model.inputPricePerMillion+outputTokens*model.outputPricePerMillion)/1e6:null;
         const charge=await this.store.finishCall(callId,inputTokens,outputTokens,cost,undefined,usage);
         await this.store.append(task.id,'MODEL_CALL_COMPLETED',{callId,agentId,modelId:model.id,inputTokens,outputTokens,...charge});
       } catch(error) {
-        if(callId)await this.store.finishCall(callId,inputTokens,outputTokens,null,publicError(error));
+        error=memoryWatch?.error()??error;
+        const code=error&&typeof error==='object'&&'code' in error?String(error.code):'';
+        const limited=['OUTPUT_LIMIT','output_limit'].includes(code);
+        const measuredCost=model.local?0:limited&&inputTokens!==null&&outputTokens!==null&&model.inputPricePerMillion!==null&&model.outputPricePerMillion!==null?(inputTokens*model.inputPricePerMillion+outputTokens*model.outputPricePerMillion)/1e6:null;
+        if(callId)await this.store.finishCall(callId,inputTokens,outputTokens,measuredCost,publicError(error),usage);
+        if(limited||code==='incomplete_stream'||code==='RESOURCE_PRESSURE'){await this.store.append(task.id,'MODEL_CALL_FAILED',{modelId:model.id,error:publicError(error),partialOutputDiscarded:!!answer,automaticRetry:false});throw error;}
         if(signal.aborted)throw error;
         // No tool side effects are replayed: rerouting happens before processing this response's proposals.
         excluded.add(model.id);
         await this.store.append(task.id,'MODEL_CALL_FAILED',{modelId:model.id,error:publicError(error),partialOutputDiscarded:!!answer});
         if(excluded.size>=3)throw error;
-        try {selected=await selectModel(this.gateway,task,user,step.role,admit,excluded);}
+        try {selected=await selectModel(gateway,task,user,step.role,admit,excluded);}
         catch {throw error;}
         step.modelId=selected.model.id;
         await this.store.db.transaction(async tx=>{
@@ -235,7 +254,7 @@ export class Engine {
         await this.store.append(task.id,'MODEL_REROUTED',{agentId,stepId:step.id,from:model.id,to:selected.model.id,reason:publicError(error)});
         context=context.map(message=>{const {providerData:_private,...plain}=message;return plain;});
         continue;
-      } finally {release();}
+      } finally {memoryWatch?.stop();release();}
       if(!requests.length) {
         context.push({role:'assistant',content:answer,...(providerData?{providerData}:{})});
         if(step.role==='worker'){
@@ -267,6 +286,7 @@ export class Engine {
   private async isAuthorized(task:TaskRecord,user:User) {
     const control=await this.store.control();
     const current=(await this.store.db.query('SELECT enabled,session_version FROM users WHERE id=$1',[user.id]))[0];
+    if(task.options.workspaceId){const workspace=(await this.store.db.query('SELECT owner_user_id FROM workspaces WHERE id=$1',[task.options.workspaceId]))[0];if(workspace?.owner_user_id&&workspace.owner_user_id!==user.id&&user.role!=='owner')return false;}
     return !control.stopped&&control.generation===task.stopGeneration&&current?.enabled===true&&current.session_version===user.sessionVersion;
   }
   private async verifyHostState(task:TaskRecord,signal:AbortSignal) {
@@ -282,10 +302,10 @@ export class Engine {
       await this.store.verify(task.id,'host_file_state',`Final host file check: ${result.path}`,passed,{path:result.path,expectedSha256:result.sha256},`host_state:${key}`);
     }
   }
-  private estimateCost(task:TaskRecord,model:ModelProfile):number|null {
+  private estimateCost(model:ModelProfile,policy:CallBudget):number|null {
     if(model.local)return 0;
     if(model.inputPricePerMillion===null||model.outputPricePerMillion===null)return null;
-    return (task.options.contextTokens*model.inputPricePerMillion+Math.min(2048,Math.floor(task.options.contextTokens/3))*model.outputPricePerMillion)/1e6;
+    return (policy.inputReservationTokens*model.inputPricePerMillion+policy.maxOutputTokens*model.outputPricePerMillion)/1e6;
   }
   private async authorizeCloud(task:TaskRecord,agentId:string,model:ModelProfile,context:ModelMessage[],signal:AbortSignal) {
     if(task.options.budget.localOnly||!task.options.cloudPolicy||task.options.cloudPolicy==='local_only')throw new AppError('EGRESS_DENIED','Cloud data transmission is not authorized',403);
@@ -308,7 +328,7 @@ export class Engine {
     const approvalAuthority=request.name==='mcp_call'?this.tools.mcp?.authorizationScope(request):undefined;
     const scope=JSON.stringify([request.name,request.arguments,approvalAuthority]);
     const grants=this.taskGrants.get(task.id)??new Set<string>();this.taskGrants.set(task.id,grants);
-    const context:ToolContext={taskId:task.id,agentId,workspaceId:task.options.workspaceId,access:task.options.access,hostAccess:task.options.access==='unrestricted'&&task.options.hostAccessConfirmed===true&&user.role==='owner',allowedTools,signal,approved:grants.has(scope),approvalAuthority,network:task.options.network,mcpServerIds:task.options.mcpServerIds};
+    const context:ToolContext={userId:user.id,sessionVersion:user.sessionVersion,taskId:task.id,agentId,workspaceId:task.options.workspaceId,access:task.options.access,hostAccess:task.options.access==='unrestricted'&&task.options.hostAccessConfirmed===true&&user.role==='owner',allowedTools,signal,approved:grants.has(scope),approvalAuthority,network:task.options.network,mcpServerIds:task.options.mcpServerIds};
     let decision=this.tools.decide(context,request);
     await this.store.append(task.id,'TOOL_REQUESTED',{toolCallId:invocationId,agentId,tool:request.name,arguments:request.arguments});
     if(decision.decision==='approval') {

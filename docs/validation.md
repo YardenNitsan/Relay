@@ -2,7 +2,44 @@
 
 This is the evidence ledger for the current implementation. Successful tests support their specific boundaries; they do not make the entire master directive complete or establish production security certification.
 
-## Current working handover (2026-10-08)
+## Current release verification (2026-10-09)
+
+- Strict TypeScript and the complete native Windows suite passed: **846 tests across 74 files**, with **one platform-specific skip**. This includes private-workspace authorization, document ingestion, Google OAuth, routing, live pressure cancellation and completion-notification state.
+- The production browser/host build passed. The post-build fixture changes only isolate the temporary workspace catalog between browser cases and wait for asynchronous permission preparation; strict types passed again afterward. Production quotas remain enforced.
+- Production dependency audit: **zero known advisories**. A staged-file credential-pattern review identified only the intentional LAN TLS test fixture; runtime secrets, logs, local configuration and deployment credentials are excluded.
+- **67/67 Chrome browser cases passed** in the final complete run (4.5 minutes). The earlier combined-catalog host-mode regression passed after the UI switched file scope on confirmation; test data was isolated without weakening workspace quotas. Coverage includes real PDF/DOCX extraction, drag/drop, permission choice, OAuth return handling, notifications, model refresh, account privacy, history, approvals, and responsive layouts from 320 pixels through desktop.
+- The compiled host restarted successfully. The public authentication boundary passed again: anonymous requests redirect to Access, missing/forged identities receive 401, and the independent local UI returns 200.
+- Actual document imports succeeded. The first local specialist run paused between calls under the unchanged Safe memory reserve while the full browser suite was active. It was not counted as completion. The small two-iteration attempt could not resume after consuming its allowance. A fresh four-iteration objective then **completed in two actual calls**, with Auto choosing `ollama/qwen3:4b-instruct`, a real `file_read` receipt and matching required SHA-256. PDF and DOCX imports both matched their expected text. Evidence: `output/release-0.1.1-acceptance.json`, task `a872ddb6-ab46-4e2b-9ef1-9a7aa7060753`, `2026-10-09T16:07:05.163Z`.
+
+- Production-host browser checks: **2/2 passed**, including actual Balanced + Auto greeting, persistence, desktop/320-pixel navigation and selected axe checks. Latest screenshots were inspected.
+- Current external local inference acceptance passed at `2026-10-09T16:08:08.665Z`: HTTP 200, real qwen3:4b-instruct output, 20 input/11 output tokens and unchanged Relay conversation history. Evidence: `output/inference-acceptance.json`.
+
+## Earlier 0.1.1 evidence (2026-10-09)
+
+The current implementation adds account-private cloud connections, ten specialist profiles, persisted personal tasks, optional authenticated LAN access and a separate external-client inference gateway. These additions do not establish full three-platform release readiness or make unconfigured integrations available.
+
+| Check | Recorded result and scope |
+| --- | --- |
+| Native Windows strict types and tests | Final integrated check passed **702 tests across 61 files**, with **one platform-specific skipped test**, including LAN isolation, specialist routing and stalled-client cancellation. |
+| Production build | Passed for the current 0.1.1 browser and host sources. |
+| Complete browser suite | **46/46 Chrome cases passed** against the isolated real backend and explicitly deterministic inference fixture. Includes specialist selection, account-specific provider controls, pending/denied access, LAN invitation presentation, external token creation/revocation, existing conversations/approvals and responsive layouts. |
+| Focused specialist/inference backend checks | **22/22 passed**: five real-engine specialist cases, thirteen HTTP inference cases and four service cases. These are focused regression evidence, not extra tests to add to the full-suite count. |
+| Additional focused boundary checks | **Six LAN API cases passed**, including corrected separation of Cloudflare expiry from LAN sessions; **ten router cases passed**, including personal-tool capability selection. Final integrated checks remain separate. |
+| Production dependency audit | `npm audit --omit=dev` reported **zero known advisories** at this check. This is dependency evidence, not an application security certification. |
+| Actual external inference | `node scripts/inference-acceptance.mjs` passed against installed `ollama/qwen3:4b-instruct` at `2026-10-09T11:06:26.742Z`. HTTP 200, actual output, usage 20 input/12 output tokens, and unchanged Relay conversation history were recorded in `output/inference-acceptance.json`. This is a live local inference request, not a completed external coding-agent workflow. |
+| Visual review | Reviewed the actual browser screenshots for Agents, account-specific model connections, LAN pairing and external-client token management. Coverage includes 320/390-pixel phones, 768/1024/1440-pixel layouts, 844×390 landscape and 390×420 short-viewport behavior, plus selected axe checks. Token screenshots are captured only after hiding the revealed credential. |
+| Public Worker deployment | Worker deployed with only the fixed VPC Service bound to loopback remote port 4318. Cloudflare reports the tunnel healthy. The owner completed Access sign-in and the host recorded a remote session at `2026-10-09T14:32:49.771Z`. Public anonymous entry/API requests redirect to the correct Access team; missing/forged host JWTs return 401; local owner entry still returns 200. Both listeners are bound to 127.0.0.1. Evidence: `output/remote-deployment-check.json`. Complete remote model/streaming/revocation acceptance remains a separate gate. |
+| Native Linux in Ubuntu WSL | The isolated source snapshot passed strict typing, **703 tests across 61 files with one skip**, and production build. Compiled-host acceptance verified native pairing permissions, replay/CSRF denial, actual Linux telemetry, embedded PostgreSQL persistence across restart, idle SSE heartbeat, log credential exclusion and two graceful stops. Evidence: `output/linux-validation.json`, timestamp `2026-10-09T13:53:16.824Z`. This is not physical Linux GPU or installer validation. |
+| Balanced greeting on the production host | A real Balanced + Auto greeting completed with one natural answer and survived reload; the production browser case passed. Ordinary conversations no longer enter an unnecessary reviewer loop. The focused fixture-provider answer case also passed. |
+| LAN deployment | Certificate/configuration, invitation and permission boundaries have automated coverage. The host's real LAN listener, trusted certificate and second-device connection are **not configured or accepted**. |
+
+The five initial new browser failures were corrected at their actual causes: native selects were queried through incorrect exact-label selectors, the command palette's options were queried as buttons, and a helper chose its responsive branch before the authenticated UI existed after reload. The helper now waits for a real navigation control. No permission rule or accessibility expectation was weakened. A stale engine reference in a specialist test fixture was also isolated per test.
+
+Important limits: Gmail/Calendar remain consent and connector plans; the specialist profiles can draft or reason without those integrations. Personal tasks persist per account but do not schedule notifications. External inference supports documented text/function subsets of Responses, Chat Completions and Anthropic Messages; complete Codex/Claude Code interoperability is not certified. It returns tool proposals to the client and never executes those client tools on the host. Relay records external usage metadata rather than chat content; runtime, client and public-gateway logging are separate boundaries. Native macOS, physical Linux GPU testing, actual Docker/native PostgreSQL, live cloud credentials and real remote phones remain release gates.
+
+See [the current report](project-report.md), [external clients](external-clients.md), [LAN access](lan-access.md) and [the public Worker candidate](cloudflare-free.md). The dated sections below preserve earlier milestones and are not the latest test counts.
+
+## Historical working handover (2026-10-08)
 
 At the owner's request, the current application was built and started as a browser web app even though the entire product specification is unfinished. The compiled Windows service listens at `http://127.0.0.1:4317`, with embedded PostgreSQL, actual installed Ollama models and remote access disabled. The full handover and remaining backlog are in `../RELAY_PROJECT_REPORT.md` relative to the project root (the workspace-level report).
 
@@ -70,7 +107,7 @@ The compiled Windows service runs at `127.0.0.1:4317` with embedded PostgreSQL a
 
 Updated Windows ZIP, Linux tar.gz and macOS tar.gz archives were generated on 2026-10-06. `scripts/verify-package.mjs` passed all SHA-256 and member checks (89 entries per archive), including the compiled owner-pairing CLI and native startup templates. No private data, credentials, installed dependency trees or Git metadata were included. They remain portable Node.js distributions requiring destination dependencies; signing, notarization and native installers are not claimed.
 
-## Implemented guarantees and limits
+## Historical guarantee snapshot (6 October)
 
 | Area | Implemented | Remaining release work |
 | --- | --- | --- |
@@ -90,7 +127,7 @@ No cloud API credentials, owner public gateway/domain, native macOS host or nati
 
 Balanced-mode review no longer replaces a valid answer merely because a reviewer omitted its required verdict. Such failures retry the review alone within the durable call/iteration budget. A genuine revision request still repairs the answer against the original objective. During execution, the conversation presents fixed factual activity labels; those labels disappear when the task finishes. Supervisor completion commentary is not appended to the answer.
 
-Unrestricted mode remains intentionally unavailable: both browser and backend reject it until a tested OS host-access broker exists. This is unrelated to owner pairing or provider credentials. Autonomous workspace remains the strongest supported scope; isolated terminal execution separately requires a verified container boundary.
+At this earlier snapshot, unrestricted mode was unavailable. The subsequent direct-host-file milestone below supersedes that restriction for explicitly confirmed local-owner file tasks. Arbitrary host commands remain unavailable; isolated terminal execution separately requires a verified container boundary.
 
 The latest actual Ollama greeting check paused before model dispatch because available RAM did not satisfy Safe-profile headroom. This is a resource-admission result, not a successful live greeting acceptance. Deterministic backend and browser regressions separately exercise the corrected answer/review behavior.
 

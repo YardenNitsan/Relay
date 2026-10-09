@@ -2,8 +2,8 @@ import type { ProviderId } from '../../shared/types.js';
 
 interface CredentialEntry { getPassword(): string | null | undefined | Promise<string | null | undefined>; setPassword(password: string): void | Promise<void>; deletePassword(): void | boolean | Promise<void | boolean>; }
 export interface CredentialStore { entry(provider: ProviderId): CredentialEntry; }
-interface SecretOptions { env?: Record<string, string | undefined>; keyring?: CredentialStore | null; }
-const environmentNames: Record<ProviderId, string> = { openai: 'OPENAI_API_KEY', anthropic: 'ANTHROPIC_API_KEY', gemini: 'GEMINI_API_KEY', ollama: 'OLLAMA_API_KEY', lmstudio: 'LMSTUDIO_API_KEY' };
+interface SecretOptions { env?: Record<string, string | undefined>; keyring?: CredentialStore | null; userId?: string; }
+const environmentNames: Record<ProviderId, string> = { openai: 'OPENAI_API_KEY', anthropic: 'ANTHROPIC_API_KEY', gemini: 'GEMINI_API_KEY', ollama: 'OLLAMA_API_KEY', lmstudio: 'LMSTUDIO_API_KEY', xai: 'XAI_API_KEY', deepseek: 'DEEPSEEK_API_KEY' };
 
 /** Keys never become public configuration or model context. No disk fallback. */
 export class SecretManager {
@@ -13,11 +13,13 @@ export class SecretManager {
   private readonly env: Record<string, string | undefined>;
   private store: Promise<CredentialStore | null>;
   constructor(options: SecretOptions = {}) {
-    this.env = options.env ?? process.env;
+    if(options.userId && !/^[a-zA-Z0-9_-]{1,128}$/.test(options.userId))throw new Error('Invalid credential owner');
+    // Personal accounts can never inherit the host owner's environment or vault entry.
+    this.env = options.userId ? {} : options.env ?? process.env;
     this.store = options.keyring !== undefined ? Promise.resolve(options.keyring) : import('@napi-rs/keyring').then(module => {
       // Pin Linux persistence to Secret Service; kernel-keyring fallback is volatile.
       const Entry = (module.AsyncEntry ?? module.Entry) as unknown as new (service: string, account: string, options?: unknown) => CredentialEntry;
-      return { entry: (provider: ProviderId) => new Entry('relay-local.provider', provider, { linux: { store: 'secret-service' } }) };
+      return { entry: (provider: ProviderId) => new Entry(options.userId ? `relay-local.user.${options.userId}` : 'relay-local.provider', provider, { linux: { store: 'secret-service' } }) };
     }).catch(() => null);
   }
   async get(provider: ProviderId): Promise<string | null> {

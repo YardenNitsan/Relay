@@ -1,5 +1,17 @@
 # Relay user guide
 
+## Specialists, personal tasks and client devices
+
+Open **Agents** in navigation, or choose the agent beside the composer. Selecting a specialist changes its instructions and allowed tools; model, depth, computer access and cloud policy stay separate. **General orchestration** restores automatic general work. Missing integrations are stated directly in the agent details.
+
+For the Personal Assistant, select **Supervised** and ask to create a task such as “Remind me to review the release tomorrow.” The model can propose an item with an explicit UTC due date and request approval. Saved items belong to your account. Listing, completing and deleting items use the same personal-task tool. This is a persistent task list, not an operating-system notification or Google Calendar event.
+
+Email and Calendar can draft and plan from supplied information today. They cannot yet read your inbox or edit Google Calendar. Browser and Computer agents use only the structured tools actually available; choosing them does not enable unrestricted browser or desktop automation.
+
+**External clients** creates/revokes tokens for coding applications that use the host's local models. Their tools run on their device, and their conversations are not stored as Relay chats. The owner must explicitly grant this access. Read the [API compatibility limits](external-clients.md) before configuring Codex or Claude Code.
+
+The owner can issue a **LAN invitation** from Access after creating an account. On the configured LAN HTTPS address, enter the five-minute code once. It pairs that browser to that account, never to the owner. Remote public browsers authenticate through Cloudflare Access; the free domainless setup is described [here](cloudflare-free.md).
+
 Relay turns a conversation into accountable work on your host. You choose the objective, available intelligence and permitted scope; the host schedules execution and records what happened.
 
 This guide describes the current application. The [validation ledger](validation.md) records what has been tested on actual systems, and the [project report](project-report.md) tracks remaining work.
@@ -98,7 +110,7 @@ For a first task, ask a question that needs no files or network:
 
 A missing cloud provider is normal. A missing local model means Relay has no local intelligence to run yet; install a suitable model in your runtime, then refresh discovery.
 
-The chat shows the answer as it is produced, along with short factual progress such as “Preparing your answer” or “Checking the answer.” Balanced includes a review stage, so a short question can involve more than one call. These activity labels describe execution; they are not private model reasoning. Open the execution record to see the assigned roles, models and recorded outputs.
+The chat shows the answer as it is produced, along with short factual progress such as “Preparing your answer” or “Checking the answer.” Ordinary Balanced conversation uses one worker. Balanced adds review when a specialist, workspace, host-file capability, network/MCP tools or required verification is selected. These activity labels describe execution; they are not private model reasoning. Open the execution record to see the assigned roles, models and recorded outputs.
 
 ### The interface
 
@@ -111,6 +123,7 @@ The chat shows the answer as it is produced, along with short factual progress s
 | **Activity** | Plan, work log, pending approvals, changes and evidence |
 | **History** | Find saved conversations or individual messages |
 | **Models & providers** | Model discovery, hardware fit, calibration and optional provider connections |
+| **Usage** | Side drawer with today's reported tokens and provider-reported remaining rate capacity; unknown balances remain labelled unknown |
 | **Machine / This machine** | Host telemetry, memory policy, resident models and execution-boundary status |
 | **MCP tools** | Owner-managed external tool catalogs |
 | **Access & remote connections** | Owner-managed users, policies, browser sessions and remote work |
@@ -142,7 +155,7 @@ A **task** is the persisted execution of an objective. A conversation can contai
 | Mode | Current execution shape | Choose it when |
 | --- | --- | --- |
 | **Fast** | A worker, with host checks for the operations actually performed | The objective is straightforward or latency matters |
-| **Balanced** | A worker followed by a reviewer; bounded repair when a valid review requests it | You want an additional assessment of the result |
+| **Balanced** | One worker for ordinary conversation; review and bounded repair for specialist or tool-enabled work | Everyday chat and controlled tasks without unnecessary review calls |
 | **Deep** | Planner, selected architecture/security specialists, worker and reviewer | The task benefits from examining dependencies and risks |
 | **Maximum** | The deeper graph can also include independent research/alternative analysis | Extra comparison is worth the calls and time |
 
@@ -179,7 +192,7 @@ A strict cloud cost cap can reject a model whose pricing is unknown. An empty co
 
 ### Import a project
 
-Select **Choose workspace**, enter a name and the project's absolute source-directory path, then choose **Import managed copy**.
+On the local owner account, select **Choose workspace**, enter a name and the project's absolute source-directory path, then choose **Import managed copy**. Other users create an empty personal workspace and upload files from their device instead; entering a path must not grant access to the owner's computer.
 
 Relay copies supported files into its managed storage. It excludes links, sensitive paths, Git internals and common dependency/build trees. This filtering is a protection layer, not a guarantee that every possible secret has been recognized.
 
@@ -197,13 +210,15 @@ Use **Supervised** until you are comfortable with the scope. Confirm the workspa
 
 The paperclip accepts UTF-8 text files up to **240 KB**. Binary files and the general image/PDF attachment workflow are not supported.
 
-Attachments are saved inside the selected managed workspace. For the owner, attaching without a selected workspace creates one for conversation attachments. The composer adds the saved path to the draft so the task can reference it. This does not remove context or permission limits.
+Attachments are saved inside the selected managed workspace. Attaching without a selected workspace creates one for conversation attachments, including a private personal workspace for invited users. The composer adds the saved path to the draft so the task can reference it. This does not remove context or permission limits.
 
-Invited users need write access to an already granted workspace to attach files; they cannot use attachment handling to create an unauthorized workspace.
+Your own file management is independent of agent autonomy: even with agents set to Read only, you can upload, edit and delete your own files. In a personal workspace you may choose Read only, Supervised or Autonomous workspace for agents. Shared host workspaces retain their owner-granted access limits. **Inspect files** opens the file editor and download/delete controls; edits reject stale content hashes. [Personal file behavior and limits](personal-files.md).
 
 ### Move a change back to your own project
 
 Inspect **Activity → Changes** and copy or download the patch. Review and apply it to your source project using your normal development workflow. Relay does not automatically overwrite your original repository or promise conflict-free application to a source that has changed since import.
+
+Supported desktop browsers also offer **Workspaces → Files on this device → Choose device folder**. Review and upload a managed copy, then use **Review device changes** to explicitly apply selected changes back to that folder. The browser requests write permission, and changed device files are rejected rather than silently overwritten. Phone browsers without this API use upload/download. This folder connection does not enable device-local terminal commands or desktop automation.
 
 ## Computer access and approvals
 
@@ -298,7 +313,7 @@ Relay integrates with local runtimes; it is not itself a model downloader or an 
 
 ### Optional provider connections
 
-The owner can connect OpenAI, Anthropic and Gemini under **Provider connections**:
+The owner can connect OpenAI, Anthropic and Gemini under **Provider connections**. Remote users connect their own owner-permitted accounts under **Your provider connections**:
 
 1. Obtain a supported API credential from that provider.
 2. Expand **Connect provider** and enter the API key.
@@ -310,7 +325,7 @@ A consumer ChatGPT, Claude or Gemini subscription is not automatically an API cr
 
 The OS vault must be available to save persistently. Headless Linux may lack an unlocked Secret Service. Use explicit session-only storage or configure the host's vault; there is no automatic plaintext credential fallback.
 
-Use **Enabled** to exclude a provider from selection, **Check connection** to refresh its health, or **Remove credential** to remove the stored credential. Backend environment variables are also supported; removing an environment-supplied credential from the running service cannot rewrite the environment used to launch it.
+Use **Enabled** to exclude your provider from selection, **Check connection** to refresh its health, or **Remove credential** to remove your stored credential. Only the owner manages local runtime controls. Backend environment variables belong exclusively to the owner; removing an environment-supplied credential from the running service cannot rewrite its startup environment.
 
 ### Three different data-sharing decisions
 
@@ -436,9 +451,9 @@ The implemented deployment path uses **Cloudflare Tunnel + Cloudflare Access**, 
 
 ### Configure the gateway
 
-Follow [Remote access setup](remote-access.md) for the actual environment variables, identity-provider configuration, TLS/Host requirements and tunnel ingress rules. Use a domain and Access application you control, with explicit identity rules and MFA/passkeys through the identity provider.
+Follow [Google sign-in and permanent address setup](remote-setup.md) for identity-provider configuration, TLS/Host requirements and tunnel ingress rules. Use a domain and Access application you control. In **Access → Remote gateway**, save the HTTPS address, Access issuer, application audience and registration mode. Restart Relay, then explicitly enable the listener. Advanced environment configuration takes precedence over saved settings.
 
-The UI's configuration example contains placeholders. A configured URL does not prove that the public tunnel works. Test an authorized account, an uninvited account and revocation before relying on remote access. Public deployment acceptance is still listed as remaining validation.
+The setup form persists deployment identifiers, not Google or tunnel secrets. Keep those in the corresponding gateway/service credential store. A saved URL does not prove the public tunnel works. Test an authorized account, an uninvited account and revocation before relying on remote access. Public deployment acceptance remains separate from local tests. Keeping the same domain, named tunnel and host data directory preserves the address and accounts across Relay updates.
 
 The separate listener shares the host process; it is a request/authentication boundary, not a separate OS isolation boundary.
 
@@ -447,6 +462,8 @@ The separate listener shares the host process; it is a request/authentication bo
 In **Access & remote connections**, add the exact email identity accepted by the configured identity provider. Choose Chat user or Trusted user, then review the policy.
 
 Adding a user creates an allow-list entry. It does not send an email invitation. New users start with local model access, no workspace grants and no cloud spending.
+
+Alternatively, select **Owner approval** registration. Google-authenticated people permitted by your Access policy can request an account by opening the link. Their request appears as pending; they have no model or computer access before approval. Open the request, choose grants, then approve it. Denied accounts stay denied on subsequent sign-ins. The host accepts at most 100 pending requests and 1,000 non-owner registration records.
 
 Grant each dimension deliberately:
 
@@ -460,7 +477,15 @@ Grant each dimension deliberately:
 | Network origins and access | Public research destinations and approval ceiling |
 | MCP server IDs | Which enabled external catalogs the user may select |
 
-A role name alone does not grant arbitrary host files or terminal access. Backend ownership checks protect conversations/tasks even if someone guesses an ID. Remote users cannot configure provider secrets or grant themselves capabilities.
+A role name alone does not grant arbitrary host files or terminal access. Backend ownership checks protect conversations/tasks even if someone guesses an ID. Remote users can configure their own permitted cloud credentials; they cannot access the owner's keys, change local runtime settings or grant themselves capabilities.
+
+### Personal cloud accounts
+
+In **Models → Your provider connections**, connect each provider that the owner has allowed. Keys are sent over the authenticated HTTPS connection and retained only in the host service's memory or your separate entry in its OS secret store. Session-only credentials disappear when the host restarts or the owner revokes your account's sessions/policy. Other Relay users never receive them. Trust the host operator: its OS administrator controls the machine and credential store.
+
+Google sign-in is for your Relay account. It does not authorize a ChatGPT/Claude/Gemini consumer subscription for these APIs. OpenAI, Anthropic and Gemini currently use personal API credentials in Relay. No cloud connection is necessary to use the host's permitted local models.
+
+Cloud sharing still starts at **Local only**. Change it explicitly for a task. Strict monetary caps reject models whose prices are unknown. If the owner enables **Allow personal API use without a dollar cap**, you can leave the task cap empty and rely on call/time limits plus spending controls in your own provider account. Relay reports unknown charges as unknown; this option cannot guarantee a dollar limit.
 
 ### Sessions and revocation
 
@@ -474,6 +499,8 @@ The owner can inspect active browser sessions and remote work. Browser/user-agen
 - **Stop all agents** remains the host-wide emergency action.
 
 Remote sessions last up to one hour and depend on continued valid gateway identity and host policy. Revoking one browser session does not by itself cancel every task already created by that user; use the user-level stop when that is your intent.
+
+Accounts have at most 20 active browser sessions. Existing valid sessions continue working at the limit; sign out another browser or ask the owner to revoke one before adding a device. Remote **Sign out** deletes the current Relay session and opens Cloudflare Access logout, which also ends that Access session across its protected applications. It does not cancel work already submitted or delete conversations.
 
 ## Data, backups and updates
 
@@ -517,7 +544,7 @@ Do not open a database directory from two hosts or delete it to troubleshoot a m
 | No models available | Start Ollama/LM Studio with an installed model, enable the provider and refresh discovery. No cloud connection is required. |
 | Local runtime exists but a model is rejected | Inspect required capabilities, context, metadata and hardware-fit reasons. Tool objectives need tool support; unknown data can block safe admission. |
 | Paused for RAM/GPU pressure | Free memory yourself, choose a smaller model or reduce context for a new task. Review the safety reason before resuming; another stage such as Balanced review also needs admission. |
-| Answer text is visible but task still checks | Balanced includes review. Follow the factual status and Activity; intermediate text is not a completed, verified result. |
+| Answer text is visible but task still checks | Tool-enabled or specialist Balanced tasks and deeper modes include review. Follow the factual status and Activity; intermediate text is not a completed, verified result. |
 | No output while a model loads | Inspect Activity and the runtime. Loading/generation can take time; do not infer a successful run from a spinner. |
 | Task waiting for approval | Open Activity and inspect host, workspace, action and exact arguments. Use an explicit decision. |
 | Terminal unavailable | Read Machine's execution-boundary reason. Docker/image/preflight requirements must be satisfied; there is no host-shell fallback. |
@@ -536,6 +563,20 @@ Do not open a database directory from two hosts or delete it to troubleshoot a m
 | Setup cannot stop a running host | It may have been started manually or by another service manager. Stop it through its actual launcher; setup will not kill an unrelated listener. |
 
 When reporting an issue, include the host OS, Relay version, affected task ID, visible error and a small relevant log excerpt. Remove pairing codes, cookies, API keys, private prompts and confidential file content. Distinguish an ordinary fixture test from an actual runtime or remote deployment result.
+
+## Recent workflow improvements
+
+- **Attach files:** use the paperclip or drag files onto the chat. Text/code is supported directly; PDF and `.docx` create an explicitly labeled extracted text copy. Originals stay on your device. See [format and size limits](personal-files.md).
+- **Choose permissions first:** selecting Supervised or Autonomous with no workspace prepares a private workspace before applying the mode. You no longer need host-folder write privileges to upload and manage your own files. Shared folders and unrestricted host access retain separate grants.
+- **Know the model:** the task's model strip uses actual model selection and call records, including fallback changes. Auto remains your selection preference; the strip identifies what the task actually selected or ran. Agents use the same model routing and hardware protection.
+- **Completion alerts:** open **Notifications** from navigation or the command palette. In-app alerts are available while Relay is open. Enable system notifications explicitly for a generic alert when the tab is in the background; no prompt, answer or filename appears in the system notification. Unsupported phone browsers show in-app alerts. Closing the browser disables this delivery path; scheduled reminders and Web Push are not implemented.
+- **Efficient output:** Execution options include Efficient/Standard and a maximum output allowance per call. A shorter allowance can truncate a complex answer, so Relay pauses on reported truncation and does not describe it as complete. Required verification remains intact.
+- **Fresh models:** opening Models queries the installed runtime catalog. Download models through your runtime, then reopen the panel. Being installed does not mean a model fits current memory.
+- **Google for Gemini:** the owner configures a Google OAuth application once; each permitted account then connects separately. Follow [the setup guide](google-connection-setup.md). Google sign-in does not grant another provider's consumer subscription, Gmail or Calendar access.
+
+### Mobile-data DNS troubleshooting
+
+If the public address works on Wi-Fi but reports `DNS_PROBE_FINISHED_NXDOMAIN` on mobile data, compare the exact full hostname and another DNS resolver before changing Relay. For this deployment, both Google and Cloudflare public DNS resolved the Worker and Access names on 9 October. Android can use Private DNS `one.one.one.one`; iOS can use Cloudflare's 1.1.1.1 app for cellular DNS. This is a troubleshooting option, not a required Relay client. Do not disable TLS or authentication to address a DNS failure. [Android](https://developers.cloudflare.com/1.1.1.1/setup/android/), [iOS](https://developers.cloudflare.com/1.1.1.1/setup/ios/).
 
 ## Further reading
 

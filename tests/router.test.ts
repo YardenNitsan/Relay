@@ -11,7 +11,39 @@ const admit: Admit = async () => allowed;
 const gateway = (models: ModelProfile[]): ProviderGateway => ({ listModels: async () => models, statuses: async () => [], stream: async function* () { throw new Error('Routing must not generate'); } });
 const thinking = (): ModelProfile => profile('thinking', { state: 'ready', tokensPerSecond: 100, details: { modelInfo: { 'general.finetune': 'Thinking' } } });
 
+describe('personal assistant tool routing', () => {
+  const textOnly = () => profile('fast-text', { state: 'ready', tokensPerSecond: 100, capabilities: { tools: false, reasoning: false, vision: false, structured: true } });
+  const personalTask = (): TaskRecord => { const objective = task(); objective.options.assistantId = 'personal'; objective.options.workspaceId = null; return objective; };
+
+  it('selects a tool-capable worker for personal tasks without an attached workspace', async () => {
+    const tools = profile('task-tools', { tokensPerSecond: 2 });
+    const selected = await selectModel(gateway([textOnly(), tools]), personalTask(), user, 'worker', admit, new Set());
+    expect(selected.model.id).toBe(tools.id);
+  });
+
+  it('rejects a required text-only model instead of implying personal task actions can execute', async () => {
+    const text = textOnly(); const objective = personalTask(); objective.options.modelId = text.id; objective.options.modelSelection = 'required';
+    await expect(selectModel(gateway([text, profile('task-tools')]), objective, user, 'worker', admit, new Set())).rejects.toMatchObject({ code: 'NO_MODEL', message: expect.stringContaining('tool calling is not available') });
+  });
+
+  it('keeps text-only models eligible for roles that receive no personal task tool', async () => {
+    const text = textOnly(); const models = gateway([text, profile('task-tools')]);
+    expect((await selectModel(models, personalTask(), user, 'planner', admit, new Set())).model.id).toBe(text.id);
+    const ordinary = personalTask(); delete ordinary.options.assistantId;
+    expect((await selectModel(models, ordinary, user, 'worker', admit, new Set())).model.id).toBe(text.id);
+  });
+});
+
 describe('model diversity preserves suitability', () => {
+  it('uses matching fixed task probes ahead of speed, without overriding hardware admission',async()=>{
+    const slow=profile('measured-coding',{tokensPerSecond:1,details:{digest:'d',runtimeVersion:'1',taskFit:{protocol:'relay-task-fit-v1',digest:'d',runtimeVersion:'1',measuredAt:new Date().toISOString(),scores:{coding:{passed:2,total:2},reasoning:{passed:0,total:2},general:{passed:1,total:2}}}}});
+    const fast=profile('fast',{tokensPerSecond:20});const objective=task();objective.objective='Fix a repository bug';
+    const selected=await selectModel(gateway([fast,slow]),objective,user,'worker',admit,new Set());
+    expect(selected.model.id).toBe(slow.id);expect(selected.reasons.join(' ')).toContain('2/2');
+    const safe:Admit=async model=>model.id===slow.id?{...allowed,allowed:false,decision:'queue'}:allowed;
+    expect((await selectModel(gateway([fast,slow]),objective,user,'worker',safe,new Set())).model.id).toBe(fast.id);
+    slow.details.digest='changed';expect((await selectModel(gateway([fast,slow]),objective,user,'worker',admit,new Set())).model.id).toBe(fast.id);
+  });
   it('does not bypass the mandatory-thinking penalty for security review', async () => {
     const instruct = profile('instruct');
     expect((await selectModel(gateway([instruct, thinking()]), task(), user, 'security_reviewer', admit, new Set())).model.id).toBe(instruct.id);

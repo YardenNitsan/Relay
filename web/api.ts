@@ -8,11 +8,12 @@ const sessionListeners = new Set<(error: ApiError) => void>();
 export interface UserPermissions {
   providers: string[]; workspaceIds: string[]; maxAccess: 'read_only' | 'supervised' | 'workspace';
   maxConcurrentTasks: number; maxCallsPerTask: number; maxSecondsPerTask: number; dailyCloudBudgetUsd: number;
+  allowUnpricedCloud?: boolean; externalModelAccess?: boolean;
   networkOrigins?: string[]; maxNetworkAccess?: 'deny' | 'ask' | 'allow';
   mcpServerIds?: string[];
 }
-export interface SessionUser { id: string; name: string; email: string | null; role: 'owner' | 'trusted' | 'chat'; enabled: boolean; permissions: UserPermissions; createdAt: string; lastActiveAt: string | null }
-export interface SessionInfo { user?: SessionUser; remote?: boolean; hostName?: string }
+export interface SessionUser { id: string; name: string; email: string | null; role: 'owner' | 'trusted' | 'chat'; enabled: boolean; permissions: UserPermissions; createdAt: string; lastActiveAt: string | null; registrationStatus?: 'pending' | 'approved' | 'denied'; accessRequestedAt?: string | null }
+export interface SessionInfo { user?: SessionUser; remote?: boolean; hostName?: string; connection?: 'local' | 'lan' | 'remote' }
 
 export class ApiError extends Error {
   constructor(message: string, readonly status: number, readonly code?: string) {
@@ -28,7 +29,9 @@ export function onSessionInvalidated(listener: (error: ApiError) => void): () =>
 
 function invalidateSession(error: ApiError) {
   if (blockedSessionError) return;
-  blockedSessionError = currentSession?.remote === false
+  blockedSessionError = currentSession?.connection === 'lan'
+    ? new ApiError('This session expired or was revoked. Ask the host owner for a new invitation.', 401, 'LAN_PAIRING_REQUIRED')
+    : currentSession?.remote === false
     ? new ApiError('This session expired or was revoked. Pair this browser with the local host again.', 401, 'PAIRING_REQUIRED')
     : error;
   sessionEpoch++;
@@ -97,7 +100,7 @@ export async function api<T>(path: string, options: { method?: 'GET' | 'POST' | 
     const payload = await response.json().catch(() => null) as { error?: string; code?: string } | null;
     assertSessionEpoch(epoch);
     const error = new ApiError(payload?.error ?? `The service returned HTTP ${response.status}.`, response.status, payload?.code);
-    if (response.status === 401 || response.status === 403 && ['NOT_INVITED', 'IDENTITY_CHANGED', 'USER_DISABLED'].includes(error.code ?? '')) invalidateSession(error);
+    if (response.status === 401 || response.status === 403 && ['NOT_INVITED', 'IDENTITY_CHANGED', 'USER_DISABLED', 'REMOTE_PENDING', 'REMOTE_DENIED', 'REMOTE_DISABLED'].includes(error.code ?? '')) invalidateSession(error);
     throw error;
   }
   if (response.status === 204) return undefined as T;

@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { assertTransition, buildGraph, readySteps } from '../server/orchestration/lifecycle.js';
+import { assertTransition, buildGraph, buildTaskGraph, readySteps } from '../server/orchestration/lifecycle.js';
 import { buildContext } from '../server/orchestration/context.js';
+import type { TaskOptions } from '../shared/types.js';
+
+const balanced:TaskOptions={depth:'balanced',modelId:null,access:'read_only',workspaceId:null,contextTokens:8192,budget:{maxCalls:8,maxSeconds:120,maxIterations:4,maxCostUsd:null,localOnly:true}};
 
 describe('task lifecycle and graph', () => {
   it('prevents completed tasks restarting and waiting tasks skipping verification', () => {
@@ -18,6 +21,26 @@ describe('task lifecycle and graph', () => {
     expect(readySteps(graph).map(s => s.role)).toEqual(['security_reviewer']);
     graph[2].status = 'completed';
     expect(readySteps(graph).map(s => s.role)).toEqual(['worker']);
+  });
+  it('uses one worker for ordinary Balanced chat while preserving its selected depth',()=>{
+    const options={...balanced,network:{mode:'deny' as const,allowedOrigins:[]},mcpServerIds:[],verification:{requiredReads:[]}};
+    expect(buildTaskGraph('chat',options).map(step=>step.role)).toEqual(['worker']);expect(options.depth).toBe('balanced');
+  });
+  it.each<[string,Partial<TaskOptions>]>([
+    ['workspace',{workspaceId:'workspace'}],
+    ['host access',{access:'unrestricted'}],
+    ['confirmed host grant',{hostAccessConfirmed:true}],
+    ['specialist',{assistantId:'personal'}],
+    ['network tool',{network:{mode:'allow',allowedOrigins:[]}}],
+    ['network approval',{network:{mode:'ask',allowedOrigins:[]}}],
+    ['external tool',{mcpServerIds:['documents']}],
+    ['required verification',{verification:{requiredReads:[{path:'result.txt',expectedSha256:'a'.repeat(64)}]}}],
+  ])('retains Balanced review for %s',(_name,overrides)=>{
+    expect(buildTaskGraph('work',{...balanced,...overrides}).map(step=>step.role)).toEqual(['worker','reviewer']);
+  });
+  it.each(['fast','deep','maximum'] as const)('preserves the existing %s graph even without tools',depth=>{
+    const expected=buildGraph('unchanged',depth).map(step=>step.role);
+    expect(buildTaskGraph('unchanged',{...balanced,depth}).map(step=>step.role)).toEqual(expected);
   });
 });
 

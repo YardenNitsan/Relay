@@ -1,8 +1,13 @@
-import Fastify, { type FastifyInstance, type FastifyRequest } from 'fastify';
+import Fastify, { LogController, type FastifyInstance, type FastifyRequest } from 'fastify';
 import cookie from '@fastify/cookie';
 import staticFiles from '@fastify/static';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { assistantIds, assistantDefinitions, assistantLimitations } from '../../shared/assistants.js';
+import { LanInvitations } from '../auth/lan.js';
+import type { LanConfig } from '../auth/lan-config.js';
+import { registerInferenceRoutes } from '../inference/routes.js';
+import type { InferenceService } from '../inference/service.js';
 import { hostname } from 'node:os';
 import { randomUUID } from 'node:crypto';
 import { setTimeout as delay } from 'node:timers/promises';
@@ -12,8 +17,9 @@ import { authorizeOptions, authorizeOwner, authorizeWorkspace, chatPermissions, 
 import { Sessions } from '../auth/sessions.js';
 import type { LocalPairing } from '../auth/pairing.js';
 import { RemoteIdentity, type RemoteConfig } from '../auth/remote.js';
+import { remoteSetupSchema, savedRemoteSetup, validateRemoteSetup } from '../auth/remote-config.js';
 import { AppError, publicError } from '../core/errors.js';
-import { row, type Store } from '../db/store.js';
+import { row, workspaceScope, type Store } from '../db/store.js';
 import type { Engine } from '../orchestration/engine.js';
 import type { Providers } from '../providers/index.js';
 import type { ToolBroker } from '../tools/index.js';
@@ -21,21 +27,33 @@ import { getHardware, assessModel } from '../hardware/index.js';
 import { getResourcePolicy } from '../hardware/config.js';
 import { resourceRoutes } from './resources.js';
 import { registerHistoryRoutes } from './history.js';
+import {registerUsageRoutes} from './usage.js';
+import {registerGoogleOAuthRoutes} from './google-oauth.js';
+import type {GoogleOAuth} from '../providers/google-oauth.js';
+import {documentRoutes} from './documents.js';
 import { calibrationRoutes } from './calibration.js';
 import { mcpRoutes } from './mcp.js';
 import { verificationContractSchema } from '../orchestration/required-reads.js';
 import { networkPolicySchema } from '../tools/network-policy.js';
 import { installBoundary, RateLimiter, routeId } from './boundary.js';
 
-const taskOptions=z.object({depth:z.enum(['fast','balanced','deep','maximum']),modelId:z.string().max(200).nullable(),access:z.enum(['read_only','supervised','workspace','unrestricted']),hostAccessConfirmed:z.boolean().optional(),workspaceId:z.string().uuid().nullable(),contextTokens:z.number().int().min(2048).max(131072),cloudPolicy:z.enum(['local_only','allow','ask']).default('local_only'),verification:verificationContractSchema.optional(),network:networkPolicySchema.optional(),mcpServerIds:permissionSchema.shape.mcpServerIds,modelSelection:z.enum(['preferred','required']).optional(),budget:z.object({maxCalls:z.number().int().min(1).max(64),maxSeconds:z.number().int().min(30).max(3600),maxIterations:z.number().int().min(1).max(16),maxCostUsd:z.number().min(0).max(100).nullable(),localOnly:z.boolean()})});
-const providerId=z.enum(['ollama','lmstudio','openai','anthropic','gemini']);
+const taskOptions=z.object({efficiency:z.enum(['efficient','standard']).optional(),assistantId:z.enum(assistantIds).optional(),depth:z.enum(['fast','balanced','deep','maximum']),modelId:z.string().max(200).nullable(),access:z.enum(['read_only','supervised','workspace','unrestricted']),hostAccessConfirmed:z.boolean().optional(),workspaceId:z.string().uuid().nullable(),contextTokens:z.number().int().min(2048).max(131072),cloudPolicy:z.enum(['local_only','allow','ask']).default('local_only'),verification:verificationContractSchema.optional(),network:networkPolicySchema.optional(),mcpServerIds:permissionSchema.shape.mcpServerIds,modelSelection:z.enum(['preferred','required']).optional(),budget:z.object({maxOutputTokens:z.number().int().min(256).max(8192).optional(),maxCalls:z.number().int().min(1).max(64),maxSeconds:z.number().int().min(30).max(3600),maxIterations:z.number().int().min(1).max(16),maxCostUsd:z.number().min(0).max(100).nullable(),localOnly:z.boolean()})});
+const providerId=z.enum(['ollama','lmstudio','openai','anthropic','gemini','xai','deepseek']);
 export interface RemoteControl {config:RemoteConfig|null;enabled:boolean;listening:boolean;}
-export interface Services {store:Store;engine:Engine;providers:Providers;broker:ToolBroker;remoteControl?:RemoteControl;pairing?:LocalPairing;}
-export interface AppOptions {port?:number;remote?:RemoteConfig;remoteIdentity?:RemoteIdentity;staticRoot?:string;logging?:boolean;}
+export interface Services {store:Store;engine:Engine;providers:Providers;broker:ToolBroker;googleOAuth?:GoogleOAuth;remoteControl?:RemoteControl;pairing?:LocalPairing;inference?:InferenceService;lanControl?:{configured:boolean;listening:boolean;origin:string|null;error:string|null};}
+export interface AppOptions {lan?:LanConfig;tls?:{cert:Buffer;key:Buffer};port?:number;remote?:RemoteConfig;remoteIdentity?:RemoteIdentity;staticRoot?:string;logging?:boolean;}
 
 // Both loopback listeners share the same Store and therefore the same admission
 // counters. These limits bound open connections, not merely requests per minute.
 const streamPools=new WeakMap<Store,{total:number;users:Map<string,number>}>();
+const providerMutations=new WeakMap<Store,Map<string,Promise<void>>>();
+async function serializeProviderMutation<T>(store:Store,key:string,action:()=>Promise<T>):Promise<T>{
+  let pending=providerMutations.get(store);if(!pending){pending=new Map();providerMutations.set(store,pending);}
+  const result=(pending.get(key)??Promise.resolve()).then(action);
+  const settled=result.then(()=>{},()=>{});pending.set(key,settled);
+  void settled.then(()=>{if(pending.get(key)===settled)pending.delete(key);});
+  return result;
+}
 function reserveStream(store:Store,userId:string):()=>void {
   let pool=streamPools.get(store);
   if(!pool){pool={total:0,users:new Map()};streamPools.set(store,pool);}
@@ -48,23 +66,34 @@ function reserveStream(store:Store,userId:string):()=>void {
 
 export async function createApp(services:Services,options:AppOptions={}):Promise<FastifyInstance> {
   const {store,engine,providers,broker}=services;
-  const app=Fastify({logger:options.logging?{level:'info',redact:['req.headers.authorization','req.headers.cookie','req.headers["cf-access-jwt-assertion"]','req.headers["x-relay-csrf"]','req.body.token','res.headers["set-cookie"]']}:false,bodyLimit:1024*1024,requestTimeout:15000,connectionTimeout:10000,keepAliveTimeout:72000});
+  const app=Fastify({logController:new LogController({disableRequestLogging:true}),...options.tls?{https:options.tls}:{},logger:options.logging?{level:'info',redact:['req.headers.authorization','req.headers.cookie','req.headers["cf-access-jwt-assertion"]','req.headers["x-relay-csrf"]','req.headers["x-api-key"]','req.body.token','req.body.key','req.body.clientSecret','req.body.code','req.body.state','res.headers["set-cookie"]']}:false,bodyLimit:1024*1024,requestTimeout:15000,connectionTimeout:10000,keepAliveTimeout:72000});
   await app.register(cookie);
   const port=options.port??4317;
-  const origins=options.remote?[options.remote.publicOrigin]:[`http://127.0.0.1:${port}`,`http://localhost:${port}`, ...(process.env.RELAY_DEV==='1'?['http://127.0.0.1:5178','http://localhost:5178']:[])];
-  installBoundary(app,origins,!!options.remote);
-  const sessions=new Sessions(store,!!options.remote);await sessions.initialize();
+  const origins=options.lan?[options.lan.origin]:options.remote?[options.remote.publicOrigin]:[`http://127.0.0.1:${port}`,`http://localhost:${port}`, ...(process.env.RELAY_DEV==='1'?['http://127.0.0.1:5178','http://localhost:5178']:[])];
+  installBoundary(app,origins,!!options.remote||!!options.lan);
+  const sessions=new Sessions(store,!!options.remote||!!options.lan);await sessions.initialize();
   const identity=options.remoteIdentity??(options.remote?new RemoteIdentity(store,options.remote):null);
   const principals=new WeakMap<FastifyRequest,Principal>();const externalUsers=new WeakMap<FastifyRequest,string>();
   const identityExpiries=new WeakMap<FastifyRequest,number>();
   const activeStreams=new Set<()=>void>();
   app.addHook('preClose',async()=>{for(const close of [...activeStreams])close();});
-  const limiter=new RateLimiter();const pairingLimiter=new RateLimiter();
+  const limiter=new RateLimiter();const pairingLimiter=new RateLimiter();const remoteAdmissionLimiter=new RateLimiter();const providerLimiter=new RateLimiter();
   app.addHook('onRequest',async request=>{
     if(identity) {
+      // All tunnel traffic is loopback: bound expensive identity work globally,
+      // including valid-but-pending identities that cannot receive a session.
+      remoteAdmissionLimiter.check('remote-gateway',1200);
       if(services.remoteControl&&!services.remoteControl.enabled)throw new AppError('REMOTE_DISABLED','Remote access is disabled by the host owner',403);
       const header=request.headers['cf-access-jwt-assertion'];
-      const verified=await identity.authenticateContext(typeof header==='string'?header:undefined);externalUsers.set(request,verified.userId);identityExpiries.set(request,verified.expiresAtMs);
+      let verified;
+      try {verified=await identity.authenticateContext(typeof header==='string'?header:undefined);}
+      catch(error){
+        // A verified pending/disabled identity may load only the inert browser shell.
+        // Every API, including session creation, still returns the access decision.
+        if(error instanceof AppError&&['REMOTE_PENDING','REMOTE_DENIED','NOT_INVITED'].includes(error.code)&&!request.url.startsWith('/api/')&&['GET','HEAD'].includes(request.method))return;
+        throw error;
+      }
+      externalUsers.set(request,verified.userId);identityExpiries.set(request,verified.expiresAtMs);
       limiter.check(verified.userId,180);
     } else if(request.url.startsWith('/api/')) limiter.check(request.ip,300);
     const path=request.url.split('?')[0];
@@ -74,21 +103,57 @@ export async function createApp(services:Services,options:AppOptions={}):Promise
   });
   const principal=(request:FastifyRequest):Principal=>{const p=principals.get(request);if(!p)throw new AppError('AUTH_REQUIRED','Authentication required',401);return p;};
   const owner=(request:FastifyRequest)=>{const p=principal(request);authorizeOwner(p);return p;};
+  const personalProvider=async<T>(request:FastifyRequest,action:(scope:{p:Principal;id:z.infer<typeof providerId>;gateway:Providers})=>Promise<T>):Promise<T>=>{
+    const p=principal(request),id=providerId.parse(routeId(request));
+    providerLimiter.check(p.user.id,20);
+    if(!p.user.permissions.providers.includes(id))throw new AppError('PROVIDER_DENIED','This provider is not granted to your account.',403);
+    if(id==='ollama'||id==='lmstudio')authorizeOwner(p);
+    return serializeProviderMutation(store,`${p.user.id}/${id}`,async()=>{
+      if(!await sessions.live(p))throw new AppError('SESSION_REVOKED','This session is no longer authorized',401);
+      return action({p,id,gateway:await providers.forUser(p.user.id)});
+    });
+  };
   resourceRoutes(app,store,providers,owner);
   registerHistoryRoutes(app,store,principal);
+  registerUsageRoutes(app,store,providers,principal);
+  if(services.googleOAuth)registerGoogleOAuthRoutes(app,services.googleOAuth,providers,store,principal,owner,p=>sessions.live(p),(userId,work)=>serializeProviderMutation(store,`${userId}/gemini`,work));
   calibrationRoutes(app,store,engine,providers,owner);
   await mcpRoutes(app,store,broker.mcp,principal,owner);
   const task=async(request:FastifyRequest)=>store.task(routeId(request),principal(request).user.id);
   const remoteEnabled=()=>services.remoteControl?services.remoteControl.enabled&&services.remoteControl.listening:!!options.remote;
-  const systemStatus=async()=>{const control=await store.control();return {stopped:control.stopped,stopGeneration:control.generation,database:store.db.kind,sandbox:await broker.sandboxStatus(),version:'0.1.0',hostName:hostname(),remoteEnabled:remoteEnabled()};};
+  const systemStatus=async()=>{const control=await store.control();return {stopped:control.stopped,stopGeneration:control.generation,database:store.db.kind,sandbox:await broker.sandboxStatus(),version:'0.1.1',hostName:hostname(),remoteEnabled:remoteEnabled()};};
   app.setErrorHandler((error,request,reply)=>{
     const code=error instanceof AppError?error.code:error instanceof ZodError?'VALIDATION_ERROR':'OPERATION_FAILED';
     const status=error instanceof AppError?error.status:error instanceof ZodError?400:error&&typeof error==='object'&&'statusCode' in error&&typeof error.statusCode==='number'?error.statusCode:500;
     if(status>=500)app.log.error({code,requestId:request.id,message:publicError(error)},'Operation failed');
     reply.code(status).send({error:error instanceof ZodError?error.issues.map(i=>`${i.path.join('.')}: ${i.message}`).slice(0,4).join('; '):publicError(error),code});
   });
-  app.get('/api/session',async(request,reply)=>({...await sessions.open(request,reply,externalUsers.get(request)??'owner',!!identity),hostName:hostname()}));
+  const connection=options.lan?'lan':options.remote?'remote':'local';
+  const invitations=new LanInvitations(store);
+  if(options.lan&&services.inference)registerInferenceRoutes(app,services.inference);
+  app.get('/api/session',async(request,reply)=>{
+    let userId=externalUsers.get(request)??'owner',version:number|undefined;
+    if(options.lan){try{const p=await sessions.principal(request);userId=p.user.id;version=p.user.sessionVersion;}catch{throw new AppError('LAN_PAIRING_REQUIRED','Enter an invitation issued by the host owner to connect this device.',401);}}
+    return {...await sessions.open(request,reply,userId,!!identity||!!options.lan,version),hostName:hostname(),connection};
+  });
+  app.get('/api/admin/lan',async request=>{owner(request);return services.lanControl??{configured:false,listening:false,origin:null,error:null};});
+  app.post('/api/admin/users/:id/lan-invitation',async request=>{owner(request);return invitations.issue(routeId(request));});
+  app.get('/api/assistants',async request=>{
+    const p=principal(request),localOwner=p.user.role==='owner'&&!p.remote;
+    const personalWorkspace=(await store.db.query('SELECT id FROM workspaces WHERE owner_user_id=$1 LIMIT 1',[p.user.id])).length>0;
+    const permitted=(name:string)=>name.startsWith('host_')?localOwner:name==='personal_tasks'?true:name==='http_get'?localOwner||p.user.permissions.maxNetworkAccess&&p.user.permissions.maxNetworkAccess!=='deny':name==='mcp_call'?localOwner||!!p.user.permissions.mcpServerIds?.length:localOwner||personalWorkspace||p.user.permissions.workspaceIds.length>0;
+    return {assistants:assistantDefinitions.map(profile=>({id:profile.id,name:profile.name,description:profile.description,available:true,status:profile.integrationRequirements.length?'limited':'ready',tools:profile.allowedTools.filter(name=>permitted(name)&&broker.definitions().some(tool=>tool.name===name)),limitations:assistantLimitations(profile.id),requiredIntegration:profile.integrationRequirements[0],...(profile.integrationRequirements.length?{integrationState:'not_implemented'}:{})}))};
+  });
+  app.get('/api/inference/tokens',async request=>{const p=principal(request);return {enabled:!!services.inference&&(p.user.role==='owner'||p.user.permissions.externalModelAccess===true),tokens:services.inference?await services.inference.tokens.list(p.user.id):[],endpoints:{local:'http://127.0.0.1:4315/v1',...(services.lanControl?.listening?{lan:services.lanControl.origin+'/v1'}:{})}};});
+  app.post('/api/inference/tokens',async request=>{const p=principal(request);if(!services.inference)throw new AppError('INFERENCE_UNAVAILABLE','The inference gateway is not configured.',503);return services.inference.tokens.issue(p.user.id,request.body,p.user.sessionVersion);});
+  app.delete('/api/inference/tokens/:id',async request=>{const p=principal(request);if(!services.inference)throw new AppError('INFERENCE_UNAVAILABLE','The inference gateway is not configured.',503);await services.inference.tokens.revoke(p.user.id,routeId(request));services.inference.cancelToken(routeId(request));return {revoked:true};});
+  app.post('/api/session/logout',async(request,reply)=>{await sessions.close(request,reply,principal(request));return {loggedOut:true};});
   app.post('/api/session/pair',async(request,reply)=>{
+    if(options.lan){
+      if(!request.headers.origin||!origins.includes(request.headers.origin))throw new AppError('BAD_ORIGIN','Pairing requires the exact LAN origin.',403);
+      pairingLimiter.check(request.ip,10);const {token}=z.object({token:z.string().trim().min(1).max(128)}).strict().parse(request.body);
+      const invitation=await invitations.redeem(token);return {...await sessions.open(request,reply,invitation.userId,true,invitation.sessionVersion),hostName:hostname(),connection};
+    }
     if(identity||options.remote)throw new AppError('LOCAL_ONLY','Owner pairing is available only at the local host address.',403);
     if(!request.headers.origin||!origins.includes(request.headers.origin))throw new AppError('BAD_ORIGIN','Pairing requires the exact local application origin.',403);
     pairingLimiter.check(request.ip,10);
@@ -100,7 +165,7 @@ export async function createApp(services:Services,options:AppOptions={}):Promise
     return {...session,hostName:hostname()};
   });
   app.get('/api/status',async()=>systemStatus());
-  app.post('/api/stop',async(request)=>{owner(request);await engine.stopAll();return systemStatus();});
+  app.post('/api/stop',async(request)=>{owner(request);services.inference?.stopAll();await engine.stopAll();return systemStatus();});
   app.post('/api/resume',async(request)=>{owner(request);await engine.resumeScheduling();return systemStatus();});
   app.get('/api/conversations',async request=>store.conversations(principal(request).user.id));
   app.post('/api/conversations',async request=>{
@@ -111,7 +176,7 @@ export async function createApp(services:Services,options:AppOptions={}):Promise
   app.post('/api/conversations/start',async request=>{
     const p=principal(request);
     const body=z.object({requestId:z.string().uuid(),content:z.string().trim().min(1).max(32000),options:taskOptions}).strict().parse(request.body);
-    const options=authorizeOptions(p,body.options as TaskOptions);
+    const options=authorizeOptions(p,body.options as TaskOptions,await workspaceScope(store.db,body.options.workspaceId));
     if(options.workspaceId&&!((await broker.listWorkspaces()).some(w=>w.id===options.workspaceId)))throw new AppError('WORKSPACE_NOT_FOUND','Workspace not found',404);
     const created=await store.createTask(body.requestId,body.content,options,p.user.id,p.user.sessionVersion,true);
     if(created.task.status==='created')engine.enqueue(created.task.id);
@@ -120,7 +185,7 @@ export async function createApp(services:Services,options:AppOptions={}):Promise
   app.post('/api/conversations/:id/messages',async request=>{
     const p=principal(request);
     const body=z.object({content:z.string().trim().min(1).max(32000),options:taskOptions}).parse(request.body);
-    const options=authorizeOptions(p,body.options as TaskOptions);
+    const options=authorizeOptions(p,body.options as TaskOptions,await workspaceScope(store.db,body.options.workspaceId));
     const active=await store.db.query("SELECT id FROM tasks WHERE user_id=$1 AND status NOT IN ('completed','failed','cancelled','paused')",[p.user.id]);
     if(active.length>=p.user.permissions.maxConcurrentTasks)throw new AppError('USER_TASK_QUOTA','Your active task limit is reached. Wait or stop a task.',429);
     if(options.workspaceId&&!((await broker.listWorkspaces()).some(w=>w.id===options.workspaceId)))throw new AppError('WORKSPACE_NOT_FOUND','Workspace not found',404);
@@ -131,14 +196,14 @@ export async function createApp(services:Services,options:AppOptions={}):Promise
     return {task:record,steps,events,approvals,verification,changes};
   });
   app.post('/api/tasks/:id/cancel',async request=>{const record=await task(request);await engine.cancel(record.id);return store.task(record.id);});
-  app.post('/api/tasks/:id/resume',async request=>{const record=await task(request);const p=principal(request);authorizeOptions(p,record.options);return engine.resume(record.id,p.user.sessionVersion);});
+  app.post('/api/tasks/:id/resume',async request=>{const record=await task(request);const p=principal(request);authorizeOptions(p,record.options,await workspaceScope(store.db,record.options.workspaceId));return engine.resume(record.id,p.user.sessionVersion);});
   app.get('/api/tasks/:id/changes',async request=>broker.changes((await task(request)).id));
   app.post('/api/tasks/:id/revert',async request=>{
     const record=await task(request);if(!['completed','paused','cancelled','failed','waiting_for_user'].includes(record.status))throw new AppError('TASK_ACTIVE','Stop the task before reverting a checkpoint',409);
     const p=principal(request);
     if(!record.options.workspaceId)throw new AppError('WORKSPACE_REQUIRED','This task has no authorized workspace',403);
-    authorizeWorkspace(p,record.options.workspaceId);
-    if(p.user.permissions.maxAccess==='read_only')throw new AppError('READ_ONLY','Your current policy does not permit checkpoint changes',403);
+    const workspace=await workspaceScope(store.db,record.options.workspaceId);authorizeWorkspace(p,record.options.workspaceId,workspace);
+    if(workspace?.ownerUserId!==p.user.id&&p.user.permissions.maxAccess==='read_only')throw new AppError('READ_ONLY','Your current policy does not permit checkpoint changes',403);
     const body=z.object({checkpointId:z.string().uuid()}).parse(request.body);await engine.mutateWorkspace(record.options.workspaceId,()=>broker.revert(record.id,body.checkpointId));await store.audit(record.id,'CHECKPOINT_REVERTED',{checkpointId:body.checkpointId,userId:principal(request).user.id});return {reverted:true};
   });
   app.post('/api/approvals/:id',async request=>{
@@ -146,43 +211,76 @@ export async function createApp(services:Services,options:AppOptions={}):Promise
     const approval=await store.decideApproval(routeId(request),decision,principal(request).user.id);engine.approvalChanged(approval.id);return approval;
   });
   app.get('/api/models',async request=>{
-    const p=principal(request);const [models,statuses]=await Promise.all([providers.listModels(),providers.statuses()]);
+    const p=principal(request),gateway=await providers.forUser(p.user.id);
+    const {refreshLocal}=z.object({refreshLocal:z.enum(['1']).optional()}).parse(request.query);
+    if(refreshLocal){providerLimiter.check(p.user.id,20);await gateway.refreshLocalModels();}
+    const [models,statuses]=await Promise.all([gateway.listModels(),gateway.statuses()]);
     return {models:models.filter(m=>p.user.permissions.providers.includes(m.provider)),providers:statuses.filter(s=>p.user.permissions.providers.includes(s.id))};
   });
   app.post('/api/models/assess',async request=>{
     const p=principal(request);const body=z.object({modelId:z.string().max(200),contextTokens:z.number().int().min(2048).max(131072)}).parse(request.body);
-    const model=(await providers.listModels()).find(m=>m.id===body.modelId&&p.user.permissions.providers.includes(m.provider));
+    const model=(await (await providers.forUser(p.user.id)).listModels()).find(m=>m.id===body.modelId&&p.user.permissions.providers.includes(m.provider));
     if(!model)throw new AppError('MODEL_NOT_FOUND','Available model not found',404);return assessModel(model,await getHardware(),body.contextTokens,await getResourcePolicy(store));
   });
   app.get('/api/hardware',async request=>{owner(request);return getHardware();});
-  for(const method of ['POST','DELETE'] as const)app.route({method,url:'/api/providers/:id/key',handler:async request=>{
-    owner(request);const id=providerId.parse(routeId(request));
+  for(const method of ['POST','DELETE'] as const)app.route({method,url:'/api/providers/:id/key',handler:async request=>personalProvider(request,async({p,id,gateway})=>{
     if(id==='ollama'||id==='lmstudio')throw new AppError('LOCAL_RUNTIME','This local runtime does not require a Relay API key.');
-    if(method==='DELETE'){await providers.secrets.remove(id);await providers.verify(id);await store.audit(null,'PROVIDER_DISCONNECTED',{provider:id});return {saved:false,storage:'none'};}
-    const {key,persist}=z.object({key:z.string().trim().min(8).max(1000),persist:z.boolean()}).parse(request.body);
-    const result=await providers.secrets.set(id,key,persist);await providers.verify(id);await store.audit(null,'PROVIDER_CONNECTED',{provider:id,storage:result.storage});return result;
-  }});
-  app.post('/api/providers/:id/verify',async request=>{owner(request);return providers.verify(providerId.parse(routeId(request)));});
-  app.post('/api/providers/:id/enabled',async request=>{
-    owner(request);const id=providerId.parse(routeId(request));const {enabled}=z.object({enabled:z.boolean()}).parse(request.body);providers.setEnabled(id,enabled);
-    await store.db.query('INSERT INTO provider_connections(provider,enabled) VALUES ($1,$2) ON CONFLICT(provider) DO UPDATE SET enabled=excluded.enabled',[id,enabled]);await store.audit(null,'PROVIDER_ENABLED',{provider:id,enabled});return providers.verify(id);
+    if(method==='DELETE'){gateway.credentialsChanged(id);await gateway.secrets.remove(id).finally(()=>gateway.credentialsChanged(id));await gateway.verify(id);await store.audit(null,'PROVIDER_DISCONNECTED',{userId:p.user.id,provider:id});return {saved:false,storage:'none'};}
+    if(id==='gemini'&&services.googleOAuth&&(await services.googleOAuth.status(p.user.id)).connected)throw new AppError('GOOGLE_CONNECTED','Disconnect Google before saving a Gemini API key.',409);
+    const {key,persist}=z.object({key:z.string().trim().min(8).max(1000),persist:z.boolean()}).strict().parse(request.body);
+    gateway.credentialsChanged(id);const result=await gateway.secrets.set(id,key,persist).finally(()=>gateway.credentialsChanged(id));if(id==='gemini')await services.googleOAuth?.useApiKey(p.user.id);await gateway.verify(id);await store.audit(null,'PROVIDER_CONNECTED',{userId:p.user.id,provider:id,storage:result.storage});return result;
+  })});
+  app.post('/api/providers/:id/verify',async request=>personalProvider(request,async({id,gateway})=>gateway.verify(id)));
+  app.post('/api/providers/:id/enabled',async request=>personalProvider(request,async({p,id,gateway})=>{
+    const {enabled}=z.object({enabled:z.boolean()}).strict().parse(request.body);
+    if(p.user.id==='owner')await store.db.query('INSERT INTO provider_connections(provider,enabled) VALUES ($1,$2) ON CONFLICT(provider) DO UPDATE SET enabled=excluded.enabled',[id,enabled]);
+    else await store.db.query('INSERT INTO user_provider_connections(user_id,provider,enabled) VALUES ($1,$2,$3) ON CONFLICT(user_id,provider) DO UPDATE SET enabled=excluded.enabled',[p.user.id,id,enabled]);
+    gateway.setEnabled(id,enabled);await store.audit(null,'PROVIDER_ENABLED',{userId:p.user.id,provider:id,enabled});return gateway.verify(id);
+  }));
+  const workspaceAccess=async(p:Principal,id:string,write=false)=>{
+    if(!await sessions.live(p))throw new AppError('REVOKED','Your account session was revoked',401);
+    const workspace=await workspaceScope(store.db,id);
+    authorizeWorkspace(p,id,workspace);
+    if(!workspace)throw new AppError('WORKSPACE_NOT_FOUND','Workspace not found',404);
+    if(write&&workspace.ownerUserId!==p.user.id&&p.user.permissions.maxAccess==='read_only')throw new AppError('READ_ONLY','Your account cannot change this shared workspace',403);
+    return workspace;
+  };
+  documentRoutes(app,store,engine,broker,principal,workspaceAccess);
+  app.get('/api/workspaces',async request=>{
+    const p=principal(request),records=(await store.db.query('SELECT * FROM workspaces ORDER BY created_at')).map(record=>row<import('../../shared/types.js').Workspace>(record));
+    const visible=new Set(records.filter(workspace=>{try{authorizeWorkspace(p,workspace.id,workspace);return true;}catch{return false;}}).map(workspace=>workspace.id));
+    return (await broker.listWorkspaces()).filter(workspace=>visible.has(workspace.id));
   });
-  app.get('/api/workspaces',async request=>{const p=principal(request);return (await broker.listWorkspaces()).filter(w=>p.user.role==='owner'&&!p.remote||p.user.permissions.workspaceIds.includes(w.id));});
   app.post('/api/workspaces',async request=>{
-    owner(request);const body=z.object({name:z.string().trim().min(1).max(128),sourcePath:z.string().max(2048).optional()}).parse(request.body);
-    const workspace=await broker.createWorkspace(body.name,body.sourcePath);await store.saveWorkspace(workspace);await store.audit(null,'WORKSPACE_CREATED',{workspaceId:workspace.id,imported:!!body.sourcePath});return workspace;
+    const p=principal(request),body=z.object({name:z.string().trim().min(1).max(128),sourcePath:z.string().max(2048).optional(),personal:z.boolean().optional()}).strict().parse(request.body);
+    const localOwner=p.user.role==='owner'&&!p.remote;
+    if(body.personal&&body.sourcePath)throw new AppError('WORKSPACE_IMPORT','Personal workspaces use uploads rather than host folder imports.',403);
+    if(body.sourcePath&&!localOwner)throw new AppError('WORKSPACE_IMPORT','Only the local owner may import host folders. Upload your own files instead.',403);
+    const workspace=await broker.createWorkspace(body.name,body.sourcePath,localOwner&&!body.personal?undefined:p.user.id,async()=>{if(!await sessions.live(p))throw new AppError('REVOKED','Your account session was revoked',401);});
+    await store.saveWorkspace(workspace);await store.audit(null,'WORKSPACE_CREATED',{workspaceId:workspace.id,imported:!!body.sourcePath,userId:p.user.id});return workspace;
   });
-  app.get('/api/workspaces/:id/files',async request=>{authorizeWorkspace(principal(request),routeId(request));return {files:await broker.listFiles(routeId(request))};});
+  app.get('/api/workspaces/:id/files',async request=>{await workspaceAccess(principal(request),routeId(request));return {files:await broker.listFiles(routeId(request))};});
+  app.get('/api/workspaces/:id/file',async request=>{
+    await workspaceAccess(principal(request),routeId(request));const {path}=z.object({path:z.string().min(1).max(512)}).strict().parse(request.query);
+    return broker.readFile(routeId(request),path);
+  });
   app.post('/api/workspaces/:id/files',async request=>{
-    const p=principal(request);authorizeWorkspace(p,routeId(request));if(p.user.permissions.maxAccess==='read_only')throw new AppError('READ_ONLY','Your account cannot upload workspace files',403);
-    const body=z.object({path:z.string().min(1).max(512),content:z.string().max(256000)}).parse(request.body);
-    await engine.mutateWorkspace(routeId(request),()=>broker.upload(routeId(request),body.path,body.content));await store.audit(null,'FILE_UPLOADED',{workspaceId:routeId(request),path:body.path,userId:p.user.id});return {uploaded:true};
+    const p=principal(request),id=routeId(request);await workspaceAccess(p,id,true);
+    const body=z.object({path:z.string().min(1).max(512),content:z.string().max(256000)}).strict().parse(request.body);
+    await engine.mutateWorkspace(id,()=>broker.upload(id,body.path,body.content,async()=>{await workspaceAccess(p,id,true);}));await store.audit(null,'FILE_UPLOADED',{workspaceId:id,path:body.path,userId:p.user.id});return {uploaded:true};
   });
+  for(const method of ['PUT','DELETE'] as const)app.route({method,url:'/api/workspaces/:id/file',handler:async request=>{
+    const p=principal(request),id=routeId(request);await workspaceAccess(p,id,true);
+    const common={path:z.string().min(1).max(512),expectedHash:z.string().regex(/^[a-f0-9]{64}$/)};
+    const body=method==='PUT'?z.object({...common,expectedHash:common.expectedHash.nullable(),content:z.string().max(256000)}).strict().parse(request.body):z.object(common).strict().parse(request.body);
+    const result=await engine.mutateWorkspace(id,()=>broker.changeFile(id,body.path,'content' in body?body.content:null,body.expectedHash,async()=>{await workspaceAccess(p,id,true);}));
+    await store.audit(null,method==='PUT'?'FILE_EDITED':'FILE_DELETED',{workspaceId:id,path:body.path,userId:p.user.id});return result;
+  }});
   app.get('/api/events',async(request,reply)=>{
     const p=principal(request);const query=z.object({after:z.coerce.number().int().min(0).max(Number.MAX_SAFE_INTEGER).default(0)}).parse(request.query);
     const header=Number(request.headers['last-event-id']??0);let cursor=Math.max(query.after,Number.isSafeInteger(header)&&header>=0?header:0);
-    const expiresAt=p.remote?identityExpiries.get(request):undefined;
-    if(p.remote&&(expiresAt===undefined||expiresAt<=Date.now()))throw new AppError('REMOTE_AUTH','Gateway authentication expired. Reconnect to continue.',401);
+    const expiresAt=options.remote?identityExpiries.get(request):undefined;
+    if(options.remote&&(expiresAt===undefined||expiresAt<=Date.now()))throw new AppError('REMOTE_AUTH','Gateway authentication expired. Reconnect to continue.',401);
     const release=reserveStream(store,p.user.id);
     const controller=new AbortController();
     let expiryTimer:NodeJS.Timeout|undefined;
@@ -209,7 +307,7 @@ export async function createApp(services:Services,options:AppOptions={}):Promise
       request.raw.socket.setTimeout(0);
       reply.hijack();reply.raw.writeHead(200,{'Content-Type':'text/event-stream','Cache-Control':'no-cache, no-transform','Connection':'keep-alive','X-Accel-Buffering':'no'});await write('retry: 1500\n\n');
       while(!closed) {
-      if(p.remote&&!remoteEnabled()||!await sessions.live(p))break;
+      if(options.remote&&!remoteEnabled()||!await sessions.live(p))break;
       const events=await store.events(cursor,100,p.user.id==='owner'&&!p.remote?undefined:p.user.id);
       for(const e of events) {
         if(closed)break;cursor=e.id;
@@ -226,35 +324,48 @@ export async function createApp(services:Services,options:AppOptions={}):Promise
   return app;
 }
 
-function registerAdmin(app:FastifyInstance,{store,engine,remoteControl}:Services,owner:(request:FastifyRequest)=>Principal,_sessions:Sessions,remote?:RemoteConfig) {
+function registerAdmin(app:FastifyInstance,services:Services,owner:(request:FastifyRequest)=>Principal,_sessions:Sessions,remote?:RemoteConfig) {
+  const {store,engine,providers,remoteControl}=services;
   app.get('/api/admin/users',async request=>{owner(request);return (await store.db.query('SELECT * FROM users ORDER BY created_at')).map(r=>row<User>(r));});
+  const assertSharedGrants=async(ids:string[])=>{for(const id of ids){if((await workspaceScope(store.db,id))?.ownerUserId)throw new AppError('PRIVATE_WORKSPACE','Personal workspaces cannot be shared through host grants.',403);}};
   app.post('/api/admin/users',async request=>{
     owner(request);const body=z.object({name:z.string().trim().min(1).max(100),email:z.email().max(254),role:z.enum(['chat','trusted']).default('chat'),permissions:permissionSchema.optional()}).parse(request.body);
     const permissions=body.permissions??chatPermissions;
+    await assertSharedGrants(permissions.workspaceIds);
     const user=row<User>((await store.db.query('INSERT INTO users(id,name,email,role,permissions) VALUES ($1,$2,$3,$4,$5) RETURNING *',[randomUUID(),body.name,body.email.toLowerCase(),body.role,JSON.stringify(permissions)]))[0]);
     await store.audit(null,'USER_INVITED',{userId:user.id,role:user.role,permissions});return user;
   });
   app.post('/api/admin/users/:id',async request=>{
     owner(request);const id=routeId(request);if(id==='owner')throw new AppError('OWNER_PROTECTED','The local owner cannot be disabled or downgraded');
     const body=z.object({enabled:z.boolean(),permissions:permissionSchema}).parse(request.body);
-    const rows=await store.db.query('UPDATE users SET enabled=$1,permissions=$2,session_version=session_version+1 WHERE id=$3 RETURNING *',[body.enabled,JSON.stringify(body.permissions),id]);
-    if(!rows.length)throw new AppError('NOT_FOUND','User not found',404);await engine.cancelUser(id);await store.audit(null,'USER_POLICY_CHANGED',{userId:id,enabled:body.enabled,permissions:body.permissions});return row<User>(rows[0]);
+    await assertSharedGrants(body.permissions.workspaceIds);
+    const rows=await store.db.query("UPDATE users SET enabled=$1,permissions=$2,session_version=session_version+1,registration_status=CASE WHEN $1 THEN 'approved' ELSE 'denied' END WHERE id=$3 RETURNING *",[body.enabled,JSON.stringify(body.permissions),id]);
+    if(!rows.length)throw new AppError('NOT_FOUND','User not found',404);services.inference?.cancelUser(id);await engine.cancelUser(id);await providers.revokeUser(id);await store.audit(null,'USER_POLICY_CHANGED',{userId:id,enabled:body.enabled,permissions:body.permissions});return row<User>(rows[0]);
   });
   app.post('/api/admin/users/:id/revoke',async request=>{
     owner(request);const id=routeId(request);if(id==='owner')throw new AppError('OWNER_PROTECTED','Use emergency stop for owner work');
-    await store.db.query('UPDATE users SET session_version=session_version+1 WHERE id=$1',[id]);await store.db.query('DELETE FROM sessions WHERE user_id=$1',[id]);await engine.cancelUser(id);await store.audit(null,'USER_SESSIONS_REVOKED',{userId:id});return {revoked:true};
+    await store.db.query('UPDATE users SET session_version=session_version+1 WHERE id=$1',[id]);await store.db.query('DELETE FROM sessions WHERE user_id=$1',[id]);services.inference?.cancelUser(id);await engine.cancelUser(id);await providers.revokeUser(id);await store.audit(null,'USER_SESSIONS_REVOKED',{userId:id});return {revoked:true};
   });
   app.get('/api/admin/sessions',async request=>{owner(request);return (await store.db.query('SELECT id,user_id,remote,user_agent,created_at,last_active_at,expires_at FROM sessions WHERE expires_at>now() ORDER BY created_at DESC')).map(r=>row(r));});
   app.post('/api/admin/sessions/:id/revoke',async request=>{owner(request);await store.db.query('DELETE FROM sessions WHERE id=$1',[routeId(request)]);return {revoked:true};});
   app.get('/api/admin/tasks',async request=>{owner(request);return (await store.db.query("SELECT id,user_id,status,created_at,updated_at,calls_used FROM tasks WHERE status NOT IN ('completed','cancelled','failed') ORDER BY created_at")).map(r=>row(r));});
-  app.post('/api/admin/remote/stop',async request=>{owner(request);const users=await store.db.query("SELECT id FROM users WHERE role<>'owner'");for(const user of users)await engine.cancelUser(String(user.id));return {stopped:true};});
-  const remoteState=()=>{const config=remoteControl?.config??remote;return {enabled:remoteControl?remoteControl.enabled&&remoteControl.listening:!!remote,configured:!!config,listening:remoteControl?.listening??!!remote,publicOrigin:config?.publicOrigin??null,hostName:hostname(),gatewayPort:config?.port??4318,authentication:'Cloudflare Access signed application identity',requiresSetup:!config,localAccessIndependent:true};};
+  app.post('/api/admin/remote/stop',async request=>{owner(request);const users=await store.db.query("SELECT id FROM users WHERE role<>'owner'");for(const user of users){services.inference?.cancelUser(String(user.id));await engine.cancelUser(String(user.id));}return {stopped:true};});
+  const remoteState=async()=>{const config=remoteControl?.config??remote,savedConfig=await savedRemoteSetup(store);return {enabled:remoteControl?remoteControl.enabled&&remoteControl.listening:!!remote,configured:!!config,listening:remoteControl?.listening??!!remote,publicOrigin:config?.publicOrigin??null,hostName:hostname(),gatewayPort:config?.port??4318,registration:config?.registration??'invited',authentication:'Cloudflare Access signed application identity',requiresSetup:!config,localAccessIndependent:true,savedConfig,restartRequired:!!savedConfig&&JSON.stringify(savedConfig)!==JSON.stringify(config),environmentOverride:process.env.RELAY_REMOTE_ENABLED!==undefined};};
   app.get('/api/admin/remote',async request=>{owner(request);return remoteState();});
+  app.post('/api/admin/remote/config',async request=>{
+    owner(request);const setup=remoteSetupSchema.parse(request.body);
+    try{validateRemoteSetup(setup);}catch{throw new AppError('REMOTE_CONFIG','Use an HTTPS public origin, your Cloudflare Access team origin and application audience.',400);}
+    await store.db.transaction(async tx=>{
+      await tx.query('INSERT INTO settings(key,value) VALUES ($1,$2) ON CONFLICT(key) DO UPDATE SET value=excluded.value',['remote_config',JSON.stringify(setup)]);
+      await tx.query('INSERT INTO settings(key,value) VALUES ($1,$2) ON CONFLICT(key) DO UPDATE SET value=excluded.value',['remote_enabled','false']);
+    });
+    await store.audit(null,'REMOTE_CONFIG_SAVED',{registration:setup.registration});return remoteState();
+  });
   app.post('/api/admin/remote/enabled',async request=>{
     owner(request);const {enabled}=z.object({enabled:z.boolean()}).parse(request.body);
     if(!remoteControl?.config||!remoteControl.listening)throw new AppError('REMOTE_NOT_CONFIGURED','Configure and start the authenticated gateway before enabling remote access.',409);
     remoteControl.enabled=enabled;
-    if(!enabled){await store.db.query('DELETE FROM sessions WHERE remote=true');const users=await store.db.query("SELECT id FROM users WHERE role<>'owner'");for(const user of users)await engine.cancelUser(String(user.id));}
+    if(!enabled){await store.db.query('DELETE FROM sessions WHERE remote=true');const users=await store.db.query("SELECT id FROM users WHERE role<>'owner'");for(const user of users){services.inference?.cancelUser(String(user.id));await engine.cancelUser(String(user.id));}}
     await store.db.query('INSERT INTO settings(key,value) VALUES ($1,$2) ON CONFLICT(key) DO UPDATE SET value=excluded.value',['remote_enabled',JSON.stringify(enabled)]);
     await store.audit(null,'REMOTE_ACCESS_CHANGED',{enabled});return remoteState();
   });

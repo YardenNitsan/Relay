@@ -11,6 +11,7 @@ test('local owner explicitly acknowledges real host file access before sending a
   await page.getByRole('combobox', { name: 'Compute depth', exact: true }).selectOption('fast');
   await page.getByRole('textbox', { name: 'Your objective', exact: true }).fill('Explain host file permissions without using any tools.');
   await access.selectOption('supervised');
+  await expect(access).toHaveValue('supervised');
   await access.selectOption('unrestricted');
   const confirmation = page.getByRole('region', { name: 'Confirm host file access', exact: true });
   await expect(confirmation).toBeVisible();

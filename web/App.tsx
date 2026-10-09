@@ -1,7 +1,8 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Activity as ActivityIcon, ChevronDown, Command as CommandIcon, Cpu, Layers, Menu, Moon, PanelRightClose, Plus, Radio, ShieldCheck, Square, Sun, X } from 'lucide-react';
+import { Activity as ActivityIcon, BarChart3, ChevronDown, Command as CommandIcon, Cpu, Layers, Menu, Moon, PanelRightClose, Plus, Radio, ShieldCheck, Square, Sun, X } from 'lucide-react';
 import type { ConversationDetail, SystemStatus, TaskOptions, TaskRecord, Workspace } from '../shared/types';
+import { getAssistantDefinition, type AssistantId } from '../shared/assistants';
 import { api, ApiError, errorMessage, initializeSession, mutation, onSessionInvalidated, refreshSession } from './api';
 import { useRealtime } from './useRealtime';
 import Composer from './components/Composer';
@@ -10,6 +11,10 @@ import Activity from './components/Activity';
 import Connection from './components/Connection';
 import Navigation from './components/Navigation';
 import History from './components/History';
+import GoogleReturn from './components/GoogleReturn';
+import TaskModels from './components/TaskModels';
+import TaskNotifications from './components/TaskNotifications';
+import { useTaskNotifications } from './useTaskNotifications';
 import CommandPalette, { type Command } from './components/CommandPalette';
 import { isActive, Loading, Modal } from './components/ui';
 import type { ModelList } from './components/Models';
@@ -19,7 +24,10 @@ const Hardware = lazy(() => import('./components/Hardware'));
 const Workspaces = lazy(() => import('./components/Workspaces'));
 const Access = lazy(() => import('./components/Access'));
 const Mcp = lazy(() => import('./components/Mcp'));
-type Panel = 'history' | 'models' | 'hardware' | 'workspaces' | 'commands' | 'access' | 'navigation' | 'mcp' | null;
+const Agents = lazy(() => import('./components/Agents'));
+const Clients = lazy(() => import('./components/Clients'));
+const Usage = lazy(() => import('./components/Usage'));
+type Panel = 'history' | 'models' | 'hardware' | 'workspaces' | 'commands' | 'access' | 'navigation' | 'mcp' | 'agents' | 'clients' | 'usage' | 'notifications' | null;
 interface PendingStart { requestId: string; content: string; options: TaskOptions }
 const defaults: TaskOptions = { depth: 'balanced', modelId: null, access: 'read_only', workspaceId: null, contextTokens: 8192, cloudPolicy: 'local_only', budget: { maxCalls: 12, maxSeconds: 600, maxIterations: 5, maxCostUsd: null, localOnly: true } };
 
@@ -67,6 +75,7 @@ export default function App() {
   const realtime = useRealtime(ready, streamGeneration);
   const recentTasks = conversation.data?.tasks ?? [];
   const tasks = historicalTask && !recentTasks.some(task => task.id === historicalTask.id) ? [...recentTasks, historicalTask] : recentTasks;
+  const notifications = useTaskNotifications({ userId: session.data?.user?.id, enabled: ready, events: realtime.events, tasks });
   const latestTask = [...tasks].sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
   const selectedTaskId = taskId && tasks.some(task => task.id === taskId) ? taskId : latestTask?.id ?? null;
   const running = tasks.some(task => isActive(task.status));
@@ -77,6 +86,15 @@ export default function App() {
     if (!permissions) return;
     setOptions(value => ({ ...value, budget: { ...value.budget, maxCalls: Math.min(value.budget.maxCalls, permissions.maxCallsPerTask), maxSeconds: Math.min(value.budget.maxSeconds, permissions.maxSecondsPerTask) } }));
   }, [permissions]);
+  useEffect(() => {
+    if (owner || !permissions || !workspaces.isSuccess) return;
+    const personal = workspaces.data.some(workspace => workspace.id === options.workspaceId && workspace.ownerUserId === session.data?.user?.id);
+    const modes = ['read_only', 'supervised', 'workspace'];
+    const maximum = personal ? 'workspace' : permissions.maxAccess;
+    if (options.access === 'unrestricted' || modes.indexOf(options.access) > modes.indexOf(maximum)) {
+      setOptions(value => ({ ...value, access: maximum, hostAccessConfirmed: false }));
+    }
+  }, [owner, permissions, workspaces.isSuccess, workspaces.data, options.workspaceId, options.access, session.data?.user?.id]);
 
   const selectConversation = useCallback((id: string | null, anchor?: string) => {
     navigationVersion.current++;
@@ -129,6 +147,7 @@ export default function App() {
         ? await mutation<{ task: TaskRecord }>(`/conversations/${conversationId}/messages`, { content, options })
         : await mutation<{ task: TaskRecord }>('/conversations/start', startRequest.current);
       const id = response.task.conversationId;
+      notifications.track(response.task.id);
       startRequest.current = null;
       try { sessionStorage.removeItem(requestKey); } catch { /* Storage is optional. */ }
       if (navigationAtSend === navigationVersion.current) {
@@ -160,6 +179,22 @@ export default function App() {
     finally { setStopBusy(false); }
   };
   const inspect = (id: string, task?: TaskRecord) => { if (task) setHistoricalTask(task); setTaskId(id); setActivity(true); };
+  const selectAgent = async (id: AssistantId | undefined) => {
+    const definition = getAssistantDefinition(id);
+    let workspaceId = options.workspaceId;
+    if (definition?.allowedTools.some(tool => tool.startsWith('file_')) && !workspaceId) {
+      const workspace = await mutation<Workspace>('/workspaces', { name: `${definition.name} files`, personal: true });
+      client.setQueryData<Workspace[]>(['workspaces'], current => [...(current ?? []).filter(item => item.id !== workspace.id), workspace]);
+      workspaceId = workspace.id;
+      void client.invalidateQueries({ queryKey: ['assistants'] });
+    }
+    setOptions(value => {
+      const next = { ...value, workspaceId };
+      if (id) next.assistantId = id; else delete next.assistantId;
+      return next;
+    });
+    setPanel(null);
+  };
   const returnLatest = () => { setMessageId(null); const url = new URL(window.location.href); url.searchParams.delete('message'); window.history.replaceState({}, '', url); };
   const reconnect = async () => {
     try {
@@ -170,9 +205,13 @@ export default function App() {
     } catch (error) { setNotice({ message: errorMessage(error), error: true }); await client.resetQueries({ queryKey: ['session'], exact: true }); }
   };
   const commands: Command[] = [
+    { id: 'notifications', label: 'Task notifications', description: 'Private completion alerts for this browser', action: () => setPanel('notifications') },
     { id: 'new', label: 'New conversation', description: 'Start a new objective', action: () => selectConversation(null) },
     { id: 'history', label: 'Open conversation history', description: 'Return to previous work', action: () => setPanel('history') },
+    { id: 'clients', label: 'Connect an external client', description: 'Account-scoped model API tokens', action: () => setPanel('clients') },
+    { id: 'agents', label: 'Choose an agent', description: 'Specialist roles and current capabilities', action: () => setPanel('agents') },
     { id: 'models', label: 'Choose a model', description: 'Models and provider connections', action: () => setPanel('models') },
+    { id: 'usage', label: 'Usage', description: 'Your token usage and reported provider rate limits', action: () => setPanel('usage') },
     ...(owner ? [{ id: 'mcp', label: 'Manage MCP tools', description: 'Review tool contracts and control server access', action: () => setPanel('mcp') }] : []),
     { id: 'workspace', label: 'Manage workspaces', description: 'Import a project or inspect managed files', action: () => setPanel('workspaces') },
     ...(owner ? [{ id: 'hardware', label: 'Inspect this machine', description: 'Measured resource and execution boundary information', action: () => setPanel('hardware') }, { id: 'access', label: 'Manage access', description: 'Remote gateway, allowed users and session revocation', action: () => setPanel('access') }] : []),
@@ -184,23 +223,30 @@ export default function App() {
 
   if (!ready) return <Connection pending={!sessionFailure && session.isPending} error={sessionFailure ?? session.error} onPaired={data => { client.setQueryData(['session'], data); setSessionFailure(null); setNotice(null); }} onRetry={() => { void reconnect(); }} />;
 
-  return <div className="app"><a className="skip-link" href="#main">Skip to conversation</a><header className="app-header"><button className="brand" onClick={() => selectConversation(null)} aria-label="Relay home"><span className="brand-mark" aria-hidden="true"><i /><i /><i /></span><span>relay</span></button><span className="header-divider" /><button className="conversation-switcher" aria-label="Open conversation history" onClick={() => setPanel('history')}><span>{conversation.data?.conversation.title ?? 'New conversation'}</span><ChevronDown size={14} /></button><button className="icon-button new-conversation" aria-label="New conversation" onClick={() => selectConversation(null)}><Plus size={18} /></button><nav className="main-nav" aria-label="Workspace navigation"><button onClick={() => setPanel('models')} aria-label="Models"><Layers size={16} /><span>Models</span></button>{owner && <><button onClick={() => setPanel('hardware')} aria-label="Machine"><Cpu size={16} /><span>Machine</span></button><button onClick={() => setPanel('access')} aria-label="Access"><ShieldCheck size={16} /><span>Access</span></button></>}<button className="command-trigger" onClick={() => setPanel('commands')} aria-label="Open command palette"><CommandIcon size={16} /><span>Commands</span><kbd>Ctrl K</kbd></button></nav><button className="mobile-navigation" onClick={() => setPanel('navigation')} aria-label="Open navigation"><Menu size={19} /><span>Menu</span></button><button className="icon-button theme-button" aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`} onClick={() => setTheme(value => value === 'light' ? 'dark' : 'light')}>{theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}</button>{owner && <button className="stop-all" onClick={() => { void emergencyStop(); }} disabled={!ready || stopped || stopBusy}><Square size={12} fill="currentColor" /><span>{stopBusy ? 'Stopping…' : stopped ? 'Stopped' : 'Stop all'}</span></button>}</header>
+  return <div className="app"><a className="skip-link" href="#main">Skip to conversation</a><header className="app-header"><button className="brand" onClick={() => selectConversation(null)} aria-label="Relay home"><span className="brand-mark" aria-hidden="true"><i /><i /><i /></span><span>relay</span></button><span className="header-divider" /><button className="conversation-switcher" aria-label="Open conversation history" onClick={() => setPanel('history')}><span>{conversation.data?.conversation.title ?? 'New conversation'}</span><ChevronDown size={14} /></button><button className="icon-button new-conversation" aria-label="New conversation" onClick={() => selectConversation(null)}><Plus size={18} /></button><nav className="main-nav" aria-label="Workspace navigation"><button onClick={() => setPanel('models')} aria-label="Models"><Layers size={16} /><span>Models</span></button><button onClick={() => setPanel('usage')} aria-label="Usage"><BarChart3 size={16} /><span>Usage</span></button>{owner && <><button onClick={() => setPanel('hardware')} aria-label="Machine"><Cpu size={16} /><span>Machine</span></button><button onClick={() => setPanel('access')} aria-label="Access"><ShieldCheck size={16} /><span>Access</span></button></>}<button className="command-trigger" onClick={() => setPanel('commands')} aria-label="Open command palette"><CommandIcon size={16} /><span>Commands</span><kbd>Ctrl K</kbd></button></nav><button className="mobile-navigation" onClick={() => setPanel('navigation')} aria-label="Open navigation"><Menu size={19} /><span>Menu</span></button><button className="icon-button theme-button" aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`} onClick={() => setTheme(value => value === 'light' ? 'dark' : 'light')}>{theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}</button>{owner && <button className="stop-all" onClick={() => { void emergencyStop(); }} disabled={!ready || stopped || stopBusy}><Square size={12} fill="currentColor" /><span>{stopBusy ? 'Stopping…' : stopped ? 'Stopped' : 'Stop all'}</span></button>}</header>
     {backendUnavailable && <div className="service-banner error" role="alert"><span>The service is unavailable or this session has expired. Your draft stays in this browser.</span><button onClick={() => { void reconnect(); }}>Reconnect</button></div>}
     {!backendUnavailable && realtime.connection === 'reconnecting' && <div className="service-banner"><span>Live activity is reconnecting. Persisted work remains available.</span><button onClick={() => { void reconnect(); }}>Reconnect activity</button></div>}
     {stopped && <div className="service-banner warning" role="status"><span><strong>All work is stopped.</strong> {owner ? 'Resume the service to allow new objectives.' : 'The host owner can resume the service.'}</span>{owner && <button disabled={stopBusy} onClick={() => { void resumeService(); }}>Resume Relay</button>}</div>}
     {notice && <div className={`service-banner ${notice.error ? 'error' : ''}`} role={notice.error ? 'alert' : 'status'}><span>{notice.message}</span><button className="icon-button" aria-label="Dismiss notification" onClick={() => setNotice(null)}><X size={16} /></button></div>}
-    <div className={`workspace-layout ${activity ? 'has-inspector' : ''}`}><main id="main" className="conversation-main"><div className="conversation-toolbar"><div className="connection-status"><span className={`connection-dot ${ready && realtime.connection === 'live' && !backendUnavailable ? 'connected' : ''}`} /><span>{backendUnavailable ? 'Service disconnected' : !ready ? 'Connecting to Relay' : realtime.connection === 'live' ? remote ? `Connected to ${session.data?.hostName ?? 'shared host'}` : 'Local service connected' : realtime.connection === 'reconnecting' ? 'Reconnecting to activity…' : 'Connecting activity…'}</span></div><button id="activity-toggle" className={`activity-toggle ${activity ? 'active' : ''}`} onClick={() => setActivity(value => !value)} aria-expanded={activity}>{activity ? <PanelRightClose size={16} /> : <ActivityIcon size={16} />}<span>Activity</span>{running && <span className="activity-dot" />}</button></div>
+    {notifications.notice && <div className="service-banner" role="status" aria-label="Task completion notification"><span>{notifications.notice}</span><button className="icon-button" aria-label="Dismiss task notification" onClick={notifications.dismiss}><X size={16} /></button></div>}
+    <div className={`workspace-layout ${activity ? 'has-inspector' : ''}`}><main id="main" className="conversation-main"><div className="conversation-toolbar"><div className="connection-status"><span className={`connection-dot ${ready && realtime.connection === 'live' && !backendUnavailable ? 'connected' : ''}`} /><span>{backendUnavailable ? 'Service disconnected' : !ready ? 'Connecting to Relay' : realtime.connection === 'live' ? remote ? `Connected to ${session.data?.hostName ?? 'shared host'}` : 'Local service connected' : realtime.connection === 'reconnecting' ? 'Reconnecting to activity…' : 'Connecting activity…'}</span></div>{remote && <button className="account-indicator" aria-label="Account and host" onClick={() => setPanel('navigation')}>{session.data?.user?.name ?? 'Your account'}</button>}<button id="activity-toggle" className={`activity-toggle ${activity ? 'active' : ''}`} onClick={() => setActivity(value => !value)} aria-expanded={activity}>{activity ? <PanelRightClose size={16} /> : <ActivityIcon size={16} />}<span>Activity</span>{running && <span className="activity-dot" />}</button></div>
+      <GoogleReturn onModels={() => setPanel('models')} />
       <Conversation key={`${conversationId ?? 'new'}:${readerVersion}`} focusMessageId={messageId} onReturnLatest={returnLatest} detail={conversation.data} loading={Boolean(conversationId) && conversation.isPending} error={conversation.isError ? conversation.error : null} onRetry={() => { void conversation.refetch(); }} streams={realtime.text} events={realtime.events} models={modelList} onInspect={inspect} onModels={() => setPanel('models')} onWorkspace={() => setPanel('workspaces')} />
-      <Composer key={`${session.data?.user?.id ?? 'pending'}:${conversationId ?? 'new'}`} conversationId={conversationId} options={options} onOptions={setOptions} models={modelList} workspaces={workspaces.data ?? []} onWorkspace={() => setPanel('workspaces')} onSend={send} disabled={!ready || backendUnavailable} stopped={stopped} running={running} status={status.data} owner={owner} permissions={permissions} userId={session.data?.user?.id ?? 'pending'} />
-    </main>{activity && <Activity taskId={selectedTaskId} tasks={tasks} events={realtime.events} workspaces={workspaces.data ?? []} hostName={session.data?.hostName} onSelect={setTaskId} onClose={() => { setActivity(false); requestAnimationFrame(() => document.getElementById('activity-toggle')?.focus()); }} stopped={stopped} />}</div>
+      <TaskModels task={latestTask} events={realtime.events} models={modelList} onInspect={id => inspect(id)} />
+      <Composer key={`${session.data?.user?.id ?? 'pending'}:${conversationId ?? 'new'}`} conversationId={conversationId} options={options} onOptions={setOptions} onAgents={() => setPanel('agents')} models={modelList} workspaces={workspaces.data ?? []} onWorkspace={() => setPanel('workspaces')} onSend={send} disabled={!ready || backendUnavailable} stopped={stopped} running={running} status={status.data} owner={owner} permissions={permissions} userId={session.data?.user?.id ?? 'pending'} />
+    </main>{activity && <Activity onAdmitted={notifications.track} taskId={selectedTaskId} tasks={tasks} events={realtime.events} workspaces={workspaces.data ?? []} hostName={session.data?.hostName} onSelect={setTaskId} onClose={() => { setActivity(false); requestAnimationFrame(() => document.getElementById('activity-toggle')?.focus()); }} stopped={stopped} />}</div>
     <footer className="app-footer"><span><Radio size={12} />Your work stays accountable.</span><span>{status.data ? `Relay ${status.data.version}` : 'Relay'}<span className="footer-separator" />{options.cloudPolicy === 'local_only' ? 'Local inference only' : 'Cloud access controlled'}</span></footer>
     {panel === 'history' && <Modal title="Conversations" onClose={() => setPanel(null)}><History onDeleted={conversationDeleted} selected={conversationId} onSelect={selectConversation} onNew={() => selectConversation(null)} /></Modal>}
-    {panel === 'models' && <Modal title="Models & connections" onClose={() => setPanel(null)} wide><Suspense fallback={<Loading>Opening models…</Loading>}><Models owner={owner} contextTokens={options.contextTokens} onSelect={id => { setOptions(value => ({ ...value, modelId: id })); setPanel(null); }} /></Suspense></Modal>}
+    {panel === 'notifications' && <Modal title="Task notifications" onClose={() => setPanel(null)}><TaskNotifications controls={notifications} /></Modal>}
+    {panel === 'usage' && <Modal title="Usage" className="usage-drawer" onClose={() => setPanel(null)}><Suspense fallback={<Loading>Opening usage…</Loading>}><Usage /></Suspense></Modal>}
+    {panel === 'clients' && <Modal title="External clients" onClose={() => setPanel(null)}><Suspense fallback={<Loading>Opening client access…</Loading>}><Clients permitted={owner || permissions?.externalModelAccess === true} /></Suspense></Modal>}
+    {panel === 'agents' && <Modal title="Agents" onClose={() => setPanel(null)} wide><Suspense fallback={<Loading>Opening agents…</Loading>}><Agents selected={options.assistantId} workspaceSelected={Boolean(options.workspaceId)} onWorkspace={() => setPanel('workspaces')} onSelect={selectAgent} /></Suspense></Modal>}
+    {panel === 'models' && <Modal title="Models & connections" onClose={() => setPanel(null)} wide><Suspense fallback={<Loading>Opening models…</Loading>}><Models owner={owner} hostName={session.data?.hostName} accountName={session.data?.user?.name} contextTokens={options.contextTokens} onSelect={id => { setOptions(value => ({ ...value, modelId: id })); setPanel(null); }} /></Suspense></Modal>}
     {panel === 'mcp' && owner && <Modal title="MCP tools" onClose={() => setPanel(null)}><Suspense fallback={<Loading>Opening tool connections…</Loading>}><Mcp /></Suspense></Modal>}
     {panel === 'hardware' && owner && <Modal title="This machine" onClose={() => setPanel(null)}><Suspense fallback={<Loading>Opening resource view…</Loading>}><Hardware status={status.data} /></Suspense></Modal>}
-    {panel === 'workspaces' && <Modal title="Workspaces" onClose={() => setPanel(null)}><Suspense fallback={<Loading>Opening workspaces…</Loading>}><Workspaces owner={owner} selected={options.workspaceId} onSelect={id => setOptions(value => ({ ...value, workspaceId: id }))} /></Suspense></Modal>}
+    {panel === 'workspaces' && <Modal title="Workspaces" onClose={() => setPanel(null)}><Suspense fallback={<Loading>Opening workspaces…</Loading>}><Workspaces owner={owner} userId={session.data?.user?.id} canWriteShared={permissions?.maxAccess !== undefined && permissions.maxAccess !== 'read_only'} selected={options.workspaceId} onSelect={id => setOptions(value => ({ ...value, workspaceId: id }))} /></Suspense></Modal>}
     {panel === 'access' && owner && <Modal title="Access & remote connections" onClose={() => setPanel(null)} wide><Suspense fallback={<Loading>Opening access controls…</Loading>}><Access /></Suspense></Modal>}
     {panel === 'commands' && <CommandPalette commands={commands} onClose={() => setPanel(null)} />}
-    {panel === 'navigation' && <Navigation owner={owner} theme={theme} hostName={session.data?.hostName} onDestination={setPanel} onNew={() => selectConversation(null)} onActivity={() => { setPanel(null); setActivity(true); }} onTheme={() => setTheme(value => value === 'light' ? 'dark' : 'light')} onClose={() => setPanel(null)} />}
+    {panel === 'navigation' && <Navigation owner={owner} theme={theme} hostName={session.data?.hostName} session={session.data} onDestination={setPanel} onNew={() => selectConversation(null)} onActivity={() => { setPanel(null); setActivity(true); }} onTheme={() => setTheme(value => value === 'light' ? 'dark' : 'light')} onClose={() => setPanel(null)} />}
   </div>;
 }

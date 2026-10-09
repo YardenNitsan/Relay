@@ -4,6 +4,7 @@ import type { Store } from '../db/store.js';
 import { getHardware } from '../hardware/index.js';
 import { Providers, type ProvidersOptions } from '../providers/index.js';
 import { number, object, string } from '../providers/transport.js';
+import {decorateTaskFit} from './task-fit.js';
 
 interface Performance {
   contextTokens: number;
@@ -74,7 +75,13 @@ export class MeasuredProviders extends Providers {
   }
 
   override async listModels(): Promise<ModelProfile[]> {
-    const [models, hardware] = await Promise.all([super.listModels(), this.identity()]);
+    return this.decorate(await super.listModels());
+  }
+  override async localModels(): Promise<ModelProfile[]> {
+    return this.decorate(await super.localModels());
+  }
+  private async decorate(models:ModelProfile[]):Promise<ModelProfile[]> {
+    const hardware=await this.identity();
     const identities = new Map(models.flatMap(model => { const identity = modelIdentity(model, hardware); return identity ? [[model.id, identity] as const] : []; }));
     if (!identities.size) return models;
     try {
@@ -95,6 +102,7 @@ export class MeasuredProviders extends Providers {
       this.persistenceFailure = false;
     } catch { this.persistenceFailure = true; }
     if (this.persistenceFailure) for (const model of models) model.details.measurementStorage = 'unavailable';
+    await decorateTaskFit(this.store,models);
     return models;
   }
 

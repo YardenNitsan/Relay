@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { ModelChunk, ModelRequest, ToolRequest } from '../../shared/types.js';
-import { array, ndjson, number, object, ProviderError, sse, string, toolArguments, type JsonObject } from './transport.js';
+import { array, ndjson, number, object, ProviderError, outputLimitError, sse, string, toolArguments, type JsonObject } from './transport.js';
 import { rawModelId } from './cloud.js';
 import { VisibleText } from './visible-text.js';
 
@@ -36,7 +36,8 @@ export async function* ollamaStream(response: Response, request: ModelRequest): 
     for (const call of array(message.tool_calls)) proposals.push(object(call));
     if (data.done === true) { terminal = data; break; }
   }
-  if (!terminal || terminal.done_reason === 'length') throw new ProviderError('incomplete_stream', 'Ollama stream ended incomplete; no tools were dispatched');
+  if (!terminal) throw new ProviderError('incomplete_stream', 'Ollama stream ended incomplete; no tools were dispatched');
+  if(terminal.done_reason==='length'){const input=number(terminal.prompt_eval_count),output=number(terminal.eval_count);if(input!==null&&output!==null)yield {type:'usage',inputTokens:input,outputTokens:output};throw outputLimitError();}
   const tail = visibility.finish(); if (tail) yield { type: 'text', text: tail };
   const calls: ToolRequest[] = proposals.map(call => {
     const fn = object(call.function); const name = string(fn.name);
@@ -69,6 +70,7 @@ export async function* compatibleStream(response: Response, request: ModelReques
     }
     if (choice.finish_reason) finish = string(choice.finish_reason);
   }
+  if(finish==='length'){if(input!==null&&output!==null)yield {type:'usage',inputTokens:input,outputTokens:output};throw outputLimitError();}
   if (!['stop', 'tool_calls'].includes(finish)) throw new ProviderError('incomplete_stream', 'Local runtime stream ended incomplete; no tools were dispatched');
   const tail = visibility.finish(); if (tail) yield { type: 'text', text: tail };
   const complete = [...calls.values()].map(call => {

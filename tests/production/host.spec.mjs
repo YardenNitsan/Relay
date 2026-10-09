@@ -2,9 +2,11 @@ import {test,expect} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {readFile} from 'node:fs/promises';
 import {pairLocalSession} from '../../scripts/local-session.mjs';
+let closeSession;
+test.afterEach(async()=>{await closeSession?.();closeSession=undefined;});
 
 test('actual local host renders persisted execution, real models and resources at desktop and phone sizes',async({page})=>{
-  const {cookie}=await pairLocalSession('http://127.0.0.1:4317');const delimiter=cookie.indexOf('=');
+  const {cookie,close}=await pairLocalSession('http://127.0.0.1:4317');closeSession=close;const delimiter=cookie.indexOf('=');
   await page.context().addCookies([{name:cookie.slice(0,delimiter),value:cookie.slice(delimiter+1),url:'http://127.0.0.1:4317',httpOnly:true,sameSite:'Strict'}]);
   const acceptance=JSON.parse(await readFile('output/local-acceptance.json','utf8'));
   const previous=acceptance.passed?acceptance:JSON.parse(await readFile('output/production-smoke.json','utf8'));
@@ -35,15 +37,16 @@ test('actual local host renders persisted execution, real models and resources a
 
 test('real balanced auto greeting finishes with one natural answer and no completion commentary',async({page})=>{
   test.setTimeout(120_000);
-  const {cookie}=await pairLocalSession('http://127.0.0.1:4317');const delimiter=cookie.indexOf('=');
+  const {cookie,close}=await pairLocalSession('http://127.0.0.1:4317');closeSession=close;const delimiter=cookie.indexOf('=');
   await page.context().addCookies([{name:cookie.slice(0,delimiter),value:cookie.slice(delimiter+1),url:'http://127.0.0.1:4317',httpOnly:true,sameSite:'Strict'}]);
   await page.goto('/');await expect(page.getByText('Local service connected',{exact:true})).toBeVisible();
   await page.getByLabel('Compute depth').selectOption('balanced');await page.getByRole('combobox',{name:'Model',exact:true}).selectOption('');
   await page.getByRole('textbox',{name:'Objective'}).fill('hello how are you today?');await page.getByRole('button',{name:'Send objective'}).click();
+  await expect(page).toHaveURL(/\?conversation=[a-zA-Z0-9-]+/);
   const conversationId=new URL(page.url()).searchParams.get('conversation');
   let current;
   await expect.poll(async()=>{
-    const response=await page.request.get(`/api/conversations/${conversationId}`);const detail=await response.json();current=detail.tasks.at(-1);
+    const response=await page.request.get(`/api/conversations/${conversationId}`);expect(response.ok()).toBe(true);const detail=await response.json();current=detail.tasks.at(-1);
     return ['completed','paused','failed','waiting_for_user'].includes(current?.status);
   },{timeout:100_000}).toBe(true);
   expect(current.status,current.error??'The actual local-model task must complete').toBe('completed');

@@ -75,16 +75,19 @@ export function assessModel(model: ModelProfile, hardware: HardwareSnapshot, con
     const loaded = object(model.details.loaded);
     const loadedAge = loaded.sampledAt ? Date.now() - Date.parse(string(loaded.sampledAt)) : Infinity;
     const resident = dedicated.length === 1 && loadedAge >= 0 && loadedAge < 15_000 && number(loaded.contextLength) === contextTokens ? number(loaded.sizeVram) ?? 0 : 0;
-    const fits = dedicated.some(gpu => {
+    // Runtime device selection is not pinned. Every discrete candidate must be
+    // safe; otherwise it may select a busy/smaller device despite another fitting.
+    const fits = dedicated.every(gpu => {
       const total = gpu.totalBytes!; const used = gpu.usedBytes!;
       const available = total - used + Math.min(resident, used);
-      return peak <= available - reserveBytes(total, policy.vramReserveGiB, policy.vramReservePercent);
+      const reserve = reserveBytes(total, policy.vramReserveGiB, policy.vramReservePercent);
+      return total - used >= reserve && peak <= available - reserve;
     });
     if (!fits) {
       if (model.provider === 'ollama') return { ...result, allowed: true, decision: 'run', execution: { numGpu: 0 }, estimatedVramBytes: 0, reasons: [...result.reasons, 'GPU headroom is insufficient. Enforce CPU-only execution with num_gpu=0; physical RAM passed the complete weight/KV/buffer estimate. Throughput is unmeasured.'] };
       return reject('Estimated weights, KV and buffers exceed available VRAM after safety reserve; queue, reduce context or choose a smaller model', 'queue');
     }
-    result.reasons.push(`Fits one discrete GPU with at least ${policy.vramReservePercent}% or ${policy.vramReserveGiB} GiB VRAM reserved. Existing same-context allocation is credited only for a single GPU.`);
+    result.reasons.push(`Fits every unpinned discrete GPU candidate with at least ${policy.vramReservePercent}% or ${policy.vramReserveGiB} GiB VRAM reserved. Existing same-context allocation is credited only for a single GPU.`);
   } else result.reasons.push('CPU-only inference uses physical RAM; speed has not been benchmarked.');
   return { ...result, allowed: true, decision: 'run' };
 }

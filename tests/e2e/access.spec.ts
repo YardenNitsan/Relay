@@ -79,6 +79,20 @@ for (const width of [390, 320]) {
     const result = await new AxeBuilder({ page }).include('.activity-panel').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
     expect(result.violations).toEqual([]);
     await page.screenshot({ path: `output/playwright/relay-approval-${width}.png` });
+    if (width === 390) {
+      for (const viewport of [{width:360,height:800},{width:430,height:932},{width:768,height:1024},{width:820,height:1180},{width:1024,height:768},{width:1280,height:800},{width:1440,height:1000},{width:1920,height:1080},{width:844,height:390},{width:390,height:420}]) {
+        await page.setViewportSize(viewport);
+        for (const action of ['Deny','Allow once','Allow for this task']) {
+          const button = card.getByRole('button',{name:action,exact:true});
+          await button.scrollIntoViewIfNeeded(); await expect(button).toBeInViewport();
+          const box = await button.boundingBox(); expect(box?.height).toBeGreaterThanOrEqual(44);
+        }
+        expect(await card.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+        if (viewport.height <= 420) await page.screenshot({path:`output/playwright/approval-short-${viewport.width}x${viewport.height}.png`});
+      }
+      await page.setViewportSize({width,height:844});
+    }
     await approval.click();
     await expect(page.getByRole('complementary', { name: 'Task activity' }).getByText('Completed', { exact: true }).first()).toBeVisible({ timeout: 20_000 });
     await page.getByRole('tab', { name: /^Changes/ }).click();

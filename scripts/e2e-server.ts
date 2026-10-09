@@ -1,10 +1,12 @@
 // Deterministic browser test service. Not imported by or reachable from production.
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { createApp } from '../server/api/app.js';
 import { openDatabase } from '../server/db/database.js';
 import { Store } from '../server/db/store.js';
+import { InferenceService } from '../server/inference/service.js';
+import { LocalLease } from '../server/orchestration/lease.js';
 import { Engine } from '../server/orchestration/engine.js';
 import { Providers } from '../server/providers/index.js';
 import { SecretManager } from '../server/providers/secrets.js';
@@ -34,8 +36,13 @@ class TestProviders extends Providers {
   }
 }
 const dir=await mkdtemp(join(tmpdir(),'relay-e2e-'));const store=new Store(await openDatabase());await store.init();await seedHistoryFixture(store);const providers=new TestProviders();
-let engine:Engine;const broker=new ToolBroker(dir,()=>engine?.isStopped()??false);
-engine=new Engine(store,providers,broker,{admit:async()=>({allowed:true,decision:'run',reasons:['Explicit automated test fixture'],estimatedRamBytes:null,estimatedVramBytes:null,contextTokens:8192,confidence:'unknown'})});
+let engine:Engine;const broker=new ToolBroker(dir,()=>engine?.isStopped()??false,undefined,store);
+const lease=new LocalLease();const inference=new InferenceService(store,providers,lease,()=>engine?.isStopped()??false);
+engine=new Engine(store,providers,broker,{lease,admit:async()=>({allowed:true,decision:'run',reasons:['Explicit automated test fixture'],estimatedRamBytes:null,estimatedVramBytes:null,contextTokens:8192,confidence:'unknown'})});
 const pairingDirectory=resolve('.e2e-data/host');const pairing=new LocalPairing(pairingDirectory);await pairing.initialize();
-const app=await createApp({store,providers,broker,engine,pairing},{port:4319});await app.listen({host:'127.0.0.1',port:4319});
+// Native-only fixture metadata: each serial browser scenario starts with an
+// empty workspace catalog, while retaining the deliberately seeded history.
+// No reset endpoint or quota override is exposed by the application.
+await writeFile(join(pairingDirectory,'fixture-workspace-root.json'),JSON.stringify({root:dir}),{mode:0o600});
+const app=await createApp({store,providers,broker,engine,pairing,inference},{port:4319});await app.listen({host:'127.0.0.1',port:4319});
 async function close(){await engine.shutdown();await app.close();await store.close();await rm(dir,{recursive:true,force:true});await rm(pairingDirectory,{recursive:true,force:true});process.exit(0);}process.on('SIGTERM',()=>void close());process.on('SIGINT',()=>void close());

@@ -1,12 +1,43 @@
 # Relay — working application and completion report
 
-**Updated: 8 October 2026.** This report covers the implementation in `Relay/`. Harmonia and GuitarScaleViewer are separate projects and were preserved.
+**Updated: 9 October 2026 · version 0.1.1.** This report covers the implementation in `Relay/`. Harmonia and GuitarScaleViewer are separate projects and were preserved.
+
+## Current report
+
+Read [the current 0.1.1 release report](release-0.1.1.md) for the latest implemented features, deployment, verification and remaining work. The public gateway is now deployed and the owner has signed in remotely. The sections below retain earlier engineering evidence and must not be read as the latest deployment checklist.
+
+## Earlier 0.1.1 handover snapshot
+
+Relay is a working local-first execution platform, with optional shared-host accounts and external inference. **The entire master directive is not complete.** Local operation does not require a cloud account, Google login or a public gateway. The following is the current status; later dated sections preserve earlier evidence.
+
+| Capability | What works now | Boundary |
+| --- | --- | --- |
+| Shared-host accounts | Approved users have private conversations, scoped models/workspaces and their own permitted cloud credentials. Pending and disabled accounts receive clear sign-in states. | Google/Access login identifies a user; it does not unlock a consumer AI subscription or lend the owner's API keys. Live cloud acceptance is outstanding. |
+| Specialist agents | Email, Calendar, Research, Coding, Files, Personal assistant, Browser, Finance, Learning and Computer profiles share the orchestrator. Model, depth and access controls stay independent. | Profiles filter tools; they cannot increase authority. Email/calendar actions need unimplemented connectors. Browser/Computer labels do not imply interactive browser or desktop automation. |
+| Personal tasks | A real per-user list supports create, list, complete and delete, with durable receipts, quotas and deterministic approval/revocation checks. | No scheduled notifications, background reminder delivery or calendar synchronization. |
+| Owner host files | Explicitly confirmed local-owner tasks can list/read/write/delete bounded text files through protected native tools. | Credentials, system and Relay paths remain protected. No arbitrary host shell; isolated terminal still requires a verified container boundary. |
+| LAN browser access | Separate HTTPS configuration, certificate/key checks, account-bound five-minute invitations and account/session controls are implemented. | Real LAN configuration, trusted client certificates and second-device acceptance are outstanding. Nearby network access never grants owner privileges. |
+| External model clients | Account-scoped, expiring/revocable tokens provide local-model inference through documented Responses, Chat Completions and Anthropic Messages text/function subsets. | The agent and its tools run on the client device. Relay returns tool proposals without executing them, stores usage metadata rather than external chat content, and does not certify complete Codex/Claude Code compatibility. |
+| Responsive interface | Specialist selection, provider/account identity, remote setup, LAN invitations and token management join the existing chat, history, approvals, activity, diffs and resource views. | Viewport emulation and selected automated accessibility checks are not physical-device or manual screen-reader certification. |
+| Optional public sharing | A fixed-destination Cloudflare Workers/VPC/Tunnel adapter candidate and deployment guide support a stable address without buying a domain. Its Wrangler dry run passed. | No public deployment, live login or reachable URL is verified. Free-plan/beta availability is a third-party condition, not a permanent guarantee. |
+
+Current verification: **46/46 browser cases passed**, and the production build passed. The final native Windows check passed **702 tests across 61 files with one platform-specific skipped test**, including strict typing. Coverage includes LAN account isolation and streaming, tool-capable specialist routing, and cancellation of a real HTTP client stalled by backpressure. The complete dependency audit reported **zero known advisories** at this check; this is not a claim that the application has no security defects.
+
+Actual `ollama/qwen3:4b-instruct` inference passed on 9 October through the external-client gateway: HTTP 200, returned output, 20 input/12 output tokens, and unchanged Relay conversation history. Evidence is `Relay/output/inference-acceptance.json` in this workspace. This proves the local inference request and storage boundary, not a complete external coding-agent workflow. Native macOS, physical Linux GPU testing, actual Docker/native PostgreSQL, native installers and live cloud/public/LAN deployments remain separate release gates.
+
+Native Ubuntu WSL subsequently passed strict types, **703 tests across 61 files with one skip**, production build and compiled-host acceptance: pairing permissions, replay/CSRF rejection, telemetry, embedded PostgreSQL persistence across restart, SSE heartbeat, credential-free logs and graceful stops. A real Balanced + Auto greeting also passed on the running Windows host, returning one natural answer and preserving it across reload. A subsequent focused Windows remote API/Worker run passed **64 tests**.
+
+Cloudflare's encrypted login is connected. A named tunnel, a VPC Service restricted to `127.0.0.1:4318`, and a stable Workers account subdomain are registered. The supplied Zero Trust issuer is in ignored deployment configuration. The Access application audience is still needed; connector startup, Worker publishing and real public login are not complete. The local audience remains empty so incomplete configuration cannot authorize traffic.
+
+Maintained routing tools were evaluated in [model-routing research](research-model-routing-tools.md). The next recommended experiment is llmfit as an optional source of hardware/model recommendations, with Relay's permissions and resource admission remaining authoritative. No researched router has been installed or represented as a verified quality improvement.
+
+Details: [validation](validation.md), [specialist research](research-specialists.md), [external clients](external-clients.md), [LAN setup](lan-access.md), [public Worker candidate](cloudflare-free.md) and [Google connector plan](google-agents.md).
 
 ## Open the application
 
 **Web address: http://127.0.0.1:4317**
 
-Relay is a **browser web application** backed by a local Node.js service. It is not an Electron application or a hosted landing page. The compiled service is running on this Windows computer, serving the browser interface and using persistent embedded PostgreSQL. Remote access is disabled. Cloud accounts are optional.
+Relay is a **browser web application** backed by a local Node.js service, using persistent embedded PostgreSQL. The optional public browser gateway is deployed at **https://relay-host.yarden-relay.workers.dev** behind Cloudflare Access and Relay account authorization. Cloud model accounts remain optional.
 
 The browser requires owner pairing. If the pairing screen appears, run these commands in PowerShell:
 
@@ -17,14 +48,14 @@ npm.cmd run pair
 
 Open the private file reported by that command and copy its `token` value into Relay. The code expires after five minutes and is single-use. Never share the file or paste the code into a public chat. This protection prevents an arbitrary local browser or process from obtaining owner privileges merely by knowing the URL.
 
-To start the service again after closing it or restarting Windows:
+To start or reopen Relay on Windows:
 
 ```powershell
 cd C:\Users\yarde\Documents\codexp\Relay
-npm.cmd start
+.\setup.cmd
 ```
 
-Keep that process running and open the web address. For changes to source code, run `npm.cmd run build` before starting. Node.js 24 or newer is required. Ollama must be running for installed local models to answer. No Docker or external PostgreSQL installation is required for chat, local inference, or managed file operations.
+On Linux/macOS, use `sh setup.sh` from the project directory. The launcher checks prerequisites, builds when needed, starts or reuses the host and opens the browser with a private pairing-file handoff. `--no-browser` keeps that handoff manual. It does not silently install model runtimes or weights. For a launcher-managed restart, use `setup.cmd --stop` followed by `setup.cmd` (or the corresponding `sh setup.sh` commands); manually started services must be stopped through their own controls. Ollama must be running for installed local models to answer. No Docker or external PostgreSQL installation is required for chat, local inference or managed file operations. Actual Windows launcher evidence is recorded below; current Linux/macOS launcher acceptance remains outstanding.
 
 Conversations, tasks, settings and managed files live in `Relay/.data/`. Preserve that directory. Stop the service before making a complete filesystem backup. Do not delete it to fix a login issue.
 
@@ -32,7 +63,7 @@ Conversations, tasks, settings and managed files live in `Relay/.data/`. Preserv
 
 This is a working, integrated local AI execution application with real persistence, local inference, permission enforcement, tools and a responsive browser interface. **The entire master specification is not finished, and this is not a claim of production security certification.** At your request, work was brought to a runnable handover instead of waiting for every remaining capability and external integration.
 
-The strongest demonstrated path is: browser conversation → persisted task → local model selection → streamed activity → concrete tool approval → managed file mutation → actual read-back and verification → saved answer and execution history. That full real-model path passed on 6 October. The latest 8 October attempt wrote and verified the correct file, then paused on changing RAM pressure before its next model call. It was not represented as completed.
+The demonstrated browser-to-tools path is: conversation → persisted task → local model selection → streamed activity → concrete tool approval → managed file mutation → actual read-back and verification → saved answer and execution history. That full real-model path passed on 6 October. The 8 October file-task attempt wrote and verified the correct file, then paused on changing RAM pressure before its next model call. It was not represented as completed. The 9 October external inference acceptance is a separate successful path described above.
 
 ## What was built
 
@@ -62,13 +93,13 @@ The strongest demonstrated path is: browser conversation → persisted task → 
 
 Frontend research considered Apple guidance, Meta/React engineering practices, Microsoft Fluent and W3C accessibility patterns. The result uses a custom design system rather than copying a product's visual identity. Details and sources are in [frontend research](frontend-research.md) and [design system](design-system.md).
 
-## Verification actually completed
+## Historical verification through 8 October
 
 | Check | Result and limits |
 | --- | --- |
-| Latest strict types and deterministic tests | **362 tests across 39 files passed.** Includes real temporary filesystem/database work and deterministic provider/protocol fixtures. This does not mean 362 live cloud/model tests. |
+| 8 October strict types and deterministic tests | **362 tests across 39 files passed.** Includes real temporary filesystem/database work and deterministic provider/protocol fixtures. This does not mean 362 live cloud/model tests. |
 | Production build | Passed. Browser assets and compiled host were generated. Main browser JavaScript is approximately 139 kB gzip; operational panels load separately. |
-| Latest browser suite | **29 Chrome tests passed.** Covers conversations, streaming, approvals, real managed-file diffs, stop, history, calibration UI, MCP grants, revocation, keyboard behavior, selected accessibility checks and multiple viewport sizes. Its inference provider is explicitly a test fixture. |
+| 8 October browser suite | **29 Chrome tests passed.** Covers conversations, streaming, approvals, real managed-file diffs, stop, history, calibration UI, MCP grants, revocation, keyboard behavior, selected accessibility checks and multiple viewport sizes. Its inference provider is explicitly a test fixture. |
 | Actual running host browser | **1 production browser test passed.** Opened a real persisted completed task, installed local models and actual hardware views, checked desktop/phone rendering and selected accessibility rules. This used the real service, not the fixture service. |
 | Visual inspection | Reviewed current production screenshots for the light conversation, dark model manager and 320-pixel phone navigation. Desktop dark and hardware screenshots were also captured. |
 | Real local inference, 6 October | Approved write + actual separate read + expected-hash contract completed with `qwen3:4b-instruct`. Subsequent restart/persistence/SSE heartbeat verification passed. |
@@ -124,17 +155,17 @@ The following is the remaining product/release backlog against the master direct
 26. **Complete accessibility validation.** Manual NVDA/VoiceOver tests, screen-reader announcements during streaming, zoom/high contrast, touch targets, focus across nested flows and real-device keyboard testing. Automated axe checks cover only part of WCAG.
 27. **Polish onboarding and error recovery.** First-run runtime/model discovery, installation guidance, explainable resource blocks, guided resumptions, optional diagnostics export and clearer distinction between “installed,” “fits now” and “measured.”
 28. **Expand model quality evaluation.** Repeatable coding/research/tool suites, regression scores, task-specific routing quality, calibration variability and honest confidence/provenance displays. Token speed alone does not establish intelligence quality.
-29. **Complete native host integrations before broad autonomy.** Intentionally designed Windows containment, Linux namespace/cgroup/handle-based file controls and macOS signed sandbox helpers as appropriate. Do not enable unrestricted mode through a UI switch before these protections are proven.
+29. **Complete native host integrations before broader autonomy.** The current local-owner mode implements bounded structured text-file operations. Broader computer control still needs intentionally designed Windows containment, Linux namespace/cgroup/handle-based controls and appropriate macOS helpers. Do not reinterpret the current file-only mode as arbitrary host execution.
 30. **Maintain release discipline.** Execute the three-OS CI matrix, test migrations against realistic existing data, dependency/security updates, reproducible artifacts, SBOM/license checks, versioned APIs and current operating documentation.
 
 ## Important current boundaries
 
-- Unrestricted computer control is unavailable. This is an explicit implementation gap, not hidden “God mode.”
+- The local owner's explicitly confirmed **Unrestricted · host files** mode supports protected, bounded text-file operations. Arbitrary host commands, interactive desktop control and remote owner authority remain unavailable.
 - Terminal execution is unavailable without an explicitly configured trusted container image and verified engine. There is no host-shell fallback.
-- Cloud and remote access are optional and presently unconfigured for live acceptance.
+- Cloud, LAN and public access are optional. Current live cloud accounts, trusted LAN clients and public deployment remain unverified; automated policy/protocol tests do not replace those checks.
 - Workspace imports preserve source repositories; expect work in a managed copy.
 - A task can pause if actual resource availability changes. Do not treat a paused task as a verified result.
-- The latest native installers and integrations are prepared code, not shipped or tested packages. A Node runtime download required external approval and was aborted; no success was claimed.
+- Native installers and integrations are prepared code, not shipped or installed release packages. Windows launcher behavior has actual evidence; missing-Node bootstrap and current Linux/macOS launcher acceptance remain outstanding.
 - The Codex message “This conversation is read-only or unavailable; no operation was sent” came from the coding app, not Relay. The task was confirmed active; no Relay permission change was required to continue.
 
 ## Recommended next milestone
@@ -147,7 +178,7 @@ Project entry points: [README](../README.md), [architecture](architecture.md), [
 
 Balanced-mode review no longer replaces a valid answer merely because a reviewer omitted its required verdict. Such failures retry the review alone within the durable call/iteration budget. A genuine revision request still repairs the answer against the original objective. During execution, the conversation presents fixed factual activity labels; those labels disappear when the task finishes. Supervisor completion commentary is not appended to the answer.
 
-Unrestricted mode remains intentionally unavailable: both browser and backend reject it until a tested OS host-access broker exists. This is unrelated to owner pairing or provider credentials. Autonomous workspace remains the strongest supported scope; isolated terminal execution separately requires a verified container boundary.
+At this earlier snapshot, unrestricted mode was unavailable. The subsequent direct-host-file milestone below supersedes that restriction for explicitly confirmed local-owner file tasks. Arbitrary host commands remain unavailable; isolated terminal execution separately requires a verified container boundary.
 
 The latest actual Ollama greeting check paused before model dispatch because available RAM did not satisfy Safe-profile headroom. This is a resource-admission result, not a successful live greeting acceptance. Deterministic backend and browser regressions separately exercise the corrected answer/review behavior.
 

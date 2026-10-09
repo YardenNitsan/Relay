@@ -19,6 +19,23 @@ function gateway(provider: ProviderId, body: string, capture: (url: string, body
 }
 
 describe('provider wire boundaries', () => {
+  it('retains Gemini terminal usage and refuses truncated arguments before any tool dispatch',async()=>{
+    const body=[{event_type:'step.start',index:0,step:{type:'function_call',id:'partial',name:'read_file'}},{event_type:'step.delta',index:0,delta:{type:'arguments_delta',arguments:'{"path":'}},{event_type:'step.stop',index:0},{event_type:'interaction.completed',interaction:{status:'incomplete',usage:{total_input_tokens:10,total_output_tokens:20}}}].map(event).join('');
+    const values:ModelChunk[]=[];
+    await expect((async()=>{for await(const value of gateway('gemini',body).stream(request('gemini')))values.push(value);})()).rejects.toMatchObject({code:'incomplete_stream'});
+    expect(values).toContainEqual({type:'usage',inputTokens:10,outputTokens:20});
+    expect(values.some(value=>value.type==='tool_call'||value.type==='continuation'||value.type==='done')).toBe(false);
+  });
+  it.each(['ollama','lmstudio','openai','anthropic'] as const)('preserves %s usage and refuses truncated tool dispatch at its output limit',async provider=>{
+    const body=provider==='ollama'?JSON.stringify({done:true,done_reason:'length',message:{content:'Partial',tool_calls:[{function:{name:'read_file',arguments:{path:'x'}}}]},prompt_eval_count:10,eval_count:20}):
+      provider==='lmstudio'?event({choices:[{delta:{content:'Partial'},finish_reason:'length'}],usage:{prompt_tokens:10,completion_tokens:20}})+'data: [DONE]\n\n':
+      provider==='openai'?event({type:'response.incomplete',response:{status:'incomplete',incomplete_details:{reason:'max_output_tokens'},usage:{input_tokens:10,output_tokens:20}}}):
+      [event({type:'message_start',message:{usage:{input_tokens:10}}}),event({type:'content_block_start',index:0,content_block:{type:'tool_use',id:'partial',name:'read_file'}}),event({type:'content_block_delta',index:0,delta:{type:'input_json_delta',partial_json:'{"path":'}}),event({type:'content_block_stop',index:0}),event({type:'message_delta',delta:{stop_reason:'max_tokens'},usage:{output_tokens:20}}),event({type:'message_stop'})].join('');
+    const values:ModelChunk[]=[];
+    await expect((async()=>{for await(const value of gateway(provider,body).stream(request(provider)))values.push(value);})()).rejects.toMatchObject({code:'output_limit'});
+    expect(values.find(value=>value.type==='usage')).toMatchObject({inputTokens:10,outputTokens:20});
+    expect(values.some(value=>value.type==='tool_call'||value.type==='continuation'||value.type==='done')).toBe(false);
+  });
   it('measures uncached prompt throughput and model load separately',async()=>{
     const result=await collect(gateway('ollama',JSON.stringify({message:{content:'Answer'},done:true,done_reason:'stop',prompt_eval_count:100,prompt_eval_cached_count:80,prompt_eval_duration:1e9,eval_count:10,eval_duration:5e8,load_duration:2e8,total_duration:2e9})).stream(request('ollama')));
     expect(result.find(chunk=>chunk.type==='usage')).toMatchObject({promptTokensPerSecond:20,cachedInputTokens:80,loadDurationMs:200,generationTokensPerSecond:20,durationMs:2000});

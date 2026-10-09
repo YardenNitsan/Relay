@@ -12,7 +12,7 @@ export function approvalContext(approval: Approval, workspaceId: string | null, 
   const cloud = approval.tool === 'cloud_egress';
   const agent = role ? role.charAt(0).toUpperCase() + role.slice(1).replaceAll('_', ' ') : cloud ? 'Task controller' : 'Agent not recorded';
   const model = (started && recordedText(started.data.modelId)) || (cloud && recordedText(approval.arguments.model)) || 'Model not recorded';
-  const workspace = workspaceId === null ? 'No workspace assigned' : workspaces.find(item => item.id === workspaceId)?.name ?? `Workspace unavailable (${workspaceId})`;
+  const workspace = approval.tool === 'personal_tasks' ? 'Your personal task list' : workspaceId === null ? 'No workspace assigned' : workspaces.find(item => item.id === workspaceId)?.name ?? `Workspace unavailable (${workspaceId})`;
   const path = recordedText(approval.arguments.path);
   let action = `Requested tool: ${approval.tool}`;
   let risk = 'Risk not classified. Review the recorded reason and arguments.';
@@ -26,6 +26,12 @@ export function approvalContext(approval: Approval, workspaceId: string | null, 
   } else if (approval.tool === 'terminal' && Array.isArray(approval.arguments.argv) && approval.arguments.argv.every(value => typeof value === 'string')) {
     action = `Run ${JSON.stringify(approval.arguments.argv)}`;
     risk = 'Runs a process that may modify workspace files. Execution still requires the verified isolation boundary.';
+  } else if (approval.tool === 'personal_tasks') {
+    const operation = approval.arguments.action;
+    if (operation === 'create') action = `Create personal task: ${(recordedText(approval.arguments.title) ?? 'Untitled').slice(0, 180)}`;
+    else if (operation === 'complete') action = `Complete personal task ${recordedText(approval.arguments.id) ?? ''}`;
+    else if (operation === 'delete') action = `Delete personal task ${recordedText(approval.arguments.id) ?? ''}`;
+    risk = 'Changes your stored personal task list. No calendar event or notification is scheduled. Review the exact item and due date before allowing.';
   } else if (cloud) {
     action = `Send context to ${recordedText(approval.arguments.provider) ?? 'the selected provider'}`;
     const bytes = approval.arguments.contextBytes;

@@ -10,9 +10,13 @@ export async function pairLocalSession(address) {
   const dataDirectory=resolve(process.env.RELAY_DATA_DIR??'.data');
   execFileSync(process.execPath,['dist-server/pair.js','--data-dir',dataDirectory],{stdio:['ignore','pipe','pipe'],windowsHide:true,timeout:15000});
   const delivery=JSON.parse(await readFile(join(dataDirectory,'auth','owner-pairing.json'),'utf8'));
-  const response=await fetch(`${origin.origin}/api/session/pair`,{method:'POST',headers:{origin:origin.origin,'content-type':'application/json'},body:JSON.stringify({token:delivery.token})});
+  const response=await fetch(`${origin.origin}/api/session/pair`,{method:'POST',headers:{origin:origin.origin,'content-type':'application/json','user-agent':'Relay acceptance'},body:JSON.stringify({token:delivery.token})});
   if(!response.ok)throw new Error(`Local pairing failed (HTTP ${response.status}); verify RELAY_DATA_DIR points to this host's data directory`);
   const cookie=response.headers.get('set-cookie')?.split(';')[0];const {csrfToken}=await response.json();
   if(!cookie||typeof csrfToken!=='string')throw new Error('Pairing did not establish an authenticated session');
-  return {cookie,csrfToken};
+  const close=async()=>{
+    const result=await fetch(`${origin.origin}/api/session/logout`,{method:'POST',headers:{cookie,origin:origin.origin,'content-type':'application/json','x-relay-csrf':csrfToken},body:'{}',signal:AbortSignal.timeout(10000)});
+    if(!result.ok&&result.status!==401)throw new Error(`Acceptance session cleanup failed (HTTP ${result.status})`);
+  };
+  return {cookie,csrfToken,close};
 }

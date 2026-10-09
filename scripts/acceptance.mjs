@@ -3,7 +3,8 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { pairLocalSession } from './local-session.mjs';
 import { createHash } from 'node:crypto';
 const base=process.env.RELAY_ACCEPTANCE_URL??'http://127.0.0.1:4317';
-const {cookie,csrfToken}=await pairLocalSession(base);
+const {cookie,csrfToken,close}=await pairLocalSession(base);
+try {
 async function api(path,body) {
   const response=await fetch(`${base}/api${path}`,{method:body===undefined?'GET':'POST',headers:{cookie,...(body===undefined?{}:{'content-type':'application/json','x-relay-csrf':csrfToken})},body:body===undefined?undefined:JSON.stringify(body)});
   const json=await response.json();if(!response.ok)throw new Error(`${path}: ${json.error}`);return json;
@@ -36,3 +37,4 @@ const report={testedAt:new Date().toISOString(),passed,elapsedMs:Date.now()-star
 await mkdir('output',{recursive:true});await writeFile('output/local-acceptance.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
 if(!passed)process.exitCode=1;
 if(passed&&process.argv.includes('--extended')){const {extendedAcceptance}=await import('./acceptance-extended.mjs');await extendedAcceptance(api,model,workspace);}
+} finally { await close(); }

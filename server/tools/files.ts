@@ -29,7 +29,9 @@ export async function readText(root: string, path: string, optional = false): Pr
       length += result.bytesRead;
     }
     if (length > FILE_LIMIT) throw new Error('File exceeds the 1 MiB size limit');
-    const content = new TextDecoder('utf-8', { fatal: true }).decode(buffer.subarray(0, length));
+    // Preserve a leading BOM as content: hashes, checkpoints and write-back
+    // verification must describe the actual UTF-8 bytes, not normalized text.
+    const content = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(buffer.subarray(0, length));
     boundedText(content);
     await inspectPath(root, path);
     return content;

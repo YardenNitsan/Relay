@@ -37,4 +37,10 @@ describe('approval identity and scope', () => {
     expect(result.reason).toBe('Exact recorded policy explanation.');
     expect(result.risk).toBe('Risk not classified. Review the recorded reason and arguments.');
   });
+  it('describes personal task storage without implying calendar events or notifications', () => {
+    const result = approvalContext({ ...approval, tool: 'personal_tasks', arguments: { action: 'create', title: 'Call the dentist', dueAt: '2026-10-12T09:00:00Z' } }, null, [], []);
+    expect(result.workspace).toBe('Your personal task list');
+    expect(result.action).toBe('Create personal task: Call the dentist');
+    expect(result.risk).toContain('No calendar event or notification');
+  });
 });

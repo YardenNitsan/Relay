@@ -1,6 +1,28 @@
 # Architecture and decisions
 
+## Private workspaces, model evidence and request protection
+
+Managed workspaces now have an immutable nullable owner identity in both database and broker metadata. Personal ownership grants the account its own file-autonomy choice; shared workspace grants, unrestricted local-owner host files, provider use, tool networking and cloud egress remain independent. All manual edits use expected-content hashes and recovery checkpoints. Browser device folders remain on the client: Relay receives only an explicitly imported copy, and reviewed write-back is a separate browser-authorized operation.
+
+Local discovery is shared across per-user provider gateways; opening Models forces installed-catalog refresh with in-flight coalescing. A task's specialist and disclosed keyword heuristic select a category; fixed optional owner probes attach only to matching local artifact/runtime identities. Eligibility and hardware admission run before ranking. Both ordinary and specialist inference acquire the same local lease as external clients, recheck memory after waiting, and monitor remaining host memory during generation. Unsafe or unavailable telemetry cancels the request and pauses rather than silently rerouting.
+
+One output-budget policy feeds context fitting, provider limits and cost reservation. Efficient mode trims forbidden tool schemas without bypassing the broker or dropping verification evidence. Actual provider usage remains authoritative; bytes removed are not advertised as exact tokens saved.
+
+Google OAuth is a shared host service with per-user credentials, session-bound PKCE, OIDC signature/nonce validation and an OS-keyring-only secret boundary. Callback query secrets are scrubbed before the browser app renders. A durable selected-credential marker prevents an old Gemini environment key silently reappearing after Google disconnect. OAuth Gemini uses GenerateContent; API-key Gemini retains its existing adapter. The owner's quota project and its billing implications are explicit.
+
+Task notifications consume authenticated persisted events and tracked task identities. Historic completions and replay do not become fresh success notifications. System notifications require an explicit browser permission and use generic content. Closed-browser push and scheduled reminder delivery are separate, unimplemented services.
+
+## 0.1.1 account and gateway extension
+
+The host now separates four transport boundaries: owner loopback (4317), optional account-authenticated LAN HTTPS, signed browser Access gateway (4318), and inference-only local API (4315). An optional separate service-identity gateway (4320) handles external inference. The public browser deployment may use a stable `workers.dev` Worker with a fixed VPC Service through Cloudflare Tunnel; it binds only the browser gateway and forwards streaming responses without retaining content. There is no owner API or raw model-runtime exposure.
+
+Provider credentials and cloud discovery/settings are scoped by immutable Relay user ID. Local model discovery is shared, and the engine resolves the account's provider gateway from the durable task owner. External clients authenticate through hash-only, expiring tokens, share the local inference lease and hardware admission, and persist only operational usage metadata. They do not enter the conversation/task/tool pipeline. Account and stop controls revoke both forms of execution.
+
+The ten selectable assistant profiles are distinct from DAG roles and models. Trusted profile instructions are inserted into worker context, and their tool allowlists intersect existing task/account capabilities. The personal-task broker uses authenticated durable task identity, transactional stop/session checks and per-user PostgreSQL records. Gmail/Calendar, interactive browser and desktop integrations remain explicitly unconnected. See [extension plan](plan-network-agents.md), [external clients](external-clients.md), [LAN guarantees](lan-access.md) and [Google connector plan](google-agents.md).
+
 Research date: 2026-10-04. Source details are in `research.md`; these decisions describe the implemented core. `validation.md` records unimplemented capabilities and unverified platform guarantees.
+
+The 9 October provider extension adds Grok through xAI Responses and DeepSeek through its Chat Completions stream, alongside the existing providers. Native continuation remains provider-scoped and private. DeepSeek tool requests disable thinking when earlier assistant history lacks native reasoning, rather than fabricating reasoning or replaying redacted data. See [provider research](research-xai-deepseek.md). An authenticated Usage query aggregates account-owned database records and last-observed supported rate headers without introducing a billing proxy or extra generation calls; see [usage semantics](usage.md).
 
 ```mermaid
 flowchart TD
@@ -67,6 +89,8 @@ A model's confidence is never a passing test. Actual tool checks have stable ide
 ## ADR011: Constrained adaptive planning and durable repair
 
 Deep and maximum execution can adapt the specialist graph after planning. The planner proposes only a list of permitted specialist roles, acceptance criteria and a short justification. A strict schema rejects extra fields, privileged/duplicate roles and roles outside the selected depth. The core constructs all dependencies and retains the worker and final reviewer. Invalid proposals keep the original bounded graph. The proposal decision and resulting graph are committed together and are not regenerated on resume.
+
+Ordinary Balanced conversation uses a single worker when no specialist, workspace, host-file capability, network/MCP tools or required verification is selected. The graph choice follows explicit task capabilities, not a keyword guess about the objective. Tool-enabled and specialist Balanced work retains its reviewer; Deep and Maximum retain their planning/review graphs. The stored analysis event identifies the chosen strategy while preserving the user's selected depth.
 
 Balanced and deep tasks permit at most two automatic repair rounds; maximum permits three and fast permits none. Repairs preserve worker tool receipts and append review/check feedback, reset the reviewer, and consume the same task call/time/cost budgets. The round count persists across restarts. Denied capabilities and ambiguous interrupted effects do not become retry invitations. A review must end with an explicit passing verdict, which remains a model assessment; unresolved actual checks prevent completion independently. Failure of a parallel branch cancels and joins siblings before releasing the task slot.
 

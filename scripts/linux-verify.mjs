@@ -21,7 +21,7 @@ await new Promise((accept, reject) => reservation.close(error => error ? reject(
 const origin = `http://127.0.0.1:${port}`;
 const environment = {
   PATH: process.env.PATH, HOME: process.env.HOME, LANG: 'C.UTF-8',
-  RELAY_PORT: String(port), RELAY_DATA_DIR: dataDirectory,
+  RELAY_PORT: String(port), RELAY_DATA_DIR: dataDirectory, RELAY_LMSTUDIO_AUTOSTART: '0',
 };
 let child;
 let logs = '';

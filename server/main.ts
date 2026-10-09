@@ -1,4 +1,5 @@
 import {watchLocalMemory,type MemoryWatchFactory} from './hardware/watchdog.js';
+import {startLmStudioBackground} from './host/lmstudio-background.js';
 import { lanConfig, loadLanTls } from './auth/lan-config.js';
 import { LocalLease } from './orchestration/lease.js';
 import { InferenceService } from './inference/service.js';
@@ -18,7 +19,7 @@ import { hostPlatform } from './host/platform.js';
 import { privateDirectory } from './host/private-storage.js';
 import { LocalPairing } from './auth/pairing.js';
 import { getResourcePolicy } from './hardware/config.js';
-import { assessModel, getHardware } from './hardware/index.js';
+import { getHardware } from './hardware/index.js';
 import type { ProviderId } from '../shared/types.js';
 
 const host=hostPlatform();
@@ -34,7 +35,7 @@ try {
 } catch(error) {if((error as NodeJS.ErrnoException).code!=='ENOENT')throw error;}
 const lock=await open(lockPath,'wx',0o600);await lock.writeFile(String(process.pid));await lock.close();
 const store=new Store(await openDatabase(join(dataDir,'postgres'),process.env.DATABASE_URL));await store.init();
-const providers=new MeasuredProviders(store,{loadUserPreferences:async userId=>{
+const providers=new MeasuredProviders(store,{resourcePolicy:()=>getResourcePolicy(store),loadUserPreferences:async userId=>{
   const saved=await store.db.query('SELECT provider,enabled FROM user_provider_connections WHERE user_id=$1',[userId]);
   const account=(await store.db.query('SELECT permissions FROM users WHERE id=$1',[userId]))[0];
   const granted=(account?.permissions as {providers?:string[]}|undefined)?.providers??[];
@@ -47,7 +48,7 @@ providers.setGoogleOAuth(googleOAuth);
 let engine:Engine|undefined;
 const broker=new ToolBroker(dataDir,()=>engine?.isStopped()??true,undefined,store);
 const lease=new LocalLease();
-const admit=async(model:import('../shared/types.js').ModelProfile,context:number)=>assessModel(model,await getHardware(),context,await getResourcePolicy(store));
+const admit=async(model:import('../shared/types.js').ModelProfile,context:number)=>providers.admitModel(model,context);
 const watchMemory:MemoryWatchFactory=(signal,execution)=>watchLocalMemory(signal,async()=>{const [hardware,policy]=await Promise.all([getHardware(),getResourcePolicy(store)]);return {hardware,policy};},execution);
 const inference=new InferenceService(store,providers,lease,()=>engine?.isStopped()??true,admit,watchMemory);
 engine=new Engine(store,providers,broker,{admit,lease,watchMemory});await engine.initialize();
@@ -58,6 +59,13 @@ const lanControl={configured:false,listening:false,origin:null as string|null,er
 const services={store,providers,broker,engine,remoteControl,pairing,inference,lanControl,googleOAuth};
 const app=await createApp(services,{port,logging:true});
 await app.listen({host:'127.0.0.1',port});
+// Optional runtime startup never holds local login or conversations hostage.
+void (async()=>{
+  const saved=await store.db.query('SELECT enabled FROM provider_connections WHERE provider=$1',['lmstudio']);
+  if(saved[0]?.enabled===false)return;
+  const result=await startLmStudioBackground();app.log.info({runtime:'lmstudio',...result},'Local runtime startup');
+  if(result.state==='started')await providers.refreshLocalModels();
+})().catch(()=>app.log.warn({runtime:'lmstudio'},'Background runtime startup unavailable; local host remains available'));
 let gateway:Awaited<ReturnType<typeof createApp>>|undefined;
 try {
   if(remoteError)throw remoteError;

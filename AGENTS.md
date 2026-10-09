@@ -23,6 +23,8 @@ Current Windows verification: **846 deterministic tests passed across 74 files w
 
 ## Commands
 
+LM Studio follow-up (10 October): use `docs/validation.md` for the successful real 9B generation and subsequent memory-paused Auto check. The official SDK estimates and loads local-only private instances; never bypass `LmStudioRuntime` or its configuration/cleanup checks. Startup uses the installed CLI with a restricted environment and loopback bind. The Windows host has a verified llmster daemon; do not replace it with a foreground desktop dependency. Runtime setup and remaining platform/calibration limits are in `docs/local-inference.md`.
+
 Use Node.js 24+. `npm ci` installs locked dependencies; `npm run check` performs strict types and deterministic backend/security tests; `npm run build` emits browser and host bundles; `npm run test:e2e` runs real Chrome against an isolated test host. `npm start` runs the compiled local service. `npm run dev` watches the backend, with `npm run dev:web` as a separate Vite process. Build before browser tests because the E2E host serves `dist/`.
 
 `node scripts/acceptance.mjs` intentionally uses actual installed Ollama inference and creates a managed acceptance workspace. It is separate from ordinary tests. Stop backend editing/watch restarts during this run.

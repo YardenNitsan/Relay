@@ -53,6 +53,8 @@ The first dependency installation and a missing-Node bootstrap require Internet 
 
 To use local inference, install/start a supported runtime and choose a compatible local model. [Ollama's official download](https://ollama.com/download) is the initial integration. The Models and Hardware views show discovered availability and fit. Large model downloads and hardware policy changes remain explicit owner decisions.
 
+For LM Studio, Relay starts the installed CLI's background service on localhost:1234 when the host starts. Install the official [llmster service](https://lmstudio.ai/docs/developer/core/headless) once for operation without the desktop app. Existing running services are preserved. `RELAY_LMSTUDIO_AUTOSTART=0` disables this behavior; `RELAY_LMS_PATH` selects an absolute CLI path. Custom runtime URLs remain manually managed. Startup failures are reported in the private host log and Models provider status without preventing local Relay access. See [memory admission and lifecycle](local-inference.md).
+
 The wrapper follows [Node's official download and checksum guidance](https://github.com/nodejs/node#download). SHA-256 checking against a manifest obtained through HTTPS detects archive corruption; this bootstrap does not claim independent PGP release-signature verification. Detached startup follows the [Node child-process API](https://nodejs.org/api/child_process.html#optionsdetached).
 
 ## Verification status

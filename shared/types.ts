@@ -31,11 +31,11 @@ export interface HardwareSnapshot {
   storage: { totalBytes: number; availableBytes: number } | null;
   warnings: string[];
 }
-export interface Admission { allowed: boolean; decision: 'run' | 'queue' | 'reduce_context' | 'alternative'; reasons: string[]; estimatedRamBytes: number | null; estimatedVramBytes: number | null; contextTokens: number; confidence: 'estimated' | 'measured' | 'unknown'; execution?: { numGpu: number }; }
+export interface Admission { allowed: boolean; decision: 'run' | 'queue' | 'reduce_context' | 'alternative'; reasons: string[]; estimatedRamBytes: number | null; estimatedVramBytes: number | null; contextTokens: number; confidence: 'estimated' | 'measured' | 'unknown'; execution?: { numGpu: number; lmstudio?: { gpuOffload: number } }; }
 export interface ToolDefinition { name: string; description: string; parameters: Record<string, unknown>; }
 export interface ToolRequest { id: string; name: string; arguments: Record<string, unknown>; }
 export interface ModelMessage { role: 'system' | 'user' | 'assistant' | 'tool'; content: string; toolCalls?: ToolRequest[]; toolCallId?: string; providerData?: { provider: ProviderId; data: unknown }; }
-export interface ModelRequest { model: ModelProfile; messages: ModelMessage[]; tools: ToolDefinition[]; contextTokens: number; maxOutputTokens: number; signal: AbortSignal; execution?: { numGpu: number }; }
+export interface ModelRequest { model: ModelProfile; messages: ModelMessage[]; tools: ToolDefinition[]; contextTokens: number; maxOutputTokens: number; signal: AbortSignal; execution?: { numGpu: number; lmstudio?: { gpuOffload: number } }; }
 export type ModelChunk = { type: 'text'; text: string } | { type: 'tool_call'; call: ToolRequest } | { type: 'usage'; inputTokens: number; outputTokens: number; durationMs?: number; loadDurationMs?:number; cachedInputTokens?:number; generationTokensPerSecond?: number; promptTokensPerSecond?: number } | { type: 'continuation'; providerData: { provider: ProviderId; data: unknown } } | { type: 'done'; finishReason: string };
 export interface ProviderGateway { forUser?(userId: string): Promise<ProviderGateway>; listModels(): Promise<ModelProfile[]>; statuses(): Promise<ProviderStatus[]>; stream(request: ModelRequest): AsyncIterable<ModelChunk>; }
 export interface Workspace { ownerUserId?: string | null; id: string; name: string; sourcePath: string | null; createdAt: string; fileCount: number; }

@@ -70,6 +70,12 @@ Structured `http_get` has separate public-origin authorization and DNS/TLS pinni
 
 Ollama native discovery/metadata/streaming is the first real local path. Model metadata includes provenance, unknown values and measured usage. Conservative admission includes model weights, architecture-derived KV cache where available, runtime buffers, requested context, host pressure and safety reserves. Serialize local generations initially. Do not unload models not owned by Relay. Cloud adapters use fixed official endpoints and server-side OS keyring/environment credentials. No silent cloud fallback or credential logging.
 
+## LM Studio runtime boundary (10 October 2026)
+
+The native LM Studio catalog omits the GGUF attention geometry used by Ollama admission. The maintained MIT `@lmstudio/sdk` is therefore used for local-only resource estimates and cancellable explicit loading; the existing OpenAI-compatible streaming adapter remains. Estimation and execution share context, offload, batch and concurrency settings. The host rechecks physical memory and owner policy immediately before loading, validates the resulting configuration, and releases only its unique instance before freeing the shared local lease. Experimental/invalid estimates fail closed. This avoids writing a GGUF parser or treating model weight size as total memory. See [exact accounting and limits](local-inference.md).
+
+An OS integration module starts an installed service through fixed CLI arguments at host startup, on loopback only. It does not expose subprocess control to agents, download weights, evict unrelated allocations, or require Internet access. Unknown occupied listeners and custom endpoints are left alone. Fully GUI-less operation requires the vendor's llmster installation; native Linux/macOS and Apple/AMD inference acceptance remain separate validation work.
+
 ## ADR007: Browser stack and design
 
 React + TypeScript + Vite; server state is distinct from transient view state. The browser is a client app with no SSR need. Semantic HTML/native controls and accessible dialog primitives keep the dependency set focused. Markdown disables raw HTML. Large work logs are bounded/paginated; diffs load when opened. Custom tokens and purposeful typography avoid a stock dashboard. No hosted Sites runtime can replace the privileged local service.

@@ -48,11 +48,13 @@ export function cloudModels(provider: 'openai' | 'anthropic' | 'gemini' | 'xai' 
   });
 }
 export function lmstudioModels(response: JsonObject): ModelProfile[] {
-  return array(response.models).map(object).filter(item => item.type === 'llm').map(item => {
+  return array(response.models).map(object).filter(item => item.type === 'llm' && string(item.key).trim()).map(item => {
     const result = profile('lmstudio', string(item.key)); const loaded = object(array(item.loaded_instances)[0]); const config = object(loaded.config);
     result.name = string(item.display_name) || string(item.key); result.sizeBytes = number(item.size_bytes); result.quantization = string(object(item.quantization).name) || null;
     result.contextWindow = number(item.max_context_length); result.state = array(item.loaded_instances).length ? 'ready' : 'available';
-    result.details = { ...result.details, architecture: item.architecture, loaded, loadedContext: number(config.context_length), limitation: 'Native metadata does not provide attention geometry; automatic memory admission is unavailable until calibrated.' };
+    const capabilities=object(item.capabilities);
+    result.capabilities={tools:capabilities.trained_for_tool_use===true,vision:capabilities.vision===true,reasoning:array(object(capabilities.reasoning).allowed_options).some(option=>['on','low','medium','high'].includes(string(option))),structured:false};
+    result.details = { ...result.details, capabilitySource: 'LM Studio /api/v1/models', architecture: item.architecture, loaded, loadedContext: number(config.context_length), limitation: 'Relay checks native runtime memory estimates and loads a private, bounded-context instance before generation. Models that exceed current safe RAM/VRAM remain queued.' };
     return result;
   });
 }

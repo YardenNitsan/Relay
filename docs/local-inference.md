@@ -2,6 +2,24 @@
 
 Updated 2026-10-05. Provider API research and the measured thinking-only Qwen failure are documented in [research-providers.md](research-providers.md).
 
+## Seeing downloaded LM Studio models
+
+Relay starts an installed LM Studio service in the background when the host starts, bound to **127.0.0.1:1234**. An existing server is reused. For operation without the desktop app, install the official [llmster headless service](https://lmstudio.ai/docs/developer/core/headless) once. Automatic startup requires an installed llmster binary; a desktop-only installation is left alone rather than opening its application. Relay does not download models or install a runtime silently. A manual fallback is LM Studio → Developer → Start Server. Keep **Serve on Local Network** off.
+
+Reopen **Models** or press **Refresh models** to discover newly downloaded models. Ollama and LM Studio have separate catalogs; Relay combines them without copying weights between runtimes. Set `RELAY_LMSTUDIO_AUTOSTART=0` to opt out. `RELAY_LMS_PATH` accepts an absolute installed CLI path; otherwise the host uses `~/.lmstudio/bin/lms` (`lms.exe` on Windows). A custom `RELAY_LMSTUDIO_URL` disables automatic startup. An unidentified occupied port is left untouched. Stopping Relay does not terminate a runtime another application might use.
+
+Relay reads the native `/api/v1/models` catalog, including downloaded chat models whose `loaded_instances` is empty. It does not load models merely to display the list. Reported tool, vision and reasoning capabilities are mapped from the runtime; missing capabilities remain unknown/false. Embedding-only models are intentionally excluded from the conversation picker. See [LM Studio's catalog API](https://lmstudio.ai/docs/developer/rest/list).
+
+LM Studio execution uses the official MIT-licensed `@lmstudio/sdk` (pinned 2.0.0) for native resource estimates and controlled loading. The estimator is experimental: unknown/low-confidence results and runtime guardrail refusals fail closed. Relay tries 100%, 75%, 50%, 25%, then CPU offload, preserving context and single-prediction concurrency. No estimate performs a load.
+
+Native total includes GPU memory. Discrete hosts reserve the non-GPU remainder against RAM plus staging/compute overhead (at least 1.5 GiB); VRAM adds 15% plus 512 MiB. Unified-memory hosts count the total once against RAM. mmap is enabled and locked residency disabled. The configured OS RAM/VRAM reserves, telemetry freshness and swap checks apply independently. These are estimates, not measured peak-memory or crash guarantees.
+
+Inside the shared local execution lease, Relay repeats the estimate and fresh hardware check, then loads a unique `relay-*` instance using `deviceIdentifier:null` (no LM Link remote fallback). Context, concurrency and offload are checked against the resulting load configuration before sending chat content. Cancellation propagates into loading and generation; the memory watchdog remains active. Only Relay's own instance is unloaded after the call, with a 60-second idle TTL as a secondary cleanup measure. A rejected/cancelled SDK load does not prove server-side allocation has stopped. An uncertain load or failed cleanup therefore blocks all subsequent local inference, including Ollama, in the current Relay process. Inspect/restart LM Studio first, then restart Relay; the quarantine itself is not durable across Relay restarts. Existing user-loaded instances are never evicted or credited as free memory. Large models may require closing other applications, reducing context, or choosing a smaller quantization.
+
+Inference retains the OpenAI-compatible streaming/tool parser. Runtime-reported capabilities gate tools. LM Studio catalog entries currently lack an artifact digest, so persistent artifact-bound throughput/quality calibration is not claimed for them. Auto can select them using eligibility, native fit and explicitly disclosed weak specialization hints; it cannot guarantee the best answer for every prompt.
+
+To explicitly repeat real LM Studio generation acceptance against the running host, use `node scripts/lmstudio-acceptance.mjs`. It pairs through the native owner path, chooses an admitted LM Studio model, creates a labeled conversation, checks persisted completion and private-instance cleanup, and closes its temporary session. It makes no cloud calls. The report is saved under `output/lmstudio-generation-acceptance.json`; insufficient free memory is a refusal, not a passed inference test.
+
 ## Owner-controlled host profiles
 
 Resource policy is a host setting, stored under `settings.resource_policy`. It is independent of conversation depth, cloud spending and task permissions. The local owner chooses the profile. Remote users and model-generated task plans cannot lower reserves by supplying a task option.
@@ -15,7 +33,7 @@ Resource policy is a host setting, stored under `settings.resource_policy`. It i
 
 The Safe defaults preserve the original admission policy. Other profiles allow more memory to be considered for inference while retaining deterministic floors. They are application policies, not vendor-certified safe limits. Performance can reduce responsiveness and is not a throughput guarantee. Custom absolute reserves must be finite values from the minimum through 256 GiB; percentages must be between 10 and 75. Invalid values, unknown fields and attempts to override a named preset are rejected. Reserve calculations round upward to whole bytes.
 
-All profiles retain the same model estimate: quantized weights, architecture-derived f16 KV cache for the requested context, runtime buffers and load overhead. They retain the same freshness limit, unknown-telemetry refusal, swap-pressure check and serialized local execution. They cannot make an unsupported hybrid architecture known, count swap as physical RAM or present an estimate as measured memory.
+All profiles retain runtime-specific estimates: Ollama uses quantized weights and architecture-derived f16 KV cache; LM Studio uses its native estimator as described above. Both include runtime buffers and load overhead. Freshness limits, unknown-telemetry refusal, swap-pressure checks and serialized local execution remain. Profiles cannot count swap as physical RAM or present an estimate as measured memory.
 
 The controller must read the current owner setting for every admission, including the recheck after acquiring the local execution lease. A policy change affects subsequent admissions during an existing task. It does not resize or revoke an already-running runtime allocation. Emergency stop remains a separate control.
 

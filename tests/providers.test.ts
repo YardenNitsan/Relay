@@ -3,6 +3,7 @@ import { Providers } from '../server/providers/index.js';
 import { SecretManager } from '../server/providers/secrets.js';
 import { ndjson, sse } from '../server/providers/transport.js';
 import { ollamaModel } from '../server/providers/registry.js';
+import type {LmStudioRuntime} from '../server/providers/lmstudio-runtime.js';
 import type { ModelChunk, ModelProfile, ModelRequest, ProviderId } from '../shared/types.js';
 
 const model = (provider: ProviderId): ModelProfile => ({ id: `${provider}/test-model`, name: 'test-model', provider, runtime: provider, local: provider === 'ollama', capabilities: { tools: true, vision: false, reasoning: false, structured: true }, contextWindow: 8192, quantization: null, sizeBytes: null, state: 'available', details: {}, tokensPerSecond: null, inputPricePerMillion: null, outputPricePerMillion: null });
@@ -15,7 +16,7 @@ const request = (provider: ProviderId): ModelRequest => ({ model: model(provider
 const event = (data: unknown): string => `data: ${JSON.stringify(data)}\n\n`;
 function gateway(provider: ProviderId, body: string, capture: (url: string, body: Record<string, unknown>) => void = () => {}) {
   const secrets = new SecretManager({ env: { [`${provider.toUpperCase()}_API_KEY`]: 'never-log-this-key' }, keyring: null });
-  return new Providers({ secrets, fetch: async (url, init) => { capture(String(url), JSON.parse(String(init?.body ?? '{}')) as Record<string, unknown>); return chunks(body); } });
+  return new Providers({ secrets, lmstudioRuntime:{load:async()=>({identifier:'relay-test',unload:async()=>{}})} as unknown as LmStudioRuntime, fetch: async (url, init) => { capture(String(url), JSON.parse(String(init?.body ?? '{}')) as Record<string, unknown>); return chunks(body); } });
 }
 
 describe('provider wire boundaries', () => {

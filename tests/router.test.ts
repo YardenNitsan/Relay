@@ -35,6 +35,19 @@ describe('personal assistant tool routing', () => {
 });
 
 describe('model diversity preserves suitability', () => {
+  it('considers an authorized LM Studio coding specialist ahead of an equally unmeasured general model',async()=>{
+    const coder=profile('qwen-coder',{id:'lmstudio/qwen-coder',provider:'lmstudio',runtime:'lmstudio'});
+    const general=profile('general');const objective=task();objective.objective='Fix a TypeScript repository bug';
+    const owner={...user,permissions:{...user.permissions,providers:[...user.permissions.providers,'lmstudio' as const]}};
+    const chosen=await selectModel(gateway([general,coder]),objective,owner,'worker',admit,new Set());
+    expect(chosen.model.id).toBe(coder.id);expect(chosen.reasons.join(' ')).toMatch(/name.*heuristic/i);
+  });
+  it('does not use GPU benchmark speed when admission changes to CPU',async()=>{
+    const gpuBenchmark=profile('old-gpu',{tokensPerSecond:100,details:{performance:{contextTokens:8192,execution:{numGpu:-1}}}});
+    const current=profile('current',{tokensPerSecond:10,details:{performance:{contextTokens:8192,execution:{numGpu:0}}}});
+    const cpu:Admit=async()=>({...allowed,execution:{numGpu:0}});
+    expect((await selectModel(gateway([gpuBenchmark,current]),task(),user,'worker',cpu,new Set())).model.id).toBe(current.id);
+  });
   it('uses matching fixed task probes ahead of speed, without overriding hardware admission',async()=>{
     const slow=profile('measured-coding',{tokensPerSecond:1,details:{digest:'d',runtimeVersion:'1',taskFit:{protocol:'relay-task-fit-v1',digest:'d',runtimeVersion:'1',measuredAt:new Date().toISOString(),scores:{coding:{passed:2,total:2},reasoning:{passed:0,total:2},general:{passed:1,total:2}}}}});
     const fast=profile('fast',{tokensPerSecond:20});const objective=task();objective.objective='Fix a repository bug';

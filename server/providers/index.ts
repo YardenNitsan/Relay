@@ -1,4 +1,4 @@
-import type { ModelChunk, ModelProfile, ModelRequest, ProviderGateway, ProviderId, ProviderStatus } from '../../shared/types.js';
+import type { Admission, ModelChunk, ModelProfile, ModelRequest, ProviderGateway, ProviderId, ProviderStatus } from '../../shared/types.js';
 import { SecretManager } from './secrets.js';
 import { anthropicStream, cloudBody, CLOUD_ENDPOINTS, geminiStream, openaiStream } from './cloud.js';
 import { compatibleStream, localBody, ollamaStream } from './local.js';
@@ -10,8 +10,12 @@ import {parseRateLimits} from './limits.js';
 import type {ProviderLimitSnapshot} from '../../shared/usage.js';
 import type {GoogleOAuth} from './google-oauth.js';
 import {googleGenerateBody,googleGeneratePath,googleGenerateStream} from './google-generate.js';
+import {LMStudioClient} from '@lmstudio/sdk';
+import {LmStudioRuntime,type ManagedLmInstance} from './lmstudio-runtime.js';
+import {assessModel,getHardware} from '../hardware/index.js';
+import type {ResourcePolicyConfig} from '../hardware/policy.js';
 
-export interface ProvidersOptions { secrets?: SecretManager; fetch?: typeof fetch; ollamaUrl?: string; lmstudioUrl?: string; discoveryTimeoutMs?: number; sharedLocal?: Providers; userSecrets?: (userId:string)=>SecretManager; loadUserPreferences?: (userId:string)=>Promise<Array<{provider:ProviderId;enabled:boolean}>>; }
+export interface ProvidersOptions { resourcePolicy?:()=>Promise<ResourcePolicyConfig>; lmstudioRuntime?:LmStudioRuntime; secrets?: SecretManager; fetch?: typeof fetch; ollamaUrl?: string; lmstudioUrl?: string; discoveryTimeoutMs?: number; sharedLocal?: Providers; userSecrets?: (userId:string)=>SecretManager; loadUserPreferences?: (userId:string)=>Promise<Array<{provider:ProviderId;enabled:boolean}>>; }
 const ids: ProviderId[] = ['ollama', 'lmstudio', 'openai', 'anthropic', 'gemini', 'xai', 'deepseek'];
 const localIds: ProviderId[] = ['ollama', 'lmstudio'];
 const cloudIds: ProviderId[] = ['openai', 'anthropic', 'gemini', 'xai', 'deepseek'];
@@ -49,6 +53,8 @@ export class Providers implements ProviderGateway {
   private readonly limitSnapshots=new Map<string,ProviderLimitSnapshot&{modelId:string;provider:ProviderId}>();
   private googleOAuth:GoogleOAuth|undefined;
   private credentialUserId='owner';
+  private readonly lmstudio:LmStudioRuntime;
+  private lmClient:{key:string|undefined;client:LMStudioClient}|undefined;
   setGoogleOAuth(service:GoogleOAuth):void {this.googleOAuth=service;}
   googleConfigurationChanged():void {this.credentialsChanged('gemini');for(const pending of this.users.values())void pending.then(gateway=>gateway.credentialsChanged('gemini')).catch(()=>{});}
   rateLimits():Array<ProviderLimitSnapshot&{modelId:string;provider:ProviderId}>{return [...this.limitSnapshots.values()].map(snapshot=>structuredClone(snapshot));}
@@ -56,6 +62,16 @@ export class Providers implements ProviderGateway {
     this.secrets = options.secrets ?? new SecretManager(); this.fetcher = options.fetch ?? fetch;
     this.bases = { ...CLOUD_ENDPOINTS, ollama: localURL(options.ollamaUrl ?? process.env.RELAY_OLLAMA_URL ?? 'http://127.0.0.1:11434'), lmstudio: localURL(options.lmstudioUrl ?? process.env.RELAY_LMSTUDIO_URL ?? 'http://127.0.0.1:1234') };
     this.timeout = options.discoveryTimeoutMs ?? 5000;
+    this.lmstudio=options.lmstudioRuntime??new LmStudioRuntime(async()=>{
+      const key=await this.secrets.get('lmstudio')??undefined;
+      if(!this.lmClient||this.lmClient.key!==key)this.lmClient={key,client:new LMStudioClient({baseUrl:this.bases.lmstudio.replace(/^http:/,'ws:'),apiToken:key,logger:{debug(){},info(){},warn(){},error(){}}})};
+      return this.lmClient.client;
+    },getHardware,options.resourcePolicy);
+  }
+  async admitModel(model:ModelProfile,context:number):Promise<Admission>{
+    if(this.options.sharedLocal&&model.local)return this.options.sharedLocal.admitModel(model,context);
+    if(model.local&&this.lmstudio.allocationUncertain)return {allowed:false,decision:'queue',reasons:['An LM Studio allocation is unresolved. Check/restart LM Studio, then Relay, before any new local inference.'],estimatedRamBytes:null,estimatedVramBytes:null,contextTokens:context,confidence:'unknown'};
+    return model.provider==='lmstudio'?this.lmstudio.admit(model,context):assessModel(model,await getHardware(),context,await this.options.resourcePolicy?.());
   }
   /** Identity comes only from a verified principal or the persisted task owner. */
   async forUser(userId:string):Promise<Providers> {
@@ -161,7 +177,9 @@ export class Providers implements ProviderGateway {
       } catch (error) {
         const http = error instanceof ProviderError ? error.status : undefined;
         status.reachable = !!http; status.state = http === 401 || http === 403 ? 'unauthorized' : http === 429 ? 'rate_limited' : http ? 'error' : 'unreachable';
-        status.error = http ? `Provider returned HTTP ${http}` : 'Provider is not reachable or returned an invalid response';
+        status.error = http ? `Provider returned HTTP ${http}` : provider==='lmstudio'
+          ? `LM Studio is not reachable at ${this.bases.lmstudio}, or returned an invalid catalog. On the host, open LM Studio → Developer → Start Server. Keep local-network access off, then refresh Models. Downloading a model alone does not start the API server.`
+          : 'Provider is not reachable or returned an invalid response';
       }
     }
     if(revision===(this.revisions.get(provider)??0))this.health.set(provider, status);
@@ -210,6 +228,7 @@ export class Providers implements ProviderGateway {
   async *stream(request: ModelRequest): AsyncGenerator<ModelChunk> {
     request.signal.throwIfAborted(); const provider = request.model.provider;
     if(this.options.sharedLocal&&(provider==='ollama'||provider==='lmstudio')){yield* this.options.sharedLocal.stream(request);return;}
+    if(localIds.includes(provider)&&this.lmstudio.allocationUncertain)throw new ProviderError('RESOURCE_PRESSURE','An LM Studio allocation is unresolved. Check/restart LM Studio, then Relay, before any new local inference.');
     if (this.disabled.has(provider)) throw new ProviderError('disabled', 'Provider is disabled');
     if (provider === 'ollama' && (!request.model.local || request.model.details.remoteHost || request.model.details.remoteModel)) throw new ProviderError('remote_runtime', 'Ollama remote/cloud forwarding is unsupported; use an authorized direct cloud provider');
     if (!ids.includes(provider)) throw new ProviderError('unsupported_provider', 'Unsupported provider');
@@ -222,12 +241,19 @@ export class Providers implements ProviderGateway {
     const active = this.active.get(provider) ?? new Set<AbortController>(); active.add(controller); this.active.set(provider, active);
     const signal = AbortSignal.any([request.signal, controller.signal, AbortSignal.timeout(10 * 60_000)]);
     const started = Date.now();
+    let instance:ManagedLmInstance|undefined;
     request.model.state = 'generating';
     try {
       const headers=await cancellable(this.headers(provider,!local),signal);
       this.assertCurrent(provider,revision,signal);
+      if(provider==='lmstudio'){
+        instance=await this.lmstudio.load(request.model,request.contextTokens,request.execution,signal);
+        this.assertCurrent(provider,revision,signal);request.model.state='generating';
+      }
       const google=provider==='gemini'&&!!headers.authorization;
-      const response = await this.fetcher(`${this.bases[provider]}${google?googleGeneratePath(request):suffix}`, { method: 'POST', headers, body: JSON.stringify(google?googleGenerateBody(request):local ? localBody(request) : cloudBody(request)), signal, redirect: 'error' });
+      const body=google?googleGenerateBody(request):local?localBody(request):cloudBody(request);
+      if(instance)body.model=instance.identifier;
+      const response = await this.fetcher(`${this.bases[provider]}${google?googleGeneratePath(request):suffix}`, { method: 'POST', headers, body: JSON.stringify(body), signal, redirect: 'error' });
       this.assertCurrent(provider,revision,signal);
       const limits=parseRateLimits(provider,response.headers);
       this.limitSnapshots.delete(request.model.id);
@@ -250,6 +276,9 @@ export class Providers implements ProviderGateway {
       if (signal.aborted) throw signal.reason;
       if (error instanceof ProviderError) throw error;
       throw new ProviderError('transport_failed', 'Provider connection failed; no automatic replay was attempted');
-    } finally { active.delete(controller); request.model.state = 'available'; request.model.details.lastCallDurationMs = Date.now() - started; this.refreshed.delete(provider); }
+    } finally {
+      try{if(instance)await instance.unload();}
+      finally{active.delete(controller); request.model.state = 'available'; request.model.details.lastCallDurationMs = Date.now() - started; this.refreshed.delete(provider);}
+    }
   }
 }

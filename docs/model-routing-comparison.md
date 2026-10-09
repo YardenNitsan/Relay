@@ -16,6 +16,10 @@ The 0.1.1 continuation adds an explicit specialist/keyword category derived from
 
 ## Current candidates
 
+### LM Studio execution follow-up — 10 October 2026
+
+LM Studio now participates through native SDK resource estimation and explicit local-only load settings, rather than failing every model for absent Ollama-style attention metadata. Auto and specialist calls retain the same authorization, lease and pressure checks. A small coding-name hint helps distinguish an unbenchmarked coding model from a general model; explanations label it as a weak heuristic. Throughput observations with a different context or execution/offload configuration do not influence ranking. LM Studio user-loaded instances receive no ready-state bonus because Relay creates and releases its own instance. Runtime catalog metadata is not an artifact digest; persistent LM Studio calibration is still unavailable. No claim that these rules establish optimal prompt-level quality is made.
+
 | Candidate | What it supplies | Cost to Relay / limits | Recommendation |
 | --- | --- | --- | --- |
 | llmfit | Native hardware fit, catalog and use-case recommendations | Catalog/family estimates need exact installed-artifact matching; does not establish prompt-level task success | Optional advisor first |

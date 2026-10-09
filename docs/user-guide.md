@@ -309,7 +309,7 @@ After a host restart, interrupted work is preserved and may need explicit resump
 
 Choose **Check hardware fit** to assess a local model using the current context budget. Read the reasons, not just the outcome. Unknown architecture or telemetry can prevent admission.
 
-Relay integrates with local runtimes; it is not itself a model downloader or an embedded inference engine. Start and manage model installations in Ollama or LM Studio. Installed models may still need to load before generation.
+Relay integrates with local runtimes; it is not itself a model downloader or an embedded inference engine. Manage model downloads in Ollama or LM Studio. Relay starts an installed LM Studio background service when the host starts; install the official llmster daemon once to avoid opening the desktop app. Reopening Models refreshes both independent libraries. A selected LM Studio model is loaded with a bounded context only after native memory admission, then unloaded after the call. A large model can remain unsafe under current host pressure even though it appears in the list. See [runtime setup](local-inference.md).
 
 ### Optional provider connections
 

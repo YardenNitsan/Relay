@@ -220,7 +220,9 @@ export async function createApp(services:Services,options:AppOptions={}):Promise
   app.post('/api/models/assess',async request=>{
     const p=principal(request);const body=z.object({modelId:z.string().max(200),contextTokens:z.number().int().min(2048).max(131072)}).parse(request.body);
     const model=(await (await providers.forUser(p.user.id)).listModels()).find(m=>m.id===body.modelId&&p.user.permissions.providers.includes(m.provider));
-    if(!model)throw new AppError('MODEL_NOT_FOUND','Available model not found',404);return assessModel(model,await getHardware(),body.contextTokens,await getResourcePolicy(store));
+    if(!model)throw new AppError('MODEL_NOT_FOUND','Available model not found',404);
+    providerLimiter.check(p.user.id,20);
+    return model.provider==='lmstudio'?providers.admitModel(model,body.contextTokens):assessModel(model,await getHardware(),body.contextTokens,await getResourcePolicy(store));
   });
   app.get('/api/hardware',async request=>{owner(request);return getHardware();});
   for(const method of ['POST','DELETE'] as const)app.route({method,url:'/api/providers/:id/key',handler:async request=>personalProvider(request,async({p,id,gateway})=>{

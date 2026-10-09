@@ -646,10 +646,10 @@ kbd { font: 10px var(--mono); border: 1px solid var(--line); border-radius: 3px;
   .model-title .status { font-size: 9px; }
   .model-glyph { width: 31px; height: 31px; }
   .model-facts { font-size: 11px; }
-  .manager-toolbar { gap: 7px; flex-wrap: wrap; }
-  .manager-toolbar .search-field { flex-basis: 65%; }
-  .manager-toolbar select { flex: 1; }
-  .manager-toolbar .icon-button { width: 40px; height: 40px; }
+  .manager-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) 44px; gap: 8px; }
+  .manager-toolbar .search-field { grid-column: 1 / -1; }
+  .manager-toolbar select { width: 100%; min-width: 0; }
+  .manager-toolbar .icon-button { width: 44px; height: 44px; }
   .command-modal .modal-content { padding: 0; }
   .command-results { max-height: calc(100dvh - 200px); }
   .command-result { padding: 16px 13px; }

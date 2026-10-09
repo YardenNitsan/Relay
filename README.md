@@ -114,6 +114,8 @@ Start **Ollama** or **LM Studio** with an installed model, then open **Models & 
 
 Relay does not automatically install runtimes or download models. Pick a model appropriate for your available memory; a model's weight-file size is only part of its memory requirement. [Local inference details →](docs/local-inference.md)
 
+**LM Studio runs in the background.** Relay starts an installed LM Studio service on localhost:1234 when the host starts. For operation without the desktop app, install LM Studio's official **llmster** once. Open **Models** to refresh both runtime libraries; downloaded chat models appear even when unloaded. Relay uses native memory estimates, chooses a safe GPU/CPU split, loads a private instance with your selected context, and unloads it after the call. Models that cannot fit current memory remain unavailable for that request. See [background setup and memory limits](docs/local-inference.md).
+
 ### 4. Send an objective
 
 Start with **Auto model**, **Balanced**, **Read only** and **Local only**:

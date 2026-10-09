@@ -8,6 +8,8 @@ const sessionListeners = new Set<(error: ApiError) => void>();
 export interface UserPermissions {
   providers: string[]; workspaceIds: string[]; maxAccess: 'read_only' | 'supervised' | 'workspace';
   maxConcurrentTasks: number; maxCallsPerTask: number; maxSecondsPerTask: number; dailyCloudBudgetUsd: number;
+  networkOrigins?: string[]; maxNetworkAccess?: 'deny' | 'ask' | 'allow';
+  mcpServerIds?: string[];
 }
 export interface SessionUser { id: string; name: string; email: string | null; role: 'owner' | 'trusted' | 'chat'; enabled: boolean; permissions: UserPermissions; createdAt: string; lastActiveAt: string | null }
 export interface SessionInfo { user?: SessionUser; remote?: boolean; hostName?: string }
@@ -80,7 +82,7 @@ export function refreshSession(): Promise<SessionInfo> {
   return initializeSession();
 }
 
-export async function api<T>(path: string, options: { method?: 'GET' | 'POST' | 'DELETE'; body?: unknown; signal?: AbortSignal } = {}): Promise<T> {
+export async function api<T>(path: string, options: { method?: 'GET' | 'POST' | 'PUT' | 'DELETE'; body?: unknown; signal?: AbortSignal } = {}): Promise<T> {
   await initializeSession();
   const epoch = sessionEpoch;
   const method = options.method ?? 'GET';

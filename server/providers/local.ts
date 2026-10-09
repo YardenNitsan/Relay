@@ -45,8 +45,9 @@ export async function* ollamaStream(response: Response, request: ModelRequest): 
   });
   yield { type: 'continuation', providerData: { provider: 'ollama', data: { role: 'assistant', content: text, ...(thinking ? { thinking } : {}), ...(calls.length ? { tool_calls: calls.map(call => ({ id: call.id, type: 'function', function: { name: call.name, arguments: call.arguments } })) } : {}) } } };
   const promptCount = number(terminal.prompt_eval_count); const outputCount = number(terminal.eval_count);
+  const loadNs=number(terminal.load_duration);const cached=number(terminal.prompt_eval_cached_count);
   const promptNs = number(terminal.prompt_eval_duration); const generationNs = number(terminal.eval_duration); const totalNs = number(terminal.total_duration);
-  if (promptCount !== null && outputCount !== null) yield { type: 'usage', inputTokens: promptCount, outputTokens: outputCount, ...(totalNs !== null ? { durationMs: totalNs / 1e6 } : {}), ...(generationNs && outputCount ? { generationTokensPerSecond: outputCount / generationNs * 1e9 } : {}), ...(promptNs && promptCount ? { promptTokensPerSecond: promptCount / promptNs * 1e9 } : {}) };
+  if (promptCount !== null && outputCount !== null) yield { type: 'usage', inputTokens: promptCount, outputTokens: outputCount, ...(loadNs!==null?{loadDurationMs:loadNs/1e6}:{}),...(cached!==null?{cachedInputTokens:cached}:{}), ...(totalNs !== null ? { durationMs: totalNs / 1e6 } : {}), ...(generationNs && outputCount ? { generationTokensPerSecond: outputCount / generationNs * 1e9 } : {}), ...(promptNs && promptCount>(cached??0) ? { promptTokensPerSecond: (promptCount-(cached??0)) / promptNs * 1e9 } : {}) };
   for (const call of calls) yield { type: 'tool_call', call };
   yield { type: 'done', finishReason: calls.length ? 'tool_calls' : string(terminal.done_reason) || 'stop' };
 }

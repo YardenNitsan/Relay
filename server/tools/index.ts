@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { mkdir } from 'node:fs/promises';
+import { mkdir,rm } from 'node:fs/promises';
 import { createPatch } from 'diff';
 import type { FileChange, ToolContext, ToolDecision, ToolDefinition, ToolRequest, ToolResult, Workspace } from '../../shared/types';
 import { boundedText, copySnapshot, hashOrNull, listTextFiles, readText, replaceText, sha256, snapshot, type Guard } from './files';
@@ -8,15 +8,22 @@ import { FILE_COUNT_LIMIT, inspectPath, OUTPUT_LIMIT, safePath, sourceRoot, WORK
 import { DockerSandbox } from './sandbox';
 import { ToolStore, type ChangeEntry, type Checkpoint } from './store';
 import { UncertainToolEffect } from './errors';
+import { PublicHttpClient } from './http';
+import { ManagedGit } from './git';
+import { captureGitBaseline } from './git-baseline';
+import { StorageBudget } from './storage-budget';
+import { McpRegistry } from '../mcp';
 
 export class ToolBroker {
   private readonly store: ToolStore;
   private readonly sandbox: DockerSandbox;
+  private readonly http = new PublicHttpClient();
+  private readonly git: ManagedGit;
   private queue: Promise<unknown> = Promise.resolve();
   private generation = 0;
-  constructor(dataDir: string, private readonly isStopped: () => boolean) { this.store = new ToolStore(dataDir); this.sandbox = new DockerSandbox(this.store); }
+  constructor(dataDir: string, private readonly isStopped: () => boolean, readonly mcp = new McpRegistry()) { this.store = new ToolStore(dataDir); this.sandbox = new DockerSandbox(this.store); this.git = new ManagedGit(this.store); }
   definitions(): ToolDefinition[] { return definitions(); }
-  decide(context: ToolContext, request: ToolRequest): ToolDecision { return decide(context, request, this.isStopped()); }
+  decide(context: ToolContext, request: ToolRequest): ToolDecision { return decide(context, request, this.isStopped(),this.mcp); }
   private serial<T>(operation: () => Promise<T>): Promise<T> {
     const result = this.queue.then(operation); this.queue = result.catch(() => undefined); return result;
   }
@@ -39,10 +46,11 @@ export class ToolBroker {
       await this.store.init();
       const source = sourcePath ? await sourceRoot(sourcePath, this.store.root) : null;
       const files = source ? await snapshot(source) : new Map<string, string>(); guard();
+      await new StorageBudget(this.store.root).assertCapacity([...files.values()].reduce((sum,value)=>sum+2*Buffer.byteLength(value),2*1024*1024));guard();
       const record: Workspace = { id: randomUUID(), name: name.trim(), sourcePath: source, createdAt: new Date().toISOString(), fileCount: files.size };
       const root = await this.store.workspaceRoot(record.id);
       await mkdir(root, { recursive: true, mode: 0o700 }); await inspectPath(root);
-      await copySnapshot(root, files, guard); guard(); await this.store.saveWorkspace(record);
+      await copySnapshot(root, files, guard); guard(); await captureGitBaseline(this.store,record.id,files,'workspace_creation',guard); await this.store.saveWorkspace(record);
       return record;
     });
   }
@@ -55,17 +63,28 @@ export class ToolBroker {
     return this.serial(async () => {
       guard(); const { root, record } = await this.workspace(workspaceId);
       const before = await readText(root, path, true); await this.capacity(root, [{ path, before, after: content }]);
+      await new StorageBudget(this.store.root).assertCapacity(Buffer.byteLength(content)+2*1024*1024);guard();
       await replaceText(root, path, content, hashOrNull(before), guard);
       record.fileCount = (await listTextFiles(root)).length; await this.store.saveWorkspace(record);
     });
   }
   async execute(context: ToolContext, request: ToolRequest): Promise<ToolResult> {
     const guard = this.guard(context.signal);
+    if(request.name==='mcp_call') {
+      guard();const decision=this.decide(context,request);if(decision.decision!=='allow')throw new Error(`${decision.decision}: ${decision.reason}`);
+      const result=await this.mcp.execute(context,request);guard();return result;
+    }
+    if (request.name==='http_get') {
+      guard();const decision=this.decide(context,request);
+      if(decision.decision!=='allow')throw new Error(`${decision.decision}: ${decision.reason}`);
+      const {args}=parseRequest(request);const result=await this.http.get(args.url as string,context.network!,context.signal);guard();return result;
+    }
     return this.serial(async () => {
       guard(); const decision = this.decide(context, request);
       if (decision.decision !== 'allow') throw new Error(`${decision.decision}: ${decision.reason}`);
       const { name, args } = parseRequest(request);
       const { root } = await this.workspace(context.workspaceId!); guard();
+      if (name==='git_status' || name==='git_diff') return this.git.inspect(context.workspaceId!,root,name,args.path as string|undefined,context.signal,guard);
       if (name === 'file_list') {
         const files = await listTextFiles(root, safePath((args.path as string | undefined) ?? '', true));
         guard(); return { content: JSON.stringify({ files }), evidence: [{ kind: 'file_listing', summary: `Inspected ${files.length} permitted files`, passed: true }] };
@@ -109,6 +128,7 @@ export class ToolBroker {
   private async commit(context: Pick<ToolContext, 'taskId' | 'workspaceId'>, root: string, entries: ChangeEntry[], guard: Guard): Promise<Checkpoint> {
     await this.capacity(root, entries); guard();
     const checkpoint: Checkpoint = { id: randomUUID(), taskId: context.taskId, workspaceId: context.workspaceId!, createdAt: new Date().toISOString(), state: 'prepared', entries };
+    await new StorageBudget(this.store.root).assertCapacity(2*Buffer.byteLength(JSON.stringify(checkpoint))+entries.reduce((sum,entry)=>sum+Buffer.byteLength(entry.after??''),2*1024*1024));guard();
     await this.store.saveCheckpoint(checkpoint);
     try {
       for (const entry of entries) await replaceText(root, entry.path, entry.after, hashOrNull(entry.before), guard);
@@ -120,16 +140,17 @@ export class ToolBroker {
   private async terminal(context: ToolContext, root: string, argv: string[], timeoutSeconds: number, guard: Guard): Promise<ToolResult> {
     const status = await this.sandbox.status(); if (!status.available) throw new Error(status.reason);
     const before = await snapshot(root, true); guard();
+    await new StorageBudget(this.store.root).assertCapacity([...before.values()].reduce((sum,value)=>sum+2*Buffer.byteLength(value),2*1024*1024));guard();
     const stage = await inspectPath(this.store.root, `runs/${randomUUID()}`);
     await mkdir(stage, { recursive: true, mode: 0o700 }); await copySnapshot(stage, before, guard);
-    const command = await this.sandbox.run(stage, argv, timeoutSeconds, context.signal, guard); guard();
-    const after = await snapshot(stage, true); guard();
+    const { files: after, ...command } = await this.sandbox.run(stage, argv, timeoutSeconds, context.signal, guard); guard();
     const entries: ChangeEntry[] = [];
     for (const path of new Set([...before.keys(), ...after.keys()])) {
       const oldValue = before.get(path) ?? null; const newValue = after.get(path) ?? null;
       if (oldValue !== newValue) entries.push({ path, before: oldValue, after: newValue });
     }
     const checkpoint = entries.length ? await this.commit(context, root, entries, guard) : null;
+    await rm(await inspectPath(this.store.root,`runs/${stage.split(/[\\/]/).at(-1)}`),{recursive:true,force:true,maxRetries:3,retryDelay:25});
     return { content: JSON.stringify({ ...command, checkpointId: checkpoint?.id ?? null, filesChanged: entries.length }), evidence: [{ kind: 'command_exit', summary: `Isolated command exited ${command.exitCode}`, passed: command.exitCode === 0, details: { argv, exitCode: command.exitCode, durationMs: command.durationMs, truncated: command.truncated } }, ...(checkpoint ? [{ kind: 'file_content', summary: `Verified ${entries.length} changed files`, passed: true, details: { checkpointId: checkpoint.id } }] : [])] };
   }
   async changes(taskId: string): Promise<FileChange[]> {
@@ -157,11 +178,12 @@ export class ToolBroker {
       if (checkpoint.state !== 'committed') throw new Error('Checkpoint is not a completed mutation; inspect interrupted operations before recovery');
       const { root, record } = await this.workspace(checkpoint.workspaceId);
       for (const entry of checkpoint.entries) if (hashOrNull(await readText(root, entry.path, true)) !== hashOrNull(entry.after)) throw new Error(`Content conflict: ${entry.path} changed after the checkpoint`);
+      await new StorageBudget(this.store.root).assertCapacity(Buffer.byteLength(JSON.stringify(checkpoint))+checkpoint.entries.reduce((sum,entry)=>sum+Buffer.byteLength(entry.before??''),2*1024*1024));guard();
       for (const entry of [...checkpoint.entries].reverse()) await replaceText(root, entry.path, entry.before, hashOrNull(entry.after), guard);
       checkpoint.state = 'reverted'; await this.store.saveCheckpoint(checkpoint);
       record.fileCount = (await listTextFiles(root)).length; await this.store.saveWorkspace(record);
     });
   }
   async sandboxStatus(): Promise<{ available: boolean; reason: string }> { return this.sandbox.status(); }
-  async stopAll(): Promise<void> { this.generation++; await this.sandbox.stopAll(); }
+  async stopAll(): Promise<void> { this.generation++; this.http.stopAll(); this.git.stopAll(); this.mcp.stopAll(); await this.sandbox.stopAll(); }
 }

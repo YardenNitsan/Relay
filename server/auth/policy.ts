@@ -2,12 +2,15 @@ import { z } from 'zod';
 import type { AccessMode, ProviderId, TaskOptions } from '../../shared/types.js';
 import { AppError } from '../core/errors.js';
 import { verificationContractSchema } from '../orchestration/required-reads.js';
+import { networkOriginSchema, networkPolicySchema } from '../tools/network-policy.js';
 
 export const permissionSchema=z.object({
   providers:z.array(z.enum(['ollama','lmstudio','openai','anthropic','gemini'])).max(5),
   workspaceIds:z.array(z.string().uuid()).max(32), maxAccess:z.enum(['read_only','supervised','workspace']),
   maxConcurrentTasks:z.number().int().min(1).max(4), maxCallsPerTask:z.number().int().min(1).max(64),
   maxSecondsPerTask:z.number().int().min(30).max(3600), dailyCloudBudgetUsd:z.number().min(0).max(100),
+  networkOrigins:z.array(networkOriginSchema).max(16).optional(),maxNetworkAccess:z.enum(['deny','ask','allow']).optional(),
+  mcpServerIds:z.array(z.string().regex(/^[a-z0-9][a-z0-9_-]{0,63}$/)).max(16).optional(),
 });
 export type UserPermissions=z.infer<typeof permissionSchema>;
 export interface User { id:string;name:string;email:string|null;role:'owner'|'trusted'|'chat';enabled:boolean;permissions:UserPermissions;sessionVersion:number;createdAt:string;lastActiveAt:string|null; }
@@ -22,6 +25,13 @@ export function authorizeWorkspace(principal:Principal,id:string):void {
 }
 export function authorizeOptions(principal:Principal,options:TaskOptions):TaskOptions {
   const permissions=principal.user.permissions;
+  if(options.mcpServerIds)options={...options,mcpServerIds:permissionSchema.shape.mcpServerIds.parse(options.mcpServerIds)};
+  if(options.mcpServerIds?.length&&(principal.remote||principal.user.role!=='owner')&&options.mcpServerIds.some(id=>!permissions.mcpServerIds?.includes(id)))throw new AppError('MCP_DENIED','External tool server access exceeds your account grants.',403);
+  if(options.network){
+    options={...options,network:networkPolicySchema.parse(options.network)};
+    const levels=['deny','ask','allow'];
+    if((principal.remote||principal.user.role!=='owner')&&(levels.indexOf(options.network!.mode)>levels.indexOf(permissions.maxNetworkAccess??'deny')||options.network!.allowedOrigins.some(origin=>!permissions.networkOrigins?.includes(origin))))throw new AppError('NETWORK_DENIED','Network access exceeds the origins or approval policy granted to your account.',403);
+  }
   if(options.verification){
     options={...options,verification:verificationContractSchema.parse(options.verification)};
     if(!options.workspaceId)throw new AppError('VERIFICATION_WORKSPACE','Required file verification needs an authorized workspace.',403);

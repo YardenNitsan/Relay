@@ -20,10 +20,14 @@ import type { ToolBroker } from '../tools/index.js';
 import { getHardware, assessModel } from '../hardware/index.js';
 import { getResourcePolicy } from '../hardware/config.js';
 import { resourceRoutes } from './resources.js';
+import { registerHistoryRoutes } from './history.js';
+import { calibrationRoutes } from './calibration.js';
+import { mcpRoutes } from './mcp.js';
 import { verificationContractSchema } from '../orchestration/required-reads.js';
+import { networkPolicySchema } from '../tools/network-policy.js';
 import { installBoundary, RateLimiter, routeId } from './boundary.js';
 
-const taskOptions=z.object({depth:z.enum(['fast','balanced','deep','maximum']),modelId:z.string().max(200).nullable(),access:z.enum(['read_only','supervised','workspace','unrestricted']),workspaceId:z.string().uuid().nullable(),contextTokens:z.number().int().min(2048).max(131072),cloudPolicy:z.enum(['local_only','allow','ask']).default('local_only'),verification:verificationContractSchema.optional(),budget:z.object({maxCalls:z.number().int().min(1).max(64),maxSeconds:z.number().int().min(30).max(3600),maxIterations:z.number().int().min(1).max(16),maxCostUsd:z.number().min(0).max(100).nullable(),localOnly:z.boolean()})});
+const taskOptions=z.object({depth:z.enum(['fast','balanced','deep','maximum']),modelId:z.string().max(200).nullable(),access:z.enum(['read_only','supervised','workspace','unrestricted']),workspaceId:z.string().uuid().nullable(),contextTokens:z.number().int().min(2048).max(131072),cloudPolicy:z.enum(['local_only','allow','ask']).default('local_only'),verification:verificationContractSchema.optional(),network:networkPolicySchema.optional(),mcpServerIds:permissionSchema.shape.mcpServerIds,modelSelection:z.enum(['preferred','required']).optional(),budget:z.object({maxCalls:z.number().int().min(1).max(64),maxSeconds:z.number().int().min(30).max(3600),maxIterations:z.number().int().min(1).max(16),maxCostUsd:z.number().min(0).max(100).nullable(),localOnly:z.boolean()})});
 const providerId=z.enum(['ollama','lmstudio','openai','anthropic','gemini']);
 export interface RemoteControl {config:RemoteConfig|null;enabled:boolean;listening:boolean;}
 export interface Services {store:Store;engine:Engine;providers:Providers;broker:ToolBroker;remoteControl?:RemoteControl;pairing?:LocalPairing;}
@@ -71,6 +75,9 @@ export async function createApp(services:Services,options:AppOptions={}):Promise
   const principal=(request:FastifyRequest):Principal=>{const p=principals.get(request);if(!p)throw new AppError('AUTH_REQUIRED','Authentication required',401);return p;};
   const owner=(request:FastifyRequest)=>{const p=principal(request);authorizeOwner(p);return p;};
   resourceRoutes(app,store,providers,owner);
+  registerHistoryRoutes(app,store,principal);
+  calibrationRoutes(app,store,engine,providers,owner);
+  await mcpRoutes(app,store,broker.mcp,principal,owner);
   const task=async(request:FastifyRequest)=>store.task(routeId(request),principal(request).user.id);
   const remoteEnabled=()=>services.remoteControl?services.remoteControl.enabled&&services.remoteControl.listening:!!options.remote;
   const systemStatus=async()=>{const control=await store.control();return {stopped:control.stopped,stopGeneration:control.generation,database:store.db.kind,sandbox:await broker.sandboxStatus(),version:'0.1.0',hostName:hostname(),remoteEnabled:remoteEnabled()};};

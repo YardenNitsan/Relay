@@ -20,7 +20,7 @@ export class ToolStore {
     if (this.initialized) return;
     await mkdir(this.root, { recursive: true, mode: 0o700 });
     await inspectPath(this.root);
-    for (const folder of ['workspaces', 'checkpoints', 'runs', 'containers']) {
+    for (const folder of ['workspaces', 'checkpoints', 'runs', 'containers', 'baselines', 'git-runs']) {
       const target = await inspectPath(this.root, folder);
       await mkdir(target, { recursive: true, mode: 0o700 });
       await inspectPath(this.root, folder);

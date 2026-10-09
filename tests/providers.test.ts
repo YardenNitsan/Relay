@@ -19,6 +19,10 @@ function gateway(provider: ProviderId, body: string, capture: (url: string, body
 }
 
 describe('provider wire boundaries', () => {
+  it('measures uncached prompt throughput and model load separately',async()=>{
+    const result=await collect(gateway('ollama',JSON.stringify({message:{content:'Answer'},done:true,done_reason:'stop',prompt_eval_count:100,prompt_eval_cached_count:80,prompt_eval_duration:1e9,eval_count:10,eval_duration:5e8,load_duration:2e8,total_duration:2e9})).stream(request('ollama')));
+    expect(result.find(chunk=>chunk.type==='usage')).toMatchObject({promptTokensPerSecond:20,cachedInputTokens:80,loadDurationMs:200,generationTokensPerSecond:20,durationMs:2000});
+  });
   it('decodes UTF-8 split across network chunks and CRLF SSE framing', async () => {
     expect(await collect(sse(chunks('event: message\r\ndata: {"text":"résumé 🎸"}\r\n\r\n')))).toEqual([{ text: 'résumé 🎸' }]);
   });

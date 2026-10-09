@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Activity as ActivityIcon, ArrowUpRight, ChevronDown, Command as CommandIcon, Cpu, History, Layers, Menu, Moon, PanelRightClose, Plus, Radio, Search, ShieldCheck, Square, Sun, X } from 'lucide-react';
+import { Activity as ActivityIcon, ChevronDown, Command as CommandIcon, Cpu, Layers, Menu, Moon, PanelRightClose, Plus, Radio, ShieldCheck, Square, Sun, X } from 'lucide-react';
 import type { Conversation as ConversationRecord, ConversationDetail, SystemStatus, TaskOptions, TaskRecord, Workspace } from '../shared/types';
 import { api, ApiError, errorMessage, initializeSession, mutation, onSessionInvalidated, refreshSession } from './api';
 import { useRealtime } from './useRealtime';
@@ -9,33 +9,32 @@ import Conversation from './components/Conversation';
 import Activity from './components/Activity';
 import Connection from './components/Connection';
 import Navigation from './components/Navigation';
+import History from './components/History';
 import CommandPalette, { type Command } from './components/CommandPalette';
-import { Empty, ErrorNotice, isActive, Loading, Modal, shortDate } from './components/ui';
+import { isActive, Loading, Modal } from './components/ui';
 import type { ModelList } from './components/Models';
 
 const Models = lazy(() => import('./components/Models'));
 const Hardware = lazy(() => import('./components/Hardware'));
 const Workspaces = lazy(() => import('./components/Workspaces'));
 const Access = lazy(() => import('./components/Access'));
-type Panel = 'history' | 'models' | 'hardware' | 'workspaces' | 'commands' | 'access' | 'navigation' | null;
+const Mcp = lazy(() => import('./components/Mcp'));
+type Panel = 'history' | 'models' | 'hardware' | 'workspaces' | 'commands' | 'access' | 'navigation' | 'mcp' | null;
 const defaults: TaskOptions = { depth: 'balanced', modelId: null, access: 'read_only', workspaceId: null, contextTokens: 8192, cloudPolicy: 'local_only', budget: { maxCalls: 12, maxSeconds: 600, maxIterations: 5, maxCostUsd: null, localOnly: true } };
 
 function currentConversation() { return new URLSearchParams(window.location.search).get('conversation'); }
+function currentMessage() { return new URLSearchParams(window.location.search).get('message'); }
 function preferredTheme(): 'dark' | 'light' {
   try { const stored = localStorage.getItem('relay:theme:v1'); if (stored === 'dark' || stored === 'light') return stored; } catch { /* Follow system preference. */ }
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
-function HistoryPanel({ conversations, selected, onSelect, onNew, loading, error }: { conversations: ConversationRecord[]; selected: string | null; onSelect: (id: string) => void; onNew: () => void; loading: boolean; error: unknown }) {
-  const [search, setSearch] = useState('');
-  const [limit, setLimit] = useState(60);
-  const filtered = conversations.filter(conversation => conversation.title.toLowerCase().includes(search.toLowerCase()));
-  return <><div className="history-toolbar"><label className="search-field"><Search size={16} /><input autoFocus type="search" aria-label="Search conversations" placeholder="Find a conversation…" value={search} onChange={event => setSearch(event.target.value)} /></label><button className="button" onClick={onNew}><Plus size={16} />New</button></div>{loading ? <Loading>Loading conversations…</Loading> : error != null ? <ErrorNotice error={error} /> : filtered.length ? <div className="history-list">{filtered.slice(0, limit).map(conversation => <button key={conversation.id} className={`history-item ${selected === conversation.id ? 'selected' : ''}`} onClick={() => onSelect(conversation.id)}><History size={16} /><span><strong>{conversation.title}</strong><small>Updated {shortDate(conversation.updatedAt)}</small></span><ArrowUpRight size={14} /></button>)}{filtered.length > limit && <button className="text-button" onClick={() => setLimit(value => value + 60)}>Show more conversations</button>}</div> : <Empty title={search ? 'No matching conversations' : 'A fresh page'} icon={<History size={26} />}><p>{search ? 'Try another title.' : 'Your conversations and execution records will stay here.'}</p></Empty>}</>;
-}
-
 export default function App() {
   const client = useQueryClient();
   const [conversationId, setConversationId] = useState<string | null>(currentConversation);
+  const [messageId, setMessageId] = useState<string | null>(currentMessage);
+  const [historicalTask, setHistoricalTask] = useState<TaskRecord | null>(null);
+  const [readerVersion, setReaderVersion] = useState(0);
   const [taskId, setTaskId] = useState<string | null>(null);
   const [panel, setPanel] = useState<Panel>(null);
   const [activity, setActivity] = useState(false);
@@ -46,7 +45,7 @@ export default function App() {
   const [streamGeneration, setStreamGeneration] = useState(0);
   const [sessionFailure, setSessionFailure] = useState<ApiError | null>(null);
   useEffect(() => onSessionInvalidated(error => {
-    setSessionFailure(error); setPanel(null); setActivity(false); setTaskId(null);
+    setSessionFailure(error); setPanel(null); setActivity(false); setTaskId(null); setHistoricalTask(null);
     setOptions(defaults); setNotice(null);
     void client.cancelQueries();
     client.clear();
@@ -57,12 +56,12 @@ export default function App() {
   const permissions = session.data?.user?.permissions;
   const remote = session.data?.remote === true;
   const status = useQuery({ queryKey: ['status'], queryFn: ({ signal }) => api<SystemStatus>('/status', { signal }), enabled: ready, refetchInterval: 10_000 });
-  const conversations = useQuery({ queryKey: ['conversations'], queryFn: ({ signal }) => api<ConversationRecord[]>('/conversations', { signal }), enabled: ready });
   const conversation = useQuery({ queryKey: ['conversation', conversationId], queryFn: ({ signal }) => api<ConversationDetail>(`/conversations/${conversationId}`, { signal }), enabled: ready && Boolean(conversationId) });
   const models = useQuery({ queryKey: ['models'], queryFn: ({ signal }) => api<ModelList>('/models', { signal }), enabled: ready, staleTime: 30_000 });
   const workspaces = useQuery({ queryKey: ['workspaces'], queryFn: ({ signal }) => api<Workspace[]>('/workspaces', { signal }), enabled: ready });
   const realtime = useRealtime(ready, streamGeneration);
-  const tasks = conversation.data?.tasks ?? [];
+  const recentTasks = conversation.data?.tasks ?? [];
+  const tasks = historicalTask && !recentTasks.some(task => task.id === historicalTask.id) ? [...recentTasks, historicalTask] : recentTasks;
   const latestTask = [...tasks].sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
   const selectedTaskId = taskId && tasks.some(task => task.id === taskId) ? taskId : latestTask?.id ?? null;
   const running = tasks.some(task => isActive(task.status));
@@ -74,14 +73,15 @@ export default function App() {
     setOptions(value => ({ ...value, budget: { ...value.budget, maxCalls: Math.min(value.budget.maxCalls, permissions.maxCallsPerTask), maxSeconds: Math.min(value.budget.maxSeconds, permissions.maxSecondsPerTask) } }));
   }, [permissions]);
 
-  const selectConversation = useCallback((id: string | null) => {
-    setConversationId(id); setTaskId(null); setActivity(false); setPanel(null);
+  const selectConversation = useCallback((id: string | null, anchor?: string) => {
+    setConversationId(id); setMessageId(anchor ?? null); setHistoricalTask(null); setTaskId(null); setActivity(false); setPanel(null);
     const url = new URL(window.location.href);
     if (id) url.searchParams.set('conversation', id); else url.searchParams.delete('conversation');
+    if (anchor) url.searchParams.set('message', anchor); else url.searchParams.delete('message');
     window.history.pushState({}, '', url);
   }, []);
   useEffect(() => {
-    const listener = () => { setConversationId(currentConversation()); setTaskId(null); setActivity(false); };
+    const listener = () => { setConversationId(currentConversation()); setMessageId(currentMessage()); setHistoricalTask(null); setTaskId(null); setActivity(false); };
     window.addEventListener('popstate', listener); return () => window.removeEventListener('popstate', listener);
   }, []);
   useEffect(() => {
@@ -107,9 +107,10 @@ export default function App() {
       id = created.id;
     }
     const response = await mutation<{ task: TaskRecord }>(`/conversations/${id}/messages`, { content, options });
-    if (conversationId !== id) selectConversation(id);
+    if (conversationId !== id || messageId) selectConversation(id);
+    setReaderVersion(value => value + 1);
     setTaskId(response.task.id);
-    await Promise.all([client.invalidateQueries({ queryKey: ['conversation', id] }), client.invalidateQueries({ queryKey: ['conversations'] })]);
+    await Promise.all([client.invalidateQueries({ queryKey: ['conversation', id] }), client.invalidateQueries({ queryKey: ['history'] })]);
   };
   const emergencyStop = async () => {
     setStopBusy(true);
@@ -123,7 +124,8 @@ export default function App() {
     catch (error) { setNotice({ message: errorMessage(error), error: true }); }
     finally { setStopBusy(false); }
   };
-  const inspect = (id: string) => { setTaskId(id); setActivity(true); };
+  const inspect = (id: string, task?: TaskRecord) => { if (task) setHistoricalTask(task); setTaskId(id); setActivity(true); };
+  const returnLatest = () => { setMessageId(null); const url = new URL(window.location.href); url.searchParams.delete('message'); window.history.replaceState({}, '', url); };
   const reconnect = async () => {
     try {
       const renewed = await refreshSession(); client.setQueryData(['session'], renewed);
@@ -136,6 +138,7 @@ export default function App() {
     { id: 'new', label: 'New conversation', description: 'Start a new objective', action: () => selectConversation(null) },
     { id: 'history', label: 'Open conversation history', description: 'Return to previous work', action: () => setPanel('history') },
     { id: 'models', label: 'Choose a model', description: 'Models and provider connections', action: () => setPanel('models') },
+    ...(owner ? [{ id: 'mcp', label: 'Manage MCP tools', description: 'Review tool contracts and control server access', action: () => setPanel('mcp') }] : []),
     { id: 'workspace', label: 'Manage workspaces', description: 'Import a project or inspect managed files', action: () => setPanel('workspaces') },
     ...(owner ? [{ id: 'hardware', label: 'Inspect this machine', description: 'Measured resource and execution boundary information', action: () => setPanel('hardware') }, { id: 'access', label: 'Manage access', description: 'Remote gateway, allowed users and session revocation', action: () => setPanel('access') }] : []),
     { id: 'activity', label: 'Open activity', description: 'Work log, approvals, changes and verification', action: () => setActivity(true) },
@@ -152,12 +155,13 @@ export default function App() {
     {stopped && <div className="service-banner warning" role="status"><span><strong>All work is stopped.</strong> {owner ? 'Resume the service to allow new objectives.' : 'The host owner can resume the service.'}</span>{owner && <button disabled={stopBusy} onClick={() => { void resumeService(); }}>Resume Relay</button>}</div>}
     {notice && <div className={`service-banner ${notice.error ? 'error' : ''}`} role={notice.error ? 'alert' : 'status'}><span>{notice.message}</span><button className="icon-button" aria-label="Dismiss notification" onClick={() => setNotice(null)}><X size={16} /></button></div>}
     <div className={`workspace-layout ${activity ? 'has-inspector' : ''}`}><main id="main" className="conversation-main"><div className="conversation-toolbar"><div className="connection-status"><span className={`connection-dot ${ready && realtime.connection === 'live' && !backendUnavailable ? 'connected' : ''}`} /><span>{backendUnavailable ? 'Service disconnected' : !ready ? 'Connecting to Relay' : realtime.connection === 'live' ? remote ? `Connected to ${session.data?.hostName ?? 'shared host'}` : 'Local service connected' : realtime.connection === 'reconnecting' ? 'Reconnecting to activity…' : 'Connecting activity…'}</span></div><button id="activity-toggle" className={`activity-toggle ${activity ? 'active' : ''}`} onClick={() => setActivity(value => !value)} aria-expanded={activity}>{activity ? <PanelRightClose size={16} /> : <ActivityIcon size={16} />}<span>Activity</span>{running && <span className="activity-dot" />}</button></div>
-      <Conversation detail={conversation.data} loading={Boolean(conversationId) && conversation.isPending} error={conversation.isError ? conversation.error : null} onRetry={() => { void conversation.refetch(); }} streams={realtime.text} models={modelList} onInspect={inspect} onModels={() => setPanel('models')} onWorkspace={() => setPanel('workspaces')} />
+      <Conversation key={`${conversationId ?? 'new'}:${readerVersion}`} focusMessageId={messageId} onReturnLatest={returnLatest} detail={conversation.data} loading={Boolean(conversationId) && conversation.isPending} error={conversation.isError ? conversation.error : null} onRetry={() => { void conversation.refetch(); }} streams={realtime.text} events={realtime.events} models={modelList} onInspect={inspect} onModels={() => setPanel('models')} onWorkspace={() => setPanel('workspaces')} />
       <Composer key={`${session.data?.user?.id ?? 'pending'}:${conversationId ?? 'new'}`} conversationId={conversationId} options={options} onOptions={setOptions} models={modelList} workspaces={workspaces.data ?? []} onWorkspace={() => setPanel('workspaces')} onSend={send} disabled={!ready || backendUnavailable} stopped={stopped} running={running} status={status.data} owner={owner} permissions={permissions} userId={session.data?.user?.id ?? 'pending'} />
     </main>{activity && <Activity taskId={selectedTaskId} tasks={tasks} events={realtime.events} workspaces={workspaces.data ?? []} hostName={session.data?.hostName} onSelect={setTaskId} onClose={() => { setActivity(false); requestAnimationFrame(() => document.getElementById('activity-toggle')?.focus()); }} stopped={stopped} />}</div>
     <footer className="app-footer"><span><Radio size={12} />Your work stays accountable.</span><span>{status.data ? `Relay ${status.data.version}` : 'Relay'}<span className="footer-separator" />{options.cloudPolicy === 'local_only' ? 'Local inference only' : 'Cloud access controlled'}</span></footer>
-    {panel === 'history' && <Modal title="Conversations" onClose={() => setPanel(null)}><HistoryPanel conversations={conversations.data ?? []} selected={conversationId} onSelect={selectConversation} onNew={() => selectConversation(null)} loading={conversations.isPending} error={conversations.isError ? conversations.error : null} /></Modal>}
+    {panel === 'history' && <Modal title="Conversations" onClose={() => setPanel(null)}><History selected={conversationId} onSelect={selectConversation} onNew={() => selectConversation(null)} /></Modal>}
     {panel === 'models' && <Modal title="Models & connections" onClose={() => setPanel(null)} wide><Suspense fallback={<Loading>Opening models…</Loading>}><Models owner={owner} contextTokens={options.contextTokens} onSelect={id => { setOptions(value => ({ ...value, modelId: id })); setPanel(null); }} /></Suspense></Modal>}
+    {panel === 'mcp' && owner && <Modal title="MCP tools" onClose={() => setPanel(null)}><Suspense fallback={<Loading>Opening tool connections…</Loading>}><Mcp /></Suspense></Modal>}
     {panel === 'hardware' && owner && <Modal title="This machine" onClose={() => setPanel(null)}><Suspense fallback={<Loading>Opening resource view…</Loading>}><Hardware status={status.data} /></Suspense></Modal>}
     {panel === 'workspaces' && <Modal title="Workspaces" onClose={() => setPanel(null)}><Suspense fallback={<Loading>Opening workspaces…</Loading>}><Workspaces owner={owner} selected={options.workspaceId} onSelect={id => setOptions(value => ({ ...value, workspaceId: id }))} /></Suspense></Modal>}
     {panel === 'access' && owner && <Modal title="Access & remote connections" onClose={() => setPanel(null)} wide><Suspense fallback={<Loading>Opening access controls…</Loading>}><Access /></Suspense></Modal>}

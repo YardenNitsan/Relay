@@ -9,6 +9,7 @@ export const OUTPUT_LIMIT = 32_768;
 
 const blockedDirectories = new Set(['.git', '.hg', '.svn', '.ssh', '.aws', '.azure', '.gcloud', '.gnupg', '.kube', '.docker', '.codex', '.agents', '.config', 'node_modules', 'vendor', '.venv', 'venv', '__pycache__', 'dist', 'build', 'target', '.next', '.cache']);
 const blockedFiles = /^(?:\.env(?:\..*)?|\.npmrc|\.netrc|\.pypirc|\.gitconfig|credentials(?:\..*)?|secrets?(?:\..*)?|id_(?:rsa|dsa|ecdsa|ed25519)(?:\..*)?)$/i;
+export const sandboxFileFilter={directories:[...blockedDirectories],files:blockedFiles.source};
 const deviceName = /^(?:con|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³])(?:\.|$)/i;
 
 export function protectedName(name: string): boolean {

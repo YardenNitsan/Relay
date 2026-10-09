@@ -1,0 +1,33 @@
+name: Native database and container integration
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'server/db/**'
+      - 'server/tools/**'
+      - 'server/orchestration/**'
+      - 'shared/**'
+      - 'scripts/native-integrations*'
+      - '.github/workflows/native-integrations.yml'
+permissions:
+  contents: read
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: node scripts/native-integrations-docker.mjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: success()
+        with:
+          name: native-integration-evidence
+          path: output/native-integrations.json
+          retention-days: 14

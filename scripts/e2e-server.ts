@@ -11,6 +11,7 @@ import { SecretManager } from '../server/providers/secrets.js';
 import { ToolBroker } from '../server/tools/index.js';
 import { LocalPairing } from '../server/auth/pairing.js';
 import type { ModelChunk, ModelProfile, ModelRequest, ProviderStatus } from '../shared/types.js';
+import { seedHistoryFixture } from './history-fixture.js';
 const fixture:ModelProfile={id:'ollama/e2e-fixture',name:'Deterministic test model',provider:'ollama',runtime:'test fixture',local:true,capabilities:{tools:true,vision:false,reasoning:false,structured:true},contextWindow:32000,quantization:null,sizeBytes:null,state:'available',details:{testFixture:true},tokensPerSecond:null,inputPricePerMillion:null,outputPricePerMillion:null};
 class TestProviders extends Providers {
   constructor(){super({secrets:new SecretManager({env:{}})});}
@@ -20,16 +21,19 @@ class TestProviders extends Providers {
   override async *stream(request:ModelRequest):AsyncGenerator<ModelChunk> {
     const tools=request.messages.filter(m=>m.role==='tool');
     const objective=request.messages.findLast(m=>m.role==='user')?.content??'';
-    if(request.messages[0].content.includes("Relay's reviewer"))yield {type:'text',text:'The recorded result matches the request. REVIEW: PASS'};
+    if(request.messages[0].content.includes("Relay's reviewer")){
+      if(request.messages.some(message=>message.content.includes('hello how are you today?')))await new Promise(resolve=>setTimeout(resolve,1500));
+      yield {type:'text',text:'The recorded result matches the request. REVIEW: PASS'};
+    }
     else if(request.tools.length&&objective.includes('Create')&&!tools.length)yield {type:'tool_call',call:{id:'write-fixture',name:'file_write',arguments:{path:'notes.txt',content:'Verified fixture content\n',expectedHash:null}}};
     else {
       const text=tools.length?'Created notes.txt and verified the stored content.':'A deterministic response for browser testing.\n\nThe conversation, task, and execution record are persisted by the real local service.\n\n```typescript\nconst result = await verify(objective);\n```';
-      for(const word of text.split(' ')){request.signal.throwIfAborted();await new Promise(resolve=>setTimeout(resolve,objective.includes('slow')?600:20));yield {type:'text',text:word+' '};}
+      for(const word of text.split(' ')){request.signal.throwIfAborted();await new Promise(resolve=>setTimeout(resolve,objective.includes('slow')?600:objective.includes('relay-text-v1')?100:20));yield {type:'text',text:word+' '};}
     }
     yield {type:'usage',inputTokens:120,outputTokens:60};yield {type:'done',finishReason:'stop'};
   }
 }
-const dir=await mkdtemp(join(tmpdir(),'relay-e2e-'));const store=new Store(await openDatabase());await store.init();const providers=new TestProviders();
+const dir=await mkdtemp(join(tmpdir(),'relay-e2e-'));const store=new Store(await openDatabase());await store.init();await seedHistoryFixture(store);const providers=new TestProviders();
 let engine:Engine;const broker=new ToolBroker(dir,()=>engine?.isStopped()??false);
 engine=new Engine(store,providers,broker,{admit:async()=>({allowed:true,decision:'run',reasons:['Explicit automated test fixture'],estimatedRamBytes:null,estimatedVramBytes:null,contextTokens:8192,confidence:'unknown'})});
 const pairingDirectory=resolve('.e2e-data/host');const pairing=new LocalPairing(pairingDirectory);await pairing.initialize();

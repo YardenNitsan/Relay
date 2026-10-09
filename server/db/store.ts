@@ -81,6 +81,8 @@ export class Store {
       const user=row<User>((await tx.query('SELECT * FROM users WHERE id=$1 FOR UPDATE',[owner.user_id]))[0]);
       const task=row<TaskRecord>((await tx.query('SELECT * FROM tasks WHERE id=$1 FOR UPDATE',[id]))[0]);
       if(task.status!=='paused'&&task.status!=='waiting_for_user')throw new AppError('NOT_PAUSED','This task is not paused',409);
+      const timing=(await tx.query('SELECT execution_used_ms,execution_reserved_ms FROM tasks WHERE id=$1',[id]))[0];
+      if(Number(timing.execution_used_ms)+Number(timing.execution_reserved_ms)>=task.options.budget.maxSeconds*1000)throw new AppError('TIME_BUDGET','Task execution time budget is exhausted. Start a new objective.',409);
       const authorized=admissionOptions(user,task.options,expectedSessionVersion);
       const active=Number((await tx.query("SELECT COUNT(*) AS count FROM tasks WHERE user_id=$1 AND id<>$2 AND status NOT IN ('completed','failed','cancelled','paused')",[user.id,id]))[0].count);
       if(active>=user.permissions.maxConcurrentTasks)throw new AppError('USER_TASK_QUOTA','Your active task limit is reached. Wait or stop a task.',429);
@@ -192,7 +194,7 @@ export class Store {
       await event(tx,taskId,'MODEL_CALL_STARTED',{callId:id,agentId,modelId,reservedCostUsd:amount,costState}); return id;
     });
   }
-  async finishCall(id:string,input:number|null,output:number|null,cost:number|null,error?:string) {
+  async finishCall(id:string,input:number|null,output:number|null,cost:number|null,error?:string,usage:Record<string,number>|null=null) {
     if(cost!==null&&(!Number.isFinite(cost)||cost<0))throw new AppError('INVALID_COST','Invalid reported model cost');
     return this.db.transaction(async tx=>{
       const call=(await tx.query('SELECT * FROM model_calls WHERE id=$1 FOR UPDATE',[id]))[0];
@@ -203,7 +205,7 @@ export class Store {
       const previous=call.cost_usd===null?null:Number(call.cost_usd);
       const charged=settled?cost:previous===null?cost:Math.max(previous,cost??0);
       const costState=settled?'settled':'uncertain';
-      await tx.query('UPDATE model_calls SET status=$1,input_tokens=$2,output_tokens=$3,cost_usd=$4,cost_state=$5,error=$6,finished_at=now() WHERE id=$7',[error?'failed':'completed',input,output,charged,costState,error??null,id]);
+      await tx.query('UPDATE model_calls SET status=$1,input_tokens=$2,output_tokens=$3,cost_usd=$4,cost_state=$5,error=$6,usage=$8,finished_at=now() WHERE id=$7',[error?'failed':'completed',input,output,charged,costState,error??null,id,usage?JSON.stringify(usage):null]);
       return {costUsd:charged,costState};
     });
   }
@@ -244,6 +246,7 @@ export class Store {
   async saveWorkspace(w:Workspace) { await this.db.query('INSERT INTO workspaces(id,name,source_path,file_count,created_at) VALUES ($1,$2,$3,$4,$5) ON CONFLICT(id) DO UPDATE SET file_count=excluded.file_count',[w.id,w.name,w.sourcePath,w.fileCount,w.createdAt]); }
   async recover() {
     await this.db.transaction(async tx=>{
+      await tx.query('UPDATE tasks SET execution_used_ms=execution_used_ms+execution_reserved_ms,execution_reserved_ms=0,execution_lease_id=NULL WHERE execution_lease_id IS NOT NULL');
       const interrupted=await tx.query("UPDATE tasks SET status='paused',error='Host restarted. Inspect recorded activity before resuming.',updated_at=now() WHERE status NOT IN ('completed','failed','cancelled','paused','waiting_for_user') RETURNING id");
       await tx.query("UPDATE approvals SET status='denied' WHERE status='pending'");
       await tx.query("UPDATE task_steps SET status='pending' WHERE status='running'");

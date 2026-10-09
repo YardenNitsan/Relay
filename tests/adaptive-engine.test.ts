@@ -11,15 +11,37 @@ let store:Store;let engine:Engine;
 afterEach(async()=>{await engine?.shutdown();await store?.close();});
 const role=(request:ModelRequest)=>request.messages[0].content.match(/Relay's (\w+)/)?.[1];
 async function waitFor(done:()=>Promise<boolean>){const end=Date.now()+6000;while(Date.now()<end){if(await done())return;await new Promise(resolve=>setTimeout(resolve,10));}throw new Error('Task did not settle');}
-async function setup(stream:(request:ModelRequest)=>AsyncIterable<ModelChunk>,depth:Depth='balanced',decision:ToolDecision={decision:'allow',reason:'Workspace capability',risk:'execute'}){
+async function setup(stream:(request:ModelRequest)=>AsyncIterable<ModelChunk>,depth:Depth='balanced',decision:ToolDecision={decision:'allow',reason:'Workspace capability',risk:'execute'},maxCalls=options.budget.maxCalls){
   store=new Store(await openDatabase());await store.init();let executions=0;
   const tools:ExecutionTools={definitions:()=>[{name:'terminal',description:'Run isolated tests',parameters:{type:'object'}}],decide:()=>decision,execute:async()=>{executions++;return {content:`Exit ${executions===1?1:0}`,evidence:[{kind:'command_exit',summary:'Test suite',passed:executions>1}]};},stopAll:async()=>{},changes:async()=>[]};
   engine=new Engine(store,{listModels:async()=>[model],statuses:async()=>[],stream},tools,{admit:async()=>({allowed:true,decision:'run',reasons:['Fixture admission'],estimatedRamBytes:100,estimatedVramBytes:100,contextTokens:16384,confidence:'estimated'})});
-  const conversation=await store.createConversation();const {task}=await store.createTask(conversation.id,'Fix the code and verify the tests',{...options,depth});engine.enqueue(task.id);
+  const conversation=await store.createConversation();const {task}=await store.createTask(conversation.id,'Fix the code and verify the tests',{...options,depth,budget:{...options.budget,maxCalls}});engine.enqueue(task.id);
   return {task,executions:()=>executions};
 }
 const done:ModelChunk={type:'done',finishReason:'stop'};
 describe('adaptive supervisor',()=>{
+  it('uses only one remaining call to correct a review when the answer needs no repair',async()=>{
+    let workers=0;let reviews=0;
+    const {task}=await setup(async function*(request){
+      if(role(request)==='reviewer')yield {type:'text',text:++reviews===1?'Looks good.':'REVIEW: PASS'};
+      else {workers++;yield {type:'text',text:'The user-facing answer.'};}yield done;
+    },'balanced',undefined,3);
+    await waitFor(async()=>['completed','waiting_for_user','paused'].includes((await store.task(task.id)).status));
+    expect((await store.task(task.id)).status).toBe('completed');expect(workers).toBe(1);expect(reviews).toBe(2);
+    expect((await store.task(task.id)).callsUsed).toBe(3);
+  });
+  it('retries a malformed review without replacing the user answer with completion commentary',async()=>{
+    let workers=0;let reviews=0;
+    const {task}=await setup(async function*(request){
+      if(role(request)==='reviewer')yield {type:'text',text:++reviews===1?'The objective is fulfilled. No action needed.':'REVIEW: PASS'};
+      else yield {type:'text',text:++workers===1?'Hello! I am ready to help.':'The original objective is complete. No action is needed.'};
+      yield done;
+    });
+    await waitFor(async()=>['completed','waiting_for_user','paused'].includes((await store.task(task.id)).status));
+    expect((await store.task(task.id)).status).toBe('completed');
+    expect(workers).toBe(1);expect(reviews).toBe(2);
+    expect((await store.task(task.id)).result).toBe('Hello! I am ready to help.');
+  });
   it('repairs failed real checks, retains receipts, and runs review again before completion',async()=>{
     let worker=0;let reviews=0;let repairHadReceipt=false;let reviewHadEvidence=false;
     const {task,executions}=await setup(async function*(request){

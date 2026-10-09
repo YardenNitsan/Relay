@@ -13,7 +13,7 @@ interface Performance {
   execution?: { numGpu: number };
   source: 'measured' | 'persisted';
 }
-interface Identity { key: string; digest: string; hardwareFingerprint: string; }
+interface Identity { key: string; digest: string; runtimeVersion:string|null; hardwareFingerprint: string; }
 const hash = (value: unknown): string => createHash('sha256').update(JSON.stringify(value)).digest('hex');
 const positive = (value: unknown): number | null => { const parsed = number(value); return parsed !== null && parsed > 0 ? parsed : null; };
 const text = (value: unknown): string => string(value).slice(0, 512);
@@ -29,7 +29,8 @@ function hardwareIdentity(hardware: HardwareSnapshot): string | null {
 function modelIdentity(model: ModelProfile, hardwareFingerprint: string | null): Identity | null {
   const digest = string(model.details.digest);
   if (!model.local || !hardwareFingerprint || !digest || digest.length > 512) return null;
-  return { digest, hardwareFingerprint, key: `measured:${hash([model.provider, model.runtime, model.id, digest, hardwareFingerprint])}` };
+  const runtimeVersion=string(model.details.runtimeVersion)||null;
+  return { digest, runtimeVersion, hardwareFingerprint, key: `measured:${hash([model.provider, model.runtime, runtimeVersion, model.id, digest, hardwareFingerprint])}` };
 }
 
 function performanceRecord(raw: unknown): Performance | null {
@@ -50,7 +51,7 @@ function persistedModel(model: ModelProfile, identity: Identity, performance: Pe
     contextWindow: number(model.contextWindow), quantization: model.quantization === null ? null : text(model.quantization), sizeBytes: number(model.sizeBytes),
     state: 'available', tokensPerSecond: performance.generationTokensPerSecond,
     inputPricePerMillion: number(model.inputPricePerMillion), outputPricePerMillion: number(model.outputPricePerMillion),
-    details: { measurementSchema: 1, digest: identity.digest, hardwareFingerprint: identity.hardwareFingerprint, performance },
+    details: { measurementSchema: 2, digest: identity.digest, runtimeVersion:identity.runtimeVersion, hardwareFingerprint: identity.hardwareFingerprint, performance },
   };
 }
 
@@ -83,7 +84,7 @@ export class MeasuredProviders extends Providers {
         const identity = identities.get(model.id); if (!identity) continue;
         const saved = profiles.get(identity.key); if (!saved) continue;
         const details = object(saved.details);
-        if (saved.id !== model.id || saved.provider !== model.provider || saved.runtime !== model.runtime || saved.local !== true || details.measurementSchema !== 1 || details.digest !== identity.digest || details.hardwareFingerprint !== hardware) continue;
+        if (saved.id !== model.id || saved.provider !== model.provider || saved.runtime !== model.runtime || saved.local !== true || details.measurementSchema !== 2 || details.runtimeVersion!==identity.runtimeVersion || details.digest !== identity.digest || details.hardwareFingerprint !== hardware) continue;
         const performance = performanceRecord(details.performance); if (!performance) continue;
         const current = performanceRecord(model.details.performance);
         if (current && Date.parse(current.measuredAt) >= Date.parse(performance.measuredAt)) continue;

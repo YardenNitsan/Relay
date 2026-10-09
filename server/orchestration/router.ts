@@ -10,10 +10,10 @@ export async function selectModel(gateway:ProviderGateway,task:TaskRecord,user:U
   const models=await gateway.listModels();
   const localOnly=task.options.budget.localOnly||task.options.cloudPolicy==='local_only'||!task.options.cloudPolicy;
   const rejected:string[]=[];
-  const candidates=models.filter(m=>!excluded.has(m.id)&&user.permissions.providers.includes(m.provider)&&m.state!=='offline'&&m.state!=='error'&&(!localOnly||m.local));
+  const candidates=models.filter(m=>!excluded.has(m.id)&&user.permissions.providers.includes(m.provider)&&m.state!=='offline'&&m.state!=='error'&&(!localOnly||m.local)&&(task.options.modelSelection!=='required'||m.id===task.options.modelId));
   const usable: {model:ModelProfile;admission:Admission;score:number;thinkingOnly:boolean}[]=[];
   for(const model of candidates) {
-    if(task.options.workspaceId&&!model.capabilities.tools) {rejected.push(`${model.name}: tool calling is not available`);continue;}
+    if((task.options.workspaceId||task.options.network&&task.options.network.mode!=='deny'||task.options.mcpServerIds?.length)&&!model.capabilities.tools) {rejected.push(`${model.name}: tool calling is not available`);continue;}
     if(model.contextWindow!==null&&model.contextWindow<task.options.contextTokens) {rejected.push(`${model.name}: selected context is larger than model limit`);continue;}
     const admission=await admit(model,task.options.contextTokens);
     if(!admission.allowed) {rejected.push(`${model.name}: ${admission.reasons.join('; ')}`);continue;}

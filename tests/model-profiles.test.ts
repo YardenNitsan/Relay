@@ -10,10 +10,12 @@ vi.mock('../server/hardware/index.js', () => ({ getHardware: telemetry.sample })
 const host = (): HardwareSnapshot => ({ sampledAt: new Date().toISOString(), platform: 'win32', architecture: 'x64', memoryArchitecture: 'discrete', cpu: { name: 'CPU', physicalCores: 8, logicalCores: 16, utilization: 4 }, memory: { totalBytes: 32 * 1024 ** 3, availableBytes: 20 * 1024 ** 3, swapTotalBytes: 0, swapUsedBytes: 0 }, gpus: [{ name: 'GPU', vendor: 'NVIDIA', totalBytes: 12 * 1024 ** 3, usedBytes: 1024 ** 3, utilization: 0, temperature: 35, driver: 'driver1', memoryShared: false }], storage: null, warnings: [] });
 let store: Store;
 let digest = 'digest-A';
+let runtimeVersion='0.0.test';
 let output = '';
 const completed = (usage = true): string => JSON.stringify({ message: { content: 'Result', thinking: 'private-reasoning-marker' }, done: true, done_reason: 'stop', ...(usage ? { eval_count: 10, eval_duration: 500_000_000, prompt_eval_count: 40, prompt_eval_duration: 2_000_000_000 } : {}) });
 const transport: typeof fetch = async url => {
   const path = new URL(String(url)).pathname;
+  if(path==='/api/version')return Response.json({version:runtimeVersion});
   if (path === '/api/tags') return Response.json({ models: [{ name: 'test:4b', digest, size: 2000, details: { quantization_level: 'Q4_K_M' } }] });
   if (path === '/api/show') return Response.json({ capabilities: ['completion', 'tools'], model_info: { 'general.architecture': 'qwen3', 'qwen3.context_length': 8192 } });
   if (path === '/api/chat') return new Response(output);
@@ -32,6 +34,10 @@ beforeEach(async () => { await store.db.query('DELETE FROM model_profiles'); dig
 afterAll(async () => { await store.close(); });
 
 describe('durable measured profiles', () => {
+  it('does not restore measurements across a runtime upgrade',async()=>{
+    runtimeVersion='before';const providers=gateway();await collect(providers.stream(await request(providers)));runtimeVersion='after';
+    expect((await gateway().listModels()).find(model=>model.provider==='ollama')?.tokensPerSecond).toBeNull();
+  });
   it('restores real throughput and measurement conditions in a new gateway without persisting request data', async () => {
     const providers = gateway(); const input = await request(providers);
     await collect(providers.stream(input));

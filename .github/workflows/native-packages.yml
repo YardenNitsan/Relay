@@ -1,0 +1,41 @@
+name: Build unsigned native package candidates
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run build
+      - run: node scripts/notices.mjs
+      - name: Fetch verified runtime and build destination package
+        shell: bash
+        run: |
+          runtime_directory=$(node packaging/native/fetch-runtime.mjs)
+          node packaging/native/build.mjs "$runtime_directory"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: unsigned-native-${{ matrix.os }}
+          path: |
+            release/native-*/*.msix
+            release/native-*/*.deb
+            release/native-*/*.pkg
+            release/native-*/SHA256SUMS
+            release/native-*/native-package.json
+          if-no-files-found: error
+          retention-days: 14

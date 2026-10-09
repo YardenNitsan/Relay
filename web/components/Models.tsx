@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowUpRight, Check, Cloud, Cpu, KeyRound, RefreshCw, ShieldCheck } from 'lucide-react';
 import type { Admission, ModelProfile, ProviderStatus } from '../../shared/types';
 import { api, mutation } from '../api';
+import Calibration from './Calibration';
 import { bytes, Empty, ErrorNotice, humanize, Loading, Status } from './ui';
 
 export interface ModelList { models: ModelProfile[]; providers: ProviderStatus[] }
@@ -37,7 +38,7 @@ function ProviderRow({ provider }: { provider: ProviderStatus }) {
   </div>;
 }
 
-function ModelRow({ model, onSelect, contextTokens }: { model: ModelProfile; onSelect: (id: string) => void; contextTokens: number }) {
+function ModelRow({ model, onSelect, contextTokens, owner }: { model: ModelProfile; onSelect: (id: string) => void; contextTokens: number; owner: boolean }) {
   const [admission, setAdmission] = useState<Admission | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [checking, setChecking] = useState(false);
@@ -51,7 +52,7 @@ function ModelRow({ model, onSelect, contextTokens }: { model: ModelProfile; onS
     <div className="model-facts"><span>{model.contextWindow ? `${model.contextWindow.toLocaleString()} context` : 'Context unknown'}</span>{model.sizeBytes != null && <span>{bytes(model.sizeBytes)} weights</span>}<span>{model.tokensPerSecond == null ? 'Not benchmarked' : `${model.tokensPerSecond.toFixed(1)} tok/s measured`}</span><span>{model.local ? 'Runs on this machine' : model.inputPricePerMillion == null ? 'Cloud pricing unknown' : `$${model.inputPricePerMillion}/M input tokens`}</span></div>
     <div className="split"><div className="capabilities">{Object.entries(model.capabilities).filter(([, supported]) => supported).map(([capability]) => <span key={capability}>{humanize(capability)}</span>)}</div><div className="button-row">{model.local && <button className="text-button" onClick={() => { void assess(); }} disabled={checking}>{checking ? 'Checking…' : 'Check hardware fit'}</button>}<button className="button small-button" disabled={model.state === 'offline' || model.state === 'error'} onClick={() => onSelect(model.id)}>Use model<ArrowUpRight size={14} /></button></div></div>
     {admission && <div className={`admission ${admission.allowed ? '' : 'admission-warning'}`}><div className="split"><strong>{humanize(admission.decision)}</strong><span className="small">{humanize(admission.confidence)}</span></div><ul>{admission.reasons.map((reason, index) => <li key={`${index}-${reason}`}>{reason}</li>)}</ul><p className="small muted">Context {admission.contextTokens.toLocaleString()} / RAM {bytes(admission.estimatedRamBytes)} / GPU {bytes(admission.estimatedVramBytes)}</p></div>}
-    {error != null && <ErrorNotice error={error} />}
+    {owner && model.local && <Calibration modelId={model.id} contextTokens={contextTokens} />}{error != null && <ErrorNotice error={error} />}
   </article>;
 }
 
@@ -61,6 +62,6 @@ export default function Models({ onSelect, contextTokens, owner = true }: { onSe
   const [search, setSearch] = useState('');
   const models = query.data?.models.filter(model => (filter === 'all' || model.local === (filter === 'local')) && `${model.name} ${model.provider}`.toLowerCase().includes(search.toLowerCase())) ?? [];
   return <><div className="section-intro"><p>Choose the intelligence for your work.</p><p className="muted">Local runtimes are discovered on this host. Cloud providers are optional and require separate sharing permission.</p></div><div className="manager-toolbar"><label className="search-field"><span className="sr-only">Find a model</span><input type="search" value={search} onChange={event => setSearch(event.target.value)} placeholder="Find a model…" /></label><select aria-label="Model location" value={filter} onChange={event => setFilter(event.target.value as typeof filter)}><option value="all">All models</option><option value="local">Local</option><option value="cloud">Cloud</option></select><button className="icon-button" aria-label="Refresh models" disabled={query.isFetching} onClick={() => { void query.refetch(); }}><RefreshCw size={17} className={query.isFetching ? 'spin' : ''} /></button></div>
-    {query.isPending ? <Loading>Discovering models…</Loading> : query.isError ? <ErrorNotice error={query.error} retry={() => { void query.refetch(); }} /> : <><div className="model-list">{models.map(model => <ModelRow key={model.id} model={model} onSelect={onSelect} contextTokens={contextTokens} />)}{!models.length && <Empty title={search ? 'No matching models' : 'No models available'} icon={<Cpu size={28} />}><p>{search ? 'Try another model name or location.' : owner ? 'Start a supported local runtime with an installed model, or connect a cloud provider below.' : 'The host owner manages model availability and your provider access.'}</p></Empty>}</div>{owner && <><div className="section-heading"><h3>Provider connections</h3><ShieldCheck size={17} /></div><div className="providers-list">{query.data.providers.map(provider => <ProviderRow key={provider.id} provider={provider} />)}</div></>}<p className="hint"><Check size={13} />Availability is checked by the backend. Model claims are not verification.</p></>}
+    {query.isPending ? <Loading>Discovering models…</Loading> : query.isError ? <ErrorNotice error={query.error} retry={() => { void query.refetch(); }} /> : <><div className="model-list">{models.map(model => <ModelRow key={model.id} model={model} onSelect={onSelect} contextTokens={contextTokens} owner={owner} />)}{!models.length && <Empty title={search ? 'No matching models' : 'No models available'} icon={<Cpu size={28} />}><p>{search ? 'Try another model name or location.' : owner ? 'Start a supported local runtime with an installed model, or connect a cloud provider below.' : 'The host owner manages model availability and your provider access.'}</p></Empty>}</div>{owner && <><div className="section-heading"><h3>Provider connections</h3><ShieldCheck size={17} /></div><div className="providers-list">{query.data.providers.map(provider => <ProviderRow key={provider.id} provider={provider} />)}</div></>}<p className="hint"><Check size={13} />Availability is checked by the backend. Model claims are not verification.</p></>}
   </>;
 }

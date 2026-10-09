@@ -23,7 +23,7 @@ export class Providers implements ProviderGateway {
   private readonly disabled = new Set<ProviderId>();
   private readonly health = new Map<ProviderId, ProviderStatus>();
   private readonly models = new Map<ProviderId, ModelProfile[]>();
-  private readonly measurements = new Map<string, { digest: unknown; contextTokens: number; generationTokensPerSecond: number; promptTokensPerSecond?: number; measuredAt: string; execution?: { numGpu: number } }>();
+  private readonly measurements = new Map<string, { digest: unknown; runtimeVersion:unknown; contextTokens: number; generationTokensPerSecond: number; promptTokensPerSecond?: number; measuredAt: string; execution?: { numGpu: number } }>();
   private readonly active = new Map<ProviderId, Set<AbortController>>();
   private refreshed = 0;
   private refreshPending: Promise<void> | null = null;
@@ -61,16 +61,17 @@ export class Providers implements ProviderGateway {
         let models: ModelProfile[];
         if (provider === 'ollama') {
           const tags = await this.json(provider, '/api/tags');
+          const runtimeVersion=string(object(await this.json(provider,'/api/version').catch(()=>({}))).version)||null;
           const running = await this.json(provider, '/api/ps').catch(() => ({}));
           models = [];
           for (const tag of array(tags.models).slice(0, 100).map(object)) {
             const name = string(tag.name || tag.model); if (!name) continue;
             const metadata = await this.json(provider, '/api/show', { model: name }).catch(() => ({}));
-            models.push(ollamaModel(tag, metadata, array(object(running).models).map(object).find(item => item.name === name) ?? {}));
+            const model=ollamaModel(tag, metadata, array(object(running).models).map(object).find(item => item.name === name) ?? {});model.details.runtimeVersion=runtimeVersion;models.push(model);
           }
         } else if (provider === 'lmstudio') models = lmstudioModels(await this.json(provider, '/api/v1/models'));
         else models = cloudModels(provider, await this.json(provider, '/models'));
-        for (const model of models) { const measurement = this.measurements.get(model.id); if (measurement && measurement.digest === model.details.digest) { model.tokensPerSecond = measurement.generationTokensPerSecond; model.details.performance = { ...measurement }; } }
+        for (const model of models) { const measurement = this.measurements.get(model.id); if (measurement && measurement.digest === model.details.digest && measurement.runtimeVersion===model.details.runtimeVersion) { model.tokensPerSecond = measurement.generationTokensPerSecond; model.details.performance = { ...measurement }; } }
         this.models.set(provider, models); Object.assign(status, { connected: true, reachable: true, authenticated: local ? null : true, state: 'ready' });
       } catch (error) {
         const http = error instanceof ProviderError ? error.status : undefined;
@@ -119,7 +120,7 @@ export class Providers implements ProviderGateway {
       for await (const chunk of stream) {
         signal.throwIfAborted(); if (this.disabled.has(provider)) throw new ProviderError('disabled', 'Provider was disabled');
         if (chunk.type === 'usage' && chunk.generationTokensPerSecond !== undefined) {
-          const measurement = { digest: request.model.details.digest, contextTokens: request.contextTokens, generationTokensPerSecond: chunk.generationTokensPerSecond, promptTokensPerSecond: chunk.promptTokensPerSecond, measuredAt: new Date().toISOString(), execution: request.execution };
+          const measurement = { digest: request.model.details.digest, runtimeVersion:request.model.details.runtimeVersion, contextTokens: request.contextTokens, generationTokensPerSecond: chunk.generationTokensPerSecond, promptTokensPerSecond: chunk.promptTokensPerSecond, measuredAt: new Date().toISOString(), execution: request.execution };
           this.measurements.set(request.model.id, measurement); request.model.tokensPerSecond = measurement.generationTokensPerSecond; request.model.details.performance = measurement;
         }
         yield chunk;

@@ -35,3 +35,4 @@ const passed=detail.task.status==='completed'&&changed?.after==='Hello from Rela
 const report={testedAt:new Date().toISOString(),passed,elapsedMs:Date.now()-started,model:model.id,conversationId:conversation.id,taskId:created.task.id,workspaceId:workspace.id,admission:fit,status:detail.task.status,error:detail.task.error,callsUsed:detail.task.callsUsed,verification:detail.verification,approvals:detail.approvals.map(a=>({tool:a.tool,status:a.status})),changedFiles:detail.changes.map(c=>({path:c.path,content:c.after})),result:detail.task.result};
 await mkdir('output',{recursive:true});await writeFile('output/local-acceptance.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
 if(!passed)process.exitCode=1;
+if(passed&&process.argv.includes('--extended')){const {extendedAcceptance}=await import('./acceptance-extended.mjs');await extendedAcceptance(api,model,workspace);}

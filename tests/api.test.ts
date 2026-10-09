@@ -12,6 +12,7 @@ import { SecretManager } from '../server/providers/secrets.js';
 import { Engine } from '../server/orchestration/engine.js';
 import { LocalPairing } from '../server/auth/pairing.js';
 import type { TaskOptions } from '../shared/types.js';
+import { catalogTool } from '../server/mcp/schema.js';
 
 let app:FastifyInstance,store:Store,engine:Engine,dir:string,pairing:LocalPairing;
 const host='127.0.0.1:4317';let cookie:string,csrf:string;
@@ -24,6 +25,31 @@ beforeEach(async()=>{
 });
 afterEach(async()=>{await engine.shutdown();await app.close();await store.close();await rm(dir,{recursive:true,force:true});});
 describe('local HTTP boundary',()=>{
+  it('persists owner-pinned external tools, rejects fingerprint tampering and keeps disabled servers out of task discovery',async()=>{
+    const tool=catalogTool({name:'public_lookup',description:'Untrusted fixture catalog',inputSchema:{type:'object',properties:{query:{type:'string'}},required:['query'],additionalProperties:false}});
+    const server={id:'public-docs',name:'Fixture documents',url:'https://example.com/mcp',enabled:false,tools:[tool]};
+    const request={method:'PUT' as const,url:'/api/mcp/servers',headers:{host,cookie,'x-relay-csrf':csrf}};
+    expect((await app.inject({url:'/api/mcp/servers',headers:{host}})).statusCode).toBe(401);
+    expect((await app.inject({...request,headers:{host,cookie},payload:{servers:[server]}})).statusCode).toBe(403);
+    expect((await app.inject({...request,payload:{servers:[{...server,tools:[{...tool,description:'Silently altered contract'}]}]}})).statusCode).toBe(400);
+    expect((await app.inject({...request,payload:{servers:[server]}})).statusCode).toBe(200);
+    expect((await app.inject({url:'/api/mcp/available',headers:{host,cookie}})).json().servers).toEqual([]);
+    server.enabled=true;expect((await app.inject({...request,payload:{servers:[server]}})).statusCode).toBe(200);
+    expect((await app.inject({url:'/api/mcp/available',headers:{host,cookie}})).json().servers).toEqual([{id:server.id,name:server.name,url:server.url}]);
+    expect((await store.db.query('SELECT value FROM settings WHERE key=$1',['mcp_servers']))[0].value).toEqual([server]);
+  });
+  it('starts only owner-approved local calibration with fixed safe options and normal task cancellation',async()=>{
+    expect((await app.inject({url:'/api/models/calibrations',headers:{host}})).statusCode).toBe(401);
+    vi.spyOn(engine,'enqueue').mockImplementation(()=>{});
+    const providers=engine.gateway;
+    vi.spyOn(providers,'listModels').mockResolvedValue([{id:'ollama/calibration',name:'Calibration fixture',provider:'ollama',runtime:'test',local:true,capabilities:{tools:false,reasoning:false,vision:false,structured:false},contextWindow:8192,quantization:null,sizeBytes:100,state:'available',details:{},tokensPerSecond:null,inputPricePerMillion:null,outputPricePerMillion:null}]);
+    const request={method:'POST' as const,url:'/api/models/calibrations',headers:{host,cookie,'x-relay-csrf':csrf}};
+    expect((await app.inject({...request,payload:{modelId:'ollama/calibration',contextTokens:4096,workspaceId:'forbidden'}})).statusCode).toBe(400);
+    const created=await app.inject({...request,payload:{modelId:'ollama/calibration',contextTokens:4096}});expect(created.statusCode).toBe(200);
+    const task=await store.task(created.json().taskId);expect(task.options).toMatchObject({modelSelection:'required',access:'read_only',workspaceId:null,network:{mode:'deny'},budget:{maxCalls:1,localOnly:true}});
+    expect((await app.inject({url:'/api/models/calibrations',headers:{host,cookie}})).json()[0].measurement).toBeNull();
+    expect((await app.inject({method:'POST',url:`/api/tasks/${task.id}/cancel`,headers:request.headers})).json().status).toBe('cancelled');
+  });
   it('persists owner resource policy and rejects settings below hard safety floors',async()=>{
     const get=()=>app.inject({url:'/api/hardware/policy',headers:{host,cookie}});
     expect((await get()).json().policy).toEqual({profile:'safe'});

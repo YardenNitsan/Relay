@@ -6,6 +6,14 @@ describe('browser session invalidation', () => {
   beforeEach(() => vi.resetModules());
   afterEach(() => vi.unstubAllGlobals());
 
+  it('includes session CSRF protection on configuration PUT requests', async () => {
+    const fetcher = vi.fn().mockResolvedValueOnce(session('owner')).mockResolvedValueOnce(new Response('{"servers":[]}'));
+    vi.stubGlobal('fetch', fetcher);
+    const api = await import('./api');
+    await api.api('/mcp/servers', { method: 'PUT', body: { servers: [] } });
+    expect(fetcher).toHaveBeenLastCalledWith('/api/mcp/servers', expect.objectContaining({ method: 'PUT', credentials: 'same-origin', headers: { 'content-type': 'application/json', 'x-relay-csrf': 'csrf-owner' }, body: '{"servers":[]}' }));
+  });
+
   it('notifies once and blocks automatic session/request retries after revocation', async () => {
     const fetcher = vi.fn().mockResolvedValueOnce(session('owner')).mockResolvedValueOnce(expired());
     vi.stubGlobal('fetch', fetcher);

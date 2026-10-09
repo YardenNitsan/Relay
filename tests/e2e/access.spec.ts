@@ -34,7 +34,7 @@ test('owner adds an allowed user, changes persisted grants, and revokes access',
   await expect(dialog.getByText('User sessions revoked and active work cancelled.')).toBeVisible();
   await editor.getByLabel('Account enabled').uncheck();
   await editor.getByRole('button', { name: 'Save user policy' }).click();
-  await expect(editor.getByText('Disabled', { exact: true })).toBeVisible();
+  await expect(editor.locator('summary').getByText('Disabled', { exact: true })).toBeVisible();
 });
 
 test('access modal is keyboard accessible and passes automated checks', async ({ page }) => {

@@ -151,15 +151,15 @@ describe('isolated command availability', () => {
       expect(status.reason).toMatch(/interrupted|cleanup|recovery/i);
     } finally { await rm(marker); }
   });
-  it('keeps untrusted command options after the fixed image boundary and enforces container restrictions', () => {
+  it('keeps untrusted command options out of Docker argv and enforces container restrictions', () => {
     const image = `sha256:${'a'.repeat(64)}`;
     const args = sandboxArguments('/private/stage', 'relay-00000000-0000-4000-8000-000000000000', image, ['node', '--privileged', '-v', '/:/host']);
-    expect(args.slice(args.indexOf(image) + 1)).toEqual(['--privileged', '-v', '/:/host']);
+    expect(args.slice(args.indexOf(image) + 1)).toEqual(['--max-old-space-size=128', '/relay-supervisor.cjs']);
     expect(args.slice(0, args.indexOf(image))).not.toContain('--privileged');
     expect(args[args.indexOf('--network') + 1]).toBe('none');
     expect(args[args.indexOf('--cap-drop') + 1]).toBe('ALL');
     expect(args).toContain('--read-only'); expect(args).toContain('--pull=never');
-    expect(args[args.indexOf('--mount') + 1]).toBe('type=bind,source=/private/stage,target=/workspace');
+    expect(args[args.indexOf('--mount') + 1]).toBe('type=bind,source=/private/stage,target=/relay-supervisor.cjs,readonly');
     expect(() => sandboxArguments('/stage,target=/host', 'relay-00000000-0000-4000-8000-000000000000', image, ['node'])).toThrow();
   });
   it('does not run a host command when a trusted sandbox image is not configured', async () => {

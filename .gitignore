@@ -1,4 +1,5 @@
 node_modules/
+.tools/
 .e2e-data/
 dist/
 dist-server/

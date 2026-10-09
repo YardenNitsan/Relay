@@ -35,7 +35,7 @@ Before opening private data, a local browser must pair. For a source checkout ru
 
 Ctrl+C/SIGTERM cancels active transports, stops managed containers and pauses unfinished tasks. Restart recovers persisted tasks, graphs, approval history and events. A browser reconnect replays only incremental events after its cursor. An in-flight operation without a committed receipt is marked uncertain; Relay requires inspection and a new objective rather than replaying it.
 
-Model-call/cost counters and automatic repair counts persist across manual resume. Time and per-agent iteration limits currently bound each active execution attempt; manual resume starts another bounded attempt under the remaining call/cost budget. Cumulative active-time accounting across restarts remains release work.
+Model-call, cost, repair, active-time and per-agent iteration counters persist across resume. Execution reserves short database-backed time slices; orderly pause charges elapsed time, while crash recovery conservatively charges the outstanding slice (up to five seconds). Offline time is not charged. Resume cannot reset exhausted limits. See [durable execution budgets](adr-014-durable-execution-budgets.md).
 
 The global stop latch persists across restart. A provider may retain its cached model allocation after cancellation; Relay does not unload models belonging to another application. Runtime model retention currently uses a five-minute keep-alive.
 
@@ -55,4 +55,4 @@ Templates have not been registered automatically. Packaging does not provide nat
 
 The data directory contains embedded PostgreSQL, service-owned workspace copies, file checkpoints and bounded command artifacts. Large filesystem content remains outside message rows. Database rows retain references and provenance. Native PostgreSQL deployments need their own database backup in addition to the filesystem directory.
 
-For embedded PostgreSQL, stop the host before copying the whole directory. Back up the OS credential vault through the OS's supported mechanism; copying application data does not export provider keys. Logs/model context may contain private project text, so treat backups as sensitive. Storage encryption at rest is provided by the host volume, not a custom application cipher. No deletion/retention scheduler or aggregate workspace disk quota is currently implemented.
+For embedded PostgreSQL, stop the host before copying the whole directory. Back up the OS credential vault through the OS's supported mechanism; copying application data does not export provider keys. Logs/model context may contain private project text, so treat backups as sensitive. Storage encryption at rest is provided by the host volume, not a custom application cipher. Managed artifacts have aggregate storage admission and host free-space reserves; see [storage budgets](storage-budgets.md). No automatic deletion/retention scheduler is implemented.

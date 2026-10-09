@@ -2,6 +2,21 @@
 
 This is the evidence ledger for the current implementation. Successful tests support their specific boundaries; they do not make the entire master directive complete or establish production security certification.
 
+## Current working handover (2026-10-08)
+
+At the owner's request, the current application was built and started as a browser web app even though the entire product specification is unfinished. The compiled Windows service listens at `http://127.0.0.1:4317`, with embedded PostgreSQL, actual installed Ollama models and remote access disabled. The full handover and remaining backlog are in `../RELAY_PROJECT_REPORT.md` relative to the project root (the workspace-level report).
+
+- Latest `npm run check`: **362 tests across 39 files passed**, including strict TypeScript. New coverage includes durable execution/iteration reservations, history/search/retrieval, independent network grants, actual Git inspection, HTTP/MCP boundaries, runtime measurement identity, storage budgets and bounded sandbox export. Official MCP SDK integration uses deterministic DNS/HTTPS responses.
+- `npm run build` passed; browser entry JavaScript is 139.14 kB gzip, with separate lazy operational panels.
+- Final `npm run test:e2e`: **29/29 Chrome cases passed**. Two initially failing assertions were corrected to identify the account status instead of a same-named select option, and to assert the actual effective default-deny network policy. Product permissions were not relaxed.
+- `npm run test:e2e -- --config playwright.production.config.ts`: **1/1 passed** against the real running service. It verifies a previously completed real task, installed model discovery, hardware panels, themes, desktop/320px navigation and selected axe checks. This is distinct from the fixture-provider browser suite. Screenshots: `output/playwright/production-conversation-light.png`, `production-conversation-dark.png`, `production-models.png`, `production-hardware.png`, `production-phone-navigation.png`.
+- New actual Ollama task `ddaefd0f-6674-4d05-981c-b5851db2d979` was admitted and performed an exactly approved write of `Hello from Relay\n`, with matching broker SHA-256 evidence. It then **paused** before the next call because available physical RAM fell below the unchanged Safe reserve. It did not perform the required separate read and is not a completed acceptance. Evidence: `output/local-acceptance-paused-20261008.json`. The extended model-driven calibration/Git/HTTPS acceptance did not execute because its prerequisite acceptance failed to finish.
+- The earlier 6 October fully completed local acceptance and restart smoke remain historical evidence. The current production browser test explicitly inspects that completed task; it does not reclassify the new paused task as successful.
+- Actual Docker/native PostgreSQL integrations and native package build recipes/CI were added. **No native installer was produced, installed or signed, and no actual Docker/native PostgreSQL test completed.** Docker inspection and the official Node runtime download required outside-sandbox approval and were subsequently aborted. No remote CI execution is claimed.
+- Native Linux's earlier 249-test source snapshot predates these additions; current Linux/macOS verification remains outstanding. Live cloud credentials/public gateway acceptance and physical mobile-device testing remain outstanding.
+
+Latest functionality supersedes the older tool/history backlog below: structured Git inspection, public HTTPS research, controlled MCP, history pagination/full-text retrieval, bounded calibration and aggregate artifact storage checks are now implemented. They still need the live/native/interoperability evidence described above and in the workspace report.
+
 ## Observed acceptance
 
 On 2026-10-04, the Windows development host ran a real local task using Ollama 0.32.15 and `qwen3:4b-instruct`, with no cloud provider:
@@ -70,3 +85,15 @@ Updated Windows ZIP, Linux tar.gz and macOS tar.gz archives were generated on 20
 | UX | Conversation, streaming, activity, approvals, changes, model/hardware controls, themes, responsive layouts, owner access | Broader manual assistive-technology testing, virtual mobile keyboard/device testing, large-scale log/performance validation |
 
 No cloud API credentials, owner public gateway/domain, native macOS host or native PostgreSQL service have been provided for live acceptance. Linux is now available through the existing Ubuntu WSL2 distribution. The last observed Docker engine state was unavailable; container execution is not claimed as tested. These limits do not prevent the installed local inference and managed-file path.
+
+## 9 October 2026: answer behavior and handover
+
+Balanced-mode review no longer replaces a valid answer merely because a reviewer omitted its required verdict. Such failures retry the review alone within the durable call/iteration budget. A genuine revision request still repairs the answer against the original objective. During execution, the conversation presents fixed factual activity labels; those labels disappear when the task finishes. Supervisor completion commentary is not appended to the answer.
+
+Unrestricted mode remains intentionally unavailable: both browser and backend reject it until a tested OS host-access broker exists. This is unrelated to owner pairing or provider credentials. Autonomous workspace remains the strongest supported scope; isolated terminal execution separately requires a verified container boundary.
+
+The latest actual Ollama greeting check paused before model dispatch because available RAM did not satisfy Safe-profile headroom. This is a resource-admission result, not a successful live greeting acceptance. Deterministic backend and browser regressions separately exercise the corrected answer/review behavior.
+
+Final handover checks on 9 October: strict types and 369 deterministic tests passed across 40 files; production build passed. The 30-case browser run passed 29 cases and hit one connection-indicator timeout; that exact keyboard/accessibility case passed on its focused rerun. The running production host passed desktop/phone inspection of persisted execution, discovered models and hardware. No fresh successful local greeting is claimed.
+
+The Windows launcher passed actual cold build/start, repeat-start reuse, private graceful shutdown, restart and automatic browser/private pairing-file opening. The detached host remains available at http://127.0.0.1:4317. Missing-Node bootstrap, a genuinely fresh dependency installation, Linux/macOS launcher execution and native installers remain unverified. README.md and docs/user-guide.md describe architecture and the complete implemented user experience; docs/setup.md describes one-command setup. Optional model runtimes and model weights are not silently installed.

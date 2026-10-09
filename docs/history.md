@@ -12,7 +12,15 @@ All queries enforce user ownership in the backend. Even the local owner cannot u
 
 Pages use keyset cursors over `(created_at, id)`. PostgreSQL's full timestamp precision is encoded as text; converting the cursor through a JavaScript `Date` would lose sub-millisecond precision and could skip messages. Equal timestamps are ordered by unique IDs. Cursors are scoped to the user, view, conversation and query. They are positioning data, not credentials. Each request independently checks ownership.
 
-Conversation pages are ordered by creation time, explicitly labelled in the interface. Updating a conversation does not reorder records between pages. New message pages may include newly appended messages when moving forward. Pagination is not a frozen database snapshot, and future deletion would need its own cursor/empty-page behavior.
+Conversation pages are ordered by creation time, explicitly labelled in the interface. Updating a conversation does not reorder records between pages. New message pages may include newly appended messages when moving forward. Pagination is not a frozen database snapshot. Deletion returns the history view to page one; deleted rows are excluded from title search, message search, message navigation and context retrieval.
+
+## Creation and deletion
+
+The browser starts a conversation and its first objective in one transaction through `POST /api/conversations/start`. A per-draft request (UUID, objective and execution options) survives a lost response and page reload; repeating the same request returns the original task. Changed payloads cannot reuse an accepted request. Failed task admission rolls back the conversation, so retries do not leave empty duplicates.
+
+Conversation history offers a trash control and a named confirmation. `DELETE /api/conversations/:id` checks ownership and CSRF and serializes with task admission. Unfinished tasks, including paused tasks, must be stopped first. Deleting the selected conversation clears its browser draft and opens the empty composer. Other conversation drafts remain intact.
+
+Deletion is a persistent tombstone, not secure data erasure: the host retains stored messages and execution records for audit, recovery and usage accounting. Normal conversation, history, retrieval and user-scoped task APIs cannot reopen the deleted record. Workspace files and checkpoints are not removed. There is currently no restore or permanent-purge UI.
 
 ## Search and model context
 

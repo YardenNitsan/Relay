@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import type { ActivityEvent, Approval, Conversation, ConversationDetail, Message, ModelMessage, ProviderId, TaskOptions, TaskRecord, TaskStatus, TaskStep, Verification, Workspace } from '../../shared/types.js';
 import { authorizeOptions, type User } from '../auth/policy.js';
 import { AppError } from '../core/errors.js';
@@ -38,11 +38,11 @@ export class Store {
     return row((await this.db.query('INSERT INTO conversations(id,title,user_id) VALUES ($1,$2,$3) RETURNING *',[randomUUID(),title.slice(0,120),userId]))[0]);
   }
   async conversations(userId='owner'):Promise<Conversation[]> {
-    return (await this.db.query('SELECT * FROM conversations WHERE user_id=$1 ORDER BY updated_at DESC LIMIT 100',[userId])).map(r=>row<Conversation>(r));
+    return (await this.db.query('SELECT * FROM conversations WHERE user_id=$1 AND deleted_at IS NULL ORDER BY updated_at DESC LIMIT 100',[userId])).map(r=>row<Conversation>(r));
   }
   async conversation(id:string,userId='owner'):Promise<ConversationDetail> {
     return this.db.transaction(async tx=>{
-      const c=(await tx.query('SELECT * FROM conversations WHERE id=$1 AND user_id=$2',[id,userId]))[0];
+      const c=(await tx.query('SELECT * FROM conversations WHERE id=$1 AND user_id=$2 AND deleted_at IS NULL',[id,userId]))[0];
       if(!c) throw new AppError('NOT_FOUND','Conversation not found',404);
       const messages=(await tx.query('SELECT * FROM (SELECT * FROM messages WHERE conversation_id=$1 ORDER BY created_at DESC,id DESC LIMIT 200) recent ORDER BY created_at,id',[id])).map(r=>row<Message>(r));
       const tasks=(await tx.query('SELECT * FROM tasks WHERE conversation_id=$1 ORDER BY created_at DESC LIMIT 100',[id])).map(r=>row<TaskRecord>(r));
@@ -50,16 +50,40 @@ export class Store {
       return {conversation:row<Conversation>(c),messages,tasks,cursor};
     });
   }
-  async createTask(conversationId:string,objective:string,options:TaskOptions,userId='owner',expectedSessionVersion?:number):Promise<{task:TaskRecord;message:Message}> {
+  async deleteConversation(id:string,userId:string) {
+    return this.db.transaction(async tx=>{
+      // Same lock order as admission/resume: deletion cannot race new work.
+      await tx.query('SELECT value FROM settings WHERE key=$1 FOR UPDATE',['control']);
+      await tx.query('SELECT id FROM users WHERE id=$1 FOR UPDATE',[userId]);
+      if(!(await tx.query('SELECT id FROM conversations WHERE id=$1 AND user_id=$2 AND deleted_at IS NULL FOR UPDATE',[id,userId])).length)throw new AppError('NOT_FOUND','Conversation not found',404);
+      if((await tx.query("SELECT id FROM tasks WHERE conversation_id=$1 AND status NOT IN ('completed','cancelled','failed') LIMIT 1",[id])).length)throw new AppError('CONVERSATION_BUSY','Stop unfinished tasks in this conversation before deleting it.',409);
+      await tx.query('UPDATE conversations SET deleted_at=now() WHERE id=$1',[id]);
+      await tx.query('INSERT INTO audit_events(operation,metadata) VALUES ($1,$2)',['CONVERSATION_DELETED',JSON.stringify({conversationId:id,userId})]);
+    });
+  }
+  async createTask(conversationId:string,objective:string,options:TaskOptions,userId='owner',expectedSessionVersion?:number,newConversation=false):Promise<{task:TaskRecord;message:Message}> {
     return this.db.transaction(async tx=>{
       const control=(await tx.query('SELECT value FROM settings WHERE key=$1 FOR UPDATE',['control']))[0].value as {stopped:boolean;generation:number};
       if(control.stopped) throw new AppError('STOPPED','Emergency stop is active. Resume scheduling before starting a task.',409);
       const found=(await tx.query('SELECT * FROM users WHERE id=$1 FOR UPDATE',[userId]))[0];
       if(!found)throw new AppError('USER_DISABLED','This account is disabled',403);
       const user=row<User>(found);const authorized=admissionOptions(user,options,expectedSessionVersion);
+      if(newConversation) {
+        const hash=createHash('sha256').update(JSON.stringify({objective,options})).digest('hex');
+        const existing=(await tx.query('SELECT * FROM conversations WHERE id=$1',[conversationId]))[0];
+        if(existing) {
+          if(existing.user_id!==userId||existing.deleted_at)throw new AppError('NOT_FOUND','Conversation not found',404);
+          if(existing.start_request_hash!==hash)throw new AppError('REQUEST_CONFLICT','This request already started a different objective. Open a new conversation.',409);
+          const task=(await tx.query('SELECT * FROM tasks WHERE conversation_id=$1 ORDER BY created_at,id LIMIT 1',[conversationId]))[0];
+          const message=(await tx.query("SELECT * FROM messages WHERE task_id=$1 AND role='user' ORDER BY created_at,id LIMIT 1",[task?.id]))[0];
+          if(!task||!message)throw new AppError('REQUEST_CONFLICT','The original request could not be recovered.',409);
+          return {task:row<TaskRecord>(task),message:row<Message>(message)};
+        }
+        await tx.query('INSERT INTO conversations(id,title,user_id,start_request_hash) VALUES ($1,$2,$3,$4)',[conversationId,objective.slice(0,80),userId,hash]);
+      }
       const active=Number((await tx.query("SELECT COUNT(*) AS count FROM tasks WHERE user_id=$1 AND status NOT IN ('completed','failed','cancelled','paused')",[userId]))[0].count);
       if(active>=user.permissions.maxConcurrentTasks)throw new AppError('USER_TASK_QUOTA','Your active task limit is reached. Wait or stop a task.',429);
-      if(!(await tx.query('SELECT id FROM conversations WHERE id=$1 AND user_id=$2',[conversationId,userId])).length) throw new AppError('NOT_FOUND','Conversation not found',404);
+      if(!(await tx.query('SELECT id FROM conversations WHERE id=$1 AND user_id=$2 AND deleted_at IS NULL',[conversationId,userId])).length) throw new AppError('NOT_FOUND','Conversation not found',404);
       const running=await tx.query("SELECT id FROM tasks WHERE conversation_id=$1 AND status NOT IN ('completed','cancelled','failed','paused') LIMIT 1",[conversationId]);
       if(running.length) throw new AppError('CONVERSATION_BUSY','This conversation already has an active task. Stop it or wait before sending another objective.',409);
       const task=row<TaskRecord>((await tx.query('INSERT INTO tasks(id,conversation_id,objective,status,options,stop_generation,user_id) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *',[randomUUID(),conversationId,objective,'created',JSON.stringify(authorized),control.generation,userId]))[0]);
@@ -69,7 +93,7 @@ export class Store {
     });
   }
   async task(id:string,userId?:string):Promise<TaskRecord & {userId:string}> {
-    const found=(await this.db.query(`SELECT * FROM tasks WHERE id=$1${userId?' AND user_id=$2':''}`,userId?[id,userId]:[id]))[0];
+    const found=(await this.db.query(`SELECT * FROM tasks WHERE id=$1${userId?' AND user_id=$2 AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=tasks.conversation_id AND c.deleted_at IS NULL)':''}`,userId?[id,userId]:[id]))[0];
     if(!found) throw new AppError('NOT_FOUND','Task not found',404); return row(found);
   }
   async resumeTask(id:string,expectedSessionVersion?:number):Promise<TaskRecord> {
@@ -132,7 +156,7 @@ export class Store {
   }
   async append(taskId:string|null,type:string,data:Record<string,unknown>={}) { return event(this.db,taskId,type,data); }
   async events(after:number,limit=300,userId?:string):Promise<ActivityEvent[]> {
-    const rows=await this.db.query(`SELECT e.* FROM events e ${userId?'JOIN tasks t ON t.id=e.task_id':''} WHERE e.id>$1 ${userId?'AND t.user_id=$3':''} ORDER BY e.id LIMIT $2`,userId?[after,limit,userId]:[after,limit]);
+    const rows=await this.db.query(`SELECT e.* FROM events e ${userId?'JOIN tasks t ON t.id=e.task_id JOIN conversations c ON c.id=t.conversation_id':''} WHERE e.id>$1 ${userId?'AND t.user_id=$3 AND c.deleted_at IS NULL':''} ORDER BY e.id LIMIT $2`,userId?[after,limit,userId]:[after,limit]);
     return rows.map(r=>{const e=row<ActivityEvent>(r);e.id=Number(e.id);return e;});
   }
   async taskEvents(taskId:string):Promise<ActivityEvent[]> {

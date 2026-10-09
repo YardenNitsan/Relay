@@ -37,8 +37,10 @@ export function authorizeOptions(principal:Principal,options:TaskOptions):TaskOp
     if(!options.workspaceId)throw new AppError('VERIFICATION_WORKSPACE','Required file verification needs an authorized workspace.',403);
   }
   const access:AccessMode[]=['read_only','supervised','workspace','unrestricted'];
-  if(options.access==='unrestricted') throw new AppError('UNAVAILABLE','Unrestricted host execution is not available. A tested OS broker is required.',403);
-  if(access.indexOf(options.access)>access.indexOf(permissions.maxAccess)) throw new AppError('ACCESS_DENIED','The selected computer access exceeds your account policy.',403);
+  if(options.access==='unrestricted') {
+    authorizeOwner(principal);
+    if(options.hostAccessConfirmed!==true)throw new AppError('HOST_CONFIRMATION_REQUIRED','Confirm direct host file access before starting this task.',403);
+  } else if(access.indexOf(options.access)>access.indexOf(permissions.maxAccess)) throw new AppError('ACCESS_DENIED','The selected computer access exceeds your account policy.',403);
   if(options.workspaceId) authorizeWorkspace(principal,options.workspaceId);
   if(options.budget.maxCalls>permissions.maxCallsPerTask||options.budget.maxSeconds>permissions.maxSecondsPerTask) throw new AppError('BUDGET_DENIED','Task budget exceeds the limits granted to your account.',403);
   if(options.modelId) {

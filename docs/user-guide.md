@@ -121,6 +121,14 @@ Use **Ctrl+K** on Windows/Linux or **Command+K** on macOS to open the command pa
 
 Composer drafts are saved in this browser's local storage, scoped to the account and conversation. Submitted history is stored by the host. Treat a shared browser profile as access to its saved drafts as well as its active session.
 
+### Delete a conversation
+
+Open **conversation history**, select the trash icon beside the conversation, review its title and choose **Delete conversation**. **Cancel** keeps it. If Relay reports unfinished work, open its execution record and stop the task first, then delete it.
+
+The conversation disappears from history and search, including after reloading. Deleting the currently open conversation returns you to a new draft. Workspace files stay unchanged. The host retains stored messages and execution records for audit and usage accounting; this action is not permanent data erasure. There is no restore button yet.
+
+New conversations are saved only when their first objective is accepted. Retrying a failed first submission or recovering a lost response reuses that request instead of creating an extra chat.
+
 ## Models, agents and compute depth
 
 A **model** provides inference: a particular local model, or an API model from a connected provider.
@@ -206,7 +214,7 @@ Computer access controls tool authority. It is separate from model selection, cl
 | **Read only** | Inspect authorized managed files and permitted metadata; no file mutation or terminal commands |
 | **Supervised** | Authorized reads proceed; file mutations and isolated commands require approval |
 | **Autonomous workspace** | Eligible operations may proceed within the selected managed copy, subject to deterministic tool policy and the execution boundary |
-| **Unrestricted — unavailable** | Disabled until a tested host-access broker exists; neither owner pairing nor a remote-user grant enables it |
+| **Unrestricted · host files** | Local owner confirms direct real-host text-file operations; system/secret/Relay paths remain protected. Commands still use isolation. [Scope and limits →](host-access.md) |
 
 Selecting a mode cannot exceed the account's own grants. A high mode does not authorize private-network requests, access to provider credentials, modification of Relay's policy engine, or escape from the workspace.
 
@@ -513,7 +521,7 @@ Do not open a database directory from two hosts or delete it to troubleshoot a m
 | No output while a model loads | Inspect Activity and the runtime. Loading/generation can take time; do not infer a successful run from a spinner. |
 | Task waiting for approval | Open Activity and inspect host, workspace, action and exact arguments. Use an explicit decision. |
 | Terminal unavailable | Read Machine's execution-boundary reason. Docker/image/preflight requirements must be satisfied; there is no host-shell fallback. |
-| Unrestricted unavailable | This is an intentional implementation boundary. Pairing again or changing an account role will not enable it. |
+| Host mode unavailable | Only a paired local owner can confirm direct host file access. Remote accounts cannot enable it. Native shell commands remain unavailable. |
 | Provider connected but never selected | Check enabled state, task cloud-sharing policy, model capability/context, account provider grant and cloud budget. Connection alone does not authorize sharing. |
 | Strict cost cap rejects a provider | Its prices may be unknown. Relay cannot guarantee a cap with unsupported price information; choose another eligible model or explicitly reconsider the budget. |
 | Secret-store save fails | Check OS-vault availability/unlock status. Choose explicit session-only storage if appropriate; credentials then need re-entry after restart. |

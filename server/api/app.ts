@@ -27,7 +27,7 @@ import { verificationContractSchema } from '../orchestration/required-reads.js';
 import { networkPolicySchema } from '../tools/network-policy.js';
 import { installBoundary, RateLimiter, routeId } from './boundary.js';
 
-const taskOptions=z.object({depth:z.enum(['fast','balanced','deep','maximum']),modelId:z.string().max(200).nullable(),access:z.enum(['read_only','supervised','workspace','unrestricted']),workspaceId:z.string().uuid().nullable(),contextTokens:z.number().int().min(2048).max(131072),cloudPolicy:z.enum(['local_only','allow','ask']).default('local_only'),verification:verificationContractSchema.optional(),network:networkPolicySchema.optional(),mcpServerIds:permissionSchema.shape.mcpServerIds,modelSelection:z.enum(['preferred','required']).optional(),budget:z.object({maxCalls:z.number().int().min(1).max(64),maxSeconds:z.number().int().min(30).max(3600),maxIterations:z.number().int().min(1).max(16),maxCostUsd:z.number().min(0).max(100).nullable(),localOnly:z.boolean()})});
+const taskOptions=z.object({depth:z.enum(['fast','balanced','deep','maximum']),modelId:z.string().max(200).nullable(),access:z.enum(['read_only','supervised','workspace','unrestricted']),hostAccessConfirmed:z.boolean().optional(),workspaceId:z.string().uuid().nullable(),contextTokens:z.number().int().min(2048).max(131072),cloudPolicy:z.enum(['local_only','allow','ask']).default('local_only'),verification:verificationContractSchema.optional(),network:networkPolicySchema.optional(),mcpServerIds:permissionSchema.shape.mcpServerIds,modelSelection:z.enum(['preferred','required']).optional(),budget:z.object({maxCalls:z.number().int().min(1).max(64),maxSeconds:z.number().int().min(30).max(3600),maxIterations:z.number().int().min(1).max(16),maxCostUsd:z.number().min(0).max(100).nullable(),localOnly:z.boolean()})});
 const providerId=z.enum(['ollama','lmstudio','openai','anthropic','gemini']);
 export interface RemoteControl {config:RemoteConfig|null;enabled:boolean;listening:boolean;}
 export interface Services {store:Store;engine:Engine;providers:Providers;broker:ToolBroker;remoteControl?:RemoteControl;pairing?:LocalPairing;}
@@ -107,6 +107,16 @@ export async function createApp(services:Services,options:AppOptions={}):Promise
     const body=z.object({title:z.string().max(120).optional()}).parse(request.body??{});return store.createConversation(body.title,principal(request).user.id);
   });
   app.get('/api/conversations/:id',async request=>store.conversation(routeId(request),principal(request).user.id));
+  app.delete('/api/conversations/:id',async request=>{await store.deleteConversation(routeId(request),principal(request).user.id);return {deleted:true};});
+  app.post('/api/conversations/start',async request=>{
+    const p=principal(request);
+    const body=z.object({requestId:z.string().uuid(),content:z.string().trim().min(1).max(32000),options:taskOptions}).strict().parse(request.body);
+    const options=authorizeOptions(p,body.options as TaskOptions);
+    if(options.workspaceId&&!((await broker.listWorkspaces()).some(w=>w.id===options.workspaceId)))throw new AppError('WORKSPACE_NOT_FOUND','Workspace not found',404);
+    const created=await store.createTask(body.requestId,body.content,options,p.user.id,p.user.sessionVersion,true);
+    if(created.task.status==='created')engine.enqueue(created.task.id);
+    return created;
+  });
   app.post('/api/conversations/:id/messages',async request=>{
     const p=principal(request);
     const body=z.object({content:z.string().trim().min(1).max(32000),options:taskOptions}).parse(request.body);

@@ -13,16 +13,28 @@ import { ManagedGit } from './git';
 import { captureGitBaseline } from './git-baseline';
 import { StorageBudget } from './storage-budget';
 import { McpRegistry } from '../mcp';
+import { HostFileBroker } from './host-files';
 
 export class ToolBroker {
   private readonly store: ToolStore;
   private readonly sandbox: DockerSandbox;
   private readonly http = new PublicHttpClient();
   private readonly git: ManagedGit;
+  private readonly hostFiles: HostFileBroker;
   private queue: Promise<unknown> = Promise.resolve();
   private generation = 0;
-  constructor(dataDir: string, private readonly isStopped: () => boolean, readonly mcp = new McpRegistry()) { this.store = new ToolStore(dataDir); this.sandbox = new DockerSandbox(this.store); this.git = new ManagedGit(this.store); }
+  constructor(dataDir: string, private readonly isStopped: () => boolean, readonly mcp = new McpRegistry()) { this.store = new ToolStore(dataDir); this.sandbox = new DockerSandbox(this.store); this.git = new ManagedGit(this.store); this.hostFiles = new HostFileBroker(dataDir); }
   definitions(): ToolDefinition[] { return definitions(); }
+  async verifyHostFile(path:string,expectedHash:string|null,signal:AbortSignal):Promise<boolean> {
+    const guard=this.guard(signal);guard();
+    try {
+      const result=await this.hostFiles.execute('host_read',{path},signal,guard);
+      guard();return (JSON.parse(result.content) as {sha256:string}).sha256===expectedHash;
+    } catch(error) {
+      guard();if((error as NodeJS.ErrnoException).code==='ENOENT')return expectedHash===null;
+      throw error;
+    }
+  }
   decide(context: ToolContext, request: ToolRequest): ToolDecision { return decide(context, request, this.isStopped(),this.mcp); }
   private serial<T>(operation: () => Promise<T>): Promise<T> {
     const result = this.queue.then(operation); this.queue = result.catch(() => undefined); return result;
@@ -70,6 +82,11 @@ export class ToolBroker {
   }
   async execute(context: ToolContext, request: ToolRequest): Promise<ToolResult> {
     const guard = this.guard(context.signal);
+    if(request.name.startsWith('host_'))return this.serial(async()=>{
+      guard();const decision=this.decide(context,request);if(decision.decision!=='allow')throw new Error(`${decision.decision}: ${decision.reason}`);
+      const {name,args}=parseRequest(request);
+      return this.hostFiles.execute(name,args,context.signal,guard,context.taskId);
+    });
     if(request.name==='mcp_call') {
       guard();const decision=this.decide(context,request);if(decision.decision!=='allow')throw new Error(`${decision.decision}: ${decision.reason}`);
       const result=await this.mcp.execute(context,request);guard();return result;

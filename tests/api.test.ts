@@ -25,6 +25,26 @@ beforeEach(async()=>{
 });
 afterEach(async()=>{await engine.shutdown();await app.close();await store.close();await rm(dir,{recursive:true,force:true});});
 describe('local HTTP boundary',()=>{
+  it('requires authenticated CSRF-protected deletion and hides deleted conversations',async()=>{
+    const conversation=await store.createConversation('Remove this conversation');
+    const url=`/api/conversations/${conversation.id}`;
+    expect((await app.inject({method:'DELETE',url,headers:{host}})).statusCode).toBe(401);
+    expect((await app.inject({method:'DELETE',url,headers:{host,cookie}})).statusCode).toBe(403);
+    expect((await app.inject({method:'DELETE',url,headers:{host,cookie,'x-relay-csrf':csrf}})).json()).toEqual({deleted:true});
+    expect((await app.inject({url,headers:{host,cookie}})).statusCode).toBe(404);
+  });
+  it('starts a conversation atomically and makes repeated first-message requests idempotent',async()=>{
+    vi.spyOn(engine,'enqueue').mockImplementation(()=>{});
+    const options={depth:'fast',modelId:null,access:'read_only',workspaceId:null,contextTokens:8192,cloudPolicy:'local_only',budget:{maxCalls:4,maxSeconds:60,maxIterations:2,maxCostUsd:null,localOnly:true}};
+    const request={method:'POST' as const,url:'/api/conversations/start',headers:{host,cookie,'x-relay-csrf':csrf},payload:{requestId:'eb6e5bb4-e4f6-4549-9209-b0d12eb9830c',content:'Hello once',options}};
+    const first=await app.inject(request),second=await app.inject(request);
+    expect(first.statusCode).toBe(200);expect(second.statusCode).toBe(200);
+    expect(first.json().task.id).toBe(second.json().task.id);
+    expect(await store.conversations()).toHaveLength(1);
+    await store.setStopped(true);
+    expect((await app.inject({...request,payload:{...request.payload,requestId:'b8c972ee-cadf-48b6-863b-45690956c55c'}})).statusCode).toBe(409);
+    expect(await store.conversations()).toHaveLength(1);
+  });
   it('persists owner-pinned external tools, rejects fingerprint tampering and keeps disabled servers out of task discovery',async()=>{
     const tool=catalogTool({name:'public_lookup',description:'Untrusted fixture catalog',inputSchema:{type:'object',properties:{query:{type:'string'}},required:['query'],additionalProperties:false}});
     const server={id:'public-docs',name:'Fixture documents',url:'https://example.com/mcp',enabled:false,tools:[tool]};

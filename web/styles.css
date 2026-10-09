@@ -283,6 +283,17 @@ kbd { font: 10px var(--mono); border: 1px solid var(--line); border-radius: 3px;
 .workspace-form > .button { margin-top: 17px; }
 .history-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
 .history-list { display: flex; flex-direction: column; gap: 5px; }
+.history-row { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.history-row .history-item { flex: 1; min-width: 0; width: auto; }
+.history-delete { width: 44px; height: 44px; }
+.history-delete:hover { color: var(--danger); }
+.history-delete-confirmation { border: 1px solid var(--line-strong); border-left: 3px solid var(--danger); border-radius: 5px; background: var(--surface-muted); padding: 16px; margin: 0 0 20px; scroll-margin-block: 90px 20px; }
+.history-delete-confirmation h3 { margin: 0 0 9px; font-size: 15px; }
+.history-delete-confirmation p { margin: 0 0 14px; font-size: 13px; line-height: 1.6; }
+.history-delete-confirmation .history-delete-title { font-weight: 500; font-size: 14px; overflow-wrap: anywhere; }
+.history-delete-confirmation .button { min-height: 44px; }
+.history-delete-confirmation .inline-error { margin-top: 14px; }
+.history-delete-notice { overflow-wrap: anywhere; }
 .history-item { display: flex; align-items: center; width: 100%; gap: 12px; padding: 14px 10px; border-radius: 5px; text-align: left; }
 .history-item > span { flex: 1; min-width: 0; }
 .history-item strong { display: block; font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

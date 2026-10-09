@@ -24,6 +24,13 @@ test('actual local host renders persisted execution, real models and resources a
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations).toEqual([]);
   await page.screenshot({path:'output/playwright/production-phone-navigation.png'});
+  await page.keyboard.press('Escape');
+  await page.getByRole('combobox',{name:'Computer access',exact:true}).selectOption('unrestricted');
+  const hostConfirmation=page.getByRole('region',{name:'Confirm host file access',exact:true});
+  await expect(hostConfirmation.getByRole('button',{name:'Enable host access',exact:true})).toBeVisible();
+  await hostConfirmation.getByRole('button',{name:'Cancel',exact:true}).click();
+  await page.getByRole('button',{name:'Open conversation history',exact:true}).click();
+  await expect(page.getByRole('button',{name:'Delete conversation',exact:true}).first()).toBeVisible();
 });
 
 test('real balanced auto greeting finishes with one natural answer and no completion commentary',async({page})=>{

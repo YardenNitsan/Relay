@@ -33,7 +33,7 @@ function excerpt(content: string, query: string, budget = 600): string {
   return truncateUtf8(`${start ? '…' : ''}${content.slice(start)}`, budget);
 }
 async function ownsConversation(sql: Sql, userId: string, conversationId: string) {
-  if (!(await sql.query('SELECT id FROM conversations WHERE id=$1 AND user_id=$2', [conversationId, userId])).length) throw new AppError('NOT_FOUND', 'Conversation not found', 404);
+  if (!(await sql.query('SELECT id FROM conversations WHERE id=$1 AND user_id=$2 AND deleted_at IS NULL', [conversationId, userId])).length) throw new AppError('NOT_FOUND', 'Conversation not found', 404);
 }
 
 export class HistoryRepository {
@@ -43,7 +43,7 @@ export class HistoryRepository {
     const limit = limitSchema.parse(options.limit ?? 40), q = querySchema.parse(options.q ?? '');
     const cursorScope = scope(userId, 'conversations', q), before = decodeCursor(options.before, cursorScope);
     const records = await this.db.query(`SELECT c.*,c.created_at::text AS cursor_at FROM conversations c
-      WHERE c.user_id=$1 AND ($2='' OR to_tsvector('simple',c.title) @@ websearch_to_tsquery('simple',$2))
+      WHERE c.deleted_at IS NULL AND c.user_id=$1 AND ($2='' OR to_tsvector('simple',c.title) @@ websearch_to_tsquery('simple',$2))
       AND ($3::timestamptz IS NULL OR (c.created_at,c.id)<($3::timestamptz,$4::text))
       ORDER BY c.created_at DESC,c.id DESC LIMIT $5`, [userId, q, before?.at ?? null, before?.id ?? null, limit + 1]);
     const selected = records.slice(0, limit);
@@ -67,7 +67,7 @@ export class HistoryRepository {
       const operator = forward ? '>' : options.around ? '<=' : '<';
       const order = forward ? 'ASC' : 'DESC';
       const records = await tx.query(`SELECT m.*,m.created_at::text AS cursor_at FROM messages m JOIN conversations c ON c.id=m.conversation_id
-        WHERE c.user_id=$1 AND m.conversation_id=$2 AND ($3::timestamptz IS NULL OR (m.created_at,m.id)${operator}($3::timestamptz,$4::text))
+        WHERE c.deleted_at IS NULL AND c.user_id=$1 AND m.conversation_id=$2 AND ($3::timestamptz IS NULL OR (m.created_at,m.id)${operator}($3::timestamptz,$4::text))
         ORDER BY m.created_at ${order},m.id ${order} LIMIT $5`, [userId, conversationId, anchor?.at ?? null, anchor?.id ?? null, limit]);
       if (!forward) records.reverse();
       if (!records.length) return { items: [], tasks: [], olderCursor: null, newerCursor: null };
@@ -86,7 +86,7 @@ export class HistoryRepository {
     const cursorScope = scope(userId, 'search', options.conversationId ?? '', q), before = decodeCursor(options.before, cursorScope);
     if (options.conversationId) await ownsConversation(this.db, userId, options.conversationId);
     const records = await this.db.query(`SELECT m.*,c.title AS conversation_title,m.created_at::text AS cursor_at FROM messages m JOIN conversations c ON c.id=m.conversation_id
-      WHERE c.user_id=$1 AND ($2::text IS NULL OR c.id=$2) AND to_tsvector('simple',m.content) @@ websearch_to_tsquery('simple',$3)
+      WHERE c.deleted_at IS NULL AND c.user_id=$1 AND ($2::text IS NULL OR c.id=$2) AND to_tsvector('simple',m.content) @@ websearch_to_tsquery('simple',$3)
       AND ($4::timestamptz IS NULL OR (m.created_at,m.id)<($4::timestamptz,$5::text)) ORDER BY m.created_at DESC,m.id DESC LIMIT $6`, [userId, options.conversationId ?? null, q, before?.at ?? null, before?.id ?? null, limit + 1]);
     const selected = records.slice(0, limit);
     const items = selected.map(record => {
@@ -107,7 +107,7 @@ export class HistoryRepository {
     if (!words.length || maxBytes < 128) return [];
     const lexical = words.map(word => `"${word.slice(0, 60)}"`).join(' OR ');
     const records = await this.db.query(`SELECT m.* FROM messages m JOIN conversations c ON c.id=m.conversation_id
-      WHERE c.user_id=$1 AND c.id=$2 AND NOT(m.id=ANY($3::text[])) AND to_tsvector('simple',m.content) @@ websearch_to_tsquery('simple',$4)
+      WHERE c.deleted_at IS NULL AND c.user_id=$1 AND c.id=$2 AND NOT(m.id=ANY($3::text[])) AND to_tsvector('simple',m.content) @@ websearch_to_tsquery('simple',$4)
       ORDER BY ts_rank_cd(to_tsvector('simple',m.content),websearch_to_tsquery('simple',$4)) DESC,m.created_at DESC,m.id DESC LIMIT $5`, [userId, conversationId, excluded, lexical, limit]);
     const selected: RetrievedHistory[] = [];
     for (const record of records) {

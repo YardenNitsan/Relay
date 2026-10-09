@@ -1,7 +1,7 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Activity as ActivityIcon, ChevronDown, Command as CommandIcon, Cpu, Layers, Menu, Moon, PanelRightClose, Plus, Radio, ShieldCheck, Square, Sun, X } from 'lucide-react';
-import type { Conversation as ConversationRecord, ConversationDetail, SystemStatus, TaskOptions, TaskRecord, Workspace } from '../shared/types';
+import type { ConversationDetail, SystemStatus, TaskOptions, TaskRecord, Workspace } from '../shared/types';
 import { api, ApiError, errorMessage, initializeSession, mutation, onSessionInvalidated, refreshSession } from './api';
 import { useRealtime } from './useRealtime';
 import Composer from './components/Composer';
@@ -20,6 +20,7 @@ const Workspaces = lazy(() => import('./components/Workspaces'));
 const Access = lazy(() => import('./components/Access'));
 const Mcp = lazy(() => import('./components/Mcp'));
 type Panel = 'history' | 'models' | 'hardware' | 'workspaces' | 'commands' | 'access' | 'navigation' | 'mcp' | null;
+interface PendingStart { requestId: string; content: string; options: TaskOptions }
 const defaults: TaskOptions = { depth: 'balanced', modelId: null, access: 'read_only', workspaceId: null, contextTokens: 8192, cloudPolicy: 'local_only', budget: { maxCalls: 12, maxSeconds: 600, maxIterations: 5, maxCostUsd: null, localOnly: true } };
 
 function currentConversation() { return new URLSearchParams(window.location.search).get('conversation'); }
@@ -44,7 +45,11 @@ export default function App() {
   const [stopBusy, setStopBusy] = useState(false);
   const [streamGeneration, setStreamGeneration] = useState(0);
   const [sessionFailure, setSessionFailure] = useState<ApiError | null>(null);
+  const sending = useRef(false);
+  const startRequest = useRef<PendingStart | null>(null);
+  const navigationVersion = useRef(0);
   useEffect(() => onSessionInvalidated(error => {
+    startRequest.current = null;
     setSessionFailure(error); setPanel(null); setActivity(false); setTaskId(null); setHistoricalTask(null);
     setOptions(defaults); setNotice(null);
     void client.cancelQueries();
@@ -74,14 +79,19 @@ export default function App() {
   }, [permissions]);
 
   const selectConversation = useCallback((id: string | null, anchor?: string) => {
+    navigationVersion.current++;
+    if (!id && !sending.current) {
+      startRequest.current = null;
+      try { sessionStorage.removeItem(`relay:start:v1:${session.data?.user?.id}`); } catch { /* Storage is optional. */ }
+    }
     setConversationId(id); setMessageId(anchor ?? null); setHistoricalTask(null); setTaskId(null); setActivity(false); setPanel(null);
     const url = new URL(window.location.href);
     if (id) url.searchParams.set('conversation', id); else url.searchParams.delete('conversation');
     if (anchor) url.searchParams.set('message', anchor); else url.searchParams.delete('message');
     window.history.pushState({}, '', url);
-  }, []);
+  }, [session.data?.user?.id]);
   useEffect(() => {
-    const listener = () => { setConversationId(currentConversation()); setMessageId(currentMessage()); setHistoricalTask(null); setTaskId(null); setActivity(false); };
+    const listener = () => { navigationVersion.current++; setConversationId(currentConversation()); setMessageId(currentMessage()); setHistoricalTask(null); setTaskId(null); setActivity(false); };
     window.addEventListener('popstate', listener); return () => window.removeEventListener('popstate', listener);
   }, []);
   useEffect(() => {
@@ -101,16 +111,41 @@ export default function App() {
     window.addEventListener('keydown', listener); return () => window.removeEventListener('keydown', listener);
   }, []);
   const send = async (content: string) => {
-    let id = conversationId;
-    if (!id) {
-      const created = await mutation<ConversationRecord>('/conversations', { title: content.slice(0, 80) });
-      id = created.id;
-    }
-    const response = await mutation<{ task: TaskRecord }>(`/conversations/${id}/messages`, { content, options });
-    if (conversationId !== id || messageId) selectConversation(id);
-    setReaderVersion(value => value + 1);
-    setTaskId(response.task.id);
-    await Promise.all([client.invalidateQueries({ queryKey: ['conversation', id] }), client.invalidateQueries({ queryKey: ['history'] })]);
+    if (sending.current) throw new Error('Another objective is still being sent. Your draft is saved; try again when it finishes.');
+    sending.current = true;
+    const navigationAtSend = navigationVersion.current;
+    const requestKey = `relay:start:v1:${session.data?.user?.id}`;
+    try {
+      if (!conversationId && !startRequest.current) {
+        try {
+          const saved = JSON.parse(sessionStorage.getItem(requestKey) ?? 'null') as PendingStart | null;
+          if (saved && typeof saved.requestId === 'string' && typeof saved.content === 'string' && saved.options) startRequest.current = saved;
+        } catch { /* Retry protection still works in memory. */ }
+        startRequest.current ??= { requestId: crypto.randomUUID(), content, options: structuredClone(options) };
+        try { sessionStorage.setItem(requestKey, JSON.stringify(startRequest.current)); } catch { /* Storage is optional. */ }
+      }
+      if (!conversationId && startRequest.current?.content !== content) throw new Error('A previous first objective is awaiting confirmation. Retry its original text or choose New conversation.');
+      const response = conversationId
+        ? await mutation<{ task: TaskRecord }>(`/conversations/${conversationId}/messages`, { content, options })
+        : await mutation<{ task: TaskRecord }>('/conversations/start', startRequest.current);
+      const id = response.task.conversationId;
+      startRequest.current = null;
+      try { sessionStorage.removeItem(requestKey); } catch { /* Storage is optional. */ }
+      if (navigationAtSend === navigationVersion.current) {
+        if (conversationId !== id || messageId) selectConversation(id);
+        setReaderVersion(value => value + 1);
+        setTaskId(response.task.id);
+      }
+      await Promise.all([client.invalidateQueries({ queryKey: ['conversation', id] }), client.invalidateQueries({ queryKey: ['history'] })]);
+    } finally { sending.current = false; }
+  };
+  const conversationDeleted = (id: string) => {
+    void client.cancelQueries({ queryKey: ['conversation', id] });
+    client.removeQueries({ queryKey: ['conversation', id] });
+    client.removeQueries({ queryKey: ['history-messages', id] });
+    try { localStorage.removeItem(`relay:draft:v1:${session.data?.user?.id}:${id}`); } catch { /* Storage is optional. */ }
+    if (conversationId === id) selectConversation(null);
+    setNotice({ message: 'Conversation deleted from history.', error: false });
   };
   const emergencyStop = async () => {
     setStopBusy(true);
@@ -159,7 +194,7 @@ export default function App() {
       <Composer key={`${session.data?.user?.id ?? 'pending'}:${conversationId ?? 'new'}`} conversationId={conversationId} options={options} onOptions={setOptions} models={modelList} workspaces={workspaces.data ?? []} onWorkspace={() => setPanel('workspaces')} onSend={send} disabled={!ready || backendUnavailable} stopped={stopped} running={running} status={status.data} owner={owner} permissions={permissions} userId={session.data?.user?.id ?? 'pending'} />
     </main>{activity && <Activity taskId={selectedTaskId} tasks={tasks} events={realtime.events} workspaces={workspaces.data ?? []} hostName={session.data?.hostName} onSelect={setTaskId} onClose={() => { setActivity(false); requestAnimationFrame(() => document.getElementById('activity-toggle')?.focus()); }} stopped={stopped} />}</div>
     <footer className="app-footer"><span><Radio size={12} />Your work stays accountable.</span><span>{status.data ? `Relay ${status.data.version}` : 'Relay'}<span className="footer-separator" />{options.cloudPolicy === 'local_only' ? 'Local inference only' : 'Cloud access controlled'}</span></footer>
-    {panel === 'history' && <Modal title="Conversations" onClose={() => setPanel(null)}><History selected={conversationId} onSelect={selectConversation} onNew={() => selectConversation(null)} /></Modal>}
+    {panel === 'history' && <Modal title="Conversations" onClose={() => setPanel(null)}><History onDeleted={conversationDeleted} selected={conversationId} onSelect={selectConversation} onNew={() => selectConversation(null)} /></Modal>}
     {panel === 'models' && <Modal title="Models & connections" onClose={() => setPanel(null)} wide><Suspense fallback={<Loading>Opening models…</Loading>}><Models owner={owner} contextTokens={options.contextTokens} onSelect={id => { setOptions(value => ({ ...value, modelId: id })); setPanel(null); }} /></Suspense></Modal>}
     {panel === 'mcp' && owner && <Modal title="MCP tools" onClose={() => setPanel(null)}><Suspense fallback={<Loading>Opening tool connections…</Loading>}><Mcp /></Suspense></Modal>}
     {panel === 'hardware' && owner && <Modal title="This machine" onClose={() => setPanel(null)}><Suspense fallback={<Loading>Opening resource view…</Loading>}><Hardware status={status.data} /></Suspense></Modal>}

@@ -6,7 +6,7 @@ export type AgentRole = 'supervisor' | 'planner' | 'worker' | 'researcher' | 'ar
 export interface Budget { maxCalls: number; maxSeconds: number; maxIterations: number; maxCostUsd: number | null; localOnly: boolean; }
 export interface RequiredRead { path:string; expectedSha256:string; }
 export interface NetworkPolicy { mode:'deny'|'ask'|'allow'; allowedOrigins:string[]; }
-export interface TaskOptions { depth: Depth; modelId: string | null; modelSelection?: 'preferred' | 'required'; access: AccessMode; workspaceId: string | null; contextTokens: number; budget: Budget; cloudPolicy?: 'local_only' | 'allow' | 'ask'; verification?: {requiredReads:RequiredRead[]}; network?:NetworkPolicy; mcpServerIds?:string[]; }
+export interface TaskOptions { depth: Depth; modelId: string | null; modelSelection?: 'preferred' | 'required'; access: AccessMode; hostAccessConfirmed?: boolean; workspaceId: string | null; contextTokens: number; budget: Budget; cloudPolicy?: 'local_only' | 'allow' | 'ask'; verification?: {requiredReads:RequiredRead[]}; network?:NetworkPolicy; mcpServerIds?:string[]; }
 export interface Conversation { id: string; title: string; createdAt: string; updatedAt: string; }
 export interface Message { id: string; conversationId: string; taskId: string | null; role: 'user' | 'assistant'; content: string; createdAt: string; }
 export interface TaskRecord { id: string; conversationId: string; objective: string; status: TaskStatus; options: TaskOptions; createdAt: string; updatedAt: string; result: string | null; error: string | null; callsUsed: number; stopGeneration: number; }
@@ -38,7 +38,7 @@ export interface ModelRequest { model: ModelProfile; messages: ModelMessage[]; t
 export type ModelChunk = { type: 'text'; text: string } | { type: 'tool_call'; call: ToolRequest } | { type: 'usage'; inputTokens: number; outputTokens: number; durationMs?: number; loadDurationMs?:number; cachedInputTokens?:number; generationTokensPerSecond?: number; promptTokensPerSecond?: number } | { type: 'continuation'; providerData: { provider: ProviderId; data: unknown } } | { type: 'done'; finishReason: string };
 export interface ProviderGateway { listModels(): Promise<ModelProfile[]>; statuses(): Promise<ProviderStatus[]>; stream(request: ModelRequest): AsyncIterable<ModelChunk>; }
 export interface Workspace { id: string; name: string; sourcePath: string | null; createdAt: string; fileCount: number; }
-export interface ToolContext { taskId: string; agentId: string; workspaceId: string | null; access: AccessMode; allowedTools: string[]; signal: AbortSignal; approved: boolean; approvalAuthority?:string; network?:NetworkPolicy; mcpServerIds?:string[]; }
+export interface ToolContext { taskId: string; agentId: string; workspaceId: string | null; access: AccessMode; allowedTools: string[]; signal: AbortSignal; approved: boolean; hostAccess?: boolean; approvalAuthority?:string; network?:NetworkPolicy; mcpServerIds?:string[]; }
 export interface ToolResult { content: string; evidence: { kind: string; summary: string; passed: boolean; details?: Record<string, unknown> }[]; artifact?: { name: string; path: string; mime: string }; }
 export interface ToolDecision { decision: 'allow' | 'approval' | 'deny'; reason: string; risk: 'read' | 'write' | 'execute'; }
 export interface Approval { id: string; taskId: string; toolCallId: string; tool: string; arguments: Record<string, unknown>; reason: string; status: 'pending' | 'allow_once' | 'allow_task' | 'denied'; createdAt: string; }

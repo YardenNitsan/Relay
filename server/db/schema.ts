@@ -29,6 +29,8 @@ CREATE TABLE IF NOT EXISTS settings (key text PRIMARY KEY, value jsonb NOT NULL)
 CREATE TABLE IF NOT EXISTS users (id text PRIMARY KEY, name text NOT NULL, email text UNIQUE, role text NOT NULL, enabled boolean NOT NULL DEFAULT true, permissions jsonb NOT NULL, session_version integer NOT NULL DEFAULT 0, created_at timestamptz NOT NULL DEFAULT now(), last_active_at timestamptz);
 INSERT INTO users(id,name,role,permissions) VALUES ('owner','Local owner','owner','{"providers":["ollama","lmstudio","openai","anthropic","gemini"],"workspaceIds":[],"maxAccess":"workspace","maxConcurrentTasks":4,"maxCallsPerTask":64,"maxSecondsPerTask":3600,"dailyCloudBudgetUsd":0}') ON CONFLICT DO NOTHING;
 ALTER TABLE conversations ADD COLUMN IF NOT EXISTS user_id text NOT NULL DEFAULT 'owner' REFERENCES users(id);
+ALTER TABLE conversations ADD COLUMN IF NOT EXISTS deleted_at timestamptz;
+ALTER TABLE conversations ADD COLUMN IF NOT EXISTS start_request_hash text;
 ALTER TABLE tasks ADD COLUMN IF NOT EXISTS user_id text NOT NULL DEFAULT 'owner' REFERENCES users(id);
 ALTER TABLE tasks ADD COLUMN IF NOT EXISTS repair_attempts integer NOT NULL DEFAULT 0;
 ALTER TABLE tasks ADD COLUMN IF NOT EXISTS plan_decision jsonb;

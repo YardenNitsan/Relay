@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
+import { homedir, platform } from 'node:os';
 import type { Approval, ModelMessage, ModelProfile, ProviderGateway, TaskRecord, TaskStep, ToolContext, ToolDefinition, ToolRequest, ToolResult, ToolDecision } from '../../shared/types.js';
 import type { User } from '../auth/policy.js';
 import { AppError, checkSignal, publicError } from '../core/errors.js';
@@ -25,9 +26,10 @@ export interface ExecutionTools {
   definitions():ToolDefinition[];decide(context:ToolContext,request:ToolRequest):ToolDecision;
   execute(context:ToolContext,request:ToolRequest):Promise<ToolResult>;stopAll():Promise<void>;
   changes(taskId:string):Promise<{checkpointId:string;path:string}[]>;
+  verifyHostFile?(path:string,expectedHash:string|null,signal:AbortSignal):Promise<boolean>;
 }
 export class Engine {
-  private running=new Map<string,{controller:AbortController;promise:Promise<void>;userId:string;workspaceId:string|null}>();
+  private running=new Map<string,{controller:AbortController;promise:Promise<void>;userId:string;workspaceId:string|null;hostAccess:boolean}>();
   private workspaceMaintenance=new Set<string>();
   private queue:string[]=[];
   private lease=new LocalLease();
@@ -52,6 +54,7 @@ export class Engine {
       for(const task of pending) {
         if(this.running.size>=3||this.closed||this.stopping)break;
         if([...this.running.values()].some(run=>run.userId===task.userId)&&task.userId!=='owner')continue;
+        if(task.options.access==='unrestricted'&&[...this.running.values()].some(run=>run.hostAccess))continue;
         if(task.options.workspaceId&&(this.workspaceMaintenance.has(task.options.workspaceId)||[...this.running.values()].some(run=>run.workspaceId===task.options.workspaceId)))continue;
         this.queue=this.queue.filter(id=>id!==task.id);
         const controller=new AbortController();
@@ -66,7 +69,7 @@ export class Engine {
             await this.store.transition(task.id,cancelled?'cancelled':'paused',{error:publicError(error)});
           }
         }).finally(()=>{this.running.delete(task.id);this.taskGrants.delete(task.id);void this.drain();});
-        this.running.set(task.id,{controller,promise,userId:task.userId,workspaceId:task.options.workspaceId});
+        this.running.set(task.id,{controller,promise,userId:task.userId,workspaceId:task.options.workspaceId,hostAccess:task.options.access==='unrestricted'});
       }
     } finally {this.draining=false;}
   }
@@ -107,6 +110,7 @@ export class Engine {
       if(!(await this.isAuthorized(task,user)))throw new AppError('REVOKED','The user policy or execution grant was revoked',403);
       await this.store.transition(id,'verifying');
       await recordRequiredReads(this.store,task);
+      if(task.options.access==='unrestricted')await this.verifyHostState(task,signal);
       const evidence=await this.store.verification(id);
       const failures=await this.store.unresolvedChecks(id);
       const review=steps.find(s=>s.role==='reviewer');
@@ -152,6 +156,7 @@ export class Engine {
     let context=step.role==='reviewer'
       ?buildReviewContext(task.objective,dependencies.find(s=>s.role==='worker')?.output??'',await this.store.verification(task.id),task.options.contextTokens,savedContext??[])
       :savedContext??buildContext(step.role,task.objective,recent,findings,task.options.contextTokens);
+    if(task.options.access==='unrestricted'&&!context[0].content.includes('\nDirect host file access:'))context[0]={...context[0],content:`${context[0].content}\nDirect host file access: explicitly confirmed by the local owner for this task. Host platform: ${platform()}; owner home: ${homedir()}. host_list/read/write/delete act on real host files using absolute native paths, outside managed copies. Credentials, system paths and Relay itself remain protected. Do not claim unrestricted shell access: terminal still runs only in the isolated managed-workspace container. Host writes require matching hashes and create private recovery checkpoints. Use supplied tools and verify actual results.`};
     if(step.role==='worker'&&task.options.verification&&!context[0].content.includes('\nRequired task verification contract:'))context[0]={...context[0],content:`${context[0].content}\nRequired task verification contract: ${JSON.stringify(task.options.verification)}. Before the final answer, invoke file_read for each required path after all workspace changes. Its actual whole-file SHA-256 must match. Tool prose or an earlier write's own read-back does not satisfy this contract. These requirements grant no additional capabilities.`};
     // A crash between saving proposals and starting a tool must not automatically
     // replay those proposals. Supply explicit interruption receipts for the model.
@@ -165,9 +170,9 @@ export class Engine {
       }
     }
     await this.store.saveContext(step.id,context);
-    const readTools=new Set(['file_read','file_list','file_search','git_status','git_diff','http_get']);
+    const readTools=new Set(['host_read','host_list','file_read','file_list','file_search','git_status','git_diff','http_get']);
     const defs=step.role==='planner'?[]:this.tools.definitions().filter(d=>
-      (d.name==='http_get'?task.options.network&&task.options.network.mode!=='deny':d.name==='mcp_call'?!!task.options.mcpServerIds?.length:!!task.options.workspaceId)&&
+      (d.name.startsWith('host_')?task.options.access==='unrestricted'&&task.options.hostAccessConfirmed===true&&user.role==='owner':d.name==='http_get'?task.options.network&&task.options.network.mode!=='deny':d.name==='mcp_call'?!!task.options.mcpServerIds?.length:!!task.options.workspaceId)&&
       (step.role==='worker'||readTools.has(d.name)));
     for(let turn=0;turn<task.options.budget.maxIterations;turn++) {
       budget.assertActive();
@@ -264,6 +269,19 @@ export class Engine {
     const current=(await this.store.db.query('SELECT enabled,session_version FROM users WHERE id=$1',[user.id]))[0];
     return !control.stopped&&control.generation===task.stopGeneration&&current?.enabled===true&&current.session_version===user.sessionVersion;
   }
+  private async verifyHostState(task:TaskRecord,signal:AbortSignal) {
+    const receipts=await this.store.db.query("SELECT result FROM tool_calls WHERE task_id=$1 AND status='completed' AND name IN ('host_read','host_write','host_delete') ORDER BY finished_at DESC,id DESC",[task.id]);
+    const seen=new Set<string>();
+    for(const receipt of receipts) {
+      checkSignal(signal);
+      const result=JSON.parse(String(receipt.result)) as {path:string;sha256:string|null};
+      const key=platform()==='win32'?result.path.toLowerCase():result.path;
+      if(seen.has(key))continue;seen.add(key);
+      let passed=false;
+      try {passed=await this.tools.verifyHostFile?.(result.path,result.sha256,signal)??false;}catch {checkSignal(signal);}
+      await this.store.verify(task.id,'host_file_state',`Final host file check: ${result.path}`,passed,{path:result.path,expectedSha256:result.sha256},`host_state:${key}`);
+    }
+  }
   private estimateCost(task:TaskRecord,model:ModelProfile):number|null {
     if(model.local)return 0;
     if(model.inputPricePerMillion===null||model.outputPricePerMillion===null)return null;
@@ -290,7 +308,7 @@ export class Engine {
     const approvalAuthority=request.name==='mcp_call'?this.tools.mcp?.authorizationScope(request):undefined;
     const scope=JSON.stringify([request.name,request.arguments,approvalAuthority]);
     const grants=this.taskGrants.get(task.id)??new Set<string>();this.taskGrants.set(task.id,grants);
-    const context:ToolContext={taskId:task.id,agentId,workspaceId:task.options.workspaceId,access:task.options.access,allowedTools,signal,approved:grants.has(scope),approvalAuthority,network:task.options.network,mcpServerIds:task.options.mcpServerIds};
+    const context:ToolContext={taskId:task.id,agentId,workspaceId:task.options.workspaceId,access:task.options.access,hostAccess:task.options.access==='unrestricted'&&task.options.hostAccessConfirmed===true&&user.role==='owner',allowedTools,signal,approved:grants.has(scope),approvalAuthority,network:task.options.network,mcpServerIds:task.options.mcpServerIds};
     let decision=this.tools.decide(context,request);
     await this.store.append(task.id,'TOOL_REQUESTED',{toolCallId:invocationId,agentId,tool:request.name,arguments:request.arguments});
     if(decision.decision==='approval') {

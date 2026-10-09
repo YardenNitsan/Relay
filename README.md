@@ -10,7 +10,7 @@ Run it with local models alone, or explicitly connect cloud providers. Your host
 
 [Get started](#get-started) · [User guide](docs/user-guide.md) · [Architecture](docs/architecture.md) · [Security](docs/security-model.md) · [Validation](docs/validation.md)
 
-> **Project status:** Relay is a working, actively developed application. The repository includes persistent tasks, local inference, controlled tools and a responsive interface. Some host integrations and deployment paths still need native validation; unrestricted computer control and signed installers are not available. See [Current boundaries](#current-boundaries) before choosing a deployment.
+> **Project status:** Relay is a working, actively developed application. The repository includes persistent tasks, local inference, controlled tools and a responsive interface. Some host integrations and deployment paths still need native validation; arbitrary native command execution and signed installers are not available. See [Current boundaries](#current-boundaries) before choosing a deployment.
 
 ## What you can do
 
@@ -158,7 +158,7 @@ Relay's implementation and its validation coverage are different things:
 | --- | --- |
 | Host platforms | Shared core and Windows/Linux/macOS adapters exist. Windows has direct application validation; Linux has recorded native WSL validation of an earlier snapshot. Native macOS and the current cross-platform release still require verification. |
 | Packaging | Portable OS archives and startup templates exist. Signed native installers, notarization and automatic updates are not delivered. |
-| Computer control | Managed workspace operations are implemented. **Unrestricted** remains disabled until a tested host-access broker exists. |
+| Computer control | Managed copies and owner-confirmed [direct host file operations](docs/host-access.md) are implemented. Arbitrary native commands remain unavailable; terminal execution stays isolated. |
 | Terminal / native database | Isolation and native PostgreSQL paths have implementation and deterministic coverage; consult the validation ledger for actual native integration evidence. |
 | Local inference | Ollama has actual-host execution evidence. Hardware fit is conservative admission, not a peak-memory guarantee; calibration is a bounded throughput sample, not a model-quality benchmark. |
 | Cloud / remote / MCP | Adapters and policy enforcement exist. Live credentialed cloud acceptance, public remote deployment and broad external MCP interoperability remain to be validated. MCP currently supports constrained anonymous public HTTPS only. |

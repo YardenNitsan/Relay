@@ -57,7 +57,7 @@ foreach($path in @($env:RELAY_LAN_KEY_CHECK,[System.IO.Path]::GetDirectoryName($
 async function assertPrivateKey(path:string):Promise<void> {
   if(process.platform==='win32') {
     try {await run(join(process.env.SystemRoot??'C:\\Windows','System32','WindowsPowerShell','v1.0','powershell.exe'),['-NoProfile','-NonInteractive','-EncodedCommand',Buffer.from(windowsPrivateKey,'utf16le').toString('base64')],{env:{SystemRoot:process.env.SystemRoot??'C:\\Windows',RELAY_LAN_KEY_CHECK:path},windowsHide:true,timeout:5000,maxBuffer:4096});}
-    catch {throw new Error('LAN TLS private key and its directory must be owned by this OS account with no access granted to other ordinary accounts');}
+    catch(error) {throw new Error('LAN TLS private key and its directory must be owned by this OS account with no access granted to other ordinary accounts',{cause:error});}
     return;
   }
   for(const entry of [path,dirname(path)]) {

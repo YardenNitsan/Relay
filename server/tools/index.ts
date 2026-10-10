@@ -154,7 +154,7 @@ export class ToolBroker {
     if(request.name.startsWith('host_'))return this.serial(async()=>{
       guard();await this.authorizeExecution(context);guard();const decision=this.decide(context,request);if(decision.decision!=='allow')throw new Error(`${decision.decision}: ${decision.reason}`);
       const {name,args}=parseRequest(request);
-      return this.hostFiles.execute(name,args,context.signal,guard,context.taskId);
+      return this.hostFiles.execute(name,args,context.signal,guard,context.taskId,async()=>{guard();await this.authorizeExecution(context);guard();});
     });
     if(request.name==='mcp_call') {
       guard();await this.authorizeExecution(context);guard();const decision=this.decide(context,request);if(decision.decision!=='allow')throw new Error(`${decision.decision}: ${decision.reason}`);

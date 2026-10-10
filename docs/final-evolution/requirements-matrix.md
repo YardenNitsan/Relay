@@ -6,7 +6,7 @@ Status vocabulary: **Complete and verified**, **Implemented but insufficiently v
 |---|---|---|---|
 | A01 | Latest-source audit, repeatable baseline, ledger (§3,26) | Partially implemented | Fresh source/CI/tests/build/browser results; requirements inventory |
 | A02 | Passing portable CI and release gates (§22) | Partially implemented | c861696 all six host/browser gates pass on Windows/Linux/macOS in run38066150868. Local full125browser pass; subsequent commits have their own gates. Native Linux run38062805371 passed. Release protection remains G05. |
-| A03 | Authorization/revocation/security review (§4,11) | Implemented but insufficiently verified | Dispatch race regressions and full threat-model review |
+| A03 | Authorization/revocation/security review (§4,11) | Implemented but insufficiently verified | FE-011 ordinary host callback omission fixed: six red/green real-file revocation cases, 1243-test full check. Full threat-model review remains |
 | A04 | Overall task deadlines (§11) | Complete and verified | Durable admission/queue/active/approval/resource/restart/finalization regressions, full check 1214 passed/one skip, build and 14 affected browser cases; focused review findings fixed. Native migration portability remains A06/G02. |
 | A05 | Suspended execution and uncertain-effect recovery (§11) | Partially implemented | Durable resume and no duplicate mutation scenarios |
 | A06 | Native PostgreSQL upgrades/locking/restore (§11) | Complete and verified | PostgreSQL 17.11, two-pool actual migration lock contention, retained version-9 records; pg_dump/pg_restore into separate database with all 32 public tables/rows compared and foreign-key enforcement checked. Scope: local Docker, not remote production cluster. |

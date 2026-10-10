@@ -3,17 +3,20 @@ import { generateKeyPair, SignJWT, createLocalJWKSet, exportJWK } from 'jose';
 import { remoteConfig, RemoteIdentity } from '../server/auth/remote.js';
 import { openDatabase } from '../server/db/database.js';
 import { Store } from '../server/db/store.js';
+import { readFile } from 'node:fs/promises';
 import { authorizeOptions, chatPermissions, permissionSchema, type Principal } from '../server/auth/policy.js';
 import { hostPlatform } from '../server/host/platform.js';
 
 let store:Store|undefined;afterEach(async()=>{await store?.close();store=undefined;});
 describe('remote identity and authorization',()=>{
   it('upgrades only the local owner provider grants once and preserves existing account policy',async()=>{
-    store=new Store(await openDatabase());await store.init();
+    store=new Store(await openDatabase());
+    await store.db.exec(await readFile(new URL('./fixtures/schema-9c29d1b.sql',import.meta.url),'utf8'));
     const legacy={...chatPermissions,providers:['ollama','openai']};
     await store.db.query('UPDATE users SET permissions=$1 WHERE id=$2',[JSON.stringify(legacy),'owner']);
     await store.db.query('INSERT INTO users(id,name,role,permissions) VALUES ($1,$2,$3,$4)',['friend','Friend','chat',JSON.stringify(legacy)]);
-    await store.db.query('DELETE FROM schema_migrations WHERE version=3');
+    // Use an actual old schema: deleting markers from a current database would
+    // falsely present already-applied additive migrations as pending upgrades.
     await store.init();
     const owner=(await store.db.query("SELECT permissions FROM users WHERE id='owner'"))[0].permissions;
     expect(owner).toEqual({...legacy,providers:['ollama','openai','xai','deepseek']});

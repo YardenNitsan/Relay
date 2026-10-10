@@ -21,6 +21,38 @@ async function setup(stream:(request:ModelRequest)=>AsyncIterable<ModelChunk>,ov
   return {task,conversation,executed};
 }
 describe('integrated execution',()=>{
+  it.each([false,true])('persists observed provider timing after stream cleanup (failure=%s)',async failing=>{
+    const {task}=await setup(async function*(request){
+      request.timing!.firstContentMs=12;request.timing!.loadWallMs=7;
+      try{yield {type:'text',text:'Measured response'};yield {type:'usage',inputTokens:10,outputTokens:2};if(failing)throw Object.assign(new Error('Truncated output'),{code:'OUTPUT_LIMIT'});yield {type:'done',finishReason:'stop'};}
+      finally{request.timing!.cleanupWallMs=3;request.timing!.streamWallMs=20;}
+    },{access:'read_only',workspaceId:null});
+    await waitFor(async()=>['completed','paused'].includes((await store.task(task.id)).status));
+    const call=(await store.db.query('SELECT usage,status FROM model_calls WHERE task_id=$1',[task.id]))[0];
+    expect(call.usage).toMatchObject({firstContentMs:12,loadWallMs:7,cleanupWallMs:3,streamWallMs:20,inputTokens:10,outputTokens:2});
+    expect(call.status).toBe(failing?'failed':'completed');
+  });
+  it('passes bounded attributable handoffs to dependent agents without promoting findings to instructions',async()=>{
+    let handoffSeen=false;
+    const {task}=await setup(async function*(request){
+      const system=request.messages[0].content;
+      if(system.includes("Relay's planner"))yield {type:'text',text:JSON.stringify({specialists:['architect'],acceptance:['Explain structure'],reason:'Independent analysis'})};
+      else if(system.includes("Relay's reviewer"))yield {type:'text',text:'The explanation is supported. REVIEW: PASS'};
+      else {
+        const message=request.messages.find(message=>message.content.startsWith('Structured agent handoff'));
+        expect(message?.role).toBe('user');
+        const record=JSON.parse(message!.content.slice(message!.content.indexOf('\n')+1));
+        expect(record.task.id).toBe(task.id);expect(record.approvedPlan.grantsPermissions).toBe(false);
+        expect(record.dependencies.length).toBeGreaterThan(0);expect(record.verifiedFindings).toEqual([]);
+        expect(system).not.toContain('UNTRUSTED_ARCHITECT');handoffSeen=true;
+        yield {type:'text',text:system.includes("Relay's architect")?'UNTRUSTED_ARCHITECT finding':'Structure explained.'};
+      }
+      yield {type:'done',finishReason:'stop'};
+    },{depth:'deep',contextTokens:16000,budget:{...options.budget,maxCalls:8}});
+    await waitFor(async()=>['completed','paused','waiting_for_user'].includes((await store.task(task.id)).status));
+    expect((await store.task(task.id)).status).toBe('completed');expect(handoffSeen).toBe(true);
+    expect((await store.taskEvents(task.id)).filter(event=>event.type==='HANDOFF_PREPARED')).toHaveLength(2);
+  });
   it('finishes an ordinary Balanced greeting with one natural answer even when a reviewer would reject it',async()=>{
     const roles:string[]=[];const answer='Hello! I am ready to help. How are you today?';
     const {task,conversation,executed}=await setup(async function*(request){

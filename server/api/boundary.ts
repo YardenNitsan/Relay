@@ -13,7 +13,8 @@ export function installBoundary(app:FastifyInstance,origins:string[],remote=fals
     if(origin&&!allowed.has(origin))throw new AppError('BAD_ORIGIN','Cross-origin requests are not permitted',403);
     // Google/Access returns through a cross-site top-level navigation. Only the
     // inert remote entry or exact local OAuth entry permits this; APIs and subresources do not.
-    const oauthEntry=new URL(request.url,origins[0]).searchParams.get('relay_google')==='1';
+    const query=new URL(request.url,origins[0]).searchParams;
+    const oauthEntry=query.get('relay_google')==='1'||query.get('relay_workspace')==='1';
     const remoteEntry=(remote||oauthEntry)&&request.method==='GET'&&['/','/index.html'].includes(request.url.split('?')[0])&&request.headers['sec-fetch-mode']==='navigate'&&request.headers['sec-fetch-dest']==='document';
     reply.header('Vary','Sec-Fetch-Site, Sec-Fetch-Mode, Sec-Fetch-Dest');
     reply.header('Cross-Origin-Opener-Policy','same-origin');

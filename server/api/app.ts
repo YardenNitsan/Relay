@@ -1,3 +1,14 @@
+import {reasoningEfforts} from '../../shared/model-controls.js';
+import {retentionRoutes} from './retention.js';
+import {registerMemoryRoutes} from './memory.js';
+import {registerPublicationRoutes} from './publication.js';
+import {exportDiagnostics} from '../diagnostics/export.js';
+import {taskTiming} from '../diagnostics/timing.js';
+import {ScheduleService} from '../scheduling/service.js';
+import {scheduleRoutes} from './schedules.js';
+import {GoogleWorkspace} from '../integrations/google-workspace.js';
+import {registerGoogleWorkspaceRoutes} from './google-workspace.js';
+import {executionSlotLimit} from '../orchestration/slots.js';
 import Fastify, { LogController, type FastifyInstance, type FastifyRequest } from 'fastify';
 import cookie from '@fastify/cookie';
 import staticFiles from '@fastify/static';
@@ -34,13 +45,15 @@ import {documentRoutes} from './documents.js';
 import { calibrationRoutes } from './calibration.js';
 import { mcpRoutes } from './mcp.js';
 import { verificationContractSchema } from '../orchestration/required-reads.js';
+import {workspaceTaskSchema} from '../integrations/workspace-policy.js';
+import {isWorkspaceTool} from '../tools/google-workspace-schema.js';
 import { networkPolicySchema } from '../tools/network-policy.js';
 import { installBoundary, RateLimiter, routeId } from './boundary.js';
 
-const taskOptions=z.object({efficiency:z.enum(['efficient','standard']).optional(),assistantId:z.enum(assistantIds).optional(),depth:z.enum(['fast','balanced','deep','maximum']),modelId:z.string().max(200).nullable(),access:z.enum(['read_only','supervised','workspace','unrestricted']),hostAccessConfirmed:z.boolean().optional(),workspaceId:z.string().uuid().nullable(),contextTokens:z.number().int().min(2048).max(131072),cloudPolicy:z.enum(['local_only','allow','ask']).default('local_only'),verification:verificationContractSchema.optional(),network:networkPolicySchema.optional(),mcpServerIds:permissionSchema.shape.mcpServerIds,modelSelection:z.enum(['preferred','required']).optional(),budget:z.object({maxOutputTokens:z.number().int().min(256).max(8192).optional(),maxCalls:z.number().int().min(1).max(64),maxSeconds:z.number().int().min(30).max(3600),maxIterations:z.number().int().min(1).max(16),maxCostUsd:z.number().min(0).max(100).nullable(),localOnly:z.boolean()})});
+const taskOptions=z.object({googleWorkspace:workspaceTaskSchema.optional(),reasoning:z.enum(['auto','default',...reasoningEfforts]).optional(),efficiency:z.enum(['efficient','standard']).optional(),assistantId:z.enum(assistantIds).optional(),depth:z.enum(['fast','balanced','deep','maximum']),modelId:z.string().max(200).nullable(),access:z.enum(['read_only','supervised','workspace','unrestricted']),hostAccessConfirmed:z.boolean().optional(),workspaceId:z.string().uuid().nullable(),contextTokens:z.number().int().min(2048).max(131072),cloudPolicy:z.enum(['local_only','allow','ask']).default('local_only'),verification:verificationContractSchema.optional(),network:networkPolicySchema.optional(),mcpServerIds:permissionSchema.shape.mcpServerIds,modelSelection:z.enum(['preferred','required']).optional(),budget:z.object({maxOutputTokens:z.number().int().min(256).max(8192).optional(),maxCalls:z.number().int().min(1).max(64),maxSeconds:z.number().int().min(30).max(3600),maxIterations:z.number().int().min(1).max(16),maxCostUsd:z.number().min(0).max(100).nullable(),localOnly:z.boolean()})});
 const providerId=z.enum(['ollama','lmstudio','openai','anthropic','gemini','xai','deepseek']);
 export interface RemoteControl {config:RemoteConfig|null;enabled:boolean;listening:boolean;}
-export interface Services {store:Store;engine:Engine;providers:Providers;broker:ToolBroker;googleOAuth?:GoogleOAuth;remoteControl?:RemoteControl;pairing?:LocalPairing;inference?:InferenceService;lanControl?:{configured:boolean;listening:boolean;origin:string|null;error:string|null};}
+export interface Services {googleWorkspace?:GoogleWorkspace;schedules?:ScheduleService;store:Store;engine:Engine;providers:Providers;broker:ToolBroker;googleOAuth?:GoogleOAuth;remoteControl?:RemoteControl;pairing?:LocalPairing;inference?:InferenceService;lanControl?:{configured:boolean;listening:boolean;origin:string|null;error:string|null};}
 export interface AppOptions {lan?:LanConfig;tls?:{cert:Buffer;key:Buffer};port?:number;remote?:RemoteConfig;remoteIdentity?:RemoteIdentity;staticRoot?:string;logging?:boolean;}
 
 // Both loopback listeners share the same Store and therefore the same admission
@@ -114,6 +127,12 @@ export async function createApp(services:Services,options:AppOptions={}):Promise
     });
   };
   resourceRoutes(app,store,providers,owner);
+  retentionRoutes(app,store,owner);
+  registerMemoryRoutes(app,store,principal);
+  registerPublicationRoutes(app,store,broker.dataDirectory,engine,owner);
+  registerGoogleWorkspaceRoutes(app,services.googleWorkspace??new GoogleWorkspace(store,{allowedOrigins:async()=>origins}),principal,owner,p=>sessions.live(p));
+  scheduleRoutes(app,services.schedules??new ScheduleService(store,engine),owner);
+  app.post('/api/admin/diagnostics',async request=>{const {user}=owner(request);return exportDiagnostics(store.db,{id:user.id,sessionVersion:user.sessionVersion},request.body??{});});
   registerHistoryRoutes(app,store,principal);
   registerUsageRoutes(app,store,providers,principal);
   if(services.googleOAuth)registerGoogleOAuthRoutes(app,services.googleOAuth,providers,store,principal,owner,p=>sessions.live(p),(userId,work)=>serializeProviderMutation(store,`${userId}/gemini`,work));
@@ -121,7 +140,7 @@ export async function createApp(services:Services,options:AppOptions={}):Promise
   await mcpRoutes(app,store,broker.mcp,principal,owner);
   const task=async(request:FastifyRequest)=>store.task(routeId(request),principal(request).user.id);
   const remoteEnabled=()=>services.remoteControl?services.remoteControl.enabled&&services.remoteControl.listening:!!options.remote;
-  const systemStatus=async()=>{const control=await store.control();return {stopped:control.stopped,stopGeneration:control.generation,database:store.db.kind,sandbox:await broker.sandboxStatus(),version:'0.1.1',hostName:hostname(),remoteEnabled:remoteEnabled()};};
+  const systemStatus=async()=>{const control=await store.control();return {stopped:control.stopped,stopGeneration:control.generation,database:store.db.kind,sandbox:await broker.sandboxStatus(),version:'0.1.1',scheduling:{maxExecutingTasks:executionSlotLimit,maxLocalInference:1,approvalWaitUsesSlot:false,accountLimitIncludesWaiting:true},hostName:hostname(),remoteEnabled:remoteEnabled()};};
   app.setErrorHandler((error,request,reply)=>{
     const code=error instanceof AppError?error.code:error instanceof ZodError?'VALIDATION_ERROR':'OPERATION_FAILED';
     const status=error instanceof AppError?error.status:error instanceof ZodError?400:error&&typeof error==='object'&&'statusCode' in error&&typeof error.statusCode==='number'?error.statusCode:500;
@@ -141,8 +160,9 @@ export async function createApp(services:Services,options:AppOptions={}):Promise
   app.get('/api/assistants',async request=>{
     const p=principal(request),localOwner=p.user.role==='owner'&&!p.remote;
     const personalWorkspace=(await store.db.query('SELECT id FROM workspaces WHERE owner_user_id=$1 LIMIT 1',[p.user.id])).length>0;
-    const permitted=(name:string)=>name.startsWith('host_')?localOwner:name==='personal_tasks'?true:name==='http_get'?localOwner||p.user.permissions.maxNetworkAccess&&p.user.permissions.maxNetworkAccess!=='deny':name==='mcp_call'?localOwner||!!p.user.permissions.mcpServerIds?.length:localOwner||personalWorkspace||p.user.permissions.workspaceIds.length>0;
-    return {assistants:assistantDefinitions.map(profile=>({id:profile.id,name:profile.name,description:profile.description,available:true,status:profile.integrationRequirements.length?'limited':'ready',tools:profile.allowedTools.filter(name=>permitted(name)&&broker.definitions().some(tool=>tool.name===name)),limitations:assistantLimitations(profile.id),requiredIntegration:profile.integrationRequirements[0],...(profile.integrationRequirements.length?{integrationState:'not_implemented'}:{})}))};
+    const permitted=(name:string)=>isWorkspaceTool(name)?!!services.googleWorkspace:name.startsWith('host_')?localOwner:name==='personal_tasks'?true:name==='http_get'?localOwner||p.user.permissions.maxNetworkAccess&&p.user.permissions.maxNetworkAccess!=='deny':name==='mcp_call'?localOwner||!!p.user.permissions.mcpServerIds?.length:localOwner||personalWorkspace||p.user.permissions.workspaceIds.length>0;
+    const workspaceStatus=services.googleWorkspace?await services.googleWorkspace.status({principal:p,live:()=>sessions.live(p)}).catch(()=>null):null;
+    return {assistants:assistantDefinitions.map(profile=>({id:profile.id,name:profile.name,description:profile.description,available:true,status:profile.integrationRequirements.length?'limited':'ready',tools:profile.allowedTools.filter(name=>permitted(name)&&broker.definitions().some(tool=>tool.name===name)),limitations:assistantLimitations(profile.id),requiredIntegration:profile.integrationRequirements[0],...(profile.integrationRequirements.length?{integrationState:profile.id==='email'||profile.id==='calendar'?(workspaceStatus?.connected?'connected':'not_configured'):'not_implemented'}:{})}))};
   });
   app.get('/api/inference/tokens',async request=>{const p=principal(request);return {enabled:!!services.inference&&(p.user.role==='owner'||p.user.permissions.externalModelAccess===true),tokens:services.inference?await services.inference.tokens.list(p.user.id):[],endpoints:{local:'http://127.0.0.1:4315/v1',...(services.lanControl?.listening?{lan:services.lanControl.origin+'/v1'}:{})}};});
   app.post('/api/inference/tokens',async request=>{const p=principal(request);if(!services.inference)throw new AppError('INFERENCE_UNAVAILABLE','The inference gateway is not configured.',503);return services.inference.tokens.issue(p.user.id,request.body,p.user.sessionVersion);});
@@ -196,6 +216,7 @@ export async function createApp(services:Services,options:AppOptions={}):Promise
     return {task:record,steps,events,approvals,verification,changes};
   });
   app.post('/api/tasks/:id/cancel',async request=>{const record=await task(request);await engine.cancel(record.id);return store.task(record.id);});
+  app.get('/api/tasks/:id/timing',async request=>taskTiming(store.db,(await task(request)).id));
   app.post('/api/tasks/:id/resume',async request=>{const record=await task(request);const p=principal(request);authorizeOptions(p,record.options,await workspaceScope(store.db,record.options.workspaceId));return engine.resume(record.id,p.user.sessionVersion);});
   app.get('/api/tasks/:id/changes',async request=>broker.changes((await task(request)).id));
   app.post('/api/tasks/:id/revert',async request=>{

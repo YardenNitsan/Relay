@@ -1,12 +1,14 @@
 # Relay user guide
 
+This guide describes **0.1.2**. For daily Windows use, double-click `setup.cmd` in the Relay folder; it starts or reuses the local host and opens the browser. See [setup](setup.md) for pairing and shutdown, and [release notes](release-0.1.2.md) for upgrade precautions and verified limits.
+
 ## Specialists, personal tasks and client devices
 
 Open **Agents** in navigation, or choose the agent beside the composer. Selecting a specialist changes its instructions and allowed tools; model, depth, computer access and cloud policy stay separate. **General orchestration** restores automatic general work. Missing integrations are stated directly in the agent details.
 
 For the Personal Assistant, select **Supervised** and ask to create a task such as “Remind me to review the release tomorrow.” The model can propose an item with an explicit UTC due date and request approval. Saved items belong to your account. Listing, completing and deleting items use the same personal-task tool. This is a persistent task list, not an operating-system notification or Google Calendar event.
 
-Email and Calendar can draft and plan from supplied information today. They cannot yet read your inbox or edit Google Calendar. Browser and Computer agents use only the structured tools actually available; choosing them does not enable unrestricted browser or desktop automation.
+Email and Calendar can work from supplied information. After separate Google Workspace setup and account consent, explicitly enable Gmail or calendar reads in Advanced controls for a local-only, read-only task. No sending or calendar editing is available. Browser and Computer agents use only the structured tools actually available; choosing them does not enable unrestricted browser or desktop automation.
 
 **External clients** creates/revokes tokens for coding applications that use the host's local models. Their tools run on their device, and their conversations are not stored as Relay chats. The owner must explicitly grant this access. Read the [API compatibility limits](external-clients.md) before configuring Codex or Claude Code.
 
@@ -184,6 +186,8 @@ Open **Execution options** to set:
 
 The initial composer defaults are Balanced, 12 calls, 600 seconds, 5 iterations and an 8,192-token context budget, with local-only sharing. Account policy can impose lower ceilings.
 
+Queue time and whole-task approval/resource waits do not consume active seconds. A parallel agent still working keeps the task clock running. Fully approval-blocked tasks release their execution slot, but remain within the account in-flight quota and retain workspace/host exclusivity. Approved work waits for capacity before resuming. See [execution accounting](execution-accounting.md).
+
 More context increases memory demand, particularly the KV cache; it does not simply mean “more intelligence.” Keep it proportionate to the task. Budgets remain attached to the task across retries and resumes rather than resetting on restart.
 
 A strict cloud cost cap can reject a model whose pricing is unknown. An empty cost cap is not a declaration that cloud calls are free. Remote accounts have separate provider and daily-spend limits.
@@ -219,6 +223,8 @@ Your own file management is independent of agent autonomy: even with agents set 
 Inspect **Activity → Changes** and copy or download the patch. Review and apply it to your source project using your normal development workflow. Relay does not automatically overwrite your original repository or promise conflict-free application to a source that has changed since import.
 
 Supported desktop browsers also offer **Workspaces → Files on this device → Choose device folder**. Review and upload a managed copy, then use **Review device changes** to explicitly apply selected changes back to that folder. The browser requests write permission, and changed device files are rejected rather than silently overwritten. Phone browsers without this API use upload/download. This folder connection does not enable device-local terminal commands or desktop automation.
+
+For a host-imported project, the local owner can also open **Review publication to original**. Inspect and approve the exact existing-file changes before applying them. Changed original files are rejected; rollback requires a separate review. This bounded workflow does not create/delete files or push Git changes. See [publication and recovery](publication.md).
 
 ## Computer access and approvals
 
@@ -472,7 +478,7 @@ Grant each dimension deliberately:
 | Allowed intelligence | Which local runtimes/cloud providers the account may use |
 | Granted workspaces | Which managed projects are visible to tools |
 | Maximum computer access | The upper limit for task access mode |
-| Concurrent tasks, calls and seconds | Per-user/task resource limits |
+| In-flight tasks, calls and active seconds | Account/task limits; up to three tasks execute on the host and one local inference call runs at a time |
 | Daily cloud budget | Cloud spending allowance in addition to task limits |
 | Network origins and access | Public research destinations and approval ceiling |
 | MCP server IDs | Which enabled external catalogs the user may select |
@@ -585,3 +591,22 @@ If the public address works on Wi-Fi but reports `DNS_PROBE_FINISHED_NXDOMAIN` o
 - [Local inference](local-inference.md), [calibration](calibration.md) and [execution budgets](adr-014-durable-execution-budgets.md)
 - [History retrieval](history.md), [MCP](controlled-mcp.md) and [HTTP/Git tools](research-and-git-tools.md)
 - [Validation evidence](validation.md) and [remaining project work](project-report.md)
+
+
+## Provider, model and reasoning drawer
+
+Use **Choose model** beside the composer. Choose a connected provider, then one of its discovered models and a supported reasoning setting. Apply keeps your draft unsent; cloud sharing is an explicit choice. Auto can include authorized local and cloud models and selects economical supported effort. Output/call/cost limits remain in Advanced. See [model selection](model-selection.md) for supported controls, costs and provider-default limitations.
+
+## Approved memory and scheduled work
+
+Open **Commands → Manage memory** (or **Menu → Memory**) to save a project fact or personal preference. Saving and editing require your approval. Disable a note to stop including it in future tasks; export or permanently delete your own notes from the same view. Notes remain untrusted context and grant no permissions. See [memory](memory.md).
+
+The local owner can open **Manage schedules** to save a disabled one-time or repeating task, then review and enable its per-run limits. This first version permits only local, read-only work without external tools. Inspect run history, disable and cancel pending runs, or archive a schedule. Intervals use elapsed minutes, so local clock times may change across daylight-saving transitions. See [scheduling](scheduling.md) for missed-run and crash-recovery behavior.
+
+## Account reads and diagnostics
+
+**Google Workspace** is separate from Gemini model access. After the owner configures a dedicated Google Cloud application and you authorize your own account, explicitly search/read Gmail or inspect calendar events and availability. Opening the panel never fetches mail automatically. Advanced task controls also offer explicit Gmail and calendar read scopes. Opting in permanently keeps that conversation local-only and read-only; use a separate conversation for cloud models. Sending and event changes remain unavailable. See [Google Workspace setup](google-workspace.md); a configured application alone does not prove a working account connection.
+
+Expand **Where the time went** in task activity to inspect recorded execution, model, tool and waiting intervals. Unknown measurements stay unknown; overlapping intervals must not be added together. The local owner can export a bounded metadata-only diagnostic bundle in **Machine**, or review an explicit **Data retention** cleanup preview there. No automatic destructive cleanup is enabled. See [diagnostics](diagnostics.md), [retention](retention.md) and [offline backups](backups.md).
+
+**Models → Evaluate executable coding** offers an optional synthetic coding suite using an approved isolated Node environment. It requires explicit compute confirmation and a configured, available sandbox; otherwise the action stays disabled. Reports bind the exact model and container configuration. They do not yet change Auto ranking or prove broad coding quality. See [coding evaluations](code-evaluation.md).

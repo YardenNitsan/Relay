@@ -1,5 +1,6 @@
 import type { ModelChunk, ModelMessage, ModelRequest, ProviderId, ToolRequest } from '../../shared/types.js';
 import { array, number, object, ProviderError, outputLimitError, sse, string, toolArguments, type JsonObject } from './transport.js';
+import {validateReasoning,validateGeminiReasoning,preflightReasoning} from './reasoning.js';
 
 export const CLOUD_ENDPOINTS = { openai: 'https://api.openai.com/v1', anthropic: 'https://api.anthropic.com/v1', gemini: 'https://generativelanguage.googleapis.com/v1beta', xai: 'https://api.x.ai/v1', deepseek: 'https://api.deepseek.com' } as const;
 export function rawModelId(request: ModelRequest): string { return request.model.id.startsWith(`${request.model.provider}/`) ? request.model.id.slice(request.model.provider.length + 1) : request.model.name; }
@@ -9,6 +10,8 @@ function toolName(request: ModelRequest, id?: string): string { return request.m
 
 export function cloudBody(request: ModelRequest): JsonObject {
   const provider = request.model.provider;
+  validateReasoning(request.model,request.reasoning,request.maxOutputTokens);
+  preflightReasoning(request.model,request.reasoning,request.messages,request.tools);
   const messages = request.messages.filter(x => x.role !== 'system');
   if (provider === 'openai' || provider === 'xai') {
     const input = messages.flatMap<unknown>(message => {
@@ -16,7 +19,7 @@ export function cloudBody(request: ModelRequest): JsonObject {
       if (message.role === 'tool') return [{ type: 'function_call_output', call_id: message.toolCallId, output: message.content }];
       return [{ role: message.role, content: message.content }, ...(message.toolCalls ?? []).map(call => ({ type: 'function_call', call_id: call.id, name: call.name, arguments: JSON.stringify(call.arguments) }))];
     });
-    return { model: rawModelId(request), ...(provider === 'xai' ? { input: [...(system(request) ? [{ role: 'system', content: system(request) }] : []), ...input] } : { instructions: system(request), input }), tools: request.tools.map(tool => ({ type: 'function', ...tool, strict: false })), max_output_tokens: request.maxOutputTokens, stream: true, store: false, include: ['reasoning.encrypted_content'] };
+    return { model: rawModelId(request), ...(provider === 'xai' ? { input: [...(system(request) ? [{ role: 'system', content: system(request) }] : []), ...input] } : { instructions: system(request), input }), tools: request.tools.map(tool => ({ type: 'function', ...tool, strict: false })), ...(request.reasoning?{reasoning:{effort:request.reasoning}}:{}), max_output_tokens: request.maxOutputTokens, stream: true, store: false, include: ['reasoning.encrypted_content'] };
   }
   if (provider === 'deepseek') {
     // Tool-enabled thinking requires every historical assistant turn's original
@@ -28,7 +31,7 @@ export function cloudBody(request: ModelRequest): JsonObject {
       if (message.role === 'assistant' && message.providerData?.provider === 'deepseek') return message.providerData.data;
       if (message.role === 'tool') return { role: 'tool', tool_call_id: message.toolCallId, content: message.content };
       return { role: message.role, content: message.content, ...(message.toolCalls?.length ? { tool_calls: message.toolCalls.map(call => ({ id: call.id, type: 'function', function: { name: call.name, arguments: JSON.stringify(call.arguments) } })) } : {}) };
-    }), ...(request.tools.length ? { tools: request.tools.map(tool => ({ type: 'function', function: tool })) } : {}), ...(missingReasoning ? { thinking: { type: 'disabled' } } : {}), max_tokens: request.maxOutputTokens, stream: true, stream_options: { include_usage: true } };
+    }), ...(request.tools.length ? { tools: request.tools.map(tool => ({ type: 'function', function: tool })) } : {}), ...(missingReasoning||request.reasoning==='none' ? { thinking: { type: 'disabled' } } : request.reasoning?{thinking:{type:'enabled'},reasoning_effort:request.reasoning}:{}), max_tokens: request.maxOutputTokens, stream: true, stream_options: { include_usage: true } };
   }
   if (provider === 'anthropic') {
     return { model: rawModelId(request), system: system(request), messages: messages.map(message => {
@@ -36,15 +39,16 @@ export function cloudBody(request: ModelRequest): JsonObject {
       if (original) return { role: 'assistant', content: original };
       if (message.role === 'tool') return { role: 'user', content: [{ type: 'tool_result', tool_use_id: message.toolCallId, content: message.content }] };
       return { role: message.role, content: [...(message.content ? [{ type: 'text', text: message.content }] : []), ...(message.toolCalls ?? []).map(call => ({ type: 'tool_use', id: call.id, name: call.name, input: call.arguments }))] };
-    }), tools: request.tools.map(tool => ({ name: tool.name, description: tool.description, input_schema: tool.parameters })), max_tokens: request.maxOutputTokens, stream: true };
+    }), tools: request.tools.map(tool => ({ name: tool.name, description: tool.description, input_schema: tool.parameters })), ...(request.reasoning==='none'?{thinking:{type:'disabled'}}:request.reasoning?{output_config:{effort:request.reasoning},...(request.model.reasoning?.mode==='anthropic-adaptive'?{thinking:{type:'adaptive'}}:{})}:{}), max_tokens: request.maxOutputTokens, stream: true };
   }
   if (provider === 'gemini') {
+    validateGeminiReasoning(request.model,request.reasoning,request.maxOutputTokens,'interactions');
     const input = messages.flatMap<unknown>(message => {
       const original = native(message, provider); if (original) return original;
       if (message.role === 'tool') return [{ type: 'function_result', call_id: message.toolCallId, name: toolName(request, message.toolCallId), result: message.content }];
       return [{ type: message.role === 'assistant' ? 'model_output' : 'user_input', content: [{ type: 'text', text: message.content }] }, ...(message.toolCalls ?? []).map(call => ({ type: 'function_call', id: call.id, name: call.name, arguments: call.arguments }))];
     });
-    return { model: rawModelId(request), input, system_instruction: system(request), tools: request.tools.map(tool => ({ type: 'function', ...tool })), generation_config: { max_output_tokens: request.maxOutputTokens }, stream: true, store: false };
+    return { model: rawModelId(request), input, system_instruction: system(request), tools: request.tools.map(tool => ({ type: 'function', ...tool })), generation_config: { max_output_tokens: request.maxOutputTokens,...(request.reasoning?{thinking_level:request.reasoning}:{}) }, stream: true, store: false };
   }
   throw new ProviderError('unsupported_provider', 'Unsupported cloud provider');
 }
@@ -128,10 +132,11 @@ export async function* geminiStream(response: Response, request: ModelRequest): 
       if (delta.type === 'thought_summary') step.summary = [...array(step.summary), delta.content];
     }
     if (data.event_type === 'step.stop') { if (!steps.has(index)) incomplete(); open.delete(index); }
-    if (data.event_type === 'interaction.completed') { terminal = object(data.interaction); break; }
+    if (data.event_type === 'interaction.completed'||data.event_type === 'interaction.incomplete') { terminal = object(data.interaction); break; }
   }
   if(!terminal)incomplete();
-  const stats = object(terminal.usage); const measured = usage(stats.total_input_tokens, stats.total_output_tokens); if (measured) yield measured;
+  const stats = object(terminal.usage),output=number(stats.total_output_tokens),thoughts=number(stats.total_thought_tokens); const measured = usage(stats.total_input_tokens,output===null?(thoughts===null?null:thoughts):output+(thoughts??0)); if (measured) yield measured;
+  if(terminal.status==='incomplete'&&object(terminal.incomplete_details).reason==='max_output_tokens')throw outputLimitError();
   if (open.size || !['completed', 'requires_action'].includes(string(terminal.status))) incomplete();
   for(const [index,args] of partial){const step=steps.get(index);if(!step)incomplete();step.arguments=toolArguments(args);}
   const content = [...steps.entries()].sort((a, b) => a[0] - b[0]).map(([, step]) => step);

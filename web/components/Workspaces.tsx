@@ -5,6 +5,7 @@ import type { Workspace } from '../../shared/types';
 import { api, downloadText, mutation } from '../api';
 import { Empty, ErrorNotice, Loading, shortDate } from './ui';
 import DeviceFolder from './DeviceFolder';
+import Publication from './Publication';
 
 interface FileDocument { path: string; content: string; sha256: string }
 
@@ -91,6 +92,7 @@ export default function Workspaces({ selected, onSelect, owner = true, userId, c
       {query.data?.map(workspace => <article key={workspace.id} className="workspace-item"><button className={`workspace-choice ${selected === workspace.id ? 'selected' : ''}`} onClick={() => onSelect(workspace.id)}><FolderOpen size={19} /><span><strong>{workspace.name}</strong><small>{workspace.ownerUserId === userId ? 'Personal / ' : 'Shared / '}{workspace.fileCount} files / created {shortDate(workspace.createdAt)}</small></span>{selected === workspace.id && <Check size={17} />}</button>{workspace.sourcePath && <p className="small muted source-path">Copied from <code>{workspace.sourcePath}</code></p>}<button className="text-button" aria-expanded={inspect === workspace.id} onClick={() => setInspect(inspect === workspace.id ? null : workspace.id)}>{inspect === workspace.id ? 'Hide files' : 'Inspect files'}</button>{inspect === workspace.id && <WorkspaceFiles id={workspace.id} writable={workspace.ownerUserId === userId || owner || canWriteShared} />}</article>)}
     </div>{query.isPending && <Loading>Loading workspaces…</Loading>}{query.isError && <ErrorNotice error={query.error} retry={() => { void query.refetch(); }} />}{query.data?.length === 0 && <Empty title="Create your first workspace" icon={<FolderOpen size={24} />}><p>Start with an empty workspace, then attach your files.</p></Empty>}
     <form className="workspace-form" onSubmit={event => { void create(event); }}><h3><Plus size={17} />New personal workspace</h3><label>Name<input value={name} onChange={event => setName(event.target.value)} required maxLength={120} placeholder="Authentication investigation" disabled={busy} /></label>{owner && <label>Source directory <span className="muted">(optional)</span><input value={sourcePath} onChange={event => setSourcePath(event.target.value)} placeholder="Absolute path on this host" disabled={busy} spellCheck={false} /></label>}<p className="hint">{owner ? 'Leave the source empty for your own attached files. Importing creates a managed copy; the original is untouched.' : 'Files stay on this host in a workspace private to your account. Choose how independently agents work using the conversation permission control.'}</p><button className="button primary" type="submit" disabled={busy || !name.trim()}>{busy ? 'Creating workspace…' : sourcePath.trim() ? 'Import managed copy' : 'Create workspace'}</button>{error != null && <ErrorNotice error={error} />}</form>
+    {owner&&query.data?.filter(workspace=>workspace.sourcePath&&workspace.id===selected).map(workspace=><Publication key={workspace.id} workspaceId={workspace.id}/>)}
     <DeviceFolder key={userId ?? 'anonymous'} userId={userId} onImported={imported} />
   </>;
 }

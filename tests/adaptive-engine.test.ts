@@ -20,6 +20,25 @@ async function setup(stream:(request:ModelRequest)=>AsyncIterable<ModelChunk>,de
 }
 const done:ModelChunk={type:'done',finishReason:'stop'};
 describe('adaptive supervisor',()=>{
+  it('executes a task-specific dependency graph with bounded distinct subobjectives',async()=>{
+    const seen:string[]=[];
+    const {task}=await setup(async function*(request){
+      const current=role(request)!;seen.push(current);
+      if(current==='planner')yield {type:'text',text:JSON.stringify({version:1,nodes:[{key:'design',role:'architect',objective:'Inspect module boundaries',expectedOutput:'Dependency findings',dependencies:[]},{key:'risk',role:'security_reviewer',objective:'Validate proposed boundaries',expectedOutput:'Specific risks',dependencies:['design']}],acceptance:['Describe verified limits'],reason:'Risk review depends on architecture'})};
+      else {
+        if(current==='architect')expect(request.messages.some(message=>message.role==='user'&&message.content.includes('Dependency findings'))).toBe(true);
+        if(current==='security_reviewer')expect(request.messages.some(message=>message.content.includes('Architecture evidence'))).toBe(true);
+        yield {type:'text',text:current==='reviewer'?'REVIEW: PASS':current==='architect'?'Architecture evidence':'Boundaries explained.'};
+      }
+      yield done;
+    },'deep');
+    await waitFor(async()=>['completed','paused','waiting_for_user'].includes((await store.task(task.id)).status));
+    const saved=await store.task(task.id);expect(saved.error).toBeNull();expect(saved.status).toBe('completed');
+    expect(seen).toEqual(['planner','architect','security_reviewer','worker','reviewer']);
+    const steps=await store.steps(task.id);
+    expect(steps.find(step=>step.role==='security_reviewer')?.dependencies).toEqual([steps.find(step=>step.role==='architect')!.id]);
+    expect((await store.taskEvents(task.id)).find(event=>event.type==='PLAN_ADAPTED')?.data).toMatchObject({accepted:true,format:'dynamic'});
+  });
   it('uses only one remaining call to correct a review when the answer needs no repair',async()=>{
     let workers=0;let reviews=0;
     const {task}=await setup(async function*(request){

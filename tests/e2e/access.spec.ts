@@ -67,6 +67,9 @@ for (const width of [390, 320]) {
     await expect(approval).toBeVisible();
     const hostName = await page.evaluate(async () => (await (await fetch('/api/session')).json() as { hostName: string }).hostName);
     const card = page.locator('.approval');
+    const overview = page.getByRole('region', { name: 'Execution overview' });
+    // The required decision takes precedence over explanatory progress on phones.
+    expect((await card.boundingBox())!.y).toBeLessThan((await overview.boundingBox())!.y);
     await expect(card.getByText(hostName, { exact: true })).toBeVisible();
     await expect(card.getByText(name, { exact: true })).toBeVisible();
     await expect(card.getByText('Worker', { exact: true })).toBeVisible();

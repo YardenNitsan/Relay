@@ -28,7 +28,10 @@ export async function pairBrowser(page: Page) {
   await unlink(join(root, 'workspaces.json')).catch(error => { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; });
   // This one-host suite runs much faster than interactive use. Pace scenario
   // admission (not UI assertions) to retain the real local API rate limiter.
-  const remaining = 4000 - (Date.now() - previousScenarioAt);
+  // The limiter is shared by source IP across sessions: 4s admitted ~15 cases/min
+  // and exceeded 300 API requests/min in the full suite. 8s leaves headroom
+  // for polling, reloads and multi-action scenarios without weakening production.
+  const remaining = 8000 - (Date.now() - previousScenarioAt);
   if (remaining > 0) await new Promise(resolve => setTimeout(resolve, remaining));
   previousScenarioAt = Date.now();
   await expect(page.getByRole('heading', { name: 'Connect this browser' })).toBeVisible();

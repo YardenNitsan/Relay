@@ -13,7 +13,7 @@ test('specialists retain separate model and permission controls and persist on t
   await expect(email.getByRole('button', { name: 'Connect', exact: true })).toHaveCount(0);
   await dialog.getByRole('button', { name: 'Use Learning agent', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Choose agent', exact: true })).toContainText('Learning');
-  await expect(page.getByRole('combobox', { name: 'Model', exact: true })).toHaveValue('');
+  await expect(page.getByRole('button', { name: 'Choose model', exact: true })).toContainText('Auto');
   await expect(page.getByRole('combobox', { name: 'Computer access', exact: true })).toHaveValue('read_only');
   await page.getByRole('button', { name: 'Execution options', exact: true }).click();
   await expect(page.getByRole('combobox', { name: 'Token efficiency', exact: true })).toHaveValue('efficient');

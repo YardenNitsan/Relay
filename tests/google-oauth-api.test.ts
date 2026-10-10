@@ -87,6 +87,9 @@ describe('Google OAuth integrated session and API boundary',()=>{
     const shell=await remote.inject({url:`/?relay_google=1&code=${input.code}&state=${input.state}`,headers:{host:'relay.example','cf-access-jwt-assertion':'alice',...navigation}});
     expect(shell.statusCode,shell.body).toBe(200);expect(shell.body).toContain('Relay fixture shell');expect(shell.body).not.toContain(input.code);expect(exchanges).toBe(0);
     const localShell=await local.inject({url:'/?relay_google=1&code=inert-code&state=inert-state',headers:{host,...navigation}});expect(localShell.statusCode,localShell.body).toBe(200);
+    const workspaceShell=await local.inject({url:'/?relay_workspace=1&code=inert-code&state=inert-state',headers:{host,...navigation}});expect(workspaceShell.statusCode,workspaceShell.body).toBe(200);expect(workspaceShell.body).not.toContain('inert-code');
+    expect((await local.inject({url:'/api/integrations/google-workspace?relay_workspace=1',headers:{...ownerHeaders,...navigation}})).statusCode).toBe(403);
+    expect((await local.inject({url:'/?relay_workspace=1',headers:{host,...navigation,'sec-fetch-dest':'script'}})).statusCode).toBe(403);
     expect((await local.inject({url:'/api/providers/gemini/google',headers:{...ownerHeaders,...navigation}})).statusCode).toBe(403);
     const {['x-relay-csrf']:_csrf,...withoutCsrf}=aliceHeaders;
     expect((await remote.inject({method:'POST',url:'/api/providers/gemini/google/complete',headers:withoutCsrf,payload:input})).statusCode).toBe(403);

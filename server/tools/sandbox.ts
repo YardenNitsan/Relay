@@ -6,9 +6,10 @@ import { snapshot,type Guard } from './files';
 import type { ToolStore } from './store';
 import { SandboxOutput,sandboxInput,type SandboxCommand } from './sandbox-protocol';
 import { SANDBOX_SUPERVISOR } from './sandbox-worker';
+import { developmentProfile, type DevelopmentProfileId } from './development-profiles';
 
 interface CommandResult { stdout: string; stderr: string; exitCode: number; truncated: boolean; durationMs: number; }
-interface SandboxConfiguration { imageId: string; }
+interface SandboxConfiguration { imageId: string; profile: DevelopmentProfileId; }
 
 async function docker(args: string[], timeoutMs: number, signal?: AbortSignal,exchange?:{input:Iterable<Buffer>;output:SandboxOutput}): Promise<CommandResult> {
   if (signal?.aborted) throw new Error('Command cancelled');
@@ -48,16 +49,14 @@ export class DockerSandbox {
   private active = new Map<string, AbortController>();
   private cleanupFailures = new Set<string>();
   constructor(private readonly store: ToolStore) {}
-  async status(): Promise<{ available: boolean; reason: string }> {
-    try { await this.configuration(); return { available: true, reason: 'Local Linux Docker engine and configured trusted image available. Commands must pass Node 24, privilege-drop and bounded tmpfs preflight; no writable host mounts.' }; }
+  async status(profile?:DevelopmentProfileId): Promise<{ available: boolean; reason: string }> {
+    try { const config=await this.configuration(profile); return { available: true, reason: `Local Linux Docker engine and configured ${config.profile} image available. Language runtime, Node 24 supervisor, privilege-drop and bounded tmpfs are verified at execution; no writable host mounts.` }; }
     catch (error) { return { available: false, reason: error instanceof Error ? error.message : 'Sandbox unavailable' }; }
   }
-  private async configuration(): Promise<SandboxConfiguration> {
+  private async configuration(requested?:DevelopmentProfileId): Promise<SandboxConfiguration> {
     if (this.cleanupFailures.size) throw new Error('Sandbox unavailable: previous container cleanup is unverified; retry emergency stop or inspect Docker');
     if ((await this.store.containers()).some(name => !this.active.has(name))) throw new Error('Sandbox unavailable: interrupted containers require cleanup; use emergency stop before resuming');
-    const image = process.env.RELAY_SANDBOX_IMAGE;
-    if (!image) throw new Error('Sandbox unavailable: configure RELAY_SANDBOX_IMAGE with a preinstalled trusted Linux image; no image is pulled automatically');
-    if (!/^[a-zA-Z0-9][a-zA-Z0-9._/:@-]{0,255}$/.test(image)) throw new Error('Invalid configured sandbox image');
+    const {image,id:profile}=developmentProfile(requested);
     if (process.env.DOCKER_HOST) throw new Error('DOCKER_HOST overrides are unsupported; select a local Docker context');
     const context = await docker(['context', 'inspect', '--format', '{{json .Endpoints.docker.Host}}'], 5000);
     if (context.exitCode !== 0) throw new Error('Docker context unavailable');
@@ -70,7 +69,7 @@ export class DockerSandbox {
     const imageResult = await docker(['image', 'inspect', '--format', '{{.Id}}', image], 5000);
     const imageId = imageResult.stdout.trim();
     if (imageResult.exitCode !== 0 || !/^sha256:[a-f0-9]{64}$/.test(imageId)) throw new Error('Trusted sandbox image is not installed locally; automatic image download is disabled');
-    return { imageId };
+    return { imageId,profile };
   }
   private async supervisor():Promise<string> {
     await this.store.init();const hash=createHash('sha256').update(SANDBOX_SUPERVISOR).digest('hex');const path=await inspectPath(this.store.root,`containers/.relay-supervisor-${hash}.cjs`);
@@ -79,15 +78,15 @@ export class DockerSandbox {
     const handle=await open(await inspectPath(this.store.root,`containers/.relay-supervisor-${hash}.cjs`),readFlags());
     try{const stat=await handle.stat();if(!stat.isFile()||stat.nlink!==1||stat.size!==Buffer.byteLength(SANDBOX_SUPERVISOR)||createHash('sha256').update(await handle.readFile()).digest('hex')!==hash)throw new Error('Trusted supervisor integrity check failed');}finally{await handle.close();}return path;
   }
-  async run(stagePath: string, argv: string[], timeoutSeconds: number, signal: AbortSignal, guard: Guard): Promise<SandboxCommand&{files:Map<string,string>}> {
-    const config = await this.configuration(); guard();
+  async run(stagePath: string, argv: string[], timeoutSeconds: number, signal: AbortSignal, guard: Guard, profile?:DevelopmentProfileId): Promise<SandboxCommand&{files:Map<string,string>;imageId:string}> {
+    const config = await this.configuration(profile); guard();
     const name = `relay-${randomUUID()}`; const controller = new AbortController();
     const abort = () => controller.abort(); signal.addEventListener('abort', abort, { once: true }); this.active.set(name, controller);
     try {
       const helper=await this.supervisor();const files=await snapshot(stagePath,true);guard();
-      const output=new SandboxOutput();await this.store.recordContainer(name);guard();
-      const result=await docker(sandboxArguments(helper,name,config.imageId,argv),timeoutSeconds*1000+15_000,controller.signal,{input:sandboxInput(files,argv,timeoutSeconds*1000),output});
-      if(result.exitCode!==0)throw new Error('Isolated supervisor failed; trusted Node 24 and enforced process/storage limits are required');guard();return output.finish();
+      const output=new SandboxOutput(config.profile);await this.store.recordContainer(name);guard();
+      const result=await docker(sandboxArguments(helper,name,config.imageId,argv),timeoutSeconds*1000+15_000,controller.signal,{input:sandboxInput(files,argv,timeoutSeconds*1000,config.profile),output});
+      if(result.exitCode!==0)throw new Error('Isolated supervisor failed; the selected language runtime, trusted Node 24 and enforced process/storage limits are required');guard();return {...output.finish(),imageId:config.imageId};
     }
     finally { signal.removeEventListener('abort', abort); try { await this.remove(name); } finally { this.active.delete(name); } }
   }

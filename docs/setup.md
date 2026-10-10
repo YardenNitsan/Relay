@@ -1,5 +1,7 @@
 # One-command setup
 
+Current release: **0.1.2**. Existing installations should read the [upgrade and backup instructions](release-0.1.2.md#upgrade-and-daily-operation) before replacing a running build.
+
 From the Relay directory, run:
 
 ```powershell
@@ -64,3 +66,4 @@ Windows `setup.cmd --help` and `setup.cmd --check` were executed against the exi
 Final handover checks on 9 October: strict types and 369 deterministic tests passed across 40 files; production build passed. The 30-case browser run passed 29 cases and hit one connection-indicator timeout; that exact keyboard/accessibility case passed on its focused rerun. The running production host passed desktop/phone inspection of persisted execution, discovered models and hardware. No fresh successful local greeting is claimed.
 
 The Windows launcher passed actual cold build/start, repeat-start reuse, private graceful shutdown, restart and automatic browser/private pairing-file opening. The detached host remains available at http://127.0.0.1:4317. Missing-Node bootstrap, a genuinely fresh dependency installation, Linux/macOS launcher execution and native installers remain unverified. README.md and docs/user-guide.md describe architecture and the complete implemented user experience; docs/setup.md describes one-command setup. Optional model runtimes and model weights are not silently installed.
+For an interrupted startup lock, use the conservative offline procedure in [service startup ownership](startup-lock.md). Do not delete an active service or backup lock to force startup.

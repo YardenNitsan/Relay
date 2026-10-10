@@ -89,7 +89,7 @@ export class HostFileBroker {
     } else this.protectedRoots.push(...posixSystemRoots);
   }
 
-  async execute(tool: string, arguments_: Record<string, unknown>, signal: AbortSignal | undefined, guard: Guard, taskId?: string): Promise<ToolResult> {
+  async execute(tool: string, arguments_: Record<string, unknown>, signal: AbortSignal | undefined, guard: Guard, taskId?: string, authorize?:()=>Promise<void>): Promise<ToolResult> {
     const check = () => { guard(); if (signal?.aborted) throw new AppError('CANCELLED', 'Host file operation was cancelled', 409); };
     check();
     if (!Object.hasOwn(schemas, tool)) throw new Error('Unknown host file tool');
@@ -97,11 +97,12 @@ export class HostFileBroker {
     if (taskId !== undefined && (!taskId || taskId.length > 160 || /[\x00-\x1f]/.test(taskId))) throw new Error('Invalid host checkpoint task identity');
     if (tool === 'host_write') boundedText(args.content!);
     const operation = this.queue.then(async () => {
+      await authorize?.();check();
       check(); const path = this.validatePath(args.path);
       await this.inspect(path, tool === 'host_write', check);
       if (tool === 'host_list') return this.list(path, check);
       if (tool === 'host_read') return this.read(path, check);
-      return this.mutate(tool as 'host_write' | 'host_delete', path, args, check, taskId);
+      return this.mutate(tool as 'host_write' | 'host_delete', path, args, check, taskId,authorize);
     });
     this.queue = operation.catch(() => undefined);
     return operation;
@@ -192,7 +193,7 @@ export class HostFileBroker {
     await writePrivate(target, JSON.stringify(record)); check();
   }
 
-  private async mutate(tool: 'host_write' | 'host_delete', path: string, args: ParsedRequest, check: Guard, taskId?: string): Promise<ToolResult> {
+  private async mutate(tool: 'host_write' | 'host_delete', path: string, args: ParsedRequest, check: Guard, taskId?: string,authorize?:()=>Promise<void>): Promise<ToolResult> {
     check(); const before = await readText(dirname(path), basename(path), tool === 'host_write');
     await this.inspect(path, tool === 'host_write', check); check();
     if (before !== null && redactedText(before).redacted) throw new Error('Protected credential content cannot be overwritten or deleted by a host file tool');
@@ -203,8 +204,9 @@ export class HostFileBroker {
     await this.saveCheckpoint(checkpoint, check);
     check(); await this.inspect(path, tool === 'host_write', check);
     try {
+      await authorize?.();check();
       if (after === null) await replaceText(dirname(path), basename(path), null, args.expectedHash!, check);
-      else await this.writePreservingMetadata(path, after, args.expectedHash!, check);
+      else await this.writePreservingMetadata(path, after, args.expectedHash!, check,authorize);
       await this.inspect(path, tool === 'host_delete', check); check();
       if (hashOrNull(await readText(dirname(path), basename(path), tool === 'host_delete')) !== hashOrNull(after)) throw new Error('Host file verification failed');
       check(); checkpoint.state = 'committed'; await this.saveCheckpoint(checkpoint, check);
@@ -221,7 +223,7 @@ export class HostFileBroker {
    * ownership and POSIX mode survive. This is intentionally not an atomic rename:
    * interrupted writes retain the prepared checkpoint and become uncertain effects.
    */
-  private async writePreservingMetadata(path: string, content: string, expectedHash: string | null, check: Guard): Promise<void> {
+  private async writePreservingMetadata(path: string, content: string, expectedHash: string | null, check: Guard,authorize?:()=>Promise<void>): Promise<void> {
     await this.inspect(path, expectedHash === null, check); check();
     const original = expectedHash === null ? null : await lstat(path); check();
     if (original && (!original.isFile() || original.isSymbolicLink() || original.nlink !== 1)) throw new Error('Host links and non-regular files are forbidden');
@@ -240,7 +242,7 @@ export class HostFileBroker {
           length += part.bytesRead;
         }
         if (length > FILE_LIMIT) throw new Error('Host file exceeds the 1 MiB size limit');
-        const current = new TextDecoder('utf-8', { fatal: true }).decode(buffer.subarray(0, length));
+        const current = new TextDecoder('utf-8', { fatal: true,ignoreBOM:true }).decode(buffer.subarray(0, length));
         boundedText(current);
         if (sha256(current) !== expectedHash) throw new Error('Content conflict: host file changed before write');
         if (redactedText(current).redacted) throw new Error('Protected credential content cannot be overwritten');
@@ -250,11 +252,11 @@ export class HostFileBroker {
       if (currentInfo.dev !== opened.dev || currentInfo.ino !== opened.ino || currentInfo.nlink !== 1) throw new Error('Host file changed before commit');
       const bytes = Buffer.from(content, 'utf8'); let offset = 0;
       while (offset < bytes.length) {
-        check(); const written = await handle.write(bytes, offset, bytes.length - offset, offset); check();
+        await authorize?.();check(); const written = await handle.write(bytes, offset, Math.min(bytes.length-offset,64*1024), offset); check();
         if (!written.bytesWritten) throw new Error('Host file write made no progress');
         offset += written.bytesWritten;
       }
-      check(); await handle.truncate(bytes.length); check(); await handle.sync(); check();
+      await authorize?.();check(); await handle.truncate(bytes.length); check(); await handle.sync(); check();
     } finally { await handle.close(); }
   }
 }

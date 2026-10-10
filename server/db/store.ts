@@ -1,10 +1,11 @@
+import {assertWorkspaceConversation} from '../integrations/workspace-policy.js';
 import { createHash, randomUUID } from 'node:crypto';
 import type { ActivityEvent, Approval, Conversation, ConversationDetail, Message, ModelMessage, ProviderId, TaskOptions, TaskRecord, TaskStatus, TaskStep, Verification, Workspace } from '../../shared/types.js';
 import { authorizeOptions, type User } from '../auth/policy.js';
 import { AppError } from '../core/errors.js';
 import { assertTransition, terminalStates } from '../orchestration/lifecycle.js';
 import type { Database, Sql } from './database.js';
-import { schema } from './schema.js';
+import { migrate } from './migrations.js';
 import { requiredReadStatus } from '../orchestration/required-reads.js';
 
 export function row<T>(input:Record<string,unknown>):T {
@@ -28,7 +29,7 @@ export async function workspaceScope(tx:Sql,id:string|null):Promise<Workspace|un
 }
 export class Store {
   constructor(public readonly db:Database) {}
-  async init() { await this.db.exec(schema); }
+  async init() { await migrate(this.db); }
   async close() { await this.db.close(); }
   async control():Promise<{stopped:boolean;generation:number}> { return (await this.db.query('SELECT value FROM settings WHERE key=$1',['control']))[0].value as {stopped:boolean;generation:number}; }
   async setStopped(stopped:boolean) {
@@ -67,7 +68,10 @@ export class Store {
     });
   }
   async createTask(conversationId:string,objective:string,options:TaskOptions,userId='owner',expectedSessionVersion?:number,newConversation=false):Promise<{task:TaskRecord;message:Message}> {
-    return this.db.transaction(async tx=>{
+    return this.db.transaction(tx=>this.createTaskInTransaction(tx,conversationId,objective,options,userId,expectedSessionVersion,newConversation));
+  }
+  /** Internal atomic admission boundary. The caller must supply its active database transaction. */
+  async createTaskInTransaction(tx:Sql,conversationId:string,objective:string,options:TaskOptions,userId='owner',expectedSessionVersion?:number,newConversation=false):Promise<{task:TaskRecord;message:Message}> {
       const control=(await tx.query('SELECT value FROM settings WHERE key=$1 FOR UPDATE',['control']))[0].value as {stopped:boolean;generation:number};
       if(control.stopped) throw new AppError('STOPPED','Emergency stop is active. Resume scheduling before starting a task.',409);
       const found=(await tx.query('SELECT * FROM users WHERE id=$1 FOR UPDATE',[userId]))[0];
@@ -89,13 +93,13 @@ export class Store {
       const active=Number((await tx.query("SELECT COUNT(*) AS count FROM tasks WHERE user_id=$1 AND status NOT IN ('completed','failed','cancelled','paused')",[userId]))[0].count);
       if(active>=user.permissions.maxConcurrentTasks)throw new AppError('USER_TASK_QUOTA','Your active task limit is reached. Wait or stop a task.',429);
       if(!(await tx.query('SELECT id FROM conversations WHERE id=$1 AND user_id=$2 AND deleted_at IS NULL',[conversationId,userId])).length) throw new AppError('NOT_FOUND','Conversation not found',404);
+      await assertWorkspaceConversation(tx,conversationId,authorized);
       const running=await tx.query("SELECT id FROM tasks WHERE conversation_id=$1 AND status NOT IN ('completed','cancelled','failed','paused') LIMIT 1",[conversationId]);
       if(running.length) throw new AppError('CONVERSATION_BUSY','This conversation already has an active task. Stop it or wait before sending another objective.',409);
       const task=row<TaskRecord>((await tx.query('INSERT INTO tasks(id,conversation_id,objective,status,options,stop_generation,user_id) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *',[randomUUID(),conversationId,objective,'created',JSON.stringify(authorized),control.generation,userId]))[0]);
       const message=row<Message>((await tx.query('INSERT INTO messages(id,conversation_id,task_id,role,content) VALUES ($1,$2,$3,$4,$5) RETURNING *',[randomUUID(),conversationId,task.id,'user',objective]))[0]);
       await tx.query("UPDATE conversations SET updated_at=now(), title=CASE WHEN title='New conversation' THEN $1 ELSE title END WHERE id=$2",[objective.slice(0,80),conversationId]);
       await event(tx,task.id,'TASK_CREATED',{objective,conversationId,userId}); return {task,message};
-    });
   }
   async task(id:string,userId?:string):Promise<TaskRecord & {userId:string}> {
     const found=(await this.db.query(`SELECT * FROM tasks WHERE id=$1${userId?' AND user_id=$2 AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=tasks.conversation_id AND c.deleted_at IS NULL)':''}`,userId?[id,userId]:[id]))[0];
@@ -277,13 +281,17 @@ export class Store {
   async saveWorkspace(w:Workspace) { await this.db.query('INSERT INTO workspaces(id,name,source_path,file_count,created_at,owner_user_id) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT(id) DO UPDATE SET file_count=excluded.file_count',[w.id,w.name,w.sourcePath,w.fileCount,w.createdAt,w.ownerUserId??null]); }
   async recover() {
     await this.db.transaction(async tx=>{
-      await tx.query('UPDATE tasks SET execution_used_ms=execution_used_ms+execution_reserved_ms,execution_reserved_ms=0,execution_lease_id=NULL WHERE execution_lease_id IS NOT NULL');
+      await tx.query(`UPDATE tasks SET execution_used_ms=execution_used_ms+execution_reserved_ms,
+        approval_wait_ms=approval_wait_ms+CASE WHEN execution_wait_kind='approval' THEN greatest(0,ceil(extract(epoch FROM now()-execution_wait_started_at)*1000))::bigint ELSE 0 END,
+        resource_wait_ms=resource_wait_ms+CASE WHEN execution_wait_kind='resource' THEN greatest(0,ceil(extract(epoch FROM now()-execution_wait_started_at)*1000))::bigint ELSE 0 END,
+        execution_reserved_ms=0,execution_lease_id=NULL,execution_wait_kind=NULL,execution_wait_started_at=NULL WHERE execution_lease_id IS NOT NULL`);
       const interrupted=await tx.query("UPDATE tasks SET status='paused',error='Host restarted. Inspect recorded activity before resuming.',updated_at=now() WHERE status NOT IN ('completed','failed','cancelled','paused','waiting_for_user') RETURNING id");
       await tx.query("UPDATE approvals SET status='denied' WHERE status='pending'");
       await tx.query("UPDATE task_steps SET status='pending' WHERE status='running'");
       await tx.query("UPDATE agent_runs SET status='interrupted',finished_at=now() WHERE status='running'");
       await tx.query("UPDATE model_calls SET status='interrupted',cost_state=CASE WHEN cost_state='settled' THEN cost_state ELSE 'uncertain' END,finished_at=now() WHERE status='running'");
       await tx.query("UPDATE tool_calls SET status='uncertain' WHERE status='running'");
+      await tx.query("UPDATE model_evaluations SET status='interrupted',finished_at=now() WHERE status='running'");
       for(const task of interrupted) await event(tx,task.id as string,'RECOVERY_REQUIRED',{reason:'Host restarted; side effects are never automatically replayed.'});
     });
   }

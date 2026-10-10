@@ -1,3 +1,5 @@
+// Frozen pre-migration compatibility snapshot. Do not add new DDL here: append
+// an ordered migration in migrations.ts. Version 4 checksums this exact SQL.
 export const schema = `
 CREATE TABLE IF NOT EXISTS schema_migrations (version integer PRIMARY KEY, applied_at timestamptz NOT NULL DEFAULT now());
 CREATE TABLE IF NOT EXISTS conversations (id text PRIMARY KEY, title text NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now());

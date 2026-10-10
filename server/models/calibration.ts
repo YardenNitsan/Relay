@@ -26,7 +26,7 @@ export async function startCalibration(store:Store,engine:{enqueue:(id:string)=>
 export async function calibrationHistory(store:Store) {
   return (await store.db.query(`SELECT c.task_id,c.model_id,c.context_tokens,c.protocol,c.identity,t.status,t.error,t.conversation_id,t.created_at,t.result,
     (SELECT usage FROM model_calls m WHERE m.task_id=t.id AND m.status='completed' ORDER BY m.started_at DESC LIMIT 1) AS measurement
-    FROM model_calibrations c JOIN tasks t ON c.task_id=t.id WHERE t.user_id='owner' ORDER BY t.created_at DESC LIMIT 40`)).map(record=>{
+    FROM model_calibrations c JOIN tasks t ON c.task_id=t.id WHERE t.user_id='owner' AND c.protocol<>'relay-capability-eval-v2' ORDER BY t.created_at DESC LIMIT 40`)).map(record=>{
       const {result,...metadata}=record;
       return {...row<{taskId:string;modelId:string;contextTokens:number;protocol:string;identity:Record<string,unknown>;status:string;error:string|null;conversationId:string;createdAt:string;measurement:Record<string,number>|null}>(metadata),...(record.protocol===taskFitProtocol&&record.status==='completed'?{taskFit:evaluateTaskFit(String(result??'')),invalidProbeFormat:evaluateTaskFit(String(result??''))===null}:{})};
     });

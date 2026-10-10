@@ -1,3 +1,5 @@
+import { SANDBOX_PROFILE_PROBE } from './development-profiles';
+
 /** Fixed preflight runs after dropping UID/GID and before the requested executable. */
 export const SANDBOX_CHILD_BOOTSTRAP=String.raw`
 'use strict';const fs=require('node:fs');const {spawn}=require('node:child_process');
@@ -8,6 +10,20 @@ for(const name of ['CapPrm','CapEff','CapInh','CapAmb']){const value=new RegExp(
 if(!/^NoNewPrivs:\s+1$/m.test(status)||!/^Seccomp:\s+2$/m.test(status))fail();
 let input='';process.stdin.setEncoding('utf8');process.stdin.on('data',data=>{input+=data;if(input.length>300000)fail();});process.stdin.on('end',()=>{let argv;try{argv=JSON.parse(input);if(!Array.isArray(argv)||!argv.length||argv.some(arg=>typeof arg!=='string'||arg.includes('\0')))fail();}catch{fail();}
 const child=spawn(argv[0],argv.slice(1),{shell:false,cwd:'/workspace',env:process.env,stdio:['ignore','inherit','inherit']});child.on('error',()=>{process.stderr.write('Requested executable unavailable');process.exit(127);});child.on('exit',(code,signal)=>process.exit(code??(signal?137:1)));});
+`;
+export const SANDBOX_PROFILE_EXECUTION=String.raw`
+async function profiledExecute(config){
+  const started=Date.now();const profile=config.profile??'default';
+  check(['default','node','python','dotnet'].includes(profile),'Unknown development profile');
+  // This is a separate trusted probe process. Requested-command stdout never
+  // supplies toolchain provenance, and probe descendants are quiesced first.
+  const probe=await execute({...config,argv:['/usr/local/bin/node','-e',profileProbe,profile],timeoutMs:Math.min(config.timeoutMs,10000)});
+  check(probe.exitCode===0&&!probe.truncated&&probe.stdout.length<=256,'Development profile preflight failed');
+  const toolchain=JSON.parse(probe.stdout);check(toolchain.profile===profile&&typeof toolchain.version==='string','Invalid profile receipt');
+  const remaining=config.timeoutMs-(Date.now()-started);check(remaining>0,'Toolchain preflight exhausted command deadline');
+  const result=await execute({...config,timeoutMs:remaining});
+  return {...result,toolchain,durationMs:Date.now()-started};
+}
 `;
 /** Fixed trusted code mounted read-only into a Linux container; never interpolates model source. */
 export const SANDBOX_SUPERVISOR=String.raw`
@@ -43,10 +59,11 @@ async function seed(){
   pending+=decoder.decode();check(complete&&!pending&&config,'Incomplete input');return config;
 }
 const childBootstrap=${JSON.stringify(SANDBOX_CHILD_BOOTSTRAP)};
+const profileProbe=${JSON.stringify(SANDBOX_PROFILE_PROBE)};
 function workers(){const result=[];for(const entry of fs.readdirSync('/proc')){if(!/^\d+$/.test(entry))continue;try{const text=fs.readFileSync('/proc/'+entry+'/status','utf8');const uid=statusField(text,'Uid')?.split(/\s+/).map(Number);const state=statusField(text,'State');if(uid?.some(value=>value===1000)&&!state?.startsWith('Z'))result.push(Number(entry));}catch(error){if(!['ENOENT','ESRCH'].includes(error.code))throw error;}}return result;}
 async function quiesce(){let empty=0;for(let attempt=0;attempt<100;attempt++){const pids=workers();if(!pids.length){if(++empty===3)return;}else{empty=0;for(const pid of pids)try{process.kill(pid,'SIGKILL');}catch(error){if(error.code!=='ESRCH')throw error;}}await delay(10);}throw new Error('Worker termination could not be verified');}
 async function execute(config){
-  const start=Date.now();let stdout='',stderr='',truncated=false;const env={PATH:'/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',HOME:'/tmp',TMPDIR:'/tmp',LANG:'C.UTF-8'};
+  const start=Date.now();let stdout='',stderr='',truncated=false;const env={PATH:'/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',HOME:'/tmp',TMPDIR:'/tmp',LANG:'C.UTF-8',DOTNET_CLI_TELEMETRY_OPTOUT:'1',DOTNET_SKIP_FIRST_TIME_EXPERIENCE:'1',DOTNET_CLI_HOME:'/tmp',DOTNET_NOLOGO:'1'};
   const child=spawn('/usr/local/bin/node',['-e',childBootstrap],{uid:1000,gid:1000,cwd:'/workspace',env,shell:false,stdio:['pipe','pipe','pipe']});
   const append=(kind,data)=>{const value=data.toString('utf8');const previous=kind==='stdout'?stdout:stderr;if(previous.length+value.length>OUTPUT)truncated=true;if(kind==='stdout')stdout=(previous+value).slice(0,OUTPUT);else stderr=(previous+value).slice(0,OUTPUT);};
   child.stdout.on('data',data=>append('stdout',data));child.stderr.on('data',data=>append('stderr',data));child.stdin.on('error',()=>undefined);
@@ -55,6 +72,7 @@ async function execute(config){
     await quiesce();check(!timedOut,'Command timed out');check(exitCode!==125,'Worker security preflight failed');return {type:'result',stdout,stderr,exitCode,truncated,durationMs:Date.now()-start};
   }finally{clearTimeout(timer);await quiesce();}
 }
+${SANDBOX_PROFILE_EXECUTION}
 async function emit(record){const value=JSON.stringify(record)+'\n';if(!process.stdout.write(value))await new Promise(resolve=>process.stdout.once('drain',resolve));}
 async function exportFiles(filter){
   const directories=new Set(filter.directories);const blocked=new RegExp(filter.files,'i');let entries=0,count=0,bytes=0;
@@ -62,5 +80,5 @@ async function exportFiles(filter){
   async function walk(relative){for(const entry of fs.readdirSync(path.join('/workspace',relative),{withFileTypes:true})){check(++entries<=10000,'Output entry limit');if(ignored(entry.name))continue;const next=relative?relative+'/'+entry.name:entry.name;cleanPath(next);const absolute=path.join('/workspace',next);const info=fs.lstatSync(absolute);check(!info.isSymbolicLink(),'Output links forbidden');if(info.isDirectory()){await walk(next);continue;}const data=readRegular(absolute);bytes+=data.length;count++;check(count<=COUNT&&bytes<=TOTAL,'Output workspace limit');await emit({type:'file',path:next,data:data.toString('base64'),sha256:crypto.createHash('sha256').update(data).digest('hex')});}}
   await walk('');await emit({type:'complete',files:count,bytes});
 }
-(async()=>{process.umask(0);rootPreflight();const config=await seed();const result=await execute(config);await emit(result);await exportFiles(config.filter);})().catch(async()=>{try{await quiesce();await emit({type:'error',message:'Isolated supervisor rejected execution or output'});}finally{process.exitCode=1;}});
+(async()=>{process.umask(0);rootPreflight();const config=await seed();const result=await profiledExecute(config);await emit(result);await exportFiles(config.filter);})().catch(async()=>{try{await quiesce();await emit({type:'error',message:'Isolated supervisor rejected execution or output'});}finally{process.exitCode=1;}});
 `;

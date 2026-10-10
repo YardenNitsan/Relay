@@ -1,4 +1,10 @@
 import { randomUUID } from 'node:crypto';
+import {GoogleWorkspace} from '../integrations/google-workspace.js';
+import {assertWorkspaceConversation} from '../integrations/workspace-policy.js';
+import {prepareWorkspaceRead} from './google-workspace.js';
+import {isWorkspaceTool} from './google-workspace-schema.js';
+import {CodeEvaluationSandbox} from './code-evaluation.js';
+import type {CodeSandboxIdentity} from '../models/code-evaluation.js';
 import { mkdir,rm } from 'node:fs/promises';
 import { createPatch } from 'diff';
 import type { FileChange, ToolContext, ToolDecision, ToolDefinition, ToolRequest, ToolResult, Workspace } from '../../shared/types';
@@ -14,11 +20,12 @@ import { captureGitBaseline } from './git-baseline';
 import { StorageBudget } from './storage-budget';
 import { McpRegistry } from '../mcp';
 import { HostFileBroker } from './host-files';
-import { row, workspaceScope, type Store } from '../db/store';
+import { row, type Store } from '../db/store';
 import { authorizeOptions, type User } from '../auth/policy';
 import { AppError } from '../core/errors';
 import type { TaskOptions } from '../../shared/types';
 import { PersonalTasks } from './personal';
+import type { DevelopmentProfileId } from './development-profiles';
 
 export class ToolBroker {
   private readonly store: ToolStore;
@@ -29,8 +36,12 @@ export class ToolBroker {
   private readonly personal: PersonalTasks | undefined;
   private queue: Promise<unknown> = Promise.resolve();
   private generation = 0;
-  constructor(dataDir: string, private readonly isStopped: () => boolean, readonly mcp = new McpRegistry(), private readonly durableStore?: Store) { this.store = new ToolStore(dataDir); this.sandbox = new DockerSandbox(this.store); this.git = new ManagedGit(this.store); this.hostFiles = new HostFileBroker(dataDir); this.personal = durableStore ? new PersonalTasks(durableStore) : undefined; }
-  definitions(): ToolDefinition[] { return definitions().filter(tool => tool.name !== 'personal_tasks' || this.personal); }
+  constructor(dataDir: string, private readonly isStopped: () => boolean, readonly mcp = new McpRegistry(), private readonly durableStore?: Store, private readonly googleWorkspace?:GoogleWorkspace) { this.store = new ToolStore(dataDir); this.sandbox = new DockerSandbox(this.store); this.git = new ManagedGit(this.store); this.hostFiles = new HostFileBroker(dataDir); this.personal = durableStore ? new PersonalTasks(durableStore) : undefined; }
+  get dataDirectory():string {return this.store.root;}
+  codeEvaluationStatus(){return new CodeEvaluationSandbox(this.store,this.sandbox).status();}
+  codeEvaluationPreflight(signal:AbortSignal,authorize:()=>Promise<void>){const guard=this.guard(signal);return this.serial(async()=>{guard();await authorize();guard();return new CodeEvaluationSandbox(this.store,this.sandbox).preflight(signal,guard);});}
+  codeEvaluationVerify(caseId:string,source:string,identity:CodeSandboxIdentity,signal:AbortSignal,authorize:()=>Promise<void>){const guard=this.guard(signal);return this.serial(async()=>{guard();await authorize();guard();return new CodeEvaluationSandbox(this.store,this.sandbox).verify(caseId,source,identity,signal,guard);});}
+  definitions(): ToolDefinition[] { return definitions().filter(tool => (tool.name !== 'personal_tasks' || this.personal)&&(!isWorkspaceTool(tool.name)||!!this.googleWorkspace&&!!this.durableStore)); }
   async verifyHostFile(path:string,expectedHash:string|null,signal:AbortSignal):Promise<boolean> {
     const guard=this.guard(signal);guard();
     try {
@@ -101,40 +112,58 @@ export class ToolBroker {
   private async authorizeExecution(context:ToolContext) {
     if(!this.durableStore)return;
     if(!context.userId)throw new AppError('WORKSPACE_DENIED','Missing account capability',403);
-    const task=(await this.durableStore.db.query('SELECT * FROM tasks WHERE id=$1 AND user_id=$2',[context.taskId,context.userId]))[0];
-    const account=(await this.durableStore.db.query('SELECT * FROM users WHERE id=$1',[context.userId]))[0];
-    if(!task||!account)throw new AppError('WORKSPACE_DENIED','Task ownership could not be verified',403);
+    // Read policy, ownership and stop generation in one database snapshot. This
+    // check runs after the broker queue, not only when the engine proposes work.
+    const state=(await this.durableStore.db.query(`SELECT to_jsonb(t) AS task,to_jsonb(u) AS account,c.value AS control,to_jsonb(w) AS workspace
+      FROM tasks t JOIN users u ON u.id=t.user_id JOIN settings c ON c.key='control'
+      LEFT JOIN workspaces w ON w.id=t.options->>'workspaceId'
+      WHERE t.id=$1 AND t.user_id=$2`,[context.taskId,context.userId]))[0];
+    if(!state)throw new AppError('WORKSPACE_DENIED','Task ownership could not be verified',403);
+    const task=state.task as Record<string,unknown>,account=state.account as Record<string,unknown>;
     const user=row<User>(account),options=task.options as TaskOptions;
     if(user.sessionVersion!==context.sessionVersion||options.workspaceId!==context.workspaceId||options.access!==context.access)throw new AppError('REVOKED','Task scope was revoked',403);
-    const control=await this.durableStore.control();
+    const selection=(values:string[]|undefined)=>JSON.stringify([...new Set(values??[])].sort());
+    const hostAccess=options.access==='unrestricted'&&options.hostAccessConfirmed===true&&user.role==='owner';
+    if((context.hostAccess===true)!==hostAccess||
+      (context.network?.mode??'deny')!==(options.network?.mode??'deny')||
+      selection(context.network?.allowedOrigins)!==selection(options.network?.allowedOrigins)||
+      selection(context.mcpServerIds)!==selection(options.mcpServerIds))throw new AppError('REVOKED','Task capability scope was changed or revoked',403);
+    if((context.googleWorkspace?.mail===true)!==(options.googleWorkspace?.mail===true)||(context.googleWorkspace?.calendar===true)!==(options.googleWorkspace?.calendar===true))throw new AppError('REVOKED','Google Workspace task scope changed',403);
+    await assertWorkspaceConversation(this.durableStore.db,String(task.conversation_id),options);
+    const control=state.control as {stopped:boolean;generation:number};
     if(control.stopped||control.generation!==Number(task.stop_generation)||!['executing','verifying'].includes(String(task.status)))throw new AppError('STOPPED','This task is not authorized to execute',409);
-    authorizeOptions({user,remote:user.role!=='owner',sessionId:'tool-execution'},options,await workspaceScope(this.durableStore.db,options.workspaceId));
+    authorizeOptions({user,remote:user.role!=='owner',sessionId:'tool-execution'},options,state.workspace?row<Workspace>(state.workspace as Record<string,unknown>):undefined);
     if(context.workspaceId){const {record}=await this.workspace(context.workspaceId);if(record.ownerUserId&&record.ownerUserId!==user.id&&user.role!=='owner')throw new AppError('WORKSPACE_DENIED','Private workspace access denied',403);}
   }
   async execute(context: ToolContext, request: ToolRequest): Promise<ToolResult> {
     const guard = this.guard(context.signal);
+    if(isWorkspaceTool(request.name)){
+      if(!this.googleWorkspace||!this.durableStore)throw new AppError('WORKSPACE_SETUP','Google Workspace tools are unavailable.',403);
+      const read=prepareWorkspaceRead(this.durableStore,this.googleWorkspace,context,request,async()=>{guard();await this.authorizeExecution(context);guard();const decision=this.decide(context,request);if(decision.decision!=='allow')throw new AppError('WORKSPACE_CAPABILITY',decision.reason,403);});
+      return this.serial(read);
+    }
     if (request.name === 'personal_tasks') return this.serial(async () => {
-      guard(); await this.authorizeExecution(context); const decision = this.decide(context, request);
+      guard(); await this.authorizeExecution(context); guard(); const decision = this.decide(context, request);
       if (decision.decision !== 'allow') throw new Error(`${decision.decision}: ${decision.reason}`);
       if (!this.personal) throw new Error('Personal task storage is unavailable');
       return this.personal.execute(context, request.arguments, guard);
     });
     if(request.name.startsWith('host_'))return this.serial(async()=>{
-      guard();const decision=this.decide(context,request);if(decision.decision!=='allow')throw new Error(`${decision.decision}: ${decision.reason}`);
+      guard();await this.authorizeExecution(context);guard();const decision=this.decide(context,request);if(decision.decision!=='allow')throw new Error(`${decision.decision}: ${decision.reason}`);
       const {name,args}=parseRequest(request);
       return this.hostFiles.execute(name,args,context.signal,guard,context.taskId);
     });
     if(request.name==='mcp_call') {
-      guard();const decision=this.decide(context,request);if(decision.decision!=='allow')throw new Error(`${decision.decision}: ${decision.reason}`);
+      guard();await this.authorizeExecution(context);guard();const decision=this.decide(context,request);if(decision.decision!=='allow')throw new Error(`${decision.decision}: ${decision.reason}`);
       const result=await this.mcp.execute(context,request);guard();return result;
     }
     if (request.name==='http_get') {
-      guard();const decision=this.decide(context,request);
+      guard();await this.authorizeExecution(context);guard();const decision=this.decide(context,request);
       if(decision.decision!=='allow')throw new Error(`${decision.decision}: ${decision.reason}`);
       const {args}=parseRequest(request);const result=await this.http.get(args.url as string,context.network!,context.signal);guard();return result;
     }
     return this.serial(async () => {
-      guard(); await this.authorizeExecution(context); const decision = this.decide(context, request);
+      guard(); await this.authorizeExecution(context); guard(); const decision = this.decide(context, request);
       if (decision.decision !== 'allow') throw new Error(`${decision.decision}: ${decision.reason}`);
       const { name, args } = parseRequest(request);
       const { root } = await this.workspace(context.workspaceId!); guard();
@@ -156,7 +185,7 @@ export class ToolBroker {
         const checkpoint = await this.commit(context, root, [{ path, before, after }], guard);
         return { content: JSON.stringify({ path, sha256: hashOrNull(after), checkpointId: checkpoint.id }), evidence: [{ kind: 'file_content', summary: name === 'file_delete' ? `Verified deletion of ${path}` : `Verified written content of ${path}`, passed: true, details: { path, sha256: hashOrNull(after), checkpointId: checkpoint.id } }] };
       }
-      return this.terminal(context, root, args.argv as string[], (args.timeoutSeconds as number | undefined) ?? 30, guard);
+      return this.terminal(context, root, args.argv as string[], (args.timeoutSeconds as number | undefined) ?? 30, guard, args.profile as DevelopmentProfileId|undefined);
     });
   }
   private async search(root: string, query: string, path: string, guard: Guard): Promise<ToolResult> {
@@ -191,13 +220,13 @@ export class ToolBroker {
       return checkpoint;
     } catch(error) { throw new UncertainToolEffect(error); }
   }
-  private async terminal(context: ToolContext, root: string, argv: string[], timeoutSeconds: number, guard: Guard): Promise<ToolResult> {
-    const status = await this.sandbox.status(); if (!status.available) throw new Error(status.reason);
+  private async terminal(context: ToolContext, root: string, argv: string[], timeoutSeconds: number, guard: Guard, profile?:DevelopmentProfileId): Promise<ToolResult> {
+    const status = await this.sandbox.status(profile); if (!status.available) throw new Error(status.reason);
     const before = await snapshot(root, true); guard();
     await new StorageBudget(this.store.root).assertCapacity([...before.values()].reduce((sum,value)=>sum+2*Buffer.byteLength(value),2*1024*1024));guard();
     const stage = await inspectPath(this.store.root, `runs/${randomUUID()}`);
     await mkdir(stage, { recursive: true, mode: 0o700 }); await copySnapshot(stage, before, guard);
-    const { files: after, ...command } = await this.sandbox.run(stage, argv, timeoutSeconds, context.signal, guard); guard();
+    const { files: after, ...command } = await this.sandbox.run(stage, argv, timeoutSeconds, context.signal, guard, profile); guard();
     const entries: ChangeEntry[] = [];
     for (const path of new Set([...before.keys(), ...after.keys()])) {
       const oldValue = before.get(path) ?? null; const newValue = after.get(path) ?? null;
@@ -205,7 +234,7 @@ export class ToolBroker {
     }
     const checkpoint = entries.length ? await this.commit(context, root, entries, guard) : null;
     await rm(await inspectPath(this.store.root,`runs/${stage.split(/[\\/]/).at(-1)}`),{recursive:true,force:true,maxRetries:3,retryDelay:25});
-    return { content: JSON.stringify({ ...command, checkpointId: checkpoint?.id ?? null, filesChanged: entries.length }), evidence: [{ kind: 'command_exit', summary: `Isolated command exited ${command.exitCode}`, passed: command.exitCode === 0, details: { argv, exitCode: command.exitCode, durationMs: command.durationMs, truncated: command.truncated } }, ...(checkpoint ? [{ kind: 'file_content', summary: `Verified ${entries.length} changed files`, passed: true, details: { checkpointId: checkpoint.id } }] : [])] };
+    return { content: JSON.stringify({ ...command, checkpointId: checkpoint?.id ?? null, filesChanged: entries.length }), evidence: [{ kind: 'command_exit', summary: `Isolated command exited ${command.exitCode}`, passed: command.exitCode === 0, details: { argv, exitCode: command.exitCode, durationMs: command.durationMs, truncated: command.truncated, imageId:command.imageId, toolchain:command.toolchain } }, ...(checkpoint ? [{ kind: 'file_content', summary: `Verified ${entries.length} changed files`, passed: true, details: { checkpointId: checkpoint.id } }] : [])] };
   }
   async changes(taskId: string): Promise<FileChange[]> {
     return this.serial(async () => {

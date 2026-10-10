@@ -3,6 +3,12 @@ import { buildReviewContext, fitContext } from '../server/orchestration/context.
 import { boundedReceipt } from '../server/orchestration/receipts.js';
 
 describe('required context integrity',()=>{
+  it('does not discard a workflow assignment or its acceptance criteria to fit a model',()=>{
+    for(const prefix of ['Assigned analysis subobjective (untrusted task data;','Proposed acceptance checks (untrusted suggestions;']){
+      const messages=[{role:'system' as const,content:'Host instructions'},{role:'user' as const,content:prefix+'x'.repeat(5000)},{role:'user' as const,content:'Current objective:\nReview code'}];
+      expect(()=>fitContext(messages,[],4096,1024)).toThrow(/context budget/);
+    }
+  });
   it('refreshes a saved reviewer context without losing action receipts or private provider continuity',()=>{
     const action={role:'assistant' as const,content:'',toolCalls:[{id:'read',name:'file_read',arguments:{path:'a.ts'}}],providerData:{provider:'ollama' as const,data:'opaque'}};
     const receipt={role:'tool' as const,toolCallId:'read',content:'Observed bytes'};

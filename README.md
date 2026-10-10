@@ -10,7 +10,7 @@ Run it with local models alone, or explicitly connect cloud providers. Your host
 
 [Get started](#get-started) · [User guide](docs/user-guide.md) · [Architecture](docs/architecture.md) · [Security](docs/security-model.md) · [Validation](docs/validation.md)
 
-[0.1.1 release report: changes, verification and remaining work](docs/release-0.1.1.md)
+[0.1.2 release report: changes, verification and remaining work](docs/release-0.1.2.md)
 
 > **Project status:** Relay is a working, actively developed application. The repository includes persistent tasks, local inference, controlled tools and a responsive interface. Some host integrations and deployment paths still need native validation; arbitrary native command execution and signed installers are not available. See [Current boundaries](#current-boundaries) before choosing a deployment.
 
@@ -22,7 +22,7 @@ Run it with local models alone, or explicitly connect cloud providers. Your host
 | Bring your files | Attach or drag text/code, PDF and modern Word files into a private workspace. Documents import a text copy; originals remain unchanged. |
 | Work on a project | Import a managed copy, authorize file tools, inspect changes and restore recorded checkpoints when safe. |
 | Coordinate agents | Use bounded worker, planner, specialist and reviewer graphs. Agents and their assigned models are separate concepts. |
-| Choose available intelligence | Discover Ollama and LM Studio models; optionally connect OpenAI, Anthropic, Gemini, Grok (xAI) or DeepSeek APIs. |
+| Choose available intelligence | Discover local and authorized cloud models; choose provider, model and supported reasoning, or let Auto weigh task needs and known cost. [Selection and limits](docs/model-selection.md). |
 | Inspect token usage | Open the Usage side panel for your recorded tokens and last-observed provider rate limits, where reported. |
 | Respect the computer | Inspect real hardware, assess model fit, reserve memory headroom and collect local performance samples. |
 | Inspect execution | Follow factual activity, tool requests, approvals, model assignments and verification receipts. |
@@ -32,7 +32,18 @@ Run it with local models alone, or explicitly connect cloud providers. Your host
 
 No cloud account is required. Local inference needs a running supported runtime and an installed model; Relay does not ship model weights.
 
-## 0.1.1 · Your host, any browser
+## 0.1.2 · Controlled execution, clearer evidence
+
+- **Connected model selection:** open the model drawer, choose your connected provider and model, then choose supported reasoning effort. Auto considers authorized cloud models only when task privacy allows them; known prices and budgets constrain selection. Unknown pricing and missing quality evidence stay explicit.
+- **Reliable work:** approval waits have separate accounting and release execution slots. Durable authorization is checked again at tool dispatch. Ordered migrations preserve existing data.
+- **Recovery and projects:** encrypted offline backups include referenced artifacts; retention requires an owner preview. Imported projects support exact reviewed existing-file publication, conflict refusal and separately approved rollback.
+- **Useful context and automation:** approved private memory, bounded task-specific agent graphs and local read-only schedules have dedicated controls. Separate Google Workspace consent enables explicitly selected local-only Gmail/Calendar reads.
+- **Evidence you can inspect:** task timing, bounded diagnostics and versioned model evaluations report observed results. Executable coding evaluations require a verified container; unavailable environments refuse before model spending.
+- **Everyday usability:** conversation-first controls, an Advanced disclosure, clearer execution evidence and responsive drawers are tested from 320px phones through wide desktop layouts.
+
+See the [engineering report and workstream status](docs/evolution-report.md) for remaining work. Version 0.1.2 is an incremental release, not completion of every planned integration or native platform.
+
+## Your host, any browser
 
 Share Relay through a stable HTTPS hostname. People authenticate at Cloudflare Access, then use their own Relay account from a desktop, tablet or phone. **Local inference and in-app agent tools run on your host PC.** External coding clients use a separate model API and execute their own tools on their own computers.
 
@@ -43,7 +54,7 @@ Share Relay through a stable HTTPS hostname. People authenticate at Cloudflare A
 - **Stable address:** use a protected `workers.dev` gateway with a fixed private Tunnel binding, or a named tunnel with your own domain. Keep the Worker name/account subdomain or domain configuration stable across updates. The host must remain awake and connected.
 - **Local independence:** an Internet or tunnel outage does not disable the local owner's browser service.
 - **LAN accounts:** a separate optional HTTPS listener accepts short-lived, owner-issued account invitations. Being on the Wi-Fi grants no host authority. [LAN setup](docs/lan-access.md).
-- **Specialists:** choose Email, Calendar, Research, Coding, File Management, Personal Assistant, Browser, Finance, Learning or Computer. Each profile constrains available tools; it never increases permissions. Personal task lists are persisted per user. Gmail, Google Calendar, browser automation and desktop automation are not yet connected.
+- **Specialists:** choose Email, Calendar, Research, Coding, File Management, Personal Assistant, Browser, Finance, Learning or Computer. Each profile constrains available tools; it never increases permissions. Personal task lists are persisted per user. [Google Workspace](docs/google-workspace.md) supports explicit read-only Gmail/Calendar access after setup and account consent, including separately selected local-only agent tools. Sending, calendar changes, browser automation and desktop automation remain unavailable.
 - **External clients:** expiring account tokens authorize local-model inference without saving external conversation content. Client tool execution stays on the client computer. [API, limits and compatibility](docs/external-clients.md).
 
 **No domain purchase needed for the current free option:** [Cloudflare free setup](docs/cloudflare-free.md) uses a `workers.dev` address, Access email PINs or configured Google login, and Workers VPC. VPC is currently free **in beta**, not a promise of permanent free pricing. The browser Worker does not expose the external inference API. Public deployment and real remote-device acceptance are separate setup steps.

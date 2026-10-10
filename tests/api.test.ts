@@ -25,6 +25,52 @@ beforeEach(async()=>{
 });
 afterEach(async()=>{await engine.shutdown();await app.close();await store.close();await rm(dir,{recursive:true,force:true});});
 describe('local HTTP boundary',()=>{
+  it('exports metadata-only diagnostics and authenticates task timing reads',async()=>{
+    const options:TaskOptions={depth:'fast',modelId:null,access:'read_only',workspaceId:null,contextTokens:8192,budget:{maxCalls:4,maxSeconds:60,maxIterations:2,maxCostUsd:null,localOnly:true}};
+    const {task}=await store.createTask((await store.createConversation()).id,'private diagnostic objective sentinel',options);
+    const headers={host,cookie,'x-relay-csrf':csrf};
+    expect((await app.inject({url:`/api/tasks/${task.id}/timing`,headers:{host}})).statusCode).toBe(401);
+    const timing=await app.inject({url:`/api/tasks/${task.id}/timing`,headers});
+    expect(timing.statusCode).toBe(200);expect(timing.json().id).toBe(task.id);
+    expect(timing.body).not.toContain('private diagnostic objective sentinel');
+    expect((await app.inject({method:'POST',url:'/api/admin/diagnostics',headers:{host,cookie},payload:{days:7}})).statusCode).toBe(403);
+    const bundle=await app.inject({method:'POST',url:'/api/admin/diagnostics',headers,payload:{days:7,maxTasks:20}});
+    expect(bundle.statusCode).toBe(200);expect(bundle.json()).toMatchObject({format:1,scope:'own_account',counts:{exportedTasks:1}});
+    expect(bundle.body).not.toContain(task.id);expect(bundle.body).not.toContain('private diagnostic objective sentinel');
+    expect((await app.inject({method:'POST',url:'/api/admin/diagnostics',headers,payload:{days:9999}})).statusCode).toBe(400);
+  });
+  it('keeps restored execution stopped until the local owner reviews it',async()=>{
+    await store.db.query("INSERT INTO settings(key,value) VALUES ('restoration_pending','true')");
+    await engine.stopAll();
+    const headers={host,cookie,'x-relay-csrf':csrf};
+    expect((await app.inject({method:'POST',url:'/api/resume',headers})).statusCode).toBe(409);
+    expect((await app.inject({url:'/api/admin/restoration',headers})).json().pending).toBe(true);
+    expect((await app.inject({method:'POST',url:'/api/admin/restoration/review',headers,payload:{confirm:true}})).statusCode).toBe(200);
+    expect((await store.control()).stopped).toBe(true);
+    expect((await app.inject({method:'POST',url:'/api/resume',headers})).statusCode).toBe(200);
+  });
+  it('requires an owner preview and exact explicit confirmation for retention',async()=>{
+    const headers={host,cookie,'x-relay-csrf':csrf};
+    const preview=await app.inject({method:'POST',url:'/api/admin/retention/preview',headers,payload:{expiredCredentials:true,olderThanDays:90}});
+    expect(preview.statusCode).toBe(200);expect(preview.json().counts.sessions).toBe(0);
+    const token=preview.json().token;
+    expect((await app.inject({method:'POST',url:'/api/admin/retention/apply',headers,payload:{token}})).statusCode).toBe(400);
+    expect((await app.inject({method:'POST',url:'/api/admin/retention/apply',headers,payload:{token,confirm:true}})).statusCode).toBe(200);
+    expect((await app.inject({method:'POST',url:'/api/admin/retention/apply',headers,payload:{token,confirm:true}})).statusCode).toBe(409);
+  });
+  it('persists supported reasoning preferences and rejects arbitrary controls',async()=>{
+    vi.spyOn(engine,'enqueue').mockImplementation(()=>{});
+    const options={reasoning:'low',depth:'fast',modelId:null,access:'read_only',workspaceId:null,contextTokens:8192,cloudPolicy:'local_only',budget:{maxCalls:4,maxSeconds:60,maxIterations:2,maxCostUsd:null,localOnly:true}};
+    const request={method:'POST' as const,url:'/api/conversations/start',headers:{host,cookie,'x-relay-csrf':csrf},payload:{requestId:'95b6b53d-4397-4c4a-9a25-024bfca38f24',content:'Reasoning option fixture',options}};
+    expect((await app.inject({...request,payload:{...request.payload,options:{...options,reasoning:'unlimited'}}})).statusCode).toBe(400);
+    const response=await app.inject(request);expect(response.statusCode).toBe(200);
+    expect((await store.task(response.json().task.id)).options.reasoning).toBe('low');
+  });
+  it('reports host execution limits separately from account in-flight quotas',async()=>{
+    const response=await app.inject({url:'/api/status',headers:{host,cookie}});
+    expect(response.statusCode).toBe(200);
+    expect(response.json().scheduling).toEqual({maxExecutingTasks:3,maxLocalInference:1,approvalWaitUsesSlot:false,accountLimitIncludesWaiting:true});
+  });
   it('creates an explicitly personal local-owner workspace without converting host imports into private folders',async()=>{
     const request={method:'POST' as const,url:'/api/workspaces',headers:{host,cookie,'x-relay-csrf':csrf}};
     const personal=await app.inject({...request,payload:{name:'My uploaded files',personal:true}});

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { Providers } from '../server/providers/index.js';
 import { SecretManager } from '../server/providers/secrets.js';
 import { cloudBody } from '../server/providers/cloud.js';
@@ -57,7 +57,9 @@ describe('Grok and DeepSeek provider boundaries', () => {
     expect(mixed.messages).toContainEqual(native);
     expect(JSON.stringify(mixed)).not.toContain('other-provider-private');
   });
-  it.each(['xai', 'deepseek'] as const)('discovers only authenticated %s models without invented prices', async provider => {
+  it.each(['xai', 'deepseek'] as const)('enriches only authenticated %s models with sourced published price estimates', async provider => {
+    const clock=vi.spyOn(Date,'now').mockReturnValue(Date.parse('2026-10-10T12:00:00.000Z'));
+    try {
     const requested: string[] = [];
     const gateway = new Providers({ secrets: credentials(), fetch: async (url, init) => {
       requested.push(String(url)); expect(new Headers(init?.headers).get('authorization')).toBe(`Bearer ${provider}-test-secret`);
@@ -67,8 +69,11 @@ describe('Grok and DeepSeek provider boundaries', () => {
     // Disable other providers to make this a bounded discovery-only inspection.
     for (const other of ['ollama', 'lmstudio', 'openai', 'anthropic', 'gemini', 'xai', 'deepseek'] as const) if (other !== provider) gateway.setEnabled(other, false);
     const models = await gateway.listModels(); expect(models).toHaveLength(1);
-    expect(models[0]).toMatchObject({ provider, local: false, capabilities: { tools: true }, inputPricePerMillion: null, outputPricePerMillion: null });
+    expect(models[0]).toMatchObject({ provider, local: false, capabilities: { tools: true }, inputPricePerMillion: provider==='xai'?2:0.3, outputPricePerMillion: provider==='xai'?6:1.2,
+      details:{pricing:{source:'published',status:'current',estimate:true,currency:'USD',unit:'per-million-tokens',fields:{input:true,output:true},url:provider==='xai'?'https://docs.x.ai/developers/models':'https://api-docs.deepseek.com/quick_start/pricing/'}} });
+    expect(Number.isFinite(models[0].inputPricePerMillion)).toBe(true);expect(Number.isFinite(models[0].outputPricePerMillion)).toBe(true);
     expect(requested).toEqual([provider === 'xai' ? 'https://api.x.ai/v1/models' : 'https://api.deepseek.com/models']);
+    } finally {clock.mockRestore();}
   });
   it.each(['xai', 'deepseek'] as const)('%s is unconfigured without credentials and personal users never inherit owner environment keys', async provider => {
     const personal = new SecretManager({ userId: 'alice', env: { XAI_API_KEY: 'owner', DEEPSEEK_API_KEY: 'owner' }, keyring: null });

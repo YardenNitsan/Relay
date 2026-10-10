@@ -1,5 +1,15 @@
 # Architecture and decisions
 
+## October 10 evolution milestone
+
+`Store.init` now delegates to an ordered, checksummed transactional migration runner. The frozen cumulative SQL remains a compatibility snapshot for migration 4; future changes append migrations. See [upgrade and recovery boundaries](database-upgrades.md).
+
+Production tool dispatch rechecks durable account identity/session version, task owner/state/stop generation, stored access, workspace scope and exact network/MCP grants for managed, personal, direct-host, HTTP and MCP operations. Serialized operations check after waiting. The existing policy broker, approval binding and sandbox remain separate constraints. This is an execution-boundary check, not an atomic authorization transaction covering an external side effect; existing cancellation and uncertain-effect handling remain necessary. Standalone brokers without a Store retain their test/embedding fallback; production supplies the Store.
+
+The conversation UI now separates the welcome surface and recorded execution overview into small components. Starting points append editable draft text without creating a task or changing permissions. Advanced controls retain the existing policy state when collapsed. The execution overview excludes generation-only/model-assessment receipts from objective-check counts. No new routing, inference or integration capabilities are implied by these presentation changes.
+
+Execution timing and scheduling are now independent components: `ExecutionActivity` aggregates parallel branch state; `ExecutionBudget` durably separates active time from approval/resource waits; `TaskSlots` caps executing tasks and reacquires capacity for suspended continuations. Migration 5 adds wait counters. Account grants permit concurrent work within the three-slot host cap; local inference still uses one shared lease. See [execution accounting and recovery](execution-accounting.md) for invariants and remaining limits.
+
 ## Private workspaces, model evidence and request protection
 
 Managed workspaces now have an immutable nullable owner identity in both database and broker metadata. Personal ownership grants the account its own file-autonomy choice; shared workspace grants, unrestricted local-owner host files, provider use, tool networking and cloud egress remain independent. All manual edits use expected-content hashes and recovery checkpoints. Browser device folders remain on the client: Relay receives only an explicitly imported copy, and reviewed write-back is a separate browser-authorized operation.
@@ -94,7 +104,7 @@ A model's confidence is never a passing test. Actual tool checks have stable ide
 
 ## ADR011: Constrained adaptive planning and durable repair
 
-Deep and maximum execution can adapt the specialist graph after planning. The planner proposes only a list of permitted specialist roles, acceptance criteria and a short justification. A strict schema rejects extra fields, privileged/duplicate roles and roles outside the selected depth. The core constructs all dependencies and retains the worker and final reviewer. Invalid proposals keep the original bounded graph. The proposal decision and resulting graph are committed together and are not regenerated on resume.
+Deep and maximum execution can adapt the specialist graph after planning. A strict versioned proposal can describe bounded analysis nodes, permitted specialist roles, subobjectives, acceptance suggestions and acyclic dependencies. The host validates node/role/call limits and adds the sole implementation worker and final reviewer. Legacy role-list proposals remain supported. Invalid or over-budget proposals keep the original bounded graph. The proposal decision and resulting graph are committed together and are not regenerated on resume. See [dynamic workflows](dynamic-workflows.md) and [structured handoffs](agent-handoffs.md); no proposed node can grant a tool or permission.
 
 Ordinary Balanced conversation uses a single worker when no specialist, workspace, host-file capability, network/MCP tools or required verification is selected. The graph choice follows explicit task capabilities, not a keyword guess about the objective. Tool-enabled and specialist Balanced work retains its reviewer; Deep and Maximum retain their planning/review graphs. The stored analysis event identifies the chosen strategy while preserving the user's selected depth.
 
@@ -105,3 +115,22 @@ This follows the useful orchestrator/worker and evaluator/optimizer patterns in 
 ## ADR013: Explicit required evidence
 
 Authenticated callers may add bounded `verification.requiredReads` predicates to task options. Each binds a permitted relative path to an expected whole-file SHA-256. Actual successful broker read receipts after the latest workspace change satisfy the contract; model prose cannot. A missing predicate causes bounded factual continuation and prevents the final assistant message. Database completion independently checks these predicates. See [ADR013](adr-013-required-verification-contracts.md) for failure behavior, shared-workspace invalidation and the API-only scope of initial contract declaration.
+
+
+## Model controls and cost-aware selection (10 October evolution)
+
+`shared/model-controls.ts` defines reasoning preferences; task admission schema validates them. Discovery owns supported reasoning metadata, using exact documented IDs or provider capability fields. Provider adapters serialize native controls, never changing the configured output budget. `models/task-demand.ts` returns overlapping explainable keyword hints; `orchestration/reasoning.ts` chooses economical supported effort; router retains hard constraints and ranks known cost alongside existing capability/probe/speed evidence. This is not a measured broad-quality evaluator.
+
+Pricing enrichment decorates only discovered profiles with dated exact-ID standard-text evidence. Catalog reads and pre-dispatch Engine reservation recheck expiry. Durable Store admission remains the race-safe authority for remaining account/task funds. Pure reasoning preflight precedes cloud approval, call quota and cost reservation. Private provider continuations remain internal. Browser selection receives model metadata, never stored credentials, and does not itself grant egress.
+
+See [model selection](model-selection.md) and [pricing evidence](provider-pricing.md) for contracts and operational limitations. External inference remains a separate local-model-only surface.
+
+## Reviewed publication and private account tools
+
+`tools/publication.ts` owns immutable, hash-bound source reviews and durable uncertain-effect receipts. Only authenticated local-owner API actions can apply or roll back those exact existing-file changes. Engine reserves the managed workspace and host mutation lane; the host-file boundary rechecks the exact session during bounded writes. This does not grant models an original-project publication tool or unrestricted Git/shell access. See [publication](publication.md).
+
+Google Workspace reads use a separate broker adapter and explicit per-task account scopes. Retained task history permanently restricts opted-in conversations to local inference and read-only tools. Store admission, cloud dispatch and tool dispatch independently enforce that restriction. Retrieved mail/events remain untrusted content. See [Google Workspace](google-workspace.md).
+
+Executable coding evaluations share the ordinary local inference executor and existing isolated Node sandbox. A separate versioned protocol binds model and sandbox provenance; host-side expected outputs grade returned values. Unavailable isolation refuses before model calls. These reports do not yet affect Auto ranking. See [coding evaluations](code-evaluation.md).
+
+`host/service-lock.ts` serializes cooperating startup/stale-lock recovery with an exclusive startup guard. Unknown guard ownership fails closed. Provider phase timings are host-owned optional observations and never become provider request fields or inferred internal token timings. See [startup locking](startup-lock.md) and [diagnostics](diagnostics.md).

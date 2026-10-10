@@ -16,7 +16,15 @@ test('all conversations and messages remain reachable beyond recent API limits',
   await expect(dialog.getByText('Page 2', { exact: true })).toBeVisible();
   await dialog.getByRole('button', { name: 'Next', exact: true }).click();
   await expect(dialog.getByText('Page 3', { exact: true })).toBeVisible();
-  await dialog.getByRole('button', { name: /Long history browser fixture/ }).click();
+  // Earlier suite cases create real conversations. Keep verifying pagination
+  // without assuming the archived fixture always remains on the third page.
+  const archived=dialog.getByRole('button', { name: /Long history browser fixture/ });
+  for(let number=4;number<=10&&await archived.count()===0;number++){
+    await expect(dialog.getByRole('button',{name:'Next',exact:true})).toBeEnabled();
+    await dialog.getByRole('button',{name:'Next',exact:true}).click();
+    await expect(dialog.getByText(`Page ${number}`,{exact:true})).toBeVisible();
+  }
+  await archived.click();
   await expect(page.locator('.message')).toHaveCount(80);
   await expect(page.getByText('Saved history message 224.', { exact: false })).toBeVisible();
   await page.getByRole('button', { name: 'Earlier messages', exact: true }).click();

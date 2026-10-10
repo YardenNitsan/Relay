@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowDown, ArrowUp, ArrowUpRight, Check, Copy, GitBranch, Layers, ShieldCheck } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpRight, Check, Copy, GitBranch } from 'lucide-react';
 import type { ActivityEvent, ConversationDetail, ModelProfile, TaskRecord } from '../../shared/types';
 import {taskProgress} from '../task-progress';
 import type { MessagePage } from '../../shared/history';
 import { api } from '../api';
 import Markdown from './Markdown';
+import Welcome from './Welcome';
 import { ConversationSkeleton, ErrorNotice, isActive, Loading, Status } from './ui';
 
 function CopyResponse({ content }: { content: string }) {
@@ -21,7 +22,7 @@ function TaskReceipt({ task, onInspect, stream, events }: { task: TaskRecord; on
 
 type PageAnchor = { before?: string; after?: string; beforeId?: string; around?: string };
 
-export default function Conversation({ detail, loading, error, onRetry, streams, events, models, onInspect, onModels, onWorkspace, focusMessageId, onReturnLatest }: { detail?: ConversationDetail; loading: boolean; error: unknown; onRetry: () => void; streams: Record<string, { text: string }>; events: ActivityEvent[]; models: ModelProfile[]; onInspect: (id: string, task?: TaskRecord) => void; onModels: () => void; onWorkspace: () => void; focusMessageId: string | null; onReturnLatest: () => void }) {
+export default function Conversation({ detail, loading, error, onRetry, streams, events, models, onInspect, onModels, onWorkspace, onDraft, focusMessageId, onReturnLatest }: { detail?: ConversationDetail; loading: boolean; error: unknown; onRetry: () => void; streams: Record<string, { text: string }>; events: ActivityEvent[]; models: ModelProfile[]; onInspect: (id: string, task?: TaskRecord) => void; onModels: () => void; onWorkspace: () => void; onDraft: (text: string) => void; focusMessageId: string | null; onReturnLatest: () => void }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [follow, setFollow] = useState(!focusMessageId);
   const [historyNavHidden, setHistoryNavHidden] = useState(false);
@@ -53,7 +54,7 @@ export default function Conversation({ detail, loading, error, onRetry, streams,
   const hasConversation = Boolean(detail?.messages.length);
   return <div className="conversation-scroll" ref={scrollRef} onScroll={event => { const element = event.currentTarget; setFollow(element.scrollHeight - element.scrollTop - element.clientHeight < 100); setHistoryNavHidden(element.scrollTop > 140); }} aria-label="Conversation">
     <div className={`conversation-content ${!hasConversation && !loading && error == null ? 'conversation-empty' : ''}`}>
-      {loading ? <ConversationSkeleton /> : error != null ? <ErrorNotice error={error} retry={onRetry} /> : !hasConversation ? <section className="welcome"><div className="relay-emblem" aria-hidden="true"><span /><span /><span /></div><h1>What should we<br />work on?</h1><p className="welcome-description">A question, a project, a problem to solve.<br className="desktop-break" /> Start with an objective. Follow the work as it happens.</p><div className="welcome-actions"><button onClick={onWorkspace}><span className="welcome-action-icon"><GitBranch size={20} /></span><span><strong>Bring a project</strong><small>Work in a managed copy</small></span><ArrowUpRight size={16} /></button><button onClick={onModels}><span className="welcome-action-icon"><Layers size={20} /></span><span><strong>{models.length ? 'Models & providers' : 'Connect your first model'}</strong><small>{models.length ? `${models.length} discovered model${models.length === 1 ? '' : 's'}` : 'Local runtimes or optional cloud'}</small></span><ArrowUpRight size={16} /></button></div><div className="welcome-assurance"><ShieldCheck size={15} /><span>Local by default. Access stays in your control.</span></div></section> : <>
+      {loading ? <ConversationSkeleton /> : error != null ? <ErrorNotice error={error} retry={onRetry} /> : !hasConversation ? <Welcome modelCount={models.length} onModels={onModels} onWorkspace={onWorkspace} onDraft={onDraft} /> : <>
         {(anchor || earlier) && <nav className="message-pagination" aria-label="Conversation pages"><div><span className="small muted">{anchor ? 'Reading saved history' : 'Latest messages'}</span>{anchor && <button className="text-button" onClick={latest}>Return to latest<ArrowDown size={14} /></button>}</div><div><button className="button" disabled={!earlier || history.isFetching} onClick={() => { if (earlier) navigate(anchor ? { before: earlier } : { beforeId: earlier }); }}><ArrowUp size={14} />Earlier messages</button>{anchor && <button className="button" disabled={!newer || history.isFetching} onClick={() => { if (newer) navigate({ after: newer }); }}>Newer messages<ArrowDown size={14} /></button>}</div></nav>}
         {anchor && history.isPending ? <Loading>Opening saved messages…</Loading> : anchor && history.isError ? <ErrorNotice error={history.error} retry={() => { void history.refetch(); }} /> : <>
         {anchor && !messages.length && <p className="history-boundary" role="status">You have reached the beginning of this conversation.</p>}

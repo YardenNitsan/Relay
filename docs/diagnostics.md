@@ -1,0 +1,35 @@
+# Private diagnostics and recorded timing
+
+Diagnostics are an explicit local-owner export, scoped to that owner's account. They are not a backup, automatic telemetry upload, profiler or live hardware benchmark. The exported JSON contains an allowlist of numeric measurements, counts, bounded statuses and pseudonymous correlations. It contains no objectives, prompts, messages, model output, errors, file paths, tool arguments/results, verification summaries, credentials, provider profiles, model names/IDs, hostnames, email addresses or other users' tasks.
+
+## API integration contract
+
+`exportDiagnostics(db, actor, input)` accepts `actor: {id, sessionVersion}` and strict options `{days?, maxTasks?}`. Defaults are seven days and 200 tasks; callers may lower these bounds. The HTTP route must first require an authenticated **local owner**, retain the application's Host/origin/session/CSRF defenses, and return a download without sending it to a remote service. The module checks the current enabled owner role, registration status and session version again inside its transaction. Only tasks owned by that account and created during the selected window are selected. Older tasks updated recently are not included.
+
+`taskTiming(db, taskId, {maxRecords?})` serves a separately authorized task detail view. The caller must authorize ownership before passing the ID; this function intentionally does not decide account access. It returns real internal IDs for correlation within that authorized view. Its record limit defaults to 500 and cannot exceed 2,000 per child category. It performs no diagnostic export audit because it is a normal task read. Both functions use a repeatable-read database snapshot with a ten-second statement timeout.
+
+The exported bundle uses format version 1 and `scope: "own_account"`. Every task, agent, model-call, tool-call and verification ID is replaced by a keyed SHA-256 correlation. Correlations remain consistent within a bundle, but use a fresh secret for each export and cannot be matched to a later export or raw database IDs. Unknown statuses and unrecognized tool/check names become `other`; extensions cannot insert arbitrary strings through those fields. This is data minimization, not a guarantee of anonymity: timestamps, counts, usage and activity patterns remain observable to whoever receives the file.
+
+Exports contain at most 200 tasks, 2,000 calls, 2,000 tools and 2,000 checks across the selected tasks. A two-MiB encoded-size ceiling can remove whole tasks from the end of the export. Counts and explicit `truncated` fields disclose selection, record and byte limits. A category's wall coverage is `null` if its records were truncated. The module records a `DIAGNOSTICS_EXPORTED` audit event containing only format, selected bounds, exported task count and truncation flags. It does not store the bundle, correlations or private source data in the audit record.
+
+## What timing means
+
+- `elapsedMs`: task creation to terminal `updatedAt`, or snapshot time for an unfinished task. This includes pauses, waits and time while Relay was not running; it is not continuous execution time.
+- `queueMs`: creation to the first recorded `TASK_ANALYZING` event. It describes initial admission only. Missing events yield `null`; resumed queue intervals are not inferred.
+- `executionAccountedMs`: the durable execution-budget counter. Recovery may conservatively consume a reserved interval. It is not measured CPU time, model inference time or an assertion that useful work occurred throughout.
+- `executionReservedMs`: the outstanding durable reservation, separate from accounted execution.
+- `approvalWaitMs` and `resourceWaitMs`: committed task-level wait counters. These describe the orchestrator's wait classification, not the sum of every branch's wait.
+- `activeWaitKind` and `activeWaitElapsedMs`: the currently open durable wait marker measured to snapshot time, separate from committed counters. Missing or invalid markers produce `null`.
+- Per-call/tool `durationMs`: durable start to finish; unfinished records yield `null`. `elapsedMs` measures an open record to snapshot time. Database timestamps can include persistence and dispatch overhead.
+- `providerDurationMs` and `loadDurationMs`: nonnegative finite measurements actually present in the stored provider usage. Absence remains `null`; model size, admission estimates and wall duration are never substituted for loading measurements.
+- `generationTokensPerSecond`: an actual persisted provider usage measurement, when available. `generationDurationMs` remains `null` because the current usage contract does not persist an exact generation interval.
+- `firstTextEventMs`: call start to its first persisted `MODEL_TEXT` event with matching task/call IDs inside the recorded call interval. This includes buffering, event flush and database overhead. `firstTokenMs` remains `null`; a persisted text flush does not measure the provider's first token.
+- `modelCallWallMs` and `toolWallMs`: interval-union coverage within each category, including open spans to snapshot time. Parallel intervals within a category are counted once. Invalid intervals or truncated records produce `null`.
+
+Never add category wall totals, call durations, wait counters and execution reservations to derive task elapsed time. Categories overlap, calls and tools may run concurrently, and budget counters have different semantics from elapsed wall time. No combined performance score or inferred speedup is produced. Task updates after completion, missing historical events and conservative recovery accounting limit exact reconstruction.
+
+## Verification and limits
+
+The provider adapter also records monotonic observations on new ordinary task calls: `firstContentMs` (dispatch to first nonempty text or parsed tool proposal), `loadWallMs` (successful managed LM Studio load), `streamWallMs` (HTTP request and stream consumption, including consumer processing), and `cleanupWallMs` (successful verified private-instance cleanup). These are separate from runtime-reported loading and throughput. Failed or unsupported phase measurements stay null. They are persisted on failed calls as well when observed; cleanup failure never gets a successful cleanup duration. Old tasks are not backfilled. First observed content is not the model's internal first token. The timing sink is host-only and never serialized to a provider. Implementation uses [Node's monotonic performance clock](https://nodejs.org/docs/latest-v24.x/api/perf_hooks.html#performancenow).
+
+Deterministic PGlite tests cover private sentinel data in every excluded payload and identifier, account isolation, stale owner versions, time/record bounds, HMAC correlation, unknown numeric usage, persisted-text versus first-token semantics, overlapping spans, open waits and content-free auditing. These are fixture measurements, not evidence of real-model latency or hardware performance. Export files remain the owner's responsibility after download; Relay does not revoke copies shared outside the application.

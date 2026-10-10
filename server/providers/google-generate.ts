@@ -2,10 +2,12 @@ import {randomUUID} from 'node:crypto';
 import type {ModelChunk,ModelRequest,ToolRequest} from '../../shared/types.js';
 import {rawModelId} from './cloud.js';
 import {array,object,string,number,sse,toolArguments,ProviderError,outputLimitError,type JsonObject} from './transport.js';
+import {validateGeminiReasoning} from './reasoning.js';
 
 /** Documented GenerateContent API for OAuth; API-key Interactions remains separate. */
 export function googleGeneratePath(request:ModelRequest):string {return `/models/${encodeURIComponent(rawModelId(request))}:streamGenerateContent?alt=sse`;}
 export function googleGenerateBody(request:ModelRequest):JsonObject {
+  validateGeminiReasoning(request.model,request.reasoning,request.maxOutputTokens,'generateContent');
   const contents=request.messages.filter(message=>message.role!=='system').map(message=>{
     if(message.role==='assistant'&&message.providerData?.provider==='gemini'){
       const native=object(message.providerData.data);if(native.transport==='generateContent'&&Array.isArray(native.parts))return {role:'model',parts:native.parts};
@@ -17,7 +19,7 @@ export function googleGenerateBody(request:ModelRequest):JsonObject {
     }
     return {role:message.role==='assistant'?'model':'user',parts:[...(message.content?[{text:message.content}]:[]),...(message.toolCalls??[]).map(call=>({functionCall:{id:call.id,name:call.name,args:call.arguments}}))]};
   });
-  return {contents,systemInstruction:{parts:[{text:request.messages.filter(message=>message.role==='system').map(message=>message.content).join('\n\n')}]},generationConfig:{maxOutputTokens:request.maxOutputTokens},...(request.tools.length?{tools:[{functionDeclarations:request.tools.map(tool=>({name:tool.name,description:tool.description,parametersJsonSchema:tool.parameters}))}]}:{})};
+  return {contents,systemInstruction:{parts:[{text:request.messages.filter(message=>message.role==='system').map(message=>message.content).join('\n\n')}]},generationConfig:{maxOutputTokens:request.maxOutputTokens,...(request.reasoning?{thinkingConfig:{thinkingLevel:request.reasoning}}:{})},...(request.tools.length?{tools:[{functionDeclarations:request.tools.map(tool=>({name:tool.name,description:tool.description,parametersJsonSchema:tool.parameters}))}]}:{})};
 }
 export async function* googleGenerateStream(response:Response,request:ModelRequest):AsyncGenerator<ModelChunk> {
   const parts:JsonObject[]=[];let terminal=false;let finishReason='';let stats:JsonObject={};

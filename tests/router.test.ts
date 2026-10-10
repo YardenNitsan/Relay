@@ -14,6 +14,7 @@ const thinking = (): ModelProfile => profile('thinking', { state: 'ready', token
 describe('personal assistant tool routing', () => {
   const textOnly = () => profile('fast-text', { state: 'ready', tokensPerSecond: 100, capabilities: { tools: false, reasoning: false, vision: false, structured: true } });
   const personalTask = (): TaskRecord => { const objective = task(); objective.options.assistantId = 'personal'; objective.options.workspaceId = null; return objective; };
+  it('requires native tools for explicitly opted-in Workspace reads without a file workspace',async()=>{const objective=personalTask();objective.options.assistantId='email';objective.options.googleWorkspace={mail:true,calendar:false};const tools=profile('mail-tools',{tokensPerSecond:1});expect((await selectModel(gateway([textOnly(),tools]),objective,user,'worker',admit,new Set())).model.id).toBe(tools.id);});
 
   it('selects a tool-capable worker for personal tasks without an attached workspace', async () => {
     const tools = profile('task-tools', { tokensPerSecond: 2 });
@@ -62,8 +63,8 @@ describe('model diversity preserves suitability', () => {
     expect((await selectModel(gateway([instruct, thinking()]), task(), user, 'security_reviewer', admit, new Set())).model.id).toBe(instruct.id);
   });
   it('does not introduce mandatory thinking for diversity even when other score bonuses narrow the gap', async () => {
-    const cloud = profile('instruct', { id: 'openai/instruct', provider: 'openai', runtime: 'openai', local: false, tokensPerSecond: 20 });
-    const objective = task(); objective.options.cloudPolicy = 'allow'; objective.options.budget.localOnly = false;
+    const cloud = profile('instruct', { id: 'openai/instruct', provider: 'openai', runtime: 'openai', local: false, tokensPerSecond: 20, inputPricePerMillion: .1, outputPricePerMillion: .5 });
+    const objective = task(); objective.options.cloudPolicy = 'allow'; objective.options.budget.localOnly = false; objective.options.budget.maxCostUsd = null;
     expect((await selectModel(gateway([cloud, thinking()]), objective, user, 'security_reviewer', admit, new Set())).model.id).toBe(cloud.id);
   });
   it('alternates among comparable eligible models only for independent security analysis', async () => {

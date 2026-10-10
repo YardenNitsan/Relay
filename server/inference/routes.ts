@@ -23,9 +23,15 @@ export function registerInferenceRoutes(app:FastifyInstance,service:InferenceSer
       const id=randomUUID();let controller:AbortController|undefined;let cleanup=()=>{};
       try {
         const user=await authenticate(request),parsed=parseInferenceRequest(protocol,request.body);
+        // The ordinary ten-second socket idle limit protects unauthenticated
+        // connections, but a verified local cold load may legitimately be silent.
+        // Execution still has its independent <=300s service deadline, account
+        // quota, revocation watchdog and cancellation. Leave time for cleanup.
+        const socket=request.raw.socket,previousTimeout=socket.timeout??10000;
+        socket.setTimeout?.(330000);
         controller=new AbortController();const cancel=()=>controller!.abort('client_disconnected');request.raw.once('aborted',cancel);reply.raw.once('close',cancel);
         let cancelDeadline:ReturnType<typeof setTimeout>|undefined;
-        cleanup=()=>{clearTimeout(cancelDeadline);request.raw.off('aborted',cancel);reply.raw.off('close',cancel);};
+        cleanup=()=>{clearTimeout(cancelDeadline);request.raw.off('aborted',cancel);reply.raw.off('close',cancel);if(!socket.destroyed)socket.setTimeout?.(previousTimeout);};
         const cancelConsumer=()=>{
           // Permit a readable client to receive the normal error envelope, but
           // never wait indefinitely for a stopped reader to drain its socket.

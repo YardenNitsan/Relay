@@ -4,7 +4,7 @@ import {join} from 'node:path';
 interface Disk {total:number;available:number;}
 interface Options {limitBytes?:number;reserveBytes?:number;disk?:()=>Promise<Disk>;}
 const GiB=1024**3;
-const folders=['workspaces','baselines','checkpoints','runs','containers','git-runs'];
+const folders=['workspaces','baselines','checkpoints','runs','containers','git-runs','publications'];
 
 /** Called inside the broker's serialized mutation boundary. It never follows links
  * and includes temporary copies and baseline/checkpoint overhead. It does not

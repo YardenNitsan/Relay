@@ -1,3 +1,4 @@
+import {enrichPricing} from './pricing.js';
 import type { Admission, ModelChunk, ModelProfile, ModelRequest, ProviderGateway, ProviderId, ProviderStatus } from '../../shared/types.js';
 import { SecretManager } from './secrets.js';
 import { anthropicStream, cloudBody, CLOUD_ENDPOINTS, geminiStream, openaiStream } from './cloud.js';
@@ -150,8 +151,8 @@ export class Providers implements ProviderGateway {
   }
   private async discover(provider: ProviderId): Promise<void> {
     const revision=this.revisions.get(provider)??0;
-    let secret = await this.secrets.status(provider); const local = provider === 'ollama' || provider === 'lmstudio';
-    if(provider==='gemini'&&this.googleOAuth){try{const google=await this.googleOAuth.status(this.credentialUserId);if(google.connected)secret={configured:true,storage:google.storage};}catch{if(revision===(this.revisions.get(provider)??0)){this.models.set(provider,[]);this.health.set(provider,{id:provider,name:names[provider],connected:false,configured:true,error:'Google credential vault is unavailable. Local models remain available.',secretStorage:'os-keyring',enabled:!this.disabled.has(provider),authenticated:false,reachable:false,state:'unreachable',lastCheckedAt:new Date().toISOString()});}return;}}
+    let secret = await this.secrets.status(provider); const local = provider === 'ollama' || provider === 'lmstudio';let geminiTransport:'interactions'|'generateContent'='interactions';
+    if(provider==='gemini'&&this.googleOAuth){try{const google=await this.googleOAuth.status(this.credentialUserId);if(google.connected){secret={configured:true,storage:google.storage};geminiTransport='generateContent';}}catch{if(revision===(this.revisions.get(provider)??0)){this.models.set(provider,[]);this.health.set(provider,{id:provider,name:names[provider],connected:false,configured:true,error:'Google credential vault is unavailable. Local models remain available.',secretStorage:'os-keyring',enabled:!this.disabled.has(provider),authenticated:false,reachable:false,state:'unreachable',lastCheckedAt:new Date().toISOString()});}return;}}
     if(revision!==(this.revisions.get(provider)??0))return;
     const status: ProviderStatus = { id: provider, name: names[provider], connected: false, configured: local || secret.configured, error: null, secretStorage: secret.storage, enabled: !this.disabled.has(provider), authenticated: local ? null : false, reachable: false, state: 'unconfigured', lastCheckedAt: new Date().toISOString() };
     this.models.set(provider, []);
@@ -170,7 +171,7 @@ export class Providers implements ProviderGateway {
             const model=ollamaModel(tag, metadata, array(object(running).models).map(object).find(item => item.name === name) ?? {});model.details.runtimeVersion=runtimeVersion;models.push(model);
           }
         } else if (provider === 'lmstudio') models = lmstudioModels(await this.json(provider, '/api/v1/models'));
-        else models = cloudModels(provider, await this.json(provider, '/models'));
+        else models = cloudModels(provider, await this.json(provider, '/models'),geminiTransport);
         for (const model of models) { const measurement = this.measurements.get(model.id); if (measurement && measurement.digest === model.details.digest && measurement.runtimeVersion===model.details.runtimeVersion) { model.tokensPerSecond = measurement.generationTokensPerSecond; model.details.performance = { ...measurement }; } }
         if(revision!==(this.revisions.get(provider)??0))return;
         this.models.set(provider, models); Object.assign(status, { connected: true, reachable: true, authenticated: local ? null : true, state: 'ready' });
@@ -197,7 +198,7 @@ export class Providers implements ProviderGateway {
   async localModels():Promise<ModelProfile[]> {
     if(this.options.sharedLocal)return this.options.sharedLocal.localModels();
     await Promise.all(localIds.map(id=>this.refreshProvider(id)));
-    return localIds.flatMap(id=>this.models.get(id)??[]).map(model=>structuredClone(model));
+    return localIds.flatMap(id=>this.models.get(id)??[]).map(model=>enrichPricing(structuredClone(model)));
   }
   async refreshLocalModels():Promise<void> {if(this.options.sharedLocal)return this.options.sharedLocal.refreshLocalModels();await Promise.all(localIds.map(id=>this.refreshProvider(id,true)));}
   async localStatuses():Promise<ProviderStatus[]> {
@@ -208,7 +209,7 @@ export class Providers implements ProviderGateway {
   async listModels(): Promise<ModelProfile[]> {
     const ownIds=this.options.sharedLocal?cloudIds:ids;
     const [,local]=await Promise.all([Promise.all(ownIds.map(id=>this.refreshProvider(id))),this.options.sharedLocal?.localModels()??[]]);
-    return [...local,...ownIds.flatMap(id=>this.models.get(id)??[])].map(model=>structuredClone(model));
+    return [...local,...ownIds.flatMap(id=>this.models.get(id)??[])].map(model=>enrichPricing(structuredClone(model)));
   }
   async statuses(): Promise<ProviderStatus[]> {
     const ownIds=this.options.sharedLocal?cloudIds:ids;
@@ -241,18 +242,24 @@ export class Providers implements ProviderGateway {
     const active = this.active.get(provider) ?? new Set<AbortController>(); active.add(controller); this.active.set(provider, active);
     const signal = AbortSignal.any([request.signal, controller.signal, AbortSignal.timeout(10 * 60_000)]);
     const started = Date.now();
+    const observedStart=performance.now();let streamStarted:number|undefined;
+    const timing=request.timing;
+    if(timing){delete timing.firstContentMs;delete timing.loadWallMs;delete timing.cleanupWallMs;delete timing.streamWallMs;}
     let instance:ManagedLmInstance|undefined;
     request.model.state = 'generating';
     try {
       const headers=await cancellable(this.headers(provider,!local),signal);
       this.assertCurrent(provider,revision,signal);
       if(provider==='lmstudio'){
+        const loadStarted=performance.now();
         instance=await this.lmstudio.load(request.model,request.contextTokens,request.execution,signal);
+        if(timing)timing.loadWallMs=Math.max(0,performance.now()-loadStarted);
         this.assertCurrent(provider,revision,signal);request.model.state='generating';
       }
       const google=provider==='gemini'&&!!headers.authorization;
       const body=google?googleGenerateBody(request):local?localBody(request):cloudBody(request);
       if(instance)body.model=instance.identifier;
+      streamStarted=performance.now();
       const response = await this.fetcher(`${this.bases[provider]}${google?googleGeneratePath(request):suffix}`, { method: 'POST', headers, body: JSON.stringify(body), signal, redirect: 'error' });
       this.assertCurrent(provider,revision,signal);
       const limits=parseRateLimits(provider,response.headers);
@@ -266,6 +273,7 @@ export class Providers implements ProviderGateway {
       const stream = provider === 'ollama' ? ollamaStream(response, adapted) : provider === 'lmstudio' ? compatibleStream(response, adapted) : provider === 'openai' || provider === 'xai' ? openaiStream(response, adapted) : provider === 'deepseek' ? deepseekStream(response, adapted) : provider === 'anthropic' ? anthropicStream(response, adapted) : google ? googleGenerateStream(response, adapted) : geminiStream(response, adapted);
       for await (const chunk of stream) {
         signal.throwIfAborted(); if (this.disabled.has(provider)) throw new ProviderError('disabled', 'Provider was disabled');
+        if(timing&&timing.firstContentMs===undefined&&(chunk.type==='text'&&chunk.text.length>0||chunk.type==='tool_call'))timing.firstContentMs=Math.max(0,performance.now()-observedStart);
         if (chunk.type === 'usage' && chunk.generationTokensPerSecond !== undefined) {
           const measurement = { digest: request.model.details.digest, runtimeVersion:request.model.details.runtimeVersion, contextTokens: request.contextTokens, generationTokensPerSecond: chunk.generationTokensPerSecond, promptTokensPerSecond: chunk.promptTokensPerSecond, measuredAt: new Date().toISOString(), execution: request.execution };
           this.measurements.set(request.model.id, measurement); request.model.tokensPerSecond = measurement.generationTokensPerSecond; request.model.details.performance = measurement;
@@ -277,7 +285,8 @@ export class Providers implements ProviderGateway {
       if (error instanceof ProviderError) throw error;
       throw new ProviderError('transport_failed', 'Provider connection failed; no automatic replay was attempted');
     } finally {
-      try{if(instance)await instance.unload();}
+      if(timing&&streamStarted!==undefined)timing.streamWallMs=Math.max(0,performance.now()-streamStarted);
+      try{if(instance){const cleanupStarted=performance.now();await instance.unload();if(timing)timing.cleanupWallMs=Math.max(0,performance.now()-cleanupStarted);}}
       finally{active.delete(controller); request.model.state = 'available'; request.model.details.lastCallDurationMs = Date.now() - started; this.refreshed.delete(provider);}
     }
   }

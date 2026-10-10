@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import {assertWorkspaceOptions} from '../integrations/workspace-policy.js';
 import type { AccessMode, ProviderId, TaskOptions, Workspace } from '../../shared/types.js';
 import { AppError } from '../core/errors.js';
 import { verificationContractSchema } from '../orchestration/required-reads.js';
@@ -34,6 +35,7 @@ export function authorizeOptions(principal:Principal,options:TaskOptions,workspa
   if(!principal.user.enabled||principal.user.registrationStatus!==undefined&&principal.user.registrationStatus!=='approved')throw new AppError('USER_DISABLED','This account is disabled',403);
   if(options.efficiency!==undefined&&!['efficient','standard'].includes(options.efficiency))throw new AppError('TOKEN_POLICY','Unknown token efficiency policy.');
   if(options.budget.maxOutputTokens!==undefined&&(!Number.isInteger(options.budget.maxOutputTokens)||options.budget.maxOutputTokens<256||options.budget.maxOutputTokens>8192))throw new AppError('OUTPUT_BUDGET','Maximum output tokens must be an integer from 256 to 8192.');
+  assertWorkspaceOptions(options);
   const permissions=principal.user.permissions;
   const personal=!!options.workspaceId&&workspace?.id===options.workspaceId&&workspace.ownerUserId===principal.user.id;
   if(options.mcpServerIds)options={...options,mcpServerIds:permissionSchema.shape.mcpServerIds.parse(options.mcpServerIds)};

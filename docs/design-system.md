@@ -10,16 +10,16 @@ The first direction was checked against generic chat and dashboard patterns. A p
 
 | Role | Light | Dark |
 |---|---|---|
-| Canvas | #F5F7FA | #15212F |
-| Surface | #FFFFFF | #1C2B3C |
+| Canvas | #F3F6F6 | #10181D |
+| Surface | #FFFFFF | #182329 |
 | Text | #182B3D | #E7EDF4 |
 | Secondary text | #526477 | #A8B8CA |
-| Action/focus | #2B5F96 | #91B8E8 |
-| Divider | #D9E1EA | #35485E |
+| Action/focus | #156B72 | #83DBD8 |
+| Divider | #D9E1E4 | #33464E |
 
-Body/canvas contrast is 13.48:1 light and 13.81:1 dark. Secondary/canvas contrast is 5.67:1 and 8.04:1. Status has a text label and icon as well as color.
+Contrast is checked against the current rendered surfaces in both themes. Status has a text label and icon as well as color. The faint light-theme text token is #596B7E; the earlier #63748A failed on the updated canvas and was corrected.
 
-IBM Plex Sans carries interface and prose; IBM Plex Mono is reserved for commands, paths and code. Both are bundled locally. Sizes: 13px metadata, 14px controls, 16px conversation, 22px headings, 30px initial prompt. Spacing follows 4/8/12/16/24/32/48px. Radius: 5px controls, 9px composer, 12px dialogs. Elevation belongs to overlays, not ordinary content. Prose stays near 72 characters wide.
+IBM Plex Sans carries interface and prose; IBM Plex Mono is reserved for commands, paths and code. Both are bundled locally. Sizes: 13px metadata, 14px controls, 16px conversation, 22px headings, fluid 34–54px initial prompt. Spacing follows 4/8/12/16/24/32/48px. Radius: 5px controls, 16px composer, 12px dialogs. Elevation belongs to overlays, not ordinary content. Prose stays near 72 characters wide.
 
 ## Interaction
 
@@ -60,3 +60,22 @@ Resource settings distinguish unsaved, applied, saving, saved and failed states.
 The complete 22-scenario Chrome suite passed during this continuation, including dark-theme conversation/activity axe checks, phone navigation and focus restoration, local pairing, provider-private-query gating, resource save failures and persistence, and retained approval/diff/stop flows. Final visual review also covers the tablet resource view and compact landscape layout. See `frontend-research.md` for screenshot paths and explicit validation limits.
 
 Final follow-up on October 6: nine browser scenarios passed after activity typography and compact-height refinements. A newly reproduced desktop dialog-chain focus regression was fixed; all seven refinement tests passed afterward, bringing the suite to 23 scenarios. Seven frontend unit tests, the production build and whitespace checks passed. The modal's fallback focus target must be visible on the current layout; a hidden phone-navigation element is never an acceptable desktop focus destination.
+
+## October 10 responsive workspace
+
+The welcome surface pairs an objective prompt with three editable starting points. Desktop uses two columns; phones stack the same controls in a scrollable conversation surface. Selecting a starting point appends to the current draft and focuses the composer; it never sends or changes policy. The existing IBM Plex fonts and Relay mark remain local assets. Graphite surfaces and a restrained teal action color distinguish actions without decorative animation or another UI framework.
+
+Advanced is now a visible labeled control. Model, depth, access and cloud policy remain discoverable; the verbose scope explanation is available under About these permissions. Expansion grants no permissions. The composer uses container queries so it also adapts when the inspector reduces its available width. Short windows retain the conversation scroll owner and allow the composer to shrink and scroll. Safe-area padding, reduced motion and native dialog focus behavior remain.
+
+The execution overview shows persisted role/status/model assignments and recorded checks, excluding generation-only and model-review assessments. It never creates a progress percentage or converts model agreement into verification. Detailed steps, raw events, approvals, changes and verification remain available.
+
+Research: [Microsoft Fluent layout](https://fluent2.microsoft.design/layout) informs spacing, hierarchy and touch targets; [Apple layout](https://developer.apple.com/design/human-interface-guidelines/layout) informs continuity across changing window sizes; [Material adaptive layouts](https://m3.material.io/foundations/layout/canonical-examples/overview) informs content-based composition; [W3C reflow](https://www.w3.org/WAI/WCAG22/Understanding/reflow.html) informs 320 CSS-pixel checks. These are design inputs, not claims of vendor certification.
+
+Installed the official [Vercel composition-patterns skill](https://github.com/vercel-labs/agent-skills/tree/063bee94c3f4df8453406c830b0a7df0f2860278/skills/composition-patterns) alongside existing frontend, responsive, accessibility and React skills. It is a development aid in the user's Codex profile, not a Relay runtime dependency.
+
+
+## Connected model drawer
+
+The composer uses a compact Choose model trigger. Its lazy-loaded native dialog sits at the right edge on desktop and uses the available phone width. Provider, model-search and reasoning screens keep one decision visible at a time. Native radio inputs provide keyboard navigation; a fixed footer preserves the selected model and Apply/Cancel while content scrolls. Cloud sharing is an explicit radio choice, independent of connecting an API account. No decorative animation or new UI dependency is needed. Existing focus return/Escape and reduced-motion behavior remain.
+
+Browser acceptance covers light/dark, 320/390/768/1440 widths and 844x390 landscape, draft preservation, no automatic submission, disconnected catalogs and unknown reasoning. Viewport emulation does not establish physical-device or complete accessibility acceptance.

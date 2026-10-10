@@ -1,0 +1,9 @@
+# Service startup ownership
+
+Relay retains the numeric `service.lock` format used by the launcher. The host now acquires `.service-start.lock` exclusively before checking or reclaiming a stale service PID. This prevents two cooperating starters from both reading a dead PID and one subsequently unlinking the other's newly acquired lock. The short-lived guard is removed after acquisition; the service keeps its own file handle until shutdown and checks file identity before unlinking. Live, malformed, linked and hard-linked service locks fail closed.
+
+The backup guard is checked before startup, inside startup serialization and after service acquisition. Backups refuse a pre-existing startup guard and exclude it from snapshots. Existing backups remain compatible. These are local-filesystem cooperative locks; network filesystems and hostile processes running as the same OS account are not supported isolation boundaries. Node documents exclusive creation and filesystem race caveats in its [filesystem API](https://nodejs.org/docs/latest-v24.x/api/fs.html).
+
+A crash during the short startup critical section can leave `.service-start.lock`. Relay intentionally does not automatically steal this guard based on age or PID. Stop all Relay launch attempts, verify no Relay host or backup is using this data directory, inspect the guard, and only then remove that exact file while offline. Do not remove locks merely because startup is slow. An ordinary host crash after startup can still reclaim a dead numeric service PID on the next launch. No owner data or database markers are removed for recovery.
+
+`tests/service-lock.test.ts` covers concurrent stale recovery, interrupted startup guards, live/incomplete locks, replacement ownership and backup contention. `tests/backup.test.ts` covers refusing startup guards. Native Windows execution is verified; Linux/macOS race acceptance remains separate.

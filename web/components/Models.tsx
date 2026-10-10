@@ -4,6 +4,7 @@ import { ArrowUpRight, Check, Cloud, Cpu, KeyRound, RefreshCw, ShieldCheck } fro
 import type { Admission, ModelProfile, ProviderStatus } from '../../shared/types';
 import { api, mutation } from '../api';
 import Calibration from './Calibration';
+import ModelEvaluation from './ModelEvaluation';
 import GoogleConnection, { type GoogleStatus } from './GoogleConnection';
 import { bytes, Empty, ErrorNotice, humanize, Loading, Status } from './ui';
 
@@ -56,7 +57,7 @@ function ModelRow({ model, onSelect, contextTokens, owner }: { model: ModelProfi
     <div className="split"><div className="capabilities">{Object.entries(model.capabilities).filter(([, supported]) => supported).map(([capability]) => <span key={capability}>{humanize(capability)}</span>)}</div><div className="button-row">{model.local && <button className="text-button" onClick={() => { void assess(); }} disabled={checking}>{checking ? 'Checking…' : 'Check hardware fit'}</button>}<button className="button small-button" disabled={model.state === 'offline' || model.state === 'error'} onClick={() => onSelect(model.id)}>Use model<ArrowUpRight size={14} /></button></div></div>
     {model.local && typeof model.details.limitation === 'string' && <p className="hint">{model.details.limitation}</p>}
     {admission && <div className={`admission ${admission.allowed ? '' : 'admission-warning'}`}><div className="split"><strong>{humanize(admission.decision)}</strong><span className="small">{humanize(admission.confidence)}</span></div><ul>{admission.reasons.map((reason, index) => <li key={`${index}-${reason}`}>{reason}</li>)}</ul><p className="small muted">Context {admission.contextTokens.toLocaleString()} / RAM {bytes(admission.estimatedRamBytes)} / GPU {bytes(admission.estimatedVramBytes)}</p></div>}
-    {owner && model.local && <Calibration modelId={model.id} contextTokens={contextTokens} />}{error != null && <ErrorNotice error={error} />}
+    {owner && model.local && <><Calibration modelId={model.id} contextTokens={contextTokens} /><ModelEvaluation modelId={model.id} contextTokens={contextTokens} /></>}{error != null && <ErrorNotice error={error} />}
   </article>;
 }
 

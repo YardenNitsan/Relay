@@ -13,7 +13,7 @@ it.each([false,true])('executes real host operations and refuses stale completio
   directory=await mkdtemp(join(resolve('..'),'relay-host-engine-'));
   const path=join(directory,'greeting.txt');
   store=new Store(await openDatabase());await store.init();
-  const broker=new ToolBroker(join(directory,'private-data'),()=>engine?.isStopped()??false);
+  const broker=new ToolBroker(join(directory,'private-data'),()=>engine?.isStopped()??false,undefined,store);
   const model: ModelProfile={id:'ollama:fixture',name:'Fixture',provider:'ollama',runtime:'fixture',local:true,capabilities:{tools:true,vision:false,reasoning:false,structured:true},contextWindow:32000,quantization:null,sizeBytes:100,state:'available',details:{},tokensPerSecond:null,inputPricePerMillion:null,outputPricePerMillion:null};
   const gateway: ProviderGateway={listModels:async()=>[model],statuses:async()=>[],stream:async function*(request){
     expect(request.tools?.some(tool=>tool.name==='host_write')).toBe(true);
@@ -26,6 +26,9 @@ it.each([false,true])('executes real host operations and refuses stale completio
   engine=new Engine(store,gateway,broker,{admit:async()=>({allowed:true,decision:'run',reasons:['Deterministic test model'],estimatedRamBytes:100,estimatedVramBytes:100,contextTokens:16384,confidence:'estimated'})});
   const options: TaskOptions={depth:'fast',modelId:null,access:'unrestricted',hostAccessConfirmed:true,workspaceId:null,contextTokens:16384,budget:{maxCalls:5,maxSeconds:60,maxIterations:4,maxCostUsd:null,localOnly:true}};
   const conversation=await store.createConversation();const {task}=await store.createTask(conversation.id,`Create and verify ${path}`,options);engine.enqueue(task.id);
+  await expect.poll(async()=>['waiting_for_user','paused','failed','completed'].includes((await store!.task(task.id)).status),{timeout:12000}).toBe(true);
+  const calls=await store.db.query('SELECT name,status,result FROM tool_calls WHERE task_id=$1 ORDER BY started_at',[task.id]);
+  expect(calls.map(call=>[call.name,call.status]),JSON.stringify(calls)).toEqual([['host_write','completed'],['host_read','completed']]);
   if(tamper){
     await expect.poll(async()=>['waiting_for_user','paused','failed','completed'].includes((await store!.task(task.id)).status),{timeout:12000}).toBe(true);
     expect((await store.task(task.id)).status).not.toBe('completed');

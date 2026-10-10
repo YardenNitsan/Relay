@@ -17,7 +17,8 @@ try{
   if(!model)throw new Error('No local model available for acceptance');
   const response=await fetch(`${inference}/responses`,{method:'POST',headers,body:JSON.stringify({model:model.id,input:'Reply with a brief friendly greeting. Do not use tools.',store:false,max_output_tokens:128}),signal:AbortSignal.timeout(310000)});
   const result=await response.json();const after=await api('/conversations');
-  report={testedAt:new Date().toISOString(),passed:response.ok&&result.status==='completed'&&JSON.stringify(before)===JSON.stringify(after),status:response.status,model:model.id,conversationHistoryUnchanged:JSON.stringify(before)===JSON.stringify(after),error:result.error??null,usage:result.usage??null,outputReceived:Array.isArray(result.output)&&result.output.some(item=>item.type==='message'&&item.content?.some(part=>part.text?.trim()))};
+  const outputReceived=Array.isArray(result.output)&&result.output.some(item=>item.type==='message'&&item.content?.some(part=>part.text?.trim()));
+  report={testedAt:new Date().toISOString(),passed:response.ok&&result.status==='completed'&&outputReceived&&JSON.stringify(before)===JSON.stringify(after),status:response.status,model:model.id,conversationHistoryUnchanged:JSON.stringify(before)===JSON.stringify(after),error:result.error??null,usage:result.usage??null,outputReceived};
 }finally{await api(`/inference/tokens/${issued.id}`,undefined,'DELETE');}
 await mkdir('output',{recursive:true});await writeFile('output/inference-acceptance.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));if(!report.passed)process.exitCode=1;
 } finally { await close(); }

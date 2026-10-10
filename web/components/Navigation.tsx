@@ -3,7 +3,7 @@ import { Activity, BarChart3, Bell, Command, Cpu, FolderOpen, History, Layers, L
 import { mutation, type SessionInfo } from '../api';
 import { ErrorNotice, Modal } from './ui';
 
-export type Destination = 'history' | 'models' | 'hardware' | 'workspaces' | 'commands' | 'access' | 'mcp' | 'agents' | 'clients' | 'usage' | 'notifications';
+export type Destination = 'history' | 'models' | 'hardware' | 'workspaces' | 'commands' | 'access' | 'mcp' | 'agents' | 'clients' | 'usage' | 'notifications' | 'memory' | 'schedules' | 'google-workspace';
 export default function Navigation({ owner, theme, hostName, session, onDestination, onNew, onActivity, onTheme, onClose }: { owner: boolean; theme: 'dark' | 'light'; hostName?: string; session?: SessionInfo; onDestination: (destination: Destination) => void; onNew: () => void; onActivity: () => void; onTheme: () => void; onClose: () => void }) {
   const [signingOut, setSigningOut] = useState(false);
   const [error, setError] = useState<unknown>(null);
@@ -22,6 +22,9 @@ export default function Navigation({ owner, theme, hostName, session, onDestinat
     <button onClick={() => onDestination('notifications')}><Bell size={20} /><span>Task notifications</span></button>
     <button onClick={() => onDestination('clients')}><KeyRound size={20} /><span>External clients</span></button>
     {owner && <button onClick={() => onDestination('mcp')}><Plug size={20} /><span>MCP tools</span></button>}
+    <button onClick={() => onDestination('memory')}><FolderOpen size={20} /><span>Memory</span></button>
+    <button onClick={() => onDestination('google-workspace')}><Plug size={20} /><span>Google Workspace</span></button>
+    {owner && <button onClick={() => onDestination('schedules')}><Workflow size={20} /><span>Scheduled tasks</span></button>}
     <button onClick={() => onDestination('workspaces')}><FolderOpen size={20} /><span>Workspaces</span></button>
     <button onClick={onActivity}><Activity size={20} /><span>Activity & approvals</span></button>
     {owner && <><button onClick={() => onDestination('hardware')}><Cpu size={20} /><span>This machine</span></button><button onClick={() => onDestination('access')}><ShieldCheck size={20} /><span>Access & remote connections</span></button></>}

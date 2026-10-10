@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import {request as httpRequest} from 'node:http';
 import type { FastifyInstance } from 'fastify';
 import { Store } from '../server/db/store.js';
 import { openDatabase } from '../server/db/database.js';
@@ -39,6 +40,18 @@ beforeEach(async () => {
 afterEach(async () => { service?.stopAll(); await app?.close(); await store?.close(); if (directory) await rm(directory, { recursive: true, force: true }); });
 
 describe('real inference HTTP boundary', () => {
+  it('keeps an authenticated cold load connected beyond the ordinary idle timeout',async()=>{
+    stream=async function*(request){
+      await new Promise<void>((resolve,reject)=>{const timer=setTimeout(resolve,10500);request.signal.addEventListener('abort',()=>{clearTimeout(timer);reject(request.signal.reason);},{once:true});});
+      yield {type:'text',text:'Cold load completed'};yield {type:'done',finishReason:'stop'};
+    };
+    const origin=await app.listen({host:'127.0.0.1',port:0});
+    const response=await new Promise<{status:number;body:string}>((resolve,reject)=>{
+      const req=httpRequest(origin+'/v1/responses',{method:'POST',headers:{...headers(),'content-type':'application/json'},signal:AbortSignal.timeout(18000)},res=>{let body='';res.setEncoding('utf8');res.on('data',part=>{body+=part;});res.on('end',()=>resolve({status:res.statusCode!,body}));res.on('error',reject);});req.on('error',reject);req.end(JSON.stringify(responseBody()));
+    });
+    expect(response.status).toBe(200);expect(JSON.parse(response.body)).toMatchObject({status:'completed'});
+    expect(app.server.timeout).toBe(10000);expect(app.server.requestTimeout).toBe(15000);
+  },20000);
   it('returns account-scoped model metadata and preserves token ownership/revocation', async () => {
     for (const [user, id] of [['alice', local.id], ['bob', studio.id]]) {
       const response = await app.inject({ method: 'GET', url: '/v1/models', headers: headers(user) });

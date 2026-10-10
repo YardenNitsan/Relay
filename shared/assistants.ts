@@ -35,12 +35,12 @@ export const assistantDefinitions: readonly AssistantDefinition[] = [
   {
     id: 'email', name: 'Email', description: 'Draft clear messages, summarize supplied threads and prepare thoughtful replies.',
     instructions: `${common} Work as an email specialist. Preserve recipients, dates and commitments accurately. Distinguish an unsent draft from sent mail. Without a connected mail tool, work only from user-provided content and never claim inbox access or delivery. Ask for missing recipients before an actual send.`,
-    capabilities: ['Message drafting', 'Thread summaries', 'Reply preparation'], allowedTools: [...managedReads], integrationRequirements: ['Gmail inbox and sending'],
+    capabilities: ['Message drafting', 'Thread summaries', 'Reply preparation'], allowedTools: [...managedReads,'gmail_search','gmail_read'], integrationRequirements: ['Read-only Gmail connection'],
   },
   {
     id: 'calendar', name: 'Calendar', description: 'Plan schedules, resolve time zones and prepare event details.',
     instructions: `${common} Work as a scheduling specialist. Make dates, time zones, duration and attendees explicit. Verify ambiguity rather than silently choosing a time zone. Without a connected calendar tool, present a proposed schedule and do not claim availability checks, bookings or invitations.`,
-    capabilities: ['Schedule planning', 'Time-zone comparison', 'Event preparation'], allowedTools: [...managedReads], integrationRequirements: ['Google Calendar events'],
+    capabilities: ['Schedule planning', 'Time-zone comparison', 'Event preparation'], allowedTools: [...managedReads,'calendar_events','calendar_freebusy'], integrationRequirements: ['Read-only Google Calendar connection'],
   },
   {
     id: 'research', name: 'Research', description: 'Investigate questions, compare evidence and explain what remains uncertain.',
@@ -91,8 +91,8 @@ export function getAssistantDefinition(id: string | undefined): AssistantDefinit
 /** Describe the missing integration without hiding independently available tools. */
 export function assistantLimitations(id: AssistantId): string[] {
   switch (id) {
-    case 'email': return ['Paste a thread or choose workspace documents to summarize messages and prepare drafts. Gmail inbox access and sending are not implemented yet; connecting Gemini does not enable mail access.'];
-    case 'calendar': return ['Provide dates, time zones and existing commitments to prepare a schedule. Google Calendar availability checks, event creation and invitations are not implemented yet; connecting Gemini does not enable calendar access.'];
+    case 'email': return ['Paste a thread or choose workspace documents to summarize messages and prepare drafts. Explicit task opt-in and a separate Google Workspace connection enable read-only inbox tools with local models. Sending is unavailable; Gemini consent does not enable mail access.'];
+    case 'calendar': return ['Provide dates, time zones and existing commitments to prepare a schedule. Explicit task opt-in and a separate Google Workspace connection enable read-only primary-calendar events and availability with local models. Event creation and invitations are unavailable; Gemini consent does not enable calendar access.'];
     case 'browser': return ['Public-page reading uses your permitted website origins and task network policy. Interactive clicks, authenticated browsing, form submissions and screenshots are not implemented yet.'];
     case 'computer': return ['Choose a workspace for permitted file operations. Isolated commands require a configured sandbox; direct host files require owner authorization. Mouse, keyboard and desktop-app control are not implemented yet.'];
     default: return [];

@@ -1,13 +1,14 @@
 import {expect,test} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {pairBrowser,openCommands} from './helpers';
+import type {HardwareSnapshot} from '../../shared/types';
 
 test('unavailable hardware measurements remain truthful and have valid accessibility semantics',async({page})=>{
-  await page.route('**/api/hardware',async route=>{
-    const response=await route.fetch(),snapshot=await response.json();
-    snapshot.memory.swapTotalBytes=null;snapshot.memory.swapUsedBytes=null;
-    await route.fulfill({response,json:snapshot});
-  });
+  // This case verifies unknown-value semantics, not native telemetry discovery.
+  // Waiting on the runner's WMI/GPU probes made the supposedly controlled state
+  // depend on OS latency before the accessibility assertion could execute.
+  const snapshot:HardwareSnapshot={sampledAt:new Date().toISOString(),platform:'test',architecture:'x64',memoryArchitecture:'unknown',cpu:{name:'Browser telemetry fixture',physicalCores:4,logicalCores:8,utilization:null},memory:{totalBytes:8*1024**3,availableBytes:4*1024**3,swapTotalBytes:null,swapUsedBytes:null},gpus:[],storage:null,warnings:['Deterministic browser fixture; native telemetry is verified separately.']};
+  await page.route('**/api/hardware',route=>route.fulfill({status:200,json:snapshot}));
   await page.goto('/');await pairBrowser(page);await openCommands(page);
   await page.getByRole('option',{name:/Inspect this machine/}).click();
   const block=page.locator('.meter-block').filter({hasText:'Swap / pagefile in use'});

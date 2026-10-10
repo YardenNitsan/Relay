@@ -11,6 +11,18 @@ const model=(id:string,input=.1,output=.5):ModelProfile=>({id:`openai/${id}`,nam
 const admission:Admission={allowed:true,decision:'run',reasons:['Fixture fit'],contextTokens:8192,estimatedRamBytes:0,estimatedVramBytes:0,confidence:'estimated'};
 const gateway=(models:ModelProfile[]):ProviderGateway=>({listModels:async()=>models,statuses:async()=>[],stream:async function*(){throw new Error('Routing must not call a model');}});
 describe('task-aware economical reasoning',()=>{
+  it('keeps multilingual repair hints behind local-only, provider and hardware gates',async()=>{
+    const local={...model('local'),id:'ollama/local',name:'local',provider:'ollama' as const,runtime:'ollama',local:true};
+    const cloud=model('reasoner');
+    const objective=task('האפליקציה קורסת אחרי כניסה. מצא את הסיבה ותקן אותה.');
+    objective.options.cloudPolicy='local_only';
+    const denyLocal=async(profile:ModelProfile):Promise<Admission>=>({...admission,allowed:profile.id!==local.id,reasons:profile.id===local.id?['Reserved memory is unavailable']:[]});
+    await expect(selectModel(gateway([local,cloud]),objective,owner,'worker',denyLocal,new Set())).rejects.toThrow(/Reserved memory/);
+    objective.options.cloudPolicy='allow';
+    await expect(selectModel(gateway([local,cloud]),objective,{...owner,permissions:{...owner.permissions,providers:['ollama']}},'worker',denyLocal,new Set())).rejects.toThrow(/Reserved memory/);
+    expect((await selectModel(gateway([local,cloud]),objective,owner,'worker',denyLocal,new Set())).model.id).toBe(cloud.id);
+    expect(objective.options.budget.maxCostUsd).toBe(1);
+  });
   it('recognizes overlapping real requirements without a classifier call',()=>{
     expect(taskDemand('Debug this repository, implement changes across multiple files, then review security and run tests.').categories).toEqual(expect.arrayContaining(['debugging','multi_file_implementation','review_verification']));
     expect(taskDemand('Extract the document fields into JSON matching this schema.').categories).toEqual(expect.arrayContaining(['structured_extraction','document_analysis']));

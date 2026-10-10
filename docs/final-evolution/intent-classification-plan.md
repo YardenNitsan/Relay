@@ -1,6 +1,6 @@
 # D01: measured multilingual task demand
 
-The owner's directive requires overlapping English/Hebrew task understanding, without adding unmeasured inference overhead or changing authorization. This is a bounded replacement of `taskDemand` and the separately inconsistent `taskCategory` heuristic, not a new permission or execution planner. Prepare the isolated experiment during B06 verification; integrate production inline after the B06 checkpoint.
+The owner's directive requires overlapping English/Hebrew task understanding, without adding unmeasured inference overhead or changing authorization. This is a bounded replacement of `taskDemand` and the separately inconsistent `taskCategory` heuristic, not a new permission or execution planner. The isolated experiment ran during B06 verification; the unchanged phrase candidate is now integrated after the quiet comparison and focused hard-gate tests passed.
 
 ## Candidates and decision
 
@@ -24,3 +24,5 @@ No new dependency, external egress, resident model or cloud classifier. A local 
 - [scikit-learn text feature extraction](https://scikit-learn.org/stable/modules/feature_extraction.html#text-feature-extraction): sparse word/character features are inexpensive but lose linguistic structure. Use as a measured comparison, not as semantic understanding.
 - [Sentence Transformers semantic search](https://www.sbert.net/examples/sentence_transformer/applications/semantic-search/README.html): embeddings compare meaning with vector similarity; a separate encoder/runtime introduces installation, residency and latency tradeoffs. No encoder is installed or benchmarked by reading this source.
 - [fastText supervised classification tutorial](https://fasttext.cc/docs/en/supervised-tutorial.html): supervised labels, train/test separation and n-grams provide a small-model alternative. Relay's initial corpus is too small to establish broad quality; defer any production model dependency until an actual benefit is measured.
+
+Integration check: strict types and1270tests/one platform skip across119files pass (264.81s), including the separate C05 explicit-budget tests; production build passes. Logs: projects-intent-check.log and projects-intent-build.log. Forty-three focused demand/routing/reasoning/evaluation cases passed before this full check. Browser gates and retained evidence are tracked in acceptance-results.md; no broad model quality or semantic-classifier completion is claimed.

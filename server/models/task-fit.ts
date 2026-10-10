@@ -1,6 +1,7 @@
 import {z} from 'zod';
 import type {AgentRole,ModelProfile,TaskRecord} from '../../shared/types.js';
 import type {Store} from '../db/store.js';
+import {taskDemand} from './task-demand.js';
 
 export type TaskCategory='coding'|'reasoning'|'general';
 export const taskFitProtocol='relay-task-fit-v1';
@@ -23,8 +24,9 @@ export function evaluateTaskFit(result:string):z.infer<typeof scores>|null {
 /** A disclosed heuristic, not semantic understanding or a cloud classifier. */
 export function taskCategory(task:Pick<TaskRecord,'objective'|'options'>,role:AgentRole):TaskCategory {
   if(['coder','architect','security_reviewer'].includes(role)||['coding','computer','files'].includes(task.options.assistantId??''))return 'coding';
-  if(/\b(?:code|coding|repository|debug|bug|typescript|javascript|python|compile|refactor)\b/i.test(task.objective))return 'coding';
-  if(/\b(?:calculate|calculation|equation|arithmetic|algebra|logic|proof|mathematics|solve)\b/i.test(task.objective))return 'reasoning';
+  const demand=taskDemand(task.objective);
+  if(demand.categories.some(category=>['coding','debugging','repository_architecture','multi_file_implementation'].includes(category)))return 'coding';
+  if(demand.categories.some(category=>['mathematics','complex_reasoning'].includes(category)))return 'reasoning';
   return 'general';
 }
 export function taskFitEvidence(model:ModelProfile,category:TaskCategory):{passed:number;total:number;measuredAt:string}|null {

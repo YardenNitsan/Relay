@@ -6,13 +6,13 @@ This corpus tests advisory intent labels, not model answer quality, permissions 
 
 `baseline-v1.ts` preserves the shipped keyword classifier. `candidates.ts` contains an experimental bilingual phrase/context classifier and a lexical nearest-prototype comparison. The latter uses weighted word/character features from development only, with a fixed0.3 cosine threshold. Development resubstitution performance is not generalization evidence. Neither candidate uses semantic embeddings or makes a model call.
 
-Run in order:
+To reproduce the committed frozen comparison:
 
 ```text
-node --import tsx scripts/benchmark-task-intent.ts --development
-node --import tsx scripts/benchmark-task-intent.ts --freeze
 node --import tsx scripts/benchmark-task-intent.ts --heldout
 ```
+
+Development scoring uses `--development`. The original experiment ran development, then exclusive `--freeze`, then `--heldout`. Do not recreate an existing freeze or tune against the observed held-out cases.
 
 The initial freeze-v1 records the four source/data hashes. Review found that it omitted evaluator identity and did not bind threshold use; this is a disclosed reproducibility limitation in the first run. Its evaluator SHA256 was recorded afterward as f84ef641d6dde6a33dff1ddbd052424ff6809ecff9ff4742a569ac374f6729b8, not retroactively claimed as frozen beforehand. The initial report is retained in docs/final-evolution/evidence/intent-heldout-initial.json.
 

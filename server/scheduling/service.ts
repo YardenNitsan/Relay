@@ -15,7 +15,7 @@ export const scheduledOptionsSchema=z.object({
   access:z.literal('read_only'),hostAccessConfirmed:z.literal(false).optional(),workspaceId:z.string().uuid().nullable(),contextTokens:z.number().int().min(2048).max(131072),
   cloudPolicy:z.literal('local_only'),network:z.object({mode:z.literal('deny'),allowedOrigins:z.array(z.never()).max(0)}).strict().default({mode:'deny',allowedOrigins:[]}),
   mcpServerIds:z.array(z.never()).max(0).optional(),verification:verificationContractSchema.optional(),
-  budget:z.object({maxCalls:z.number().int().min(1).max(64),maxIterations:z.number().int().min(1).max(16),maxSeconds:z.number().int().min(30).max(3600),maxOutputTokens:z.number().int().min(256).max(8192),maxCostUsd:z.literal(0),localOnly:z.literal(true)}).strict(),
+  budget:z.object({maxCalls:z.number().int().min(1).max(64),maxIterations:z.number().int().min(1).max(16),maxSeconds:z.number().int().min(30).max(3600),maxElapsedSeconds:z.number().int().min(30).max(604800).optional(),maxOutputTokens:z.number().int().min(256).max(8192),maxCostUsd:z.literal(0),localOnly:z.literal(true)}).strict(),
 }).strict();
 export const scheduleInputSchema=z.object({name:z.string().trim().min(1).max(100),objective:z.string().trim().min(1).max(16000),startAt:z.string().datetime(),intervalMinutes:z.number().int().min(15).max(525600).nullable(),missedPolicy:z.enum(['skip','once']),enabled:z.boolean(),confirmed:z.literal(true),options:scheduledOptionsSchema}).strict();
 const toggleSchema=z.object({enabled:z.boolean(),confirmed:z.literal(true)}).strict();

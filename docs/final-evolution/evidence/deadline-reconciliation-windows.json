@@ -1,0 +1,99 @@
+{
+  "protocol": "relay-deadline-reconciliation-v1",
+  "platform": "win32",
+  "node": "v24.11.1",
+  "cpu": "Intel(R) Core(TM) Ultra 7 265KF",
+  "retained": 50000,
+  "pending": 100,
+  "indexed": {
+    "samples": 30,
+    "medianMs": 0.49830000000019936,
+    "p95Ms": 0.6954999999998108
+  },
+  "unindexed": {
+    "samples": 30,
+    "medianMs": 4.574799999999868,
+    "p95Ms": 5.740499999999884
+  },
+  "plan": [
+    {
+      "QUERY PLAN": [
+        {
+          "Plan": {
+            "Node Type": "Limit",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 0.14,
+            "Total Cost": 186.83,
+            "Plan Rows": 33,
+            "Plan Width": 32,
+            "Actual Startup Time": 0.031,
+            "Actual Total Time": 0.193,
+            "Actual Rows": 100,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Shared Hit Blocks": 5,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Scan Direction": "Forward",
+                "Index Name": "tasks_pending_deadlines",
+                "Relation Name": "tasks",
+                "Alias": "tasks",
+                "Startup Cost": 0.14,
+                "Total Cost": 186.83,
+                "Plan Rows": 33,
+                "Plan Width": 32,
+                "Actual Startup Time": 0.023,
+                "Actual Total Time": 0.1,
+                "Actual Rows": 100,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Filter": "((created_at + ((((options -> 'budget'::text) ->> 'maxElapsedSeconds'::text))::double precision * '00:00:01'::interval)) <= '2026-10-10 16:57:10.777+02'::timestamp with time zone)",
+                "Rows Removed by Filter": 0,
+                "Index Searches": 1,
+                "Shared Hit Blocks": 5,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 0,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.102,
+          "Triggers": [],
+          "Execution Time": 0.271
+        }
+      ]
+    }
+  ]
+}

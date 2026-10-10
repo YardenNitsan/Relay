@@ -9,7 +9,24 @@
 - Docker client installed; Linux-engine named pipe absent. Ubuntu WSL is installed. Real Docker acceptance unavailable at baseline.
 - Fresh Windows baseline `npm.cmd run check`: strict types and 1194 passed / one skipped, 110 files, 237.57 seconds (`output/final-evolution/baseline-canonical-check.log`). Locked install and production build passed. The earlier hidden-root run had 24 refusals; moving to an ordinary sibling restored valid fixture paths without changing production policy.
 - New harness regression: two tests passed. The alias fixture first reproduced the refusal, then canonical test setup passed while explicit alias inspection remained refused. A native Windows child created account-owned fixtures and returned failure code 37 unchanged. This standard-user run does not prove the elevated hosted-runner case.
-- Read-only focused code review found no concrete defect in the CI/harness changes; hosted results remain required. Full browser baseline is running; do not infer its outcome from partial passes.
+- Read-only focused code review found no concrete defect in the CI/harness changes. Fresh full browser baseline passed 110/110 in 14.1 minutes (`output/final-evolution/baseline-browser.log`); this is real browser fixture acceptance, not real-provider acceptance.
+
+## Foundation follow-up
+
+- Published branch commits `57ba8d9` (portable fixture/CI foundation and research ledger) and `26e2a6a` (retain native TLS inspection error cause). No production restart or merge occurred.
+- [Hosted run 38059861461](https://github.com/YardenNitsan/Relay/actions/runs/38059861461): Linux/macOS host checks and Linux browser checks passed. Windows host failures narrowed to three TLS inspection cases. macOS browser failures exposed invalid range ARIA on unknown swap telemetry. The diagnostic follow-up [38060383041](https://github.com/YardenNitsan/Relay/actions/runs/38060383041) confirms a five-second native inspection timeout with SIGTERM and empty output; Linux/macOS host checks pass.
+- Deterministic unknown-telemetry browser regression reproduced both axe violations before the fix (`meter-red.log`). Unknown bars now have decorative semantics while their visible unavailable label remains; measured bars retain meter semantics. Post-build acceptance pending.
+- Draft PR creation was rejected by the GitHub connector with HTTP 403, `Resource not accessible by integration`. Branch pushes work. No PR or branch-protection change was made.
+
+## Overall-deadline candidate
+
+New tasks receive a durable 24-hour overall budget, configurable from 30 seconds to seven days. The budget includes queues, approvals and offline time; historical tasks without the field remain compatible. Guards cover approval/resume, model reservation, tool authorization including queued effects, evaluation sampling/report commit, and final answer commit. Expiry retains receipts and interrupted effects, denies pending approvals, and cancels active execution. Migration 10 adds a partial pending-task index.
+
+Focused review regressions cover host/SQL clock disagreement, independent expiry during slow cleanup, evaluation authorization and scheduler reads during shutdown. `npm.cmd test -- tests/engine-scheduling.test.ts tests/task-deadline.test.ts --maxWorkers=1` passed 21/21 in 27.07 seconds. An earlier full run exposed a pricing fixture that jumped a month (now tests just across price expiry), missing evaluation guards, and an unowned scheduler read; all were addressed. The next full run revealed that the old shutdown test never released its simulated read until after shutdown returned; it now releases while shutdown joins and still asserts zero dispatch. This is documented test-contract repair, not removal of the invariant.
+
+Final local gates: `npm.cmd run check` passed strict types and **1214 tests / one skip across 112 files**, 245.99 seconds (`deadline-verified-check.log`); production build passed (`deadline-build.log`). `npm.cmd run test:e2e -- tests/e2e/retention.spec.ts tests/e2e/evolution.spec.ts` passed **12/12** including the previously failing unknown-telemetry axe case. `npm.cmd run test:e2e -- tests/e2e/access.spec.ts -g 'phone'` passed **2/2**, asserting deadline text, absolute machine-readable time and real approve/write/diff behavior at 320/390px with additional viewport transitions through 1920px and short landscape. These are fixture-provider workflows, not live model acceptance.
+
+Inspected the rendered desktop execution record, 390px approval and 390x420 approval action region. The deadline is readable in the scrollable approval context and decision controls remain reachable at short height. This verifies the addition within the existing UI, not the complete redesign. Retained [desktop baseline](evidence/before-desktop-1440.png), [phone baseline](evidence/before-phone-390.png), [execution record](evidence/deadline-execution.png) and [short approval](evidence/deadline-approval-short-390x420.png). Native PostgreSQL and current-commit three-OS checks remain distinct gates.
 
 ## Before-design inspection
 

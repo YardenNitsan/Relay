@@ -7,16 +7,18 @@ import { approvalContext } from '../approval';
 import { mergeEvents } from '../realtime-state';
 import Markdown from './Markdown';
 import ExecutionOverview from './ExecutionOverview';
+import TaskDeadline from './TaskDeadline';
 import { Empty, ErrorNotice, humanize, isActive, Loading, Status, time } from './ui';
 
 type Tab = 'activity' | 'files' | 'verification';
 const tabs: { id: Tab; label: string }[] = [{ id: 'activity', label: 'Activity' }, { id: 'files', label: 'Changes' }, { id: 'verification', label: 'Verification' }];
 
-function ApprovalCard({ approval, context, hostName, onDecision, busy }: { approval: Approval; context: ReturnType<typeof approvalContext>; hostName: string | undefined; onDecision: (id: string, decision: 'allow_once' | 'allow_task' | 'denied') => void; busy: boolean }) {
+function ApprovalCard({ approval, task, context, hostName, onDecision, busy }: { approval: Approval; task:TaskRecord; context: ReturnType<typeof approvalContext>; hostName: string | undefined; onDecision: (id: string, decision: 'allow_once' | 'allow_task' | 'denied') => void; busy: boolean }) {
   const payload = JSON.stringify(approval.arguments, null, 2);
   return <section className="approval" aria-label="Pending approval"><div className="approval-heading"><ShieldCheck size={20} /><div><h3>Your approval is needed</h3><p>{approval.tool}</p></div></div>
     <dl className="approval-identity"><dt>Host</dt><dd>{hostName || 'Host not reported'}</dd><dt>Workspace</dt><dd>{context.workspace}</dd><dt>Agent</dt><dd>{context.agent}</dd><dt>Model</dt><dd>{context.model}</dd></dl>
     <p className="approval-action"><strong>{context.action}</strong></p><p>{context.risk}</p><p className="approval-reason">{context.reason}</p>
+    <TaskDeadline task={task}/>
     <details className="approval-arguments"><summary>Inspect exact arguments</summary><pre className="bounded-output">{payload.slice(0, 12_000)}</pre>{payload.length > 12_000 && <button className="text-button" onClick={() => downloadText(`relay-approval-${approval.id}.json`, payload)}>Download complete arguments</button>}</details>
     <div className="approval-actions"><button className="button primary" disabled={busy} onClick={() => onDecision(approval.id, 'allow_once')}>Allow once</button><button className="button" disabled={busy} onClick={() => onDecision(approval.id, 'allow_task')}>Allow for this task</button><button className="button subtle" disabled={busy} onClick={() => onDecision(approval.id, 'denied')}>Deny</button></div><p className="hint">Task approval stays within this task’s permission policy.</p></section>;
 }
@@ -75,7 +77,7 @@ export default function Activity({ taskId, tasks, events, workspaces, hostName, 
     <div className="inspector-body" role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} tabIndex={0}>
       {error != null && <ErrorNotice error={error} />}{busy && <Loading>Applying your decision…</Loading>}
       {!taskId ? <Empty title="Your work will appear here" icon={<ListTree size={29} />}><p>Send an objective to inspect its models, tools, decisions and evidence.</p></Empty> : query.isPending ? <Loading>Opening execution record…</Loading> : query.isError ? <ErrorNotice error={query.error} retry={() => { void query.refetch(); }} /> : data && <>
-        {data.approvals.filter(approval => approval.status === 'pending').map(approval => <ApprovalCard key={approval.id} approval={approval} context={approvalContext(approval, data.task.options.workspaceId, workspaces, [...data.events, ...events])} hostName={hostName} busy={busy || stopped} onDecision={(id, decision) => { void run(`/approvals/${id}`, { decision }); }} />)}
+        {data.approvals.filter(approval => approval.status === 'pending').map(approval => <ApprovalCard key={approval.id} approval={approval} task={data.task} context={approvalContext(approval, data.task.options.workspaceId, workspaces, [...data.events, ...events])} hostName={hostName} busy={busy || stopped} onDecision={(id, decision) => { void run(`/approvals/${id}`, { decision }); }} />)}
         {task?.error && <div className="notice warning"><strong>{task.status === 'failed' ? 'Task could not complete' : 'Task needs attention'}</strong><p>{task.error}</p></div>}
         {tab === 'activity' && <ExecutionOverview data={data} />}
         {tab === 'activity' && <>{data.steps.length > 0 && <section className="steps"><h3>Work plan</h3>{data.steps.map(step => <details key={step.id} className="step"><summary><Status status={step.status} /><span>{step.title}</span><ChevronDown size={13} /></summary><div><p className="small muted">{humanize(step.role)}{step.modelId ? ` / ${step.modelId}` : ' / model not yet assigned'}</p>{step.output ? <Markdown content={step.output.slice(0, 24_000)} /> : <p className="muted small">{step.status === 'pending' ? 'Planned. This agent has not executed.' : 'No final output recorded.'}</p>}{step.output && step.output.length > 24_000 && <button className="text-button" onClick={() => downloadText(`relay-${step.role}-${step.id}.md`, step.output!)}>Download full agent output</button>}</div></details>)}</section>}<div className="section-heading"><h3>Work log</h3><span className="small muted">Factual activity</span></div>{combined.length ? <>{combined.length > limit && <button className="text-button older-events" onClick={() => setLimit(value => Math.min(1000, value + 100))}>Show earlier events ({combined.length - limit})</button>}<div className="event-thread">{combined.slice(-limit).map(event => <EventRow key={event.id} event={event} />)}</div></> : <p className="muted">No execution events recorded yet.</p>}</>}

@@ -67,6 +67,11 @@ export const migrations: readonly Migration[] = [
     ALTER TABLE model_evaluations ADD CONSTRAINT model_evaluations_protocol_check
       CHECK(protocol IN ('relay-capability-eval-v2','relay-code-eval-v1'));
   `},
+  {version:10,name:'unfinished-task-deadline-index',sql:`
+    CREATE INDEX tasks_pending_deadlines ON tasks(created_at,id)
+      WHERE status NOT IN ('completed','failed','cancelled')
+        AND options->'budget'->>'maxElapsedSeconds' IS NOT NULL;
+  `},
 ];
 const checksum = (migration: Migration) => createHash('sha256')
   .update(JSON.stringify([migration.version, migration.name, migration.sql.replace(/\r\n/g, '\n')])).digest('hex');

@@ -16,6 +16,19 @@ afterEach(async()=>{await store.close();});
 async function task(){const conversation=await store.createConversation('Evaluation');const {task}=await store.createTask(conversation.id,'Synthetic benchmark',structuredClone(options));await store.db.query("UPDATE tasks SET status='executing' WHERE id=$1",[task.id]);return {...actor,taskId:task.id};}
 
 describe('trusted evaluation persistence',()=>{
+  it('refuses an expired evaluation before authorizing sandbox work or samples',async()=>{
+    const scope=await task();await store.db.query("UPDATE tasks SET options=jsonb_set(options,'{budget,maxElapsedSeconds}','30'),created_at=now()-interval '31 seconds' WHERE id=$1",[scope.taskId]);
+    await expect(records.assertAuthorized(scope,identity)).rejects.toThrow(/deadline/i);
+    let calls=0;await expect(records.runAndRecord(scope,identity,async(...args)=>{calls++;return executor(...args);},execution)).rejects.toThrow(/deadline/i);expect(calls).toBe(0);
+  });
+  it('does not commit a successful evaluation report when the deadline expires during its last sample',async()=>{
+    const scope=await task();let calls=0;
+    await expect(records.runAndRecord(scope,identity,async(...args)=>{
+      if(++calls===evaluationCases().length)await store.db.query("UPDATE tasks SET options=jsonb_set(options,'{budget,maxElapsedSeconds}','30'),created_at=now()-interval '31 seconds' WHERE id=$1",[scope.taskId]);
+      return executor(...args);
+    },execution)).rejects.toThrow(/deadline/i);
+    expect(await records.evidence(actor,identity)).toBeNull();expect((await records.history(actor))[0]).toMatchObject({status:'failed',result:null});
+  });
   it('stores bounded host-run reports and returns only same-account evidence',async()=>{
     const scope=await task();const saved=await records.runAndRecord(scope,identity,executor,execution);
     expect(saved.report.samples).toHaveLength(evaluationCases().length);

@@ -5,7 +5,7 @@ export type Depth = 'fast' | 'balanced' | 'deep' | 'maximum';
 export type AccessMode = 'read_only' | 'supervised' | 'workspace' | 'unrestricted';
 export type TaskStatus = 'created' | 'analyzing' | 'planning' | 'executing' | 'verifying' | 'completed' | 'waiting_for_approval' | 'waiting_for_user' | 'failed' | 'replanning' | 'cancelled' | 'paused';
 export type AgentRole = 'supervisor' | 'planner' | 'worker' | 'researcher' | 'architect' | 'coder' | 'reviewer' | 'security_reviewer';
-export interface Budget { maxOutputTokens?: number; maxCalls: number; maxSeconds: number; maxIterations: number; maxCostUsd: number | null; localOnly: boolean; }
+export interface Budget { maxElapsedSeconds?: number; maxOutputTokens?: number; maxCalls: number; maxSeconds: number; maxIterations: number; maxCostUsd: number | null; localOnly: boolean; }
 export interface RequiredRead { path:string; expectedSha256:string; }
 export interface NetworkPolicy { mode:'deny'|'ask'|'allow'; allowedOrigins:string[]; }
 export interface TaskOptions { googleWorkspace?: {mail:boolean;calendar:boolean}; reasoning?: ReasoningPreference; efficiency?: 'efficient' | 'standard'; assistantId?: AssistantId; depth: Depth; modelId: string | null; modelSelection?: 'preferred' | 'required'; access: AccessMode; hostAccessConfirmed?: boolean; workspaceId: string | null; contextTokens: number; budget: Budget; cloudPolicy?: 'local_only' | 'allow' | 'ask'; verification?: {requiredReads:RequiredRead[]}; network?:NetworkPolicy; mcpServerIds?:string[]; }

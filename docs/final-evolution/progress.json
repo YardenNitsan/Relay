@@ -1,20 +1,84 @@
 {
-  "schemaVersion": 1,
-  "overallStatus": "incomplete",
-  "updatedAt": "2026-10-10",
-  "baselineCommit": "9d563bc973dbcc177921ab918db88561c8280e48",
-  "branch": "modernization/final-evolution",
-  "currentMilestone": "A1",
-  "requirementIds": ["A01", "A02", "B01"],
-  "worktree": "C:/Users/yarde/Documents/codexp/Relay-modernization",
-  "implementedChanges": ["Created final-evolution audit, dependency backlog, requirements and evidence ledger", "Canonical test temporary roots preserve production alias refusal", "Windows test process assigns account-owned new fixtures without changing machine policy", "Separate three-OS browser CI jobs", "Inspected design references and selected Studio direction; UI implementation pending"],
-  "changedFiles": ["docs/final-evolution/", ".github/workflows/verify.yml", ".github/workflows/native-packages.yml", "scripts/test-environment.mjs", "scripts/windows-test-token.ps1", "tests/test-environment.test.ts", "vitest.config.ts", "playwright.config.ts"],
-  "testStatus": "Fresh baseline check: 1194 passed, 1 skipped, 110 files. Build passed. New focused harness: 2 passed. Full browser baseline running. Hosted CI fix acceptance pending.",
-  "lastPassingCommands": ["npm.cmd ci", "npm.cmd run check (baseline)", "npm.cmd test -- tests/test-environment.test.ts --maxWorkers=1", "npm.cmd run typecheck", "npm.cmd run build"],
-  "lastPassingCommit": null,
-  "knownFailures": ["Historical CI temp aliases and Windows owner failures have candidate fixes awaiting hosted jobs", "Historical Linux CI timed out during browser suite; split-job acceptance pending"],
-  "outstandingSecurityReviews": ["Full threat-model review", "CI harness review found no concrete defect; elevated hosted Windows and native macOS remain acceptance gates"],
-  "externalBlockers": ["Docker engine not running", "Second physical Companion device not established", "Google OAuth application/consent unavailable", "Native macOS and physical Linux GPU unavailable locally", "License decision and branch-protection admin authorization pending"],
-  "nextActionableWorkItem": "Finish browser baseline, full post-change check, commit/push dedicated branch, inspect hosted CI; then A2 deadlines and B frontend implementation",
-  "remainingDependencies": ["A2 reliability/native recovery", "B full redesign and visual acceptance", "C realistic coding isolation/publication", "D evaluated intelligence/collaboration", "E Companion", "F memory/automation", "G maturity and all acceptance gates"]
+    "schemaVersion":  1,
+    "overallStatus":  "incomplete",
+    "updatedAt":  "2026-10-10",
+    "baselineCommit":  "9d563bc973dbcc177921ab918db88561c8280e48",
+    "branch":  "modernization/final-evolution",
+    "currentMilestone":  "A2",
+    "requirementIds":  [
+                           "A01",
+                           "A02",
+                           "A04",
+                           "B01",
+                           "B11"
+                       ],
+    "worktree":  "C:/Users/yarde/Documents/codexp/Relay-modernization",
+    "implementedChanges":  [
+                               "Portable test roots, Windows process object ownership, separate three-OS browser CI",
+                               "Design research and Studio selection; UI implementation pending",
+                               "Overall deadlines at admission, approval, resume, model/tool/evaluation dispatch and finalization",
+                               "Independent expiry cleanup, shutdown-owned scheduler reads, partial pending-task index migration 10",
+                               "Absolute deadline UI and advanced controls",
+                               "Candidate native .NET Windows ACL reads preserving security checks",
+                               "Unknown hardware meter accessibility semantics"
+                           ],
+    "changedFiles":  [
+                         "server/orchestration/",
+                         "server/db/store.ts",
+                         "server/db/migrations.ts",
+                         "server/models/evaluation-store.ts",
+                         "server/tools/index.ts",
+                         "server/api/app.ts",
+                         "server/scheduling/service.ts",
+                         "server/auth/lan-config.ts",
+                         "shared/",
+                         "web/components/",
+                         "tests/",
+                         "scripts/benchmark-deadlines.ts",
+                         "docs/final-evolution/",
+                         "docs/database-upgrades.md"
+                     ],
+    "testStatus":  "Strict types, 1214 tests passed/one skip across 112 files, production build, 12 evolution/retention browser cases and 2 phone approval cases passed. Deadline benchmark and selected visual inspection complete. Hosted current-commit gates pending.",
+    "lastPassingCommands":  [
+                                "npm.cmd ci",
+                                "npm.cmd run check (baseline)",
+                                "npm.cmd run build (baseline)",
+                                "npm.cmd run test:e2e (baseline: 110)",
+                                "npm.cmd test -- tests/engine-scheduling.test.ts tests/task-deadline.test.ts --maxWorkers=1 (21)",
+                                "npm.cmd test -- tests/lan-config.test.ts --maxWorkers=1 (30 passed, one skip)",
+                                "npm.cmd run check (deadline: 1214 passed, one skip)",
+                                "npm.cmd run build (deadline)",
+                                "npm.cmd run test:e2e -- tests/e2e/retention.spec.ts tests/e2e/evolution.spec.ts (12 passed)",
+                                "npm.cmd run test:e2e -- tests/e2e/access.spec.ts -g phone (2 passed)",
+                                "node --import tsx scripts/benchmark-deadlines.ts"
+                            ],
+    "lastPassingCommit":  "6d9b8e0",
+    "lastPassingCommitScope":  "CI fixes locally verified; deadline implementation verified in working tree, committing next. Hosted CI pending.",
+    "knownFailures":  [
+                          "Windows hosted TLS timeout candidate requires new CI result",
+                          "macOS hosted unknown-telemetry axe regression now passes locally; new CI result pending"
+                      ],
+    "outstandingSecurityReviews":  [
+                                       "Full threat-model review",
+                                       "Four focused deadline findings fixed and re-reviewed without new concrete defects; full suite pending",
+                                       "Hosted native TLS acceptance"
+                                   ],
+    "externalBlockers":  [
+                             "Docker engine not running",
+                             "Second physical Companion device unavailable",
+                             "Google OAuth app/consent unavailable",
+                             "Native macOS and physical Linux GPU unavailable locally",
+                             "Owner license/admin protection authorization pending",
+                             "Draft PR connector HTTP403 Resource not accessible by integration; branch pushes succeed"
+                         ],
+    "nextActionableWorkItem":  "Commit deadline milestone, push, inspect latest hosted CI; continue A native recovery/backup and B Studio implementation",
+    "remainingDependencies":  [
+                                  "A native recovery/restore/retention",
+                                  "B full redesign",
+                                  "C coding isolation/publication",
+                                  "D intelligence/collaboration",
+                                  "E Companion",
+                                  "F memory/automation",
+                                  "G full acceptance"
+                              ]
 }

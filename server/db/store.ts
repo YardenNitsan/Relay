@@ -7,6 +7,8 @@ import { assertTransition, terminalStates } from '../orchestration/lifecycle.js'
 import type { Database, Sql } from './database.js';
 import { migrate } from './migrations.js';
 import { requiredReadStatus } from '../orchestration/required-reads.js';
+import {assertTaskDeadline,deadlineExceeded,withAdmissionDeadline} from '../orchestration/deadline.js';
+import {taskDeadlineMs} from '../../shared/task-deadline.js';
 
 export function row<T>(input:Record<string,unknown>):T {
   return Object.fromEntries(Object.entries(input).map(([key,value])=>[key.replace(/_([a-z])/g,(_,letter:string)=>letter.toUpperCase()),value instanceof Date?value.toISOString():key==='id'&&typeof value==='bigint'?Number(value):value])) as T;
@@ -76,7 +78,7 @@ export class Store {
       if(control.stopped) throw new AppError('STOPPED','Emergency stop is active. Resume scheduling before starting a task.',409);
       const found=(await tx.query('SELECT * FROM users WHERE id=$1 FOR UPDATE',[userId]))[0];
       if(!found)throw new AppError('USER_DISABLED','This account is disabled',403);
-      const user=row<User>(found);const authorized=await admissionOptions(tx,user,options,expectedSessionVersion);
+      const user=row<User>(found);const authorized=await admissionOptions(tx,user,withAdmissionDeadline(options),expectedSessionVersion);
       if(newConversation) {
         const hash=createHash('sha256').update(JSON.stringify({objective,options})).digest('hex');
         const existing=(await tx.query('SELECT * FROM conversations WHERE id=$1',[conversationId]))[0];
@@ -96,7 +98,7 @@ export class Store {
       await assertWorkspaceConversation(tx,conversationId,authorized);
       const running=await tx.query("SELECT id FROM tasks WHERE conversation_id=$1 AND status NOT IN ('completed','cancelled','failed','paused') LIMIT 1",[conversationId]);
       if(running.length) throw new AppError('CONVERSATION_BUSY','This conversation already has an active task. Stop it or wait before sending another objective.',409);
-      const task=row<TaskRecord>((await tx.query('INSERT INTO tasks(id,conversation_id,objective,status,options,stop_generation,user_id) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *',[randomUUID(),conversationId,objective,'created',JSON.stringify(authorized),control.generation,userId]))[0]);
+      const task=row<TaskRecord>((await tx.query('INSERT INTO tasks(id,conversation_id,objective,status,options,stop_generation,user_id,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *',[randomUUID(),conversationId,objective,'created',JSON.stringify(authorized),control.generation,userId,new Date(Date.now()).toISOString()]))[0]);
       const message=row<Message>((await tx.query('INSERT INTO messages(id,conversation_id,task_id,role,content) VALUES ($1,$2,$3,$4,$5) RETURNING *',[randomUUID(),conversationId,task.id,'user',objective]))[0]);
       await tx.query("UPDATE conversations SET updated_at=now(), title=CASE WHEN title='New conversation' THEN $1 ELSE title END WHERE id=$2",[objective.slice(0,80),conversationId]);
       await event(tx,task.id,'TASK_CREATED',{objective,conversationId,userId}); return {task,message};
@@ -114,6 +116,7 @@ export class Store {
       const user=row<User>((await tx.query('SELECT * FROM users WHERE id=$1 FOR UPDATE',[owner.user_id]))[0]);
       const task=row<TaskRecord>((await tx.query('SELECT * FROM tasks WHERE id=$1 FOR UPDATE',[id]))[0]);
       if(task.status!=='paused'&&task.status!=='waiting_for_user')throw new AppError('NOT_PAUSED','This task is not paused',409);
+      assertTaskDeadline(task);
       const timing=(await tx.query('SELECT execution_used_ms,execution_reserved_ms FROM tasks WHERE id=$1',[id]))[0];
       if(Number(timing.execution_used_ms)+Number(timing.execution_reserved_ms)>=task.options.budget.maxSeconds*1000)throw new AppError('TIME_BUDGET','Task execution time budget is exhausted. Start a new objective.',409);
       const authorized=await admissionOptions(tx,user,task.options,expectedSessionVersion);
@@ -137,8 +140,9 @@ export class Store {
       await tx.query("UPDATE approvals SET status='denied' WHERE task_id=$1 AND status='pending'",[id]);
       const status=steps.length?'executing':'analyzing';assertTransition(task.status,status);
       // Changing phase in this transaction reserves the active slot before enqueue.
+      assertTaskDeadline(task);
       const resumed=row<TaskRecord>((await tx.query('UPDATE tasks SET status=$1,options=$2,stop_generation=$3,error=NULL,updated_at=now() WHERE id=$4 RETURNING *',[status,JSON.stringify(authorized),control.generation,id]))[0]);
-      await event(tx,id,'TASK_RESUMED',{status,previousStatus:task.status});return resumed;
+      await event(tx,id,'TASK_RESUMED',{status,previousStatus:task.status});assertTaskDeadline(task);return resumed;
     });
   }
   async transition(id:string,status:TaskStatus,data:Record<string,unknown>={}):Promise<TaskRecord> {
@@ -154,13 +158,16 @@ export class Store {
     await this.db.transaction(async tx=>{
       const task=row<TaskRecord>((await tx.query('SELECT * FROM tasks WHERE id=$1 FOR UPDATE',[id]))[0]);
       assertTransition(task.status,'completed');
+      assertTaskDeadline(task);
       if((await requiredReadStatus(tx,task)).some(result=>!result.passed))throw new AppError('REQUIRED_VERIFICATION','Required file-read evidence is missing or stale. Task completion is blocked.',409);
       const control=(await tx.query('SELECT value FROM settings WHERE key=$1',['control']))[0].value as {stopped:boolean;generation:number};
       if(control.stopped||control.generation!==task.stopGeneration) throw new AppError('CANCELLED','Task stopped before completion',409);
+      assertTaskDeadline(task);
       await tx.query("UPDATE tasks SET status='completed',result=$1,updated_at=now() WHERE id=$2",[result,id]);
       await tx.query('INSERT INTO messages(id,conversation_id,task_id,role,content) VALUES ($1,$2,$3,$4,$5)',[randomUUID(),task.conversationId,id,'assistant',result]);
       await tx.query('UPDATE conversations SET updated_at=now() WHERE id=$1',[task.conversationId]);
       await event(tx,id,'TASK_COMPLETED',{result});
+      assertTaskDeadline(task);
     });
   }
   async append(taskId:string|null,type:string,data:Record<string,unknown>={}) { return event(this.db,taskId,type,data); }
@@ -205,6 +212,7 @@ export class Store {
       const user=row<User>((await tx.query('SELECT * FROM users WHERE id=$1 FOR UPDATE',[owner.user_id]))[0]);
       const task=row<TaskRecord>((await tx.query('SELECT * FROM tasks WHERE id=$1 FOR UPDATE',[taskId]))[0]);
       if(control.stopped||control.generation!==task.stopGeneration||!user.enabled||reservation&&user.sessionVersion!==reservation.sessionVersion)throw new AppError('REVOKED','Execution grant was revoked',403);
+      assertTaskDeadline(task);
       await admissionOptions(tx,user,task.options,reservation?.sessionVersion);
       if(task.callsUsed>=task.options.budget.maxCalls) throw new AppError('CALL_BUDGET','Model call budget exhausted. Review the partial work.',409);
       if(terminalStates.includes(task.status)||task.status==='paused') throw new AppError('CANCELLED','Task is not running',409);
@@ -223,10 +231,11 @@ export class Store {
           if(daily+(amount??0)>user.permissions.dailyCloudBudgetUsd)throw new AppError('USER_COST_BUDGET','Your daily cloud budget is exhausted',403);
         }
       }
+      assertTaskDeadline(task);
       const id=randomUUID(); await tx.query('UPDATE tasks SET calls_used=calls_used+1 WHERE id=$1',[taskId]);
       const costState=reservation?.cloud?amount===null?'unpriced':'reserved':'settled';
       await tx.query("INSERT INTO model_calls(id,task_id,agent_id,model_id,status,context,reserved_cost_usd,cost_usd,cost_state) VALUES ($1,$2,$3,$4,'running',$5,$6,$6,$7)",[id,taskId,agentId,modelId,JSON.stringify(context),amount,costState]);
-      await event(tx,taskId,'MODEL_CALL_STARTED',{callId:id,agentId,modelId,reservedCostUsd:amount,costState}); return id;
+      await event(tx,taskId,'MODEL_CALL_STARTED',{callId:id,agentId,modelId,reservedCostUsd:amount,costState});assertTaskDeadline(task); return id;
     });
   }
   async finishCall(id:string,input:number|null,output:number|null,cost:number|null,error?:string,usage:Record<string,number>|null=null) {
@@ -259,8 +268,9 @@ export class Store {
       const task=row<TaskRecord>((await tx.query('SELECT * FROM tasks WHERE id=$1',[approval.taskId]))[0]);
       const control=(await tx.query('SELECT value FROM settings WHERE key=$1',['control']))[0].value as {stopped:boolean;generation:number};
       if(control.stopped||terminalStates.includes(task.status)||task.status==='paused'||task.stopGeneration!==control.generation) throw new AppError('STALE_APPROVAL','The task was stopped or paused. This request cannot be approved.',409);
+      assertTaskDeadline(task);
       await tx.query('UPDATE approvals SET status=$1 WHERE id=$2',[decision,id]);
-      await event(tx,approval.taskId,'APPROVAL_DECIDED',{approvalId:id,decision}); return {...approval,status:decision};
+      await event(tx,approval.taskId,'APPROVAL_DECIDED',{approvalId:id,decision});assertTaskDeadline(task); return {...approval,status:decision};
     });
   }
   async verify(taskId:string,kind:string,summary:string,passed:boolean,details:Record<string,unknown>={},checkKey:string|null=null) {
@@ -293,6 +303,31 @@ export class Store {
       await tx.query("UPDATE tool_calls SET status='uncertain' WHERE status='running'");
       await tx.query("UPDATE model_evaluations SET status='interrupted',finished_at=now() WHERE status='running'");
       for(const task of interrupted) await event(tx,task.id as string,'RECOVERY_REQUIRED',{reason:'Host restarted; side effects are never automatically replayed.'});
+      for(const id of await this.overdueTasks(tx))await this.expireTaskInTransaction(tx,id);
     });
+  }
+  async overdueTasks(tx:Sql=this.db,now=Date.now(),excluding:string[]=[]):Promise<string[]> {
+    // Bounded reconciliation batches. Authorization also checks the deadline at
+    // each dispatch, so waiting for a sweep never extends execution authority.
+    return (await tx.query(`SELECT id FROM tasks WHERE status NOT IN ('completed','failed','cancelled')
+      AND options->'budget'->>'maxElapsedSeconds' IS NOT NULL
+      AND id<>ALL($2::text[])
+      AND created_at + (options->'budget'->>'maxElapsedSeconds')::double precision * interval '1 second' <= $1::timestamptz
+      ORDER BY created_at,id LIMIT 128`,[new Date(now).toISOString(),excluding])).map(task=>String(task.id));
+  }
+  async expireTask(id:string,observedAt=Date.now()):Promise<void> {
+    await this.db.transaction(tx=>this.expireTaskInTransaction(tx,id,observedAt));
+  }
+  private async expireTaskInTransaction(tx:Sql,id:string,observedAt=Date.now()):Promise<void> {
+    const found=(await tx.query('SELECT * FROM tasks WHERE id=$1 FOR UPDATE',[id]))[0];
+    if(!found)return;
+    const task=row<TaskRecord>(found),deadline=taskDeadlineMs(task);
+    if(terminalStates.includes(task.status)||deadline===null||deadline>Math.max(observedAt,Date.now()))return;
+    assertTransition(task.status,'failed');
+    const error=deadlineExceeded().message;
+    await tx.query("UPDATE tasks SET status='failed',error=$1,updated_at=now() WHERE id=$2",[error,id]);
+    await tx.query("UPDATE approvals SET status='denied' WHERE task_id=$1 AND status='pending'",[id]);
+    await event(tx,id,'TASK_DEADLINE_EXCEEDED',{deadlineAt:Number.isFinite(deadline)?new Date(deadline).toISOString():null,error});
+    await event(tx,id,'TASK_FAILED',{status:'failed',error});
   }
 }

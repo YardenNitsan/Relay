@@ -16,11 +16,14 @@ for (const size of [{ width: 320, height: 640 }, { width: 390, height: 844 }, { 
     await expect(page.getByRole('heading', { name: 'Advanced controls' })).toBeVisible();
     await page.getByLabel('Maximum calls', { exact: true }).fill('8');
     await expect(page.getByLabel('Active time limit (seconds)', { exact: true })).toBeVisible();
+    await expect(page.getByLabel('Overall time limit (seconds)', { exact: true })).toHaveValue('86400');
+    await page.getByLabel('Overall time limit (seconds)', { exact: true }).fill('600');
     await expect(page.getByText('Whole-task approval and resource waits do not spend active time.', { exact: false })).toBeVisible();
     await page.getByRole('button', { name: 'Execution options' }).click();
     await expect(page.getByLabel('Maximum calls', { exact: true })).toHaveCount(0);
     await page.getByRole('button', { name: 'Execution options' }).click();
     await expect(page.getByLabel('Maximum calls', { exact: true })).toHaveValue('8');
+    await expect(page.getByLabel('Overall time limit (seconds)', { exact: true })).toHaveValue('600');
     await page.getByRole('button', { name: 'Execution options' }).click();
     await page.getByText('About these permissions', { exact: true }).click();
     await expect(page.getByText('Read authorized managed files. No modifications or commands.', { exact: false })).toBeVisible();
@@ -43,6 +46,7 @@ test('execution overview distinguishes completion from recorded evidence', async
   await expect(overview).toContainText('No independent checks recorded');
   await expect(overview.getByRole('list', { name: 'Agent steps' })).toBeVisible();
   await expect(overview).toContainText('ollama/e2e-fixture');
+  await expect(overview.getByText('Overall deadline:', {exact:false})).toContainText('Includes queue, approval and offline time.');
   await page.screenshot({ path: 'output/playwright/evolution-execution.png' });
 });
 

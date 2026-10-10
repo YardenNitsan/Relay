@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import {assertTaskDeadline} from '../orchestration/deadline.js';
 import {GoogleWorkspace} from '../integrations/google-workspace.js';
 import {assertWorkspaceConversation} from '../integrations/workspace-policy.js';
 import {prepareWorkspaceRead} from './google-workspace.js';
@@ -121,6 +122,7 @@ export class ToolBroker {
     if(!state)throw new AppError('WORKSPACE_DENIED','Task ownership could not be verified',403);
     const task=state.task as Record<string,unknown>,account=state.account as Record<string,unknown>;
     const user=row<User>(account),options=task.options as TaskOptions;
+    assertTaskDeadline({createdAt:String(task.created_at),options});
     if(user.sessionVersion!==context.sessionVersion||options.workspaceId!==context.workspaceId||options.access!==context.access)throw new AppError('REVOKED','Task scope was revoked',403);
     const selection=(values:string[]|undefined)=>JSON.stringify([...new Set(values??[])].sort());
     const hostAccess=options.access==='unrestricted'&&options.hostAccessConfirmed===true&&user.role==='owner';
@@ -134,6 +136,7 @@ export class ToolBroker {
     if(control.stopped||control.generation!==Number(task.stop_generation)||!['executing','verifying'].includes(String(task.status)))throw new AppError('STOPPED','This task is not authorized to execute',409);
     authorizeOptions({user,remote:user.role!=='owner',sessionId:'tool-execution'},options,state.workspace?row<Workspace>(state.workspace as Record<string,unknown>):undefined);
     if(context.workspaceId){const {record}=await this.workspace(context.workspaceId);if(record.ownerUserId&&record.ownerUserId!==user.id&&user.role!=='owner')throw new AppError('WORKSPACE_DENIED','Private workspace access denied',403);}
+    assertTaskDeadline({createdAt:String(task.created_at),options});
   }
   async execute(context: ToolContext, request: ToolRequest): Promise<ToolResult> {
     const guard = this.guard(context.signal);

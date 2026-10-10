@@ -35,6 +35,7 @@ import { recordRequiredReads } from './required-reads.js';
 import { ExecutionBudget, claimStepIteration } from './budget.js';
 import {ExecutionActivity} from './activity.js';
 import {TaskSlots,orderQueuedTasks} from './slots.js';
+import {assertTaskDeadline} from './deadline.js';
 import { HistoryRepository } from '../history/repository.js';
 import { usageRecord,timingRecord } from '../models/usage.js';
 import type {ModelTiming} from '../../shared/types.js';
@@ -60,12 +61,53 @@ export class Engine {
   private stopping=false;
   private approvalSignals=new Map<string,()=>void>();
   private taskGrants=new Map<string,Set<string>>();
+  private deadlineTimer:ReturnType<typeof setTimeout>|undefined;
+  private deadlineSweep:Promise<void>|undefined;
+  private deadlineStops=new Map<string,Promise<void>>();
+  private drains=new Set<Promise<void>>();
   constructor(readonly store:Store,readonly gateway:ProviderGateway,readonly tools:ExecutionTools,private options:{admit?:Admit;lease?:LocalLease;watchMemory?:MemoryWatchFactory}={}) {this.lease=options.lease??new LocalLease();}
   isStopped() {return this.stopping||this.closed;}
-  enqueue(taskId:string) { if(!this.queue.includes(taskId)&&!this.running.has(taskId)){this.queue.push(taskId);void this.drain();} }
+  enqueue(taskId:string) { if(!this.queue.includes(taskId)&&!this.running.has(taskId)){this.queue.push(taskId);this.scheduleDeadlines();void this.drain();} }
   approvalChanged(id:string) {this.approvalSignals.get(id)?.();}
-  async initialize() {this.stopping=(await this.store.control()).stopped;await this.store.recover();}
-  private async drain() {
+  async initialize() {this.stopping=(await this.store.control()).stopped;await this.store.recover();this.scheduleDeadlines();}
+  private scheduleDeadlines() {
+    if(this.closed||this.deadlineTimer||this.deadlineSweep)return;
+    this.deadlineTimer=setTimeout(()=>{
+      this.deadlineTimer=undefined;
+      this.deadlineSweep=this.expireDeadlines().catch(()=>{
+        // Fail closed if durable deadline reconciliation loses storage access.
+        for(const run of this.running.values())run.controller.abort('deadline_storage');
+      }).finally(()=>{this.deadlineSweep=undefined;this.scheduleDeadlines();});
+    },1000);
+    this.deadlineTimer.unref();
+  }
+  private async expireDeadlines() {
+    const observedAt=Date.now();
+    for(const id of await this.store.overdueTasks(this.store.db,observedAt,[...this.deadlineStops.keys()])) {
+      if(this.closed)return;
+      this.queue=this.queue.filter(task=>task!==id);
+      const running=this.running.get(id);running?.controller.abort('deadline');
+      // A slow tool cleanup must not postpone another task's cancellation. Keep
+      // each join owned until shutdown, but continue bounded deadline discovery.
+      const stopped=(async()=>{
+        if(running)await running.promise;
+        await this.store.expireTask(id,observedAt);
+      })().catch(()=>{running?.controller.abort('deadline_storage');})
+        .finally(()=>{this.deadlineStops.delete(id);});
+      this.deadlineStops.set(id,stopped);
+    }
+  }
+  private drain():Promise<void> {
+    if(this.closed)return Promise.resolve();
+    const pending=this.drainOnce().catch(async()=>{
+      if(this.closed)return;
+      for(const run of this.running.values())run.controller.abort('scheduler_storage');
+      const ids=this.queue;this.queue=[];
+      for(const id of ids)await this.store.transition(id,'paused',{error:'Task scheduling could not read durable state. Inspect host storage before resuming.'}).catch(()=>{});
+    }).finally(()=>{this.drains.delete(pending);});
+    this.drains.add(pending);return pending;
+  }
+  private async drainOnce() {
     if(this.closed||this.stopping)return;
     if(this.draining){this.drainAgain=true;return;}
     this.draining=true;
@@ -91,8 +133,12 @@ export class Engine {
             await tx.query("UPDATE task_steps SET status='pending' WHERE task_id=$1 AND status='running'",[task.id]);
           });
           const latest=await this.store.task(task.id);
+          if(controller.signal.reason==='deadline'||error instanceof AppError&&error.code==='TASK_DEADLINE') {
+            await this.store.expireTask(task.id);
+            if((await this.store.task(task.id)).status==='failed')return;
+          }
           if(!terminalStates.includes(latest.status)&&latest.status!=='paused') {
-            const cancelled=controller.signal.aborted&&!['time_budget','budget_storage','shutdown','sibling_failure'].includes(String(controller.signal.reason));
+            const cancelled=controller.signal.aborted&&!['time_budget','budget_storage','deadline','deadline_storage','scheduler_storage','shutdown','sibling_failure'].includes(String(controller.signal.reason));
             await this.store.transition(task.id,cancelled?'cancelled':'paused',{error:publicError(error)});
           }
         }).finally(()=>{slot.release?.();this.running.delete(task.id);this.taskGrants.delete(task.id);void this.drain();});
@@ -102,6 +148,7 @@ export class Engine {
   }
   private async run(id:string,controller:AbortController,slot:{release?:()=>void}) {
     const task=await this.store.task(id);
+    assertTaskDeadline(task);
     const user=row<User>((await this.store.db.query('SELECT * FROM users WHERE id=$1',[task.userId]))[0]);
     if(!user.enabled)throw new AppError('USER_DISABLED','Account disabled',403);
     const budget=await ExecutionBudget.start(this.store,id,controller);
@@ -370,6 +417,7 @@ export class Engine {
     throw new AppError('ITERATION_BUDGET','Agent iteration budget reached. Inspect partial work before resuming.');
   }
   private async isAuthorized(task:TaskRecord,user:User) {
+    assertTaskDeadline(task);
     const control=await this.store.control();
     const current=(await this.store.db.query('SELECT enabled,session_version FROM users WHERE id=$1',[user.id]))[0];
     if(task.options.workspaceId){const workspace=(await this.store.db.query('SELECT owner_user_id FROM workspaces WHERE id=$1',[task.options.workspaceId]))[0];if(workspace?.owner_user_id&&workspace.owner_user_id!==user.id&&user.role!=='owner')return false;}
@@ -535,8 +583,12 @@ export class Engine {
   }
   async shutdown() {
     this.closed=true;
+    clearTimeout(this.deadlineTimer);this.deadlineTimer=undefined;
     for(const run of this.running.values())run.controller.abort('shutdown');
     await this.tools.stopAll();await Promise.all([...this.running.values()].map(run=>run.promise));
+    await Promise.all([...this.drains]);
+    await this.deadlineSweep;
+    await Promise.all([...this.deadlineStops.values()]);
     for(const id of this.queue) {
       const task=await this.store.task(id);
       if(!terminalStates.includes(task.status)&&task.status!=='paused')await this.store.transition(id,'paused',{error:'Host shut down before this task started. Resume when ready.'});

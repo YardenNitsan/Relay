@@ -2,6 +2,7 @@ import { Check, Circle, CircleAlert, LoaderCircle } from 'lucide-react';
 import type { TaskDetail } from '../../shared/types';
 import { humanize } from './ui';
 import TaskTiming from './TaskTiming';
+import TaskDeadline from './TaskDeadline';
 
 /** Recorded state only. Agent completion is never presented as a passed check. */
 export default function ExecutionOverview({ data }: { data: TaskDetail }) {
@@ -26,5 +27,6 @@ export default function ExecutionOverview({ data }: { data: TaskDetail }) {
     </ol>}
     <div className="evidence-summary"><span>Recorded checks</span><strong>{checks.length ? `${passed} passed · ${failed} failed` : 'No independent checks recorded'}</strong><p>Completion describes the workflow. Evidence describes what was actually checked.</p></div>
     <TaskTiming taskId={data.task.id} running={!['completed','failed','cancelled','paused','waiting_for_user'].includes(data.task.status)}/>
+    <TaskDeadline task={data.task}/>
   </section>;
 }

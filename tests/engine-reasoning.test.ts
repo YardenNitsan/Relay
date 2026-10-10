@@ -12,9 +12,13 @@ let store:Store,engine:Engine;
 afterEach(async()=>{vi.restoreAllMocks();await engine?.shutdown();await store?.close();});
 async function run(reasoning:TaskOptions['reasoning'],history:boolean,expiry=false){
   const profile=expiry?enrichPricing({...model,id:'deepseek/deepseek-flash',inputPricePerMillion:null,outputPricePerMillion:null},Date.parse('2026-10-10T12:00:00Z')):model;
+  const priceExpiry=expiry?Date.parse((profile.details.pricing as {expiresAt:string}).expiresAt):0;
+  // Cross only the pricing cutoff; a month-long jump would also (correctly)
+  // expire the independent overall task deadline.
+  if(expiry)vi.spyOn(Date,'now').mockReturnValue(priceExpiry-1000);
   store=new Store(await openDatabase());await store.init();
   const calls:ModelRequest[]=[];
-  engine=new Engine(store,{listModels:async()=>{if(expiry)vi.spyOn(Date,'now').mockReturnValue(Date.parse('2026-11-10T12:00:00Z'));return [profile];},statuses:async()=>[],stream:async function*(request){calls.push(request);yield {type:'text',text:'Fixture result'};yield {type:'usage',inputTokens:10,outputTokens:10};yield {type:'done',finishReason:'stop'};}},{definitions:()=>[{name:'personal_tasks',description:'Tasks',parameters:{type:'object'}}],decide:()=>({decision:'deny',reason:'Fixture',risk:'read'}),execute:async()=>{throw new Error('No execution expected');},changes:async()=>[],stopAll:async()=>{}},{admit:async()=>({allowed:true,decision:'run',reasons:[],contextTokens:8192,estimatedRamBytes:0,estimatedVramBytes:0,confidence:'estimated'})});
+  engine=new Engine(store,{listModels:async()=>{if(expiry)vi.spyOn(Date,'now').mockReturnValue(priceExpiry+1000);return [profile];},statuses:async()=>[],stream:async function*(request){calls.push(request);yield {type:'text',text:'Fixture result'};yield {type:'usage',inputTokens:10,outputTokens:10};yield {type:'done',finishReason:'stop'};}},{definitions:()=>[{name:'personal_tasks',description:'Tasks',parameters:{type:'object'}}],decide:()=>({decision:'deny',reason:'Fixture',risk:'read'}),execute:async()=>{throw new Error('No execution expected');},changes:async()=>[],stopAll:async()=>{}},{admit:async()=>({allowed:true,decision:'run',reasons:[],contextTokens:8192,estimatedRamBytes:0,estimatedVramBytes:0,confidence:'estimated'})});
   const conversation=await store.createConversation();
   if(history)await store.db.query('INSERT INTO messages(id,conversation_id,role,content) VALUES ($1,$2,$3,$4)',[randomUUID(),conversation.id,'assistant','Previous ordinary answer']);
   const {task}=await store.createTask(conversation.id,'Debug my task algorithm',{...options,modelId:profile.id,reasoning});engine.enqueue(task.id);

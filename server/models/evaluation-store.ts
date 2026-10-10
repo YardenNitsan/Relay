@@ -1,6 +1,7 @@
 import {randomUUID} from 'node:crypto';
 import type {TaskOptions} from '../../shared/types.js';
 import {AppError} from '../core/errors.js';
+import {assertTaskDeadline} from '../orchestration/deadline.js';
 import {authorizeOptions,type User} from '../auth/policy.js';
 import {row,type Store} from '../db/store.js';
 import type {Sql} from '../db/database.js';
@@ -35,6 +36,7 @@ export class EvaluationStore {
     const control=(await sql.query('SELECT value FROM settings WHERE key=$1',['control']))[0].value as {stopped:boolean;generation:number};
     if(control.stopped||control.generation!==found.stop_generation||found.status!=='executing')throw new AppError('REVOKED','Evaluation task is stopped or no longer executing.',403);
     const options=found.options as TaskOptions;
+    assertTaskDeadline({createdAt:found.created_at instanceof Date?found.created_at.toISOString():String(found.created_at),options});
     authorizeOptions({user,remote:user.role!=='owner',sessionId:'evaluation'},options);
     if(!['ollama','lmstudio'].includes(identity.provider)||!options.budget.localOnly||options.cloudPolicy!==undefined&&options.cloudPolicy!=='local_only')throw new AppError('EVALUATION_LOCAL_ONLY','This evaluation runner currently supports local inference only.',403);
     if(options.modelSelection!=='required'||options.modelId!==identity.modelId||options.contextTokens!==identity.contextTokens||(options.budget.maxOutputTokens??2048)!==identity.executionSettings.maxOutputTokens||options.access!=='read_only'||options.workspaceId||options.hostAccessConfirmed||options.assistantId||options.verification||options.mcpServerIds?.length||options.network&&options.network.mode!=='deny')throw new AppError('EVALUATION_SCOPE','Evaluation task must use the exact model and context/output settings without workspace or action permissions.',403);

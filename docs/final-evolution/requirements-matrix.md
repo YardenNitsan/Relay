@@ -7,7 +7,7 @@ Status vocabulary: **Complete and verified**, **Implemented but insufficiently v
 | A01 | Latest-source audit, repeatable baseline, ledger (§3,26) | Partially implemented | Fresh source/CI/tests/build/browser results; requirements inventory |
 | A02 | Passing portable CI and release gates (§22) | Partially implemented | Windows/macOS failing; Linux job timeout; all three remote gates |
 | A03 | Authorization/revocation/security review (§4,11) | Implemented but insufficiently verified | Dispatch race regressions and full threat-model review |
-| A04 | Overall task deadlines (§11) | Not implemented | Queue, active, wait, approval, restart, finalization expiry |
+| A04 | Overall task deadlines (§11) | Complete and verified | Durable admission/queue/active/approval/resource/restart/finalization regressions, full check 1214 passed/one skip, build and 14 affected browser cases; focused review findings fixed. Native migration portability remains A06/G02. |
 | A05 | Suspended execution and uncertain-effect recovery (§11) | Partially implemented | Durable resume and no duplicate mutation scenarios |
 | A06 | Native PostgreSQL upgrades/locking/restore (§11) | Blocked by unavailable external resources | Docker daemon currently unavailable; independent DB connections required |
 | A07 | Encrypted realistic backup/restore (§11) | Implemented but insufficiently verified | Fresh synthetic production-like drill; preserved state/artifact references |
@@ -49,4 +49,4 @@ Status vocabulary: **Complete and verified**, **Implemented but insufficiently v
 | G05 | Branch protection and license (§22) | Blocked by unavailable external resources | main currently unprotected; owner approval required for license/admin policy |
 | G06 | Final evidence, screenshots, comparison and scorecard (§25,27) | Not implemented | Honest evidence-based evaluation; no invented scores or unfinished green rows |
 
-No final-evolution requirement is yet complete. Local-only historical chat and the existing 0.1.2 test suite do not imply the new coding, Companion or redesign criteria are met.
+Only the bounded deadline requirement A04 and research/concept requirement B01 are complete. Local-only historical chat and the existing test suite do not imply the new coding, Companion or redesign criteria are met.

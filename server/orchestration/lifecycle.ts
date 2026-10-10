@@ -8,7 +8,7 @@ const transitions: Record<TaskStatus, TaskStatus[]> = {
   planning: ['executing','failed','paused','cancelled'], executing: ['verifying','waiting_for_approval','waiting_for_user','replanning','failed','paused','cancelled'],
   verifying: ['completed','replanning','failed','paused','cancelled','waiting_for_user'],
   waiting_for_approval: ['executing','paused','cancelled','failed'], waiting_for_user: ['executing','paused','cancelled','failed'],
-  replanning: ['executing','failed','paused','cancelled'], paused: ['analyzing','executing','cancelled'],
+  replanning: ['executing','failed','paused','cancelled'], paused: ['analyzing','executing','cancelled','failed'],
   completed: [], failed: [], cancelled: [],
 };
 export function assertTransition(from: TaskStatus, to: TaskStatus): void {

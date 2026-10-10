@@ -43,6 +43,12 @@ function expectNoDispatch() {
 }
 
 describe('durable authorization at consequential broker boundaries', () => {
+  it.each(Object.keys(requests))('rejects %s after its overall task deadline before dispatch', async name => {
+    const scope = await context();
+    await store.db.query("UPDATE tasks SET options=jsonb_set(options,'{budget,maxElapsedSeconds}','30'),created_at=now()-interval '31 seconds' WHERE id=$1", [scope.taskId]);
+    await expect(broker.execute(scope, requests[name])).rejects.toThrow(/deadline/i);
+    expectNoDispatch();
+  });
   it.each(Object.keys(requests))('dispatches an authorized %s operation', async name => {
     await expect(broker.execute(await context(), requests[name])).resolves.toEqual(receipt);
   });
@@ -81,5 +87,14 @@ describe('durable authorization at consequential broker boundaries', () => {
     await store.db.query("UPDATE users SET session_version=1 WHERE id='owner'");
     release(); await first; await denied;
     expect(HostFileBroker.prototype.execute).toHaveBeenCalledTimes(1);
+  });
+  it('rechecks the overall deadline after waiting behind an executing host operation', async () => {
+    const scope=await context();let release!:()=>void,entered!:()=>void;
+    const started=new Promise<void>(resolve=>{entered=resolve;}),pending=new Promise<void>(resolve=>{release=resolve;});
+    vi.mocked(HostFileBroker.prototype.execute).mockImplementationOnce(async()=>{entered();await pending;return receipt;});
+    const first=broker.execute(scope,requests.host_write);await started;
+    const second=broker.execute(scope,requests.host_write),denied=expect(second).rejects.toThrow(/deadline/i);
+    await store.db.query("UPDATE tasks SET options=jsonb_set(options,'{budget,maxElapsedSeconds}','30'),created_at=now()-interval '31 seconds' WHERE id=$1",[scope.taskId]);
+    release();await first;await denied;expect(HostFileBroker.prototype.execute).toHaveBeenCalledTimes(1);
   });
 });

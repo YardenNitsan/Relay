@@ -79,8 +79,11 @@ describe('integrated task admission and suspended approvals',()=>{
       return result;
     };
     const record=await task('Queued task');await started;
-    if(action==='shutdown')await engine.shutdown();else if(action==='stop')await engine.stopAll();else await engine.cancel(record.id);
-    release();await new Promise(resolve=>setTimeout(resolve,100));
+    // Shutdown now joins in-flight scheduler reads before the database may close.
+    // Release the simulated read while shutdown is pending, as a real DB would.
+    if(action==='shutdown'){const stopping=engine.shutdown();release();await stopping;}
+    else {if(action==='stop')await engine.stopAll();else await engine.cancel(record.id);release();}
+    await new Promise(resolve=>setTimeout(resolve,100));
     expect(calls).toBe(0);expect((await store.task(record.id)).status).toBe(action==='shutdown'?'paused':'cancelled');
   });
   it('suspends active time for a shared local lease and releases it on cancellation',async()=>{

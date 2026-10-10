@@ -1,5 +1,9 @@
 # Architecture decisions
 
+## FE-009: Durable overall deadline and bounded reconciliation
+
+Accepted. New tasks default to 86,400 elapsed seconds, bounded to 30–604,800 seconds at every admission path. Derive the absolute deadline from durable creation time and options; do not renew on resume or retrofit historical tasks. Use host time consistently at admission, dispatch, transaction finalization and reconciliation. Poll at one second in batches of 128, using migration 10's partial index to exclude terminal history. Cleanup promises are owned separately so a slow provider cannot block expiry of unrelated work. Shutdown joins scheduler reads and cleanup before storage closes. Durable authorization enforces expiry even before a reconciliation sweep. OS clock correction remains an operational limitation of wall-clock deadlines; active execution budgets remain separate.
+
 ## FE-007: New presentation direction
 
 Select Relay Studio after the research and ten-criterion comparison in `design-system.md`. Retain React/TypeScript/Vite and server contracts. Recompose the interface around a task document, explicit navigation and contextual evidence panes; compact windows select one view. Keep authority/device identity and approvals visible. Initial tokens are candidates pending rendered contrast and visual checks. No new component library is installed merely to establish a visual identity.

@@ -67,6 +67,8 @@ for (const width of [390, 320]) {
     await expect(approval).toBeVisible();
     const hostName = await page.evaluate(async () => (await (await fetch('/api/session')).json() as { hostName: string }).hostName);
     const card = page.locator('.approval');
+    await expect(card.getByText('Overall deadline:', {exact:false})).toContainText('Includes queue, approval and offline time.');
+    await expect(card.locator('time')).toHaveAttribute('datetime', /T.*Z$/);
     const overview = page.getByRole('region', { name: 'Execution overview' });
     // The required decision takes precedence over explanatory progress on phones.
     expect((await card.boundingBox())!.y).toBeLessThan((await overview.boundingBox())!.y);

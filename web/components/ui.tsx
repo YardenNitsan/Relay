@@ -66,5 +66,8 @@ export const shortDate = (value: string) => new Date(value).toLocaleDateString([
 
 export function Meter({ label, used, total }: { label: string; used: number | null; total: number | null }) {
   const percentage = total && used != null ? Math.max(0, Math.min(100, used / total * 100)) : null;
-  return <div className="meter-block"><div className="split"><span>{label}</span><span className="muted">{used == null ? 'Unavailable' : bytes(used)}{total != null ? ` / ${bytes(total)}` : ''}</span></div><div className="meter" role={percentage == null ? undefined : 'meter'} aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={percentage ?? undefined} aria-valuetext={percentage == null ? 'Unavailable' : `${Math.round(percentage)} percent used`}><span className={percentage != null && percentage > 85 ? 'pressure' : ''} style={{ width: `${percentage ?? 0}%` }} /></div></div>;
+  const semantics = percentage == null
+    ? { 'aria-hidden': true as const }
+    : { role: 'meter', 'aria-label': label, 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': percentage, 'aria-valuetext': `${Math.round(percentage)} percent used` };
+  return <div className="meter-block"><div className="split"><span>{label}</span><span className="muted">{used == null ? 'Unavailable' : bytes(used)}{total != null ? ` / ${bytes(total)}` : ''}</span></div><div className="meter" {...semantics}><span className={percentage != null && percentage > 85 ? 'pressure' : ''} style={{ width: `${percentage ?? 0}%` }} /></div></div>;
 }

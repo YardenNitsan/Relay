@@ -46,9 +46,10 @@ export function lanConfig(env:NodeJS.ProcessEnv):LanConfig|null {
 const windowsPrivateKey=`$ErrorActionPreference='Stop'
 $sid=[System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
 foreach($path in @($env:RELAY_LAN_KEY_CHECK,[System.IO.Path]::GetDirectoryName($env:RELAY_LAN_KEY_CHECK))) {
- $item=Get-Item -LiteralPath $path -Force
- if (($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'Linked TLS storage is not allowed' }
- $acl=Get-Acl -LiteralPath $path
+ $attributes=[System.IO.File]::GetAttributes($path)
+ if (($attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'Linked TLS storage is not allowed' }
+ if (($attributes -band [System.IO.FileAttributes]::Directory) -ne 0) { $acl=[System.IO.Directory]::GetAccessControl($path) }
+ else { $acl=[System.IO.File]::GetAccessControl($path) }
  if ($acl.GetOwner([System.Security.Principal.SecurityIdentifier]).Value -ne $sid) { throw 'TLS storage belongs to another account' }
  foreach($entry in $acl.Access) {
   if($entry.AccessControlType -eq 'Allow' -and $entry.IdentityReference.Translate([System.Security.Principal.SecurityIdentifier]).Value -notin @($sid,'S-1-5-18','S-1-5-32-544')) { throw 'TLS storage grants another account access' }

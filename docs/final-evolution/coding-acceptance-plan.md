@@ -35,3 +35,7 @@ Files: scripts/coding-fixture.ts, scripts/coding-acceptance.ts; evidence under i
 - [x] Update ledger with precise passes/failures and remaining C01/C02/C03-directory/C04/full-build acceptance. Continue the backlog.
 
 Preflight and supervised execution were observed; no model completed. Successful independent grading/publication/rollback remains open. See evidence/coding-acceptance-windows.json for four retained failures.
+
+## Explicit output-budget follow-up
+
+The 32K-context trial reached its configured 4096-token response cap during a repair. Add an explicit `--output=8192` acceptance option, keeping the old default and all admission, time, call, cost, permission and independent-grading limits. Record both requested context and output allowance in the report. Reject unsupported/duplicate options. A fresh trial measures whether this configuration completes; it is not a silent product-default increase or evidence that a larger allowance necessarily helps. Run after browser/build gates, with no competing inference or heavy checks. Retain failure evidence if the model still cannot repair both defects.

@@ -7,10 +7,9 @@ import {DockerSandbox} from '../server/tools/sandbox.js';
 import {ToolStore} from '../server/tools/store.js';
 import {codingCorpus,independentHarness,sandboxImage,seededCorpus,targetPaths,visibleHarness,visibleTestPath} from './coding-fixture.js';
 import {codingModelAcceptance} from './coding-model-acceptance.js';
+import {codingAcceptanceOptions} from './coding-acceptance-options.js';
 
-const args=process.argv.slice(2);
-if(args.length<1||args.length>2||!(args[0]==='--sandbox-only'||args[0]==='--discover'||args[0].startsWith('--model='))||args[1]!==undefined&&!/^--context=(16384|32768)$/.test(args[1]))throw new Error('Choose --sandbox-only, --discover, or --model=EXACT_INSTALLED_ID; optional --context=16384|32768');
-const contextTokens=args[1]?Number(args[1].slice('--context='.length)):16384;
+const {mode,modelId,contextTokens,maxOutputTokens}=codingAcceptanceOptions(process.argv.slice(2));
 const output=resolve('output/final-evolution');await mkdir(output,{recursive:true});
 const root=await mkdtemp(join(output,'coding-'));
 const corpus=codingCorpus(resolve('.')),seeded=seededCorpus(corpus.files);
@@ -40,11 +39,11 @@ try{
   const rejected=await run('independent-reject-stale',gradingFiles(stale),gradingTests);report.independentRejectsStaleResult=rejected;
   assert.notEqual(rejected.exitCode,0);assert.match(rejected.stdout,/# fail 1\n/);
   report.sandboxPreflight='passed';
-  if(args[0]!=='--sandbox-only'){
-    report.model=await codingModelAcceptance(root,seeded,args[0]==='--discover'?null:args[0].slice('--model='.length),async(files,label)=>{
+  if(mode!=='sandbox'){
+    report.model=await codingModelAcceptance(root,seeded,modelId,async(files,label)=>{
       const receipt=await run(label,gradingFiles(files),gradingTests);
       assert.equal(receipt.exitCode,0,'Independent behavioral acceptance failed');assert.equal(receipt.truncated,false);assert.match(receipt.stdout,/# tests 9\n/);assert.match(receipt.stdout,/# pass 9\n/);return receipt;
-    },contextTokens);
+    },contextTokens,maxOutputTokens);
     const state=(report.model as {state:string}).state;if(!['passed','discovery_only'].includes(state))process.exitCode=1;
   }
 }catch(error){report.sandboxPreflight='failed';report.error=error instanceof Error?error.message:String(error);process.exitCode=1;}

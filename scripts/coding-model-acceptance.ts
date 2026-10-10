@@ -22,12 +22,12 @@ import type {Publication} from '../shared/publication.js';
 import {independentlyGradeTree,targetPaths,visibleTestPath} from './coding-fixture.js';
 
 const testArgv=['node','--test','--test-reporter=tap',visibleTestPath];
-export async function codingModelAcceptance(root:string,seeded:Map<string,string>,modelId:string|null,verify:(files:Map<string,string>,label:string)=>Promise<unknown>,contextTokens=16384):Promise<Record<string,unknown>>{
+export async function codingModelAcceptance(root:string,seeded:Map<string,string>,modelId:string|null,verify:(files:Map<string,string>,label:string)=>Promise<unknown>,contextTokens=16384,maxOutputTokens=4096):Promise<Record<string,unknown>>{
   const data=join(root,'host');
   let store:Store|undefined,engine:Engine|undefined,app:Awaited<ReturnType<typeof createApp>>|undefined;
   const port=4323,origin=`http://127.0.0.1:${port}`;
   let cookie='',csrf='',taskId:string|undefined;
-  const report:Record<string,unknown>={state:'starting',cloud:'disabled',secrets:'No inherited environment/vault credentials',contextTokens,approvals:[]};
+  const report:Record<string,unknown>={state:'starting',cloud:'disabled',secrets:'No inherited environment/vault credentials',contextTokens,maxOutputTokens,approvals:[]};
   async function api<T>(path:string,body?:unknown):Promise<T>{
     const response=await fetch(origin+path,{method:body===undefined?'GET':'POST',headers:{origin,...(body===undefined?{}:{'content-type':'application/json'}),...(cookie?{cookie,'x-relay-csrf':csrf}:{})},...(body===undefined?{}:{body:JSON.stringify(body)}),signal:AbortSignal.timeout(90_000)});
     if(path==='/api/session/pair'&&response.ok)cookie=response.headers.getSetCookie().map(value=>value.split(';')[0]).join('; ');
@@ -62,7 +62,7 @@ export async function codingModelAcceptance(root:string,seeded:Map<string,string
     const workspace=await api<Workspace>('/api/workspaces',{name:'Versioned Relay two-file repair',sourcePath:source});
     assert.equal(workspace.fileCount,seeded.size);report.workspaceId=workspace.id;
     const objective=`Repair two failing behaviors in this versioned Relay application source fixture. Overall deadlines are wrong and activity from another task can appear in the selected task. Inspect shared/task-deadline.ts, web/task-progress.ts and ${visibleTestPath}. Run the visible tests in the isolated node profile, correct both source files, rerun tests and review git_diff. Only modify shared/task-deadline.ts and web/task-progress.ts. Do not modify tests or other files, install packages, use network, or publish. The exact authorized terminal argv is ${JSON.stringify(testArgv)}, profile node, timeoutSeconds 30. Use file_read and its returned hash before file_write. Preserve all other behavior. Finish with a short explanation of the actual changes and actual test outcome. This task runs in a managed fixture, not the live Relay repository.`;
-    const created=await api<{task:{id:string}}>('/api/conversations/start',{requestId:randomUUID(),content:objective,options:{assistantId:'coding',depth:'fast',modelId,modelSelection:'required',access:'supervised',workspaceId:workspace.id,contextTokens,cloudPolicy:'local_only',budget:{maxCalls:24,maxSeconds:1200,maxElapsedSeconds:1500,maxIterations:16,maxCostUsd:0,localOnly:true,maxOutputTokens:4096}}});
+    const created=await api<{task:{id:string}}>('/api/conversations/start',{requestId:randomUUID(),content:objective,options:{assistantId:'coding',depth:'fast',modelId,modelSelection:'required',access:'supervised',workspaceId:workspace.id,contextTokens,cloudPolicy:'local_only',budget:{maxCalls:24,maxSeconds:1200,maxElapsedSeconds:1500,maxIterations:16,maxCostUsd:0,localOnly:true,maxOutputTokens}}});
     taskId=created.task.id;report.taskId=taskId;report.state='running';
     const started=Date.now(),decided=new Set<string>();let detail:TaskDetail;
     do{

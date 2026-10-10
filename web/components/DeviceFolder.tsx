@@ -4,6 +4,7 @@ import type { Workspace } from '../../shared/types';
 import { api, mutation, onSessionInvalidated } from '../api';
 import { applyDeviceChanges, deviceChanges, scanDeviceFolder, safeDevicePath, textDocument, DEVICE_LIMITS, type DeviceChange, type DeviceDirectoryHandle, type DeviceFile } from '../device-files';
 import { ErrorNotice, Modal } from './ui';
+import {useModalDraftGuard} from './modal-guard';
 import '../device-folder.css';
 
 interface Link { userId: string; root: DeviceDirectoryHandle; workspace: Workspace; baseline: Map<string, DeviceFile> }
@@ -18,6 +19,7 @@ export default function DeviceFolder({ userId, onImported }: { userId?: string; 
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [allowDelete, setAllowDelete] = useState(false);
   const [busy, setBusy] = useState(false); const [error, setError] = useState<unknown>(null); const [message, setMessage] = useState('');
+  useModalDraftGuard({dirty:false,busy,label:'device folder operation'});
   const alive = useRef(true);
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
   useEffect(() => { if (activeLink?.userId !== userId) activeLink = null; setLink(activeLink); setPreview(null); setChanges(null); setSelected(new Set()); setError(null); setMessage(''); }, [userId]);
@@ -82,7 +84,7 @@ export default function DeviceFolder({ userId, onImported }: { userId?: string; 
   };
   return <section className="device-folder" aria-label="Files on this device"><h3><FolderOpen size={18} />Files on this device</h3>
     <p className="muted">Choose a folder, review a bounded text-file copy, then explicitly upload it to your private host workspace. After an agent edits the copy, review and apply selected changes back here.</p>
-    {!supported ? <p className="notice">Folder connections are not supported in this browser. Upload files using the conversation attachment button, then use Inspect files → Download saved file. Direct folder editing requires a supported desktop browser such as Chrome or Edge, over HTTPS or localhost.</p> : <>
+    {!supported ? <p className="notice">Folder connections are not supported in this browser. Upload files using the conversation attachment button, then open the workspace Files view and choose Download saved file. Direct folder editing requires a supported desktop browser such as Chrome or Edge, over HTTPS or localhost.</p> : <>
       {link ? <><p><strong>{link.root.name}</strong> on this device ↔ <strong>{link.workspace.name}</strong> on the host</p><div className="device-actions"><button className="button primary" disabled={busy} onClick={() => { void review(); }}>Review device changes</button><button className="button" disabled={busy} onClick={() => { activeLink = null; setLink(null); setChanges(null); }}><Unplug size={16} />Disconnect folder</button></div></> : <button className="button" disabled={busy || !userId} onClick={() => { void choose(); }}><Link2 size={16} />Choose device folder</button>}
       <p className="hint">Up to 100 UTF-8 text files / 5 MiB total / 240 KiB each. Hidden files, known credential names, dependency and build folders are excluded. Review your files for sensitive content before uploading. Connections last only in this browser session; reloading disconnects them. This does not enable terminal or desktop control.</p>
     </>}

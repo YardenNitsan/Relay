@@ -2,6 +2,10 @@
 
 Status: open, internal engineering review; no independent penetration-test claim.
 
+B06 changes presentation and deliberate-navigation guards only. Dirty editor state survives close, command shortcut, responsive navigation and failed background refetch; forced session/account teardown still unmounts private content. Busy guards do not grant mutation authority. Existing private workspace, source-publication and browser-folder APIs remain authoritative. Internal focused reviews found and fixed draft/focus defects; broader security review remains open.
+
+D01 classification remains advisory and uses only the bounded original objective. Hard provider/account/privacy/context/pricing/hardware eligibility executes independently. Focused Hebrew repair tests confirm an improved intent hint cannot override required local selection, local-only policy, absent provider grants or rejected hardware admission. Output allowance is unchanged. No external classifier or new dependency is installed. Internal source review found no actionable new boundary defect; this is not a full routing security assessment.
+
 Approval presentation audit found inaccurate model provenance after a permitted fallback: the view used only AGENT_STARTED. Two failing regressions reproduced it; the view now selects the latest recorded identity before the exact tool proposal, excluding later events and other task/agent identities. Unknown identity stays unknown. The focused-review increment changes no authorization endpoint or permission grant. Cloud UI offers one-request consent because backend cloud consent is not retained task-wide. Source review found no actionable remaining defect in that increment; 41 affected browser consent/error/focus/draft checks pass. This is a presentation-integrity fix, not evidence of an authorization bypass.
 
 | Boundary | Invariant | Current review / acceptance |

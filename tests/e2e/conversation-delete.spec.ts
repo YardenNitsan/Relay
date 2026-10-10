@@ -48,9 +48,10 @@ test('deleting unfinished work shows the host refusal and keeps the conversation
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/'); await pairBrowser(page);
   await page.getByRole('button', { name: /Bring a project/ }).click();
+  await page.getByRole('dialog',{name:'Workspaces',exact:true}).getByRole('button',{name:'New workspace',exact:true}).click();
   await page.getByRole('textbox', { name: 'Name', exact: true }).fill('Deletion approval workspace');
   await page.getByRole('button', { name: 'Create workspace', exact: true }).click();
-  await expect(page.getByText('Deletion approval workspace', { exact: true }).first()).toBeVisible();
+  await expect(page.getByRole('region',{name:'Project inspector',exact:true}).getByRole('heading',{name:'Deletion approval workspace',exact:true})).toBeVisible();
   await page.keyboard.press('Escape');
   await page.getByRole('combobox', { name: 'Computer access', exact: true }).selectOption('supervised');
   await page.getByRole('textbox', { name: 'Objective' }).fill('Create a file for unfinished history deletion');

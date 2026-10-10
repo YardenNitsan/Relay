@@ -22,9 +22,10 @@ test('conversation streams, persists on reload, and exposes the real execution r
 });
 test('supervised file write waits for approval and displays an actual diff',async({page})=>{
   await page.getByRole('button',{name:/Bring a project/}).click();
+  await page.getByRole('dialog',{name:'Workspaces',exact:true}).getByRole('button',{name:'New workspace',exact:true}).click();
   await page.getByRole('textbox',{name:'Name',exact:true}).fill('Browser acceptance');
   await page.getByRole('button',{name:'Create workspace',exact:true}).click();
-  await expect(page.getByText('Browser acceptance',{exact:true}).first()).toBeVisible();
+  await expect(page.getByRole('region',{name:'Project inspector',exact:true}).getByRole('heading',{name:'Browser acceptance',exact:true})).toBeVisible();
   await page.keyboard.press('Escape');
   await page.getByLabel('Computer access').selectOption('supervised');
   await page.getByRole('textbox',{name:'Objective'}).fill('Create a notes file and verify the content');

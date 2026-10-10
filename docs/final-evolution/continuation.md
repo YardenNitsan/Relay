@@ -1,40 +1,52 @@
 # Continuation
 
-**INCOMPLETE — CONTINUATION REQUIRED** at an execution boundary before all A-G criteria are satisfied. Continue beyond checkpoints.
+**INCOMPLETE — CONTINUATION REQUIRED** if this execution ends before all A–G criteria pass. Continue beyond checkpoints.
 
-Work in C:/Users/yarde/Documents/codexp/Relay-modernization on modernization/final-evolution. Read AGENTS.md, progress.json, requirements-matrix, master-plan, architecture-decisions and acceptance-results. Preserve the original checkout/production Relay (PID 20332) and LM Studio, Harmonia and GuitarScaleViewer. No merge, deployment, license or protection change occurred.
+Work in `C:/Users/yarde/Documents/codexp/Relay-modernization` on `modernization/final-evolution`. Read AGENTS.md, progress.json, requirements-matrix.md, master-plan.md and acceptance-results.md. The owner's `../Relay/last-prompt.txt` was reread. Preserve the original checkout, production Relay PID20332, LM Studio, Harmonia and GuitarScaleViewer. No merge, deployment, license or protection change occurred.
 
-## Verified state
+## Active work
 
-Studio c8616968b4f65a8c9ad64b67a1c2571b4cb42550: strict types, 1218 tests/one skip, build, 125/125 full browser cases; all six Windows/Linux/macOS host/browser jobs passed in hosted run 38066150868. Approval/draft d1e19fef2f60a6fbfddf920ef8efd8ae6b4e4988: nine focused unit tests, build and 41 affected browser cases; hosted run 38067674196 passed. See evidence for reviewed real captures.
+B06 Projects is verified and ready to commit/push. Combined strict1270tests/one skip across119files pass264.81s, production build passes; final UI refinements pass types/build again. Frozen full151 browser:145passed, six old navigation/route-teardown failures. Rebuilt affected68:66passed,two phone hidden-text locators failed. All corrections and final review findings pass an eight-case rerun1.0min. All18Projects viewport/theme cases passed. Logs: projects-intent-check/build/browser.log, projects-final-types.log, projects-reviewed-build.log, projects-final-review-{red,green}.log. No fresh complete155local/hosted pass is claimed.
 
-C03 presence-aware publication is committed/pushed as deed1ae03295ae85b422dde238f349c1e945ebf4: strict types, 1237 tests/one platform skip across 114 files in 259.39s, build, five publication browser cases in 38.1s. Real files/database and UI verify additions/deletions/rename pairs/empty files, exact approval, rollback, collisions, parent identity/links, legacy journals and interrupted recovery. Internal review's three findings were reproduced and fixed: authorization immediately before unlink and exclusive create, plus stale previews after newer same-source attempted receipts. Final review found no further concrete defect in scope. Initial browser failure was an incorrect accessible-name selector; final five pass.
+The final review fixed dirty/busy/shortcut/refetch loss, responsive/view focus, same-file re-click false discard, insufficient landscape content and undiscoverable empty phone creation. Retained before/after captures were opened in light/dark at phone/tablet/desktop/landscape, plus loading/error/empty/discard. No active fixture/inference process remains. Next: commit/push, then actual C05 trial below. Do not run heavy checks during inference.
 
-Publication version 2 binds before/after presence, parent identities and a persisted exclusive-created handle identity. Missing creation evidence refuses recovery. Version 1 exact digests remain compatible. Existing parent directories only; new directories and metadata-preserving/Git-aware moves remain open. Recreated files use new metadata; UI and docs state that content rollback does not restore old ACL/executable bits. There is no agent publication tool or host shell.
+An earlier overlapping runner refused4319 but removed the first runner's trace artifact; isolated case passed. Require explicit session completion before any new browser/build.
 
-Native Docker Windows isolation/cancel/emergency and PostgreSQL 17 two-pool locking, v9 to v10 preservation and 32-table pg_dump/restore pass. Native Linux run 38062805371 passes. The 47.6 MB encrypted PGlite restore drill verifies 2000 tasks, 4000 messages, 200 artifacts, memory/schedules/grants and intentional approval/session revocation. Docker Desktop is available. No production data was used. Rerun native boundaries only if affected.
+## Current commits
 
-## Exact next operations
+- 331416b freezes the bilingual experiment, datasets, evaluator protocol and initial evidence.
+- 8ed67df integrates the unchanged phrase candidate into advisory demand/category/reasoning.
+- add1306 adds explicit coding acceptance output options, preserving16K/4096defaults and all safety/grading limits.
+- These commits are local pending the B06 checkpoint push. The user explicitly requests updated README/ledger and GitHub push.
 
-1. A03 FE-011 is committed/pushed as2ab60bfb; native sole-cleanup fix988d7b02 passes hosted Linux38070458360. Latest coding-driver gate: strict types,1249 tests/one skip across116files/258.92s, production build,7 Workbench browser cases/54.8s. Verify/commit/push if not already committed. Hosted macOS branching test failed twice because interception was installed after task caching; corrected setup passes locally, hosted follow-up required. Full A03/C03 and milestone B remain incomplete.
-2. C05 driver is implemented in scripts/coding-{fixture,acceptance,model-acceptance}.ts. Four real trials are recorded in evidence/coding-acceptance-windows.json: RAM refusal, runtime load failure,16K context pause,32K failed activity repair/output-limit pause. No successful task or publication. Next controlled candidate: installed lmstudio/google/gemma-4-12b-qat with --context=32768, through unchanged resource admission; no cloud fallback. Command: node --import tsx scripts/coding-acceptance.ts --model=lmstudio/google/gemma-4-12b-qat --context=32768. Stop after an observed pause/failure; preserve reports. Success requires independent nine-case tests, exact tree scope, source publication verification and rollback; those remain open. Alternatively continue C04 from development-images-plan.md. Never execute project code on the host or run heavy checks alongside inference.
-3. Complete C02 safe product Git worktrees, C03 new directories/Git-aware publication, C04 trusted language images/controlled dependency restoration, and realistic TS/JS, Python and .NET acceptance. Existing git.ts uses temporary bare snapshots for read-only diffs; it is not product worktree support.
-4. Continue B conversation/composer, Project Workspace, Model Studio, connections, settings/onboarding and remaining approval/Workbench states. Research/three concepts are complete. Retain functional APIs/auth/grants.
-5. Finish A03/A05 revocation/recovery and A08 reference-aware collection. FE-008 includes broker checkpoint JSON, publication journals, container markers and host checkpoints, not only SQL artifacts. No collector exists yet.
-6. Continue D held-out intelligence/collaboration, E Companion, F project memory/automation, G complete acceptance. Do not stop at the next intermediate release.
+D01 quiet-host reproduction: phrase26/56 vsbaseline14/56 satisfied specified cases; forbidden5vs11; lexical prototype7/56 rejected. English/Hebrew28each, synthetic and independently agent-authored. Thirty phrase cases remain failures. Candidate/data were frozen before the implementer loaded heldout; do not retune against them. Initial evaluator binding omission is disclosed; freeze-v2 now binds evaluator/thresholds for reproduction, not a fresh unseen set. Short-case p95 0.183ms;16KiB Hebrew stress11.06ms. Forty-three focused hard-gate tests pass. No semantic/local classifier model or actual model task-success improvement established. D01–D03 remain partial.
 
-## Commands and boundaries
+## Earlier verified checkpoints
 
-npm.cmd run check; npm.cmd run build; npm.cmd run test:e2e. Build before browser tests; never rebuild dist during a browser run or start two fixtures on 4319. Heavy checks run sequentially. Native: node scripts/native-integrations-docker.mjs; node --import tsx scripts/backup-acceptance.ts. Canonical temp roots and Windows process TokenOwner test setup preserve production path/ACL checks. PowerShell pipes to Node may replace Unicode with question marks: use ASCII script text with Unicode escapes, apply_patch or explicit .NET UTF-8 writes.
+- Studio/Workbench c8616968:1218tests,build,125browser; all six hosted38066150868pass.
+- Approvals/drafts d1e19fef:nine focused units,build,41browser; hosted38067674196pass.
+- Publication deed1ae0:1237tests,build,fivebrowser. Presence/hash/parent/create identity and legacyv1; existing directories only.
+- Host mutation2ab60bfb:six red/green real-file revocation cases,49focused,1243full,build,twohostbrowser.
+- Sole Docker cleanup988d7b02:native local/hosted Linux38070458360pass.
+- Coding driver e0e1bb45:1249tests,build,sevenbrowser; all six hosted38071652895pass.
+- Trusted language images763e9f4:1253tests,build,native language/kernel/isolation. Hosted native38072558704 passes both jobs. Host/browser38072558696:fivejobs pass; Windows132/133 retention320 timeout under slow telemetry. Fixture now isolates unrelated telemetry with real retention API intact; hosted follow-up required.
 
-External prerequisites: second authorized physical Companion device; Google OAuth application and consent; physical Linux GPU/native macOS hardware; license/admin protection decisions. Draft PR connector HTTP403 Resource not accessible by integration; branch pushes work. No pending background work is implied after a session ends.
+Native PostgreSQL17.11 locks,migration9→10 preservation and32-table dump/restore pass. Encrypted PGlite47.6MB synthetic restore includes2000tasks,4000messages,200artifacts,memory/schedules/grants; sessions and approvals revoke and execution stops intentionally. No production data used.
 
-## Active acceptance and cleanup follow-up
+C05 corpus:514text files/3,980,270bytes,21omissions. Pinned-container pristine2pass/seeded2fail/independent9pass/stale-receipt1fail. Real attempts:9B RAM refusal,smaller9B missing-temp load failure repaired,16K context pause,32K wrong activity repair/output4096pause after7calls450425ms,Gemma12B RAM refusal. **No successful model repair/publication.** Reports coding-TfexM5,dL9Fxu,SzIWUq,pp1pbG,IZXsS1; preflight coding-manai4. Private4323host closed.
 
-No private model host, inference or heavy check remains active at this checkpoint. Coding reports are under coding-TfexM5, coding-dL9Fxu, coding-SzIWUq and coding-pp1pbG; latest final preflight is coding-manai4. Source corpus514 files/3,980,270bytes,21 omissions; pristine2pass/seeded2fail/combined-independent9pass/stale-result1fail in pinned Node24. The native LM Studio missing .internal/temp directory was recreated without settings changes or restart; subsequent real inference proceeded. Actual1440light/390dark captures were inspected during execution, with no overflow/axe findings in those states; the task later paused. These are not successful coding or universal accessibility claims. Preserve owned evidence/recovery directories and production service/runtime.
+Next explicit trial, only after browser/build completion:
+`node --import tsx scripts/coding-acceptance.ts --model=lmstudio/qwen3.5-9b-uncensored-hauhaucs-aggressive.gguf --context=32768 --output=8192`
+Retain admission reserves,local-only required model,exact approvals and independent final/published/rollback graders. Do not run heavy checks concurrently.
 
-## Latest C04 work in progress
+C04 pinned Node24.21.0/Python3.14.8/.NET10.0.401 small native red/green pass. Provision uses local default builder and Dockerfile-only contexts. Dotnet-only64MiB file cap supports W^X;512MiB RAM,oneCPU,64PIDs,64MiB temporary mounts,1MiB exported files unchanged. See development-images/README.md and evidence/native-languages-windows.json.
 
-Read progress.json for active checks. Actual three-language native acceptance passes under owned pinned images; evidence/native-languages-windows.json contains red/green outputs and kernel limit measurements. The .NET64MiB file limit is profile-specific, retains W^X and all physical/export quotas, and is explained in FE-013. Local-builder override review finding is fixed with a red/green regression. Full check71751 is running at this edit; finish checks/build/native follow-up before C04 commit. Stage C04 files explicitly: the new project-draft browser regression belongs to next B06 work and deliberately has no fix yet. B06 design/implementation is in project-workspace-plan.md. Fifth Gemma coding trial refused admission; keep coding success open.
+## Remaining dependencies
 
-C04 checks subsequently completed:1253tests/one skip,117files,263.78s;build;actual native language+kernel boundaries;new Node native isolation/cancel/emergency all pass. No active local check or model host. Ready to commit C04 explicitly without the pending B06 regression; then run that regression against frozen built UI and implement its fix.
+1. Finish B06 corrected browser gates, visual review, documentation, commit/push; actual C05 trial.
+2. C02 product Git worktrees; C03 new-directory/Git-aware publication; C04 controlled package sources and realistic language builds. Existing Git is bare snapshots/read-only diffs.
+3. B complete conversation/composer,Model Studio,connections,settings/onboarding,project tests/checkpoints/memory and deeper Workbench evidence.
+4. A03/A05 full threat/recovery; A08 garbage collection must include ToolStore JSON,publication journals,sandbox markers and host checkpoints,not just SQL.
+5. D executable model quality/isolated collaboration; E Companion; F project intelligence/browser/integrations/automation; G performance/native/accessibility/package/release and14scenarios.
+
+Heavy checks and inference sequential: `npm.cmd run check`; `npm.cmd run build`; `npm.cmd run test:e2e`. Use apply_patch for Unicode/Hebrew. PowerShell-to-Node pipes/native quoting can corrupt text. External gates:second physical Companion,GoogleOAuth app/consent,physical LinuxGPU/native macOS,owner license/admin decisions. Draft PR connector403; branch pushes work. Never imply background continuation after session end.

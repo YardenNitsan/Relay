@@ -4,6 +4,7 @@ import {createPatch} from 'diff';
 import type {Publication as Review,PublicationSummary} from '../../shared/publication';
 import {api,downloadText} from '../api';
 import {ErrorNotice,Loading} from './ui';
+import {useModalDraftGuard} from './modal-guard';
 import '../styles/publication.css';
 
 const changeKind=(entry:Review['entries'][number])=>entry.before===null?'Add':entry.after===null?'Delete':'Modify';
@@ -21,6 +22,7 @@ export default function Publication({workspaceId}:{workspaceId:string}){
   const apply=useMutation({mutationFn:async()=>{if(!review||!approved)throw new Error('Review and approve the exact changes first.');return api<Review>(`/publications/${review.id}/apply`,{method:'POST',body:{digest:review.digest,confirmed:true}});},onSuccess:async value=>{show(value);setNotice(value.direction==='publish'?'Reviewed changes were published.':'Reviewed rollback completed.');await refresh();},onError:async()=>{if(review)try{show(await api<Review>(`/publications/${review.id}`));}catch{/* Preserve the original failure and last reviewed content. */}await refresh();}});
   const resolve=useMutation({mutationFn:async()=>{if(!review||!approved)throw new Error('Approve verification of this receipt first.');return api<Review>(`/publications/${review.id}/reconcile`,{method:'POST',body:{digest:review.digest,confirmed:true}});},onSuccess:async value=>{show(value);setNotice('Consistent file hashes verified. Recovery receipt closed without writing source files.');await refresh();}});
   const busy=preview.isPending||inspect.isPending||rollback.isPending||apply.isPending||resolve.isPending,entry=review?.entries[file];
+  useModalDraftGuard({dirty:false,busy,label:'original source publication'});
   const patch=entry?createPatch(entry.path,entry.before??'',entry.after??'',entry.before===null?'file absent':'reviewed original',entry.after===null?'file absent':'approved replacement',{context:3,timeout:50,maxEditLength:20000}):null;
   const uncertain=review&&['applying','uncertain'].includes(review.status);
   const begin=(operation:()=>void)=>{setNotice('');preview.reset();inspect.reset();rollback.reset();apply.reset();resolve.reset();operation();};

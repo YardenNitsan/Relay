@@ -132,7 +132,11 @@ export default function App() {
   useEffect(() => {
     const listener = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
-        event.preventDefault(); setPanel(value => value === 'commands' ? null : 'commands');
+        event.preventDefault();
+        // Global shortcuts must not replace an active modal or its draft guard.
+        const dialog=document.querySelector('dialog[open]');
+        if (!dialog) setPanel('commands');
+        else if(dialog.classList.contains('command-modal'))setPanel(null);
       }
       if (event.key === 'Escape' && !document.querySelector('dialog[open]')) setActivity(false);
     };
@@ -262,7 +266,7 @@ export default function App() {
     {panel === 'google-workspace' && <Modal title="Google Workspace" onClose={() => setPanel(null)}><Suspense fallback={<Loading>Opening Google Workspace...</Loading>}><GoogleWorkspace owner={owner} /></Suspense></Modal>}
     {panel === 'schedules' && <Modal title="Scheduled tasks" onClose={() => setPanel(null)}><Suspense fallback={<Loading>Opening schedules...</Loading>}><Schedules workspaces={workspaces.data ?? []} onOpenTask={id => { void api<{task:TaskRecord}>(`/tasks/${encodeURIComponent(id)}`).then(({task}) => selectConversation(task.conversationId)).catch(error => setNotice({message:errorMessage(error),error:true})); }} /></Suspense></Modal>}
     {panel === 'hardware' && owner && <Modal title="This machine" onClose={() => setPanel(null)}><Suspense fallback={<Loading>Opening resource view…</Loading>}><Hardware status={status.data} /></Suspense></Modal>}
-    {panel === 'workspaces' && <Modal title="Workspaces" onClose={() => setPanel(null)}><Suspense fallback={<Loading>Opening workspaces…</Loading>}><Workspaces owner={owner} userId={session.data?.user?.id} canWriteShared={permissions?.maxAccess !== undefined && permissions.maxAccess !== 'read_only'} selected={options.workspaceId} onSelect={id => setOptions(value => ({ ...value, workspaceId: id }))} /></Suspense></Modal>}
+    {panel === 'workspaces' && <Modal title="Workspaces" onClose={() => setPanel(null)} wide className="projects-dialog"><Suspense fallback={<Loading>Opening workspaces…</Loading>}><Workspaces owner={owner} userId={session.data?.user?.id} canWriteShared={permissions?.maxAccess !== undefined && permissions.maxAccess !== 'read_only'} selected={options.workspaceId} onSelect={id => setOptions(value => ({ ...value, workspaceId: id }))} /></Suspense></Modal>}
     {panel === 'access' && owner && <Modal title="Access & remote connections" onClose={() => setPanel(null)} wide><Suspense fallback={<Loading>Opening access controls…</Loading>}><Access /></Suspense></Modal>}
     {panel === 'commands' && <CommandPalette commands={commands} onClose={() => setPanel(null)} />}
     {panel === 'navigation' && <Navigation owner={owner} theme={theme} hostName={session.data?.hostName} session={session.data} onDestination={setPanel} onNew={() => selectConversation(null)} onActivity={() => { setPanel(null); setActivity(true); }} onTheme={() => setTheme(value => value === 'light' ? 'dark' : 'light')} onClose={() => setPanel(null)} />}

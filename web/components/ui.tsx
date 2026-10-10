@@ -1,15 +1,19 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { Check, Circle, CircleAlert, LoaderCircle, X } from 'lucide-react';
 import type { TaskStatus } from '../../shared/types';
+import {ModalGuardContext,useModalGuardController} from './modal-guard';
 
-export function Modal({ title, children, onClose, wide = false, className = '', fallbackFocusId }: { title: string; children: ReactNode; onClose: () => void; wide?: boolean; className?: string; fallbackFocusId?: string }) {
+export function Modal({ title, children, onClose, wide = false, className = '', fallbackFocusId, initialFocus }: { title: string; children: ReactNode; onClose: () => void; wide?: boolean; className?: string; fallbackFocusId?: string; initialFocus?:string }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const guard=useModalGuardController();
+  const requestClose=()=>guard.request(onClose);
   // Capture before descendants with autoFocus mount. Native showModal otherwise
   // remembers the already-focused dialog input instead of the invoking control.
   const returnFocus = useRef<HTMLElement | null>(document.activeElement instanceof HTMLElement ? document.activeElement : null);
   useEffect(() => {
     const dialog = ref.current;
     if (dialog && !dialog.open) dialog.showModal();
+    if(initialFocus)dialog?.querySelector<HTMLElement>(initialFocus)?.focus();
     return () => {
       if (dialog?.open) dialog.close();
       const origin = returnFocus.current;
@@ -22,14 +26,14 @@ export function Modal({ title, children, onClose, wide = false, className = '', 
       }
     };
   }, []);
-  return <dialog ref={ref} className={`modal ${wide ? 'modal-wide' : ''} ${className}`} aria-label={title} onCancel={event => { event.preventDefault(); event.stopPropagation(); onClose(); }} onClick={event => {
+  return <ModalGuardContext.Provider value={guard}><dialog ref={ref} className={`modal ${wide ? 'modal-wide' : ''} ${className}`} aria-label={title} onCancel={event => { event.preventDefault(); event.stopPropagation(); requestClose(); }} onClick={event => {
     if (event.target !== event.currentTarget) return;
     const rect = event.currentTarget.getBoundingClientRect();
-    if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) onClose();
+    if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) requestClose();
   }}>
-    <header className="modal-heading"><h2>{title}</h2><button className="icon-button" aria-label={`Close ${title}`} onClick={onClose}><X size={19} /></button></header>
-    <div className="modal-content">{children}</div>
-  </dialog>;
+    <header className="modal-heading"><h2>{title}</h2><button className="icon-button" aria-label={`Close ${title}`} onClick={requestClose}><X size={19} /></button></header>
+    <div className="modal-content">{guard.blocked&&<p className="notice" role="status">Wait for the file operation to finish before leaving this view.</p>}{children}</div>
+  </dialog>{guard.pending&&<Modal title="Unsaved file changes" onClose={guard.keep} initialFocus="[data-keep-editing]"><p>Your edits to {guard.pending.labels.join(', ')} have not been saved.</p><p>Discard them and leave this view?</p><div className="workspace-file-actions"><button className="button primary" data-keep-editing onClick={guard.keep}>Keep editing</button><button className="button danger-button" onClick={guard.discard}>Discard edits</button></div></Modal>}</ModalGuardContext.Provider>;
 }
 
 export function Empty({ title, children, icon }: { title: string; children?: ReactNode; icon?: ReactNode }) {

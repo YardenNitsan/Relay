@@ -196,13 +196,13 @@ A strict cloud cost cap can reject a model whose pricing is unknown. An empty co
 
 ### Import a project
 
-On the local owner account, select **Choose workspace**, enter a name and the project's absolute source-directory path, then choose **Import managed copy**. Other users create an empty personal workspace and upload files from their device instead; entering a path must not grant access to the owner's computer.
+On the modernization branch, open **Projects** or **Choose workspace**, choose **New workspace**, enter a name and the project's absolute source-directory path, then choose **Import managed copy**. This host-path import is available only to the local owner. Other users create an empty personal workspace and upload files from their device instead; entering a path must not grant access to the owner's computer.
 
 Relay copies supported files into its managed storage. It excludes links, sensitive paths, Git internals and common dependency/build trees. This filtering is a protection layer, not a guarantee that every possible secret has been recognized.
 
 **The original source directory stays unchanged.** Tools operate on the selected managed copy. Importing does not grant access to every folder on the host, and source Git branches/history are not imported.
 
-You can also create an empty managed workspace without supplying a source directory. Choose **Inspect files** to browse its file list; additional files are paginated.
+You can also create an empty managed workspace without supplying a source directory. Open a project in the index to browse and search its files; additional files are paginated. Inspecting a project does not change conversation context: choose **Use for conversation** explicitly. **All projects** returns to the index on phones. File actions stay in the editor footer; unsaved edits require an explicit discard decision before leaving, and in-flight file operations must finish first.
 
 For an initial file task, prefer a small change you can inspect:
 
@@ -212,17 +212,19 @@ Use **Supervised** until you are comfortable with the scope. Confirm the workspa
 
 ### Attach a text file
 
-The paperclip accepts UTF-8 text files up to **240 KB**. Binary files and the general image/PDF attachment workflow are not supported.
+The paperclip accepts UTF-8 text/code files and supported PDF/modern Word documents. Documents are parsed into bounded text copies; this is not image understanding or OCR. See [document attachment limits](personal-files.md).
 
 Attachments are saved inside the selected managed workspace. Attaching without a selected workspace creates one for conversation attachments, including a private personal workspace for invited users. The composer adds the saved path to the draft so the task can reference it. This does not remove context or permission limits.
 
-Your own file management is independent of agent autonomy: even with agents set to Read only, you can upload, edit and delete your own files. In a personal workspace you may choose Read only, Supervised or Autonomous workspace for agents. Shared host workspaces retain their owner-granted access limits. **Inspect files** opens the file editor and download/delete controls; edits reject stale content hashes. [Personal file behavior and limits](personal-files.md).
+Your own file management is independent of agent autonomy: even with agents set to Read only, you can upload, edit and delete your own files. In a personal workspace you may choose Read only, Supervised or Autonomous workspace for agents. Shared host workspaces retain their owner-granted access limits. Open a file in the project's **Files** view for edit/download/delete controls; edits reject stale content hashes. [Personal file behavior and limits](personal-files.md).
 
 ### Move a change back to your own project
 
 Inspect **Activity → Changes** and copy or download the patch. Review and apply it to your source project using your normal development workflow. Relay does not automatically overwrite your original repository or promise conflict-free application to a source that has changed since import.
 
-Supported desktop browsers also offer **Workspaces → Files on this device → Choose device folder**. Review and upload a managed copy, then use **Review device changes** to explicitly apply selected changes back to that folder. The browser requests write permission, and changed device files are rejected rather than silently overwritten. Phone browsers without this API use upload/download. This folder connection does not enable device-local terminal commands or desktop automation.
+Supported desktop browsers also offer **Projects → Connect a device folder → Choose device folder**. Review and upload a managed copy, then use **Review device changes** to explicitly apply selected changes back to that folder. The browser requests write permission, and changed device files are rejected rather than silently overwritten. Phone browsers without this API use upload/download. This folder connection does not enable device-local terminal commands or desktop automation.
+
+For imported host projects, **Original source & review** prepares an exact publication review, with separate approval and rollback. Additions/deletions/modifications are supported within existing destination directories; branch-aware worktrees and new-directory publication remain unfinished. [Publication limits and recovery](publication.md).
 
 For a host-imported project, the local owner can also open **Review publication to original**. Inspect and approve the exact existing-file changes before applying them. Changed original files are rejected; rollback requires a separate review. This bounded workflow does not create/delete files or push Git changes. See [publication and recovery](publication.md).
 

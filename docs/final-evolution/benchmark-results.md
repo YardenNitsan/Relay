@@ -36,3 +36,9 @@ All attempts used explicit required local models, normal admission/watchdog and 
 A fifth coding candidate, installed Gemma4 12B QAT at32K context, was refused before inference by unchanged safe RAM admission (estimated14,680,508,671bytes RAM). Evidence coding-IZXsS1 is retained. This is resource admission evidence, not model task-quality evidence.
 
 Native language checks: fixed Node execution197ms, Python303ms and offline C# build/run2026ms in separate512MiB/one-CPU containers. These are small correctness-fixture receipt durations on Windows Docker Desktop; no before/after inference speed or medium-project performance claim is made.
+
+## D01 frozen bilingual intent comparison
+
+[Protocol and candidate results](../../benchmarks/task-intent/results-v1.md), [initial report](evidence/intent-heldout-initial.json) and [quiet-host reproduction](evidence/intent-heldout-quiet.json) retain the baseline and rejected alternative. The independently authored synthetic held-out set has56cases,28perlanguage. Phrase rules satisfy26cases against the shipped baseline14; required-label recall57.89%vs28.95%; explicit forbidden-label violations5vs11. Lexical prototypes satisfy7and are rejected. Partial labels do not support precision/F1 claims. Thirty phrase cases still fail and were not used to retune the frozen candidate.
+
+Quiet Windows/Core Ultra7 265KF/Node24.11.1 short-objective median/p95: phrases0.074/0.183ms, baseline p95 0.0036ms. Single16KiB Hebrew stress input:11.06ms for phrases. This is additional bounded CPU work without inference/egress, not faster routing or inference. The declared quality/short-input latency gate passes. The initial freeze omitted evaluator identity; that defect is disclosed and v2 binds evaluator and thresholds for reproduction, not a newly unseen evaluation. No semantic encoder/local classifier model or actual model task-selection quality improvement is established.

@@ -4,7 +4,7 @@
   "updatedAt": "2026-10-10",
   "baselineCommit": "9d563bc973dbcc177921ab918db88561c8280e48",
   "branch": "modernization/final-evolution",
-  "currentMilestone": "C04 trusted image/native language verification; B06 project redesign next",
+  "currentMilestone": "B06 verified presentation increment ready to push; C05 explicit32K/8192 actual coding retry next",
   "requirementIds": [
     "A01",
     "A02",
@@ -22,7 +22,8 @@
     "C03",
     "A03",
     "C04",
-    "B06"
+    "B06",
+    "D01"
   ],
   "worktree": "C:/Users/yarde/Documents/codexp/Relay-modernization",
   "implementedChanges": [
@@ -56,7 +57,13 @@
     "Workbench fixture interception precedes task caching; fixes confirmed hosted macOS test race",
     "Pinned official Node/Python/.NET development image provisioning with isolated context and local builder enforcement",
     "Actual offline small multi-file runtime red/green acceptance across three profiles",
-    "Bounded dotnet executable mapping/file limit64MiB; physical and exported workspace limits preserved; native measurement verified"
+    "Bounded dotnet executable mapping/file limit64MiB; physical and exported workspace limits preserved; native measurement verified",
+    "Project Workspace modular index/inspector, explicit conversation selection, searchable files, source review and browser-device views",
+    "Modal dirty-draft and busy-operation guards; native discard confirmation focuses safe action after showModal",
+    "B06 persistent file footer, guarded command shortcut and background-refetch draft preservation; mobile create/navigation/resize focus",
+    "D01 frozen40development/56independent-heldout comparison: phrase26/56vsbaseline14/56, prototype7/56rejected. Unchanged phrase candidate integrated into advisory task demand/category/reasoning; provider/privacy/hardware gates preserved. Evaluator binding correction disclosed.",
+    "C05 explicit --output=8192 experimental option retains old4096default and all admission/grading limits; actual retry pending.",
+    "B06 same-file re-click no-op, explicit first-workspace phone action and landscape content >=160px; reproduced red and verified green."
   ],
   "changedFiles": [
     ".github/workflows/native-integrations.yml",
@@ -181,9 +188,63 @@
     "tests/development-profiles.test.ts",
     "docs/development-environments.md",
     "docs/final-evolution/evidence/native-languages-windows.json",
-    "docs/final-evolution/project-workspace-plan.md"
+    "docs/final-evolution/project-workspace-plan.md",
+    "docs/final-evolution/evidence/project-draft-close.png",
+    "docs/final-evolution/evidence/projects-before-1440.png",
+    "docs/final-evolution/evidence/projects-before-320.png",
+    "docs/final-evolution/evidence/projects-empty-390.png",
+    "docs/final-evolution/evidence/projects-error-390.png",
+    "docs/final-evolution/evidence/projects-loading-390.png",
+    "docs/final-evolution/evidence/projects-studio-1440x960-dark.png",
+    "docs/final-evolution/evidence/projects-studio-1440x960-light.png",
+    "docs/final-evolution/evidence/projects-studio-320x740-dark.png",
+    "docs/final-evolution/evidence/projects-studio-320x740-light.png",
+    "docs/final-evolution/evidence/projects-studio-390x844-dark.png",
+    "docs/final-evolution/evidence/projects-studio-768x1024-light.png",
+    "docs/final-evolution/evidence/projects-studio-844x390-dark.png",
+    "docs/final-evolution/evidence/projects-studio-844x390-light.png",
+    "tests/e2e/project-draft.spec.ts",
+    "tests/e2e/projects-studio.spec.ts",
+    "web/components/modal-guard.tsx",
+    "web/features/projects/CreateProject.tsx",
+    "web/features/projects/ProjectFiles.tsx",
+    "web/features/projects/ProjectWorkspace.tsx",
+    "web/features/projects/projects.css",
+    "README.md",
+    "docs/personal-files.md",
+    "docs/user-guide.md",
+    "tests/e2e/conversation-delete.spec.ts",
+    "tests/e2e/device-folder.spec.ts",
+    "tests/e2e/document-attachments.spec.ts",
+    "tests/e2e/helpers.ts",
+    "tests/e2e/personal-files.spec.ts",
+    "tests/e2e/product.spec.ts",
+    "web/components/DeviceFolder.tsx",
+    "web/components/Workspaces.tsx",
+    "benchmarks/task-intent/README.md",
+    "benchmarks/task-intent/baseline-v1.ts",
+    "benchmarks/task-intent/candidates.ts",
+    "benchmarks/task-intent/development-v1.json",
+    "benchmarks/task-intent/freeze-v1.json",
+    "benchmarks/task-intent/freeze-v2.json",
+    "benchmarks/task-intent/heldout-v1.json",
+    "benchmarks/task-intent/results-v1.md",
+    "docs/final-evolution/evidence/intent-heldout-initial.json",
+    "docs/final-evolution/evidence/intent-heldout-quiet.json",
+    "docs/final-evolution/intent-classification-plan.md",
+    "docs/model-selection.md",
+    "scripts/benchmark-task-intent.ts",
+    "scripts/coding-acceptance-options.ts",
+    "server/models/intent-phrases.ts",
+    "server/models/task-demand.ts",
+    "server/models/task-fit.ts",
+    "server/orchestration/reasoning.ts",
+    "server/orchestration/router.ts",
+    "tests/coding-acceptance-options.test.ts",
+    "tests/routing-reasoning.test.ts",
+    "tests/task-demand-multilingual.test.ts"
   ],
-  "testStatus": "C04 strict types/1253tests/one skip across117files in263.78s,build,actual Node/Python/.NET seeded/fixed programs+kernel limits,and native sandbox isolation/cancel/emergency pass. Hosted language acceptance pending.",
+  "testStatus": "Strict1270tests/one skip and build pass. Final presentation types/build pass. Full frozen145/151,affected66/68,then8/8final corrective cases pass1.0min. All18viewport/theme cases pass; reviewed retained screenshots. No fresh complete155local/hosted claim.",
   "lastPassingCommands": [
     "npm.cmd ci",
     "npm.cmd run check (baseline)",
@@ -229,16 +290,26 @@
     "npm.cmd run build (C04)",
     "node --import tsx scripts/provision-development-images.ts all (explicit local builder,3images)",
     "node --import tsx scripts/development-language-acceptance.ts output/final-evolution/development-images-Klc373/report.json (6red/green outcomes and native dotnet boundaries)",
-    "node --import tsx scripts/native-integrations.ts sandbox (new pinned Node image; actual isolation/cancel/emergency pass)"
+    "node --import tsx scripts/native-integrations.ts sandbox (new pinned Node image; actual isolation/cancel/emergency pass)",
+    "node --import tsx scripts/benchmark-task-intent.ts --development",
+    "node --import tsx scripts/benchmark-task-intent.ts --heldout (initial and evaluator-bound reproduction)",
+    "npm.cmd run typecheck (benchmark experiment)",
+    "node --import tsx scripts/benchmark-task-intent.ts --heldout (quiet host: same scores, phrase p95 0.183ms, gate passes)",
+    "npm.cmd test -- tests/task-demand-multilingual.test.ts tests/task-fit.test.ts tests/routing-reasoning.test.ts tests/router.test.ts tests/evaluation-routing.test.ts (43passed)",
+    "npm.cmd run check (B06/D01/C05:1270passed/one skip,119files,264.81s)",
+    "npm.cmd run build (projects-intent-build.log)",
+    "npm.cmd run typecheck (final Project refinements)",
+    "npm.cmd run build (projects-reviewed-build.log)",
+    "npm.cmd run test:e2e -- tests/e2e/access.spec.ts tests/e2e/project-draft.spec.ts tests/e2e/projects-studio.spec.ts -g \"phone.*approval|project file draft|844x390|project index exposes\" (8passed,1.0min)"
   ],
-  "lastPassingCommit": "e0e1bb45b212290435ce1969fcecd913662ecd6d",
-  "lastPassingCommitScope": "Coding driver strict types/1249tests/one skip,build,7 Workbench cases; actual model failures retained; hosted38071652895 pending.",
+  "lastPassingCommit": "add1306",
+  "lastPassingCommitScope": "D01 integration8ed67df and C05 explicit experiment optionsadd1306: combined strict1270tests/one skip and build pass with B06 candidate source also present. New browser validation remains pending; hosted gates not yet run on these commits.",
   "knownFailures": [
-    "Hosted macOS browser38069003236/38069750281:132pass/1 branching fixture failed due late route interception; corrected local7case run passes, hosted follow-up required.",
     "Real coding: larger9B RAM admission refusal; smaller9B initial missing-runtime-temp load error repaired;16K context paused;32K wrong activity repair/output-limit pause after7calls. No publication.",
     "Gemma4 12B32K candidate also refused unchanged RAM admission; no inference occurred.",
     "C04 initial containerd config ID lookup failed; unique build tag now resolves actual engine immutable ID.",
-    "C04 initial .NET CoreLib OOM under1MiB file limit fixed by bounded profile64MiB, native red/green pass."
+    "C04 initial .NET CoreLib OOM under1MiB file limit fixed by bounded profile64MiB, native red/green pass.",
+    "Historical B06 browser failures corrected; frozenfull145/151 andaffected66/68 failures all covered by passing follow-ups. Same-file/short-height/empty-action red cases pass after fixes. Fresh hosted whole-suite still pending."
   ],
   "outstandingSecurityReviews": [
     "Full threat-model review",
@@ -252,7 +323,7 @@
     "License/admin protection authorization pending",
     "Draft PR connector HTTP403; branch pushes work"
   ],
-  "nextActionableWorkItem": "Commit/push verified C04 files excluding new project-draft.spec.ts; inspect hosted CI. Execute B06 project-workspace-plan: run new dirty-file outer-close regression red, implement safe close/navigation then full presentation rebuild and visual acceptance.",
+  "nextActionableWorkItem": "Commit/push verified B06 + ledger. Run actual local C05 model with32K context/8192output; exact command in continuation. Preserve all graders/reserves and record outcome. Monitor fresh hosted gates.",
   "remainingDependencies": [
     "A native recovery/restore/retention",
     "B full redesign",
@@ -266,5 +337,6 @@
     "privateModelHost": null,
     "modelInference": null,
     "checks": null
-  }
+  },
+  "lastBenchmarkCommit": "331416b"
 }

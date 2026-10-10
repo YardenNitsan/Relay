@@ -15,17 +15,20 @@ for(const width of [320,390,1440])test(`reviewed original publication and rollba
     await page.setViewportSize({width,height:900});await page.goto('/');await pairBrowser(page);
     await page.getByRole('button',{name:/^(Choose workspace|Workspace)$/}).click();
     const dialog=page.getByRole('dialog',{name:'Workspaces',exact:true});
+    await dialog.getByRole('button',{name:'New workspace',exact:true}).click();
     await dialog.getByRole('textbox',{name:'Name',exact:true}).fill(`Publication ${width}`);
     await dialog.getByLabel('Source directory',{exact:false}).fill(source);
     const importing=page.waitForResponse(response=>response.url().endsWith('/api/workspaces')&&response.request().method()==='POST');
     await dialog.getByRole('button',{name:'Import managed copy',exact:true}).click();expect((await importing).ok()).toBe(true);
-    const workspace=dialog.locator('article.workspace-item').filter({hasText:`Publication ${width}`});
-    await workspace.getByRole('button',{name:'Inspect files',exact:true}).click();await workspace.getByRole('button',{name:'example.ts',exact:true}).click();
+    const workspace=dialog.getByRole('region',{name:'Project inspector',exact:true});
+    await expect(workspace).toBeFocused();
+    await workspace.getByRole('button',{name:'example.ts',exact:true}).click();
     await workspace.getByRole('textbox',{name:'File contents',exact:true}).fill(replacement);
     const saving=page.waitForResponse(response=>response.url().endsWith('/file')&&response.request().method()==='PUT');
     await workspace.getByRole('button',{name:'Save changes',exact:true}).click();expect((await saving).ok()).toBe(true);
     await workspace.getByRole('button',{name:'Close file',exact:true}).click();
     await writeFile(join(source,'owner-notes.txt'),'Unrelated owner edit after import');
+    await dialog.getByRole('button',{name:'Original source & review',exact:true}).click();
     const publication=dialog.getByRole('region',{name:'Original project publication',exact:true});
     await publication.getByRole('button',{name:'Review publication to original',exact:true}).click();
     await publication.getByRole('button',{name:'Prepare publication review',exact:true}).click();
@@ -67,6 +70,7 @@ for(const width of [320,1440])test(`presence-aware publication reviews and rolls
     if(width===1440)await page.getByRole('button',{name:'Switch to dark theme',exact:true}).click();
     await page.getByRole('button',{name:/^(Choose workspace|Workspace)$/}).click();
     const dialog=page.getByRole('dialog',{name:'Workspaces',exact:true});
+    await dialog.getByRole('button',{name:'New workspace',exact:true}).click();
     await dialog.getByRole('textbox',{name:'Name',exact:true}).fill(`Presence ${width}`);await dialog.getByLabel('Source directory',{exact:false}).fill(source);
     const importing=page.waitForResponse(response=>response.url().endsWith('/api/workspaces')&&response.request().method()==='POST');
     await dialog.getByRole('button',{name:'Import managed copy',exact:true}).click();const response=await importing;expect(response.ok()).toBe(true);const workspace=await response.json() as {id:string};
@@ -79,6 +83,7 @@ for(const width of [320,1440])test(`presence-aware publication reviews and rolls
       const file=await(await fetch(`/api/workspaces/${id}/file?path=old-name.ts`)).json() as {sha256:string};
       states.push((await fetch(`/api/workspaces/${id}/file`,{method:'DELETE',headers,body:JSON.stringify({path:'old-name.ts',expectedHash:file.sha256})})).status);return states;
     },{id:workspace.id,original})).toEqual([200,200,200]);
+    await dialog.getByRole('button',{name:'Original source & review',exact:true}).click();
     const publication=dialog.getByRole('region',{name:'Original project publication',exact:true});
     await publication.getByRole('button',{name:'Review publication to original',exact:true}).click();await publication.getByRole('button',{name:'Prepare publication review',exact:true}).click();
     const select=publication.getByRole('combobox',{name:'Reviewed file',exact:true});

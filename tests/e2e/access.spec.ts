@@ -54,10 +54,11 @@ for (const width of [390, 320]) {
   test(`phone ${width}px keeps real approval controls usable`, async ({ page }) => {
     await page.setViewportSize({ width, height: 844 });
     await page.getByRole('button', { name: /Bring a project/ }).click();
+    await page.getByRole('dialog',{name:'Workspaces',exact:true}).getByRole('button',{name:'New workspace',exact:true}).click();
     const name = `Phone approval ${width}-${Date.now()}`;
     await page.getByRole('textbox', { name: 'Name', exact: true }).fill(name);
     await page.getByRole('button', { name: 'Create workspace', exact: true }).click();
-    await expect(page.getByText(name, { exact: true }).first()).toBeVisible();
+    await expect(page.getByRole('region',{name:'Project inspector',exact:true}).getByRole('heading',{name,exact:true})).toBeVisible();
     await page.keyboard.press('Escape');
     await page.getByLabel('Computer access').selectOption('supervised');
     await page.getByRole('textbox', { name: 'Objective' }).fill('Create a notes file and verify the content');

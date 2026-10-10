@@ -46,6 +46,7 @@ test('Workbench shows branching dependencies and long model names without implyi
     data.steps=[step('review','Review both implementations',['backend','frontend'],'pending'),step('backend','Implement backend',['plan'],'completed'),step('frontend','Implement frontend',['plan'],'running'),step('plan','Inspect repository',[],'completed')];
     await route.fulfill({response,json:data});
   });
+  try{
   await page.setViewportSize({width:1024,height:900});await page.goto('/');await pairBrowser(page);
   await page.getByRole('textbox',{name:'Objective'}).fill('Explain the execution model');
   await page.getByRole('button',{name:'Send objective'}).click();
@@ -56,6 +57,10 @@ test('Workbench shows branching dependencies and long model names without implyi
   await expect(page.getByText('Agents in the same level can still execute one at a time.',{exact:false})).toBeVisible();
   for(const node of await page.locator('.workflow-agent').all())expect(await node.evaluate(element=>element.scrollWidth<=element.clientWidth)).toBe(true);
   await page.screenshot({path:'output/playwright/workbench-branching-1024.png'});
+  }finally{
+    // Join in-flight polling handlers before Playwright disposes their responses.
+    await page.unrouteAll({behavior:'wait'});
+  }
 });
 
 test('responsive navigation retains keyboard focus when the rail changes to the phone menu',async({page})=>{
@@ -77,9 +82,10 @@ test('long objective context leaves approval controls reachable in short landsca
   await page.getByRole('button',{name:'Send objective'}).click();
   await expect(page.getByText('Completed',{exact:true}).first()).toBeVisible();
   await page.getByRole('button',{name:'Choose workspace',exact:true}).click();
+  await page.getByRole('dialog',{name:'Workspaces',exact:true}).getByRole('button',{name:'New workspace',exact:true}).click();
   await page.getByRole('textbox',{name:'Name',exact:true}).fill('Landscape approval');
   await page.getByRole('button',{name:'Create workspace',exact:true}).click();
-  await expect(page.getByText('Landscape approval',{exact:true}).first()).toBeVisible();
+  await expect(page.getByRole('region',{name:'Project inspector',exact:true}).getByRole('heading',{name:'Landscape approval',exact:true})).toBeVisible();
   await page.keyboard.press('Escape');
   await page.getByLabel('Computer access').selectOption('supervised');
   // Long objectives still obey real context admission; provision enough context for this UI scenario.

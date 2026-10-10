@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { pairBrowser } from './helpers';
+import { pairBrowser, projectIndex } from './helpers';
 
 test('device folder copy uses explicit import, review and apply without leaving the workspace dialog', async ({ page }) => {
   // A browser API test fixture, not a claim of native OS folder-picker acceptance.
@@ -23,6 +23,8 @@ test('device folder copy uses explicit import, review and apply without leaving 
   await page.goto('/'); await pairBrowser(page);
   await page.getByRole('button', { name: 'Choose workspace', exact: true }).click();
   const workspaces = page.getByRole('dialog', { name: 'Workspaces', exact: true });
+  await projectIndex(page);
+  await workspaces.getByRole('button', { name: 'Connect a device folder', exact: true }).click();
   await workspaces.getByRole('button', { name: 'Choose device folder', exact: true }).click();
   await expect(page.getByRole('dialog', { name: 'Review folder upload', exact: true })).toBeVisible();
   await page.keyboard.press('Escape');
@@ -31,13 +33,16 @@ test('device folder copy uses explicit import, review and apply without leaving 
   await workspaces.getByRole('button', { name: 'Choose device folder', exact: true }).click();
   await page.getByRole('dialog', { name: 'Review folder upload', exact: true }).getByRole('button', { name: 'Upload managed copy', exact: true }).click();
   await expect(workspaces.getByRole('status')).toContainText('Copied 1 files');
-  const imported = workspaces.locator('article.workspace-item').filter({ hasText: 'Device folder fixture' });
-  await imported.getByRole('button', { name: 'Inspect files', exact: true }).click();
+  await projectIndex(page);
+  await workspaces.getByRole('button', { name: /Open Device folder fixture/ }).click();
+  const imported = workspaces.getByRole('region', { name: 'Project inspector', exact: true });
   await imported.getByRole('button', { name: 'notes.txt', exact: true }).click();
   await imported.getByLabel('File contents', { exact: true }).fill('Reviewed host change');
   await imported.getByRole('button', { name: 'Save changes', exact: true }).click();
   await expect(imported.getByRole('button', { name: 'Save changes', exact: true })).toBeDisabled();
   expect(await page.evaluate(() => (window as unknown as { relayDeviceFixtureText: string }).relayDeviceFixtureText)).toBe('Device original');
+  await projectIndex(page);
+  await workspaces.getByRole('button', { name: 'Connect a device folder', exact: true }).click();
   await workspaces.getByRole('button', { name: 'Review device changes', exact: true }).click();
   const review = page.getByRole('dialog', { name: 'Review device changes', exact: true });
   await expect(review.getByRole('button', { name: 'Apply selected changes (0)', exact: true })).toBeDisabled();
@@ -60,6 +65,8 @@ test('unsupported phone browsers receive a usable upload and download alternativ
   await page.goto('/'); await pairBrowser(page);
   await page.getByRole('button', { name: 'Choose workspace', exact: true }).click();
   const workspaces = page.getByRole('dialog', { name: 'Workspaces', exact: true });
+  await projectIndex(page);
+  await workspaces.getByRole('button', { name: 'Connect a device folder', exact: true }).click();
   await workspaces.getByText('Folder connections are not supported', { exact: false }).scrollIntoViewIfNeeded();
   await expect(workspaces.getByText('Folder connections are not supported', { exact: false })).toBeVisible();
   await expect(workspaces.getByRole('button', { name: 'Choose device folder', exact: true })).toHaveCount(0);

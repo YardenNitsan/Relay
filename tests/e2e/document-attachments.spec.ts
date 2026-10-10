@@ -29,8 +29,7 @@ for (const width of [320, 1440]) {
     }
     await page.getByRole('button', { name: 'Workspace', exact: true }).click();
     const dialog = page.getByRole('dialog', { name: 'Workspaces', exact: true });
-    const item = dialog.locator('article.workspace-item').filter({ has: page.locator('.workspace-choice.selected') });
-    await item.getByRole('button', { name: 'Inspect files', exact: true }).click();
+    const item = dialog.getByRole('region', { name: 'Project inspector', exact: true });
     await item.getByRole('button', { name: /attachments\/.*report.*\.txt/ }).click();
     await expect(item.getByLabel('File contents', { exact: true })).toHaveValue(/A real PDF extraction/);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { pairBrowser } from './helpers';
+import { pairBrowser, projectIndex } from './helpers';
 
 for (const width of [320, 1440]) {
   test(`personal files and agent autonomy are separate from shared host grants at ${width}px`, async ({ page }) => {
@@ -60,10 +60,12 @@ for (const width of [320, 1440]) {
     await expect(access.locator('option[value="unrestricted"]')).toHaveAttribute('disabled', '');
     await page.getByRole('button', { name: 'Workspace', exact: true }).click();
     const dialog = page.getByRole('dialog', { name: 'Workspaces', exact: true });
+    await dialog.getByRole('button', { name: 'New workspace', exact: true }).click();
     await expect(dialog.getByRole('heading', { name: 'New personal workspace', exact: true })).toBeVisible();
     await expect(dialog.getByLabel('Source directory', { exact: false })).toHaveCount(0);
-    const personal = dialog.locator('article.workspace-item').filter({ hasText: 'Conversation attachments' });
-    await personal.getByRole('button', { name: 'Inspect files', exact: true }).click();
+    await projectIndex(page);
+    await dialog.getByRole('button', { name: 'Open Conversation attachments', exact: true }).click();
+    const personal = dialog.getByRole('region', { name: 'Project inspector', exact: true });
     await personal.getByRole('button', { name: /attachments\/.*notes.txt/ }).click();
     const editor = personal.getByRole('region', { name: /File: attachments/ });
     await expect(editor.getByLabel('File contents', { exact: true })).toHaveValue('My private notes');
@@ -81,13 +83,16 @@ for (const width of [320, 1440]) {
     expect((await new AxeBuilder({ page }).include('dialog').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([]);
     await page.screenshot({ path: `output/playwright/personal-files-${width}.png` });
     await editor.getByRole('button', { name: 'Delete file', exact: true }).click();
+    await expect(editor.getByRole('button', { name: 'Keep file', exact: true })).toBeFocused();
     await editor.getByRole('button', { name: 'Keep file', exact: true }).click();
     expect(documents.size).toBe(1);
     await editor.getByRole('button', { name: 'Delete file', exact: true }).click();
     await editor.getByRole('button', { name: 'Confirm delete', exact: true }).click();
     await expect(personal.getByText('No files yet.', { exact: false })).toBeVisible();
     expect(savedBody).toMatchObject({ expectedHash: 'b'.repeat(64) });
-    await dialog.getByRole('button', { name: /Shared reference/ }).click();
+    await projectIndex(page);
+    await dialog.getByRole('button', { name: 'Open Shared reference', exact: true }).click();
+    await dialog.getByRole('button', { name: 'Use for conversation', exact: true }).click();
     await page.keyboard.press('Escape');
     await expect(access).toHaveValue('read_only');
     await expect(access.locator('option[value="workspace"]')).toHaveAttribute('disabled', '');

@@ -35,7 +35,7 @@ For each redesigned surface, retain realistic screenshots and verify:
 | Shell and welcome | Visual review and full 125-case Studio browser gate pass at c861696; future increments verified separately |
 | Conversation/composer | Welcome and model-trigger changes reviewed; full composer/message redesign remains open |
 | Workbench | Dependency layout, output/log/check separation, focus and short-screen controls reviewed; handoff/artifact depth and full-state coverage remain open |
-| Projects | Existing view retained; redesign open |
+| Projects | New index/inspector and persistent file actions inspected in light/dark on phone/desktop/short landscape; loading/error/empty inspected. All18responsive cases pass; final8affected cases pass. Hosted full gate pending; richer Git/test/memory workflows remain open. |
 | Model Studio | Existing view retained; redesign open |
 | Devices/connections | Existing view retained; Companion implementation and redesign open |
 | Approvals | Focused consequence-first review inspected at 320/1440px in both themes and 844x390 rejection; five focused and 41 affected browser checks pass. Other sensitive-operation states remain open |
@@ -55,3 +55,9 @@ Inspected actual 320px light and1440px dark captures after five real publication
 ## Actual inference observation, 10 October
 
 The source-scale coding driver was observed through the real authenticated private API host while local inference and tool calls were active. Chrome captures at [1440px/light](evidence/coding-live-1440-light.png) and [390px/dark](evidence/coding-live-390-dark.png) were opened and inspected. Long objective/model identity remain readable, Workbench becomes a focused phone surface, no horizontal overflow was measured, and the WCAG-tagged axe scan found no violations in these two states. The model subsequently paused with a failed repair/output limit; these screenshots are active-execution evidence, not successful task or full accessibility acceptance. The first capture attempt used an unavailable Playwright bundled browser; the rerun used the installed Chrome channel, matching local E2E configuration.
+
+## Project Workspace review
+
+Replaced the old combined workspace form/list with separate project inspection, conversation selection, file editing, source review and browser-folder views. Actual17-file long-path fixtures cover every requested width in both themes plus short landscape. Before/after captures are linked in acceptance-results.md. The final review removed unused editor space, kept save/download/delete/close visible, shortened the landscape header while retaining a44px close target, and added an explicit first-workspace action on phones. Red/green browser evidence covers lost drafts, background refresh, shortcut replacement, view/resize focus, busy operations and same-file re-click. Exact source APIs and permissions remain unchanged.
+
+No unexpected horizontal overflow or axe violations were found in these tested states. Short landscape still uses a scrolling content body; large real diffs, text scaling, physical mobile keyboards and deeper project history remain open acceptance. The screenshots do not imply Git worktrees or project memory exists.

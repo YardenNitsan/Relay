@@ -60,3 +60,11 @@ export async function openCommands(page: Page) {
     await page.getByRole('button', { name: /Command palette/ }).click();
   }
 }
+
+export async function projectIndex(page:Page){
+  const dialog=page.getByRole('dialog',{name:'Workspaces',exact:true});
+  await expect(dialog.getByRole('button',{name:'New workspace',exact:true})).toBeVisible();
+  const back=dialog.getByRole('button',{name:'All projects',exact:true});
+  if(await back.isVisible())await back.click();
+  return dialog;
+}

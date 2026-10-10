@@ -12,6 +12,8 @@ Run it with local models alone, or explicitly connect cloud providers. Your host
 
 [0.1.2 release report: changes, verification and remaining work](docs/release-0.1.2.md)
 
+The `modernization/final-evolution` branch is continuing the [final evolution plan](docs/final-evolution/master-plan.md). It includes the Studio shell, Execution Workbench, focused approvals and a rebuilt Projects workspace, plus verified reliability/security and native development-environment improvements. It is not a completed release: [requirements](docs/final-evolution/requirements-matrix.md), [acceptance evidence](docs/final-evolution/acceptance-results.md) and the [continuation ledger](docs/final-evolution/continuation.md) distinguish working increments from unfinished capabilities. Production is not upgraded by a branch push.
+
 > **Project status:** Relay is a working, actively developed application. The repository includes persistent tasks, local inference, controlled tools and a responsive interface. Some host integrations and deployment paths still need native validation; arbitrary native command execution and signed installers are not available. See [Current boundaries](#current-boundaries) before choosing a deployment.
 
 ## What you can do

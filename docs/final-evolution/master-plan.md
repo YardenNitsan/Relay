@@ -49,6 +49,15 @@ Run `scripts/native-integrations-docker.mjs` after infrastructure availability/p
 - [ ] Replace projects/diff/test/publication, Model Studio, devices/connections, grouped settings and both onboarding paths.
 - [ ] Inspect every major screen in both themes, desktop/mobile, loading/error/long-content/streaming states. Record captures and corrections. Test 320/360/390/768/1024/1440/1920/2560 and short landscape, zoom, focus and touch controls.
 
+### Next B09 increment: focused approval review
+
+The reviewed 844x390 capture leaves approximately 96px for inline approval inspection after task chrome. Preserve inline decisions and exact backend authorization, but offer an explicit **Review action** surface that uses the available window. Select this over automatic modal interruption (would steal focus during streaming) and a permanent third pane (would worsen compact layouts).
+
+- Lead with the deterministic operation and target, then consequences, execution host/workspace, model/agent provenance, deadline and exact arguments. Unknown tool consequences remain explicitly unclassified. Proposed file contents are untrusted text, not proof of an applied change.
+- Reuse the native modal primitive. Keep a bounded content scroll and a separate reachable decision footer. Closing/Escape is dismissal only, never denial or consent. Restore focus to the trigger, or Workbench if the approval disappeared.
+- Keep `allow_once`, `allow_task` and `denied` mutations unchanged. Display server rejection inside the focused review; no optimistic success. A stopped/revoked/expired task still relies on server enforcement and cannot gain authority through presentation.
+- First write browser scenarios for 320px/desktop light/dark, 844x390, keyboard dismissal/focus, denied mutation, actual allowed write and rejected consent. An isolated Chrome component render reproduced the missing review surface before implementation; its short-screen and Escape-focus assertions now pass without touching the active fixture. Run integrated scenarios and inspect real captures after the frozen full-suite gate. Do not rebuild the currently served dist.
+
 ### C: Real coding execution
 
 Review `server/tools/{store,files,git,git-baseline,sandbox,sandbox-worker,development-profiles,publication}.ts`, shared publication contracts, API and corresponding web modules. Build safe configurable workspace tiers, discovery/test profiles, multi-file create/delete/rename, independent Git worktrees and reviewed publication with conflict/rollback journals. Package restoration requires explicit approved sources/network and reproducible trusted images. Actual multi-file JS/TS, Python and .NET projects must build/test inside the sandbox; host shell remains unavailable to models.

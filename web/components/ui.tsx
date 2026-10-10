@@ -2,7 +2,7 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { Check, Circle, CircleAlert, LoaderCircle, X } from 'lucide-react';
 import type { TaskStatus } from '../../shared/types';
 
-export function Modal({ title, children, onClose, wide = false, className = '' }: { title: string; children: ReactNode; onClose: () => void; wide?: boolean; className?: string }) {
+export function Modal({ title, children, onClose, wide = false, className = '', fallbackFocusId }: { title: string; children: ReactNode; onClose: () => void; wide?: boolean; className?: string; fallbackFocusId?: string }) {
   const ref = useRef<HTMLDialogElement>(null);
   // Capture before descendants with autoFocus mount. Native showModal otherwise
   // remembers the already-focused dialog input instead of the invoking control.
@@ -15,6 +15,8 @@ export function Modal({ title, children, onClose, wide = false, className = '' }
       const origin = returnFocus.current;
       if (origin?.isConnected && origin !== document.body && origin.getClientRects().length && !origin.closest('dialog:not([open])')) origin.focus();
       else {
+        const fallback = fallbackFocusId ? document.getElementById(fallbackFocusId) : null;
+        if (fallback?.getClientRects().length) { fallback.focus(); return; }
         const visibleNavigation = Array.from(document.querySelectorAll<HTMLButtonElement>('.mobile-navigation, .command-trigger')).find(element => element.getClientRects().length > 0);
         (visibleNavigation ?? document.querySelector<HTMLButtonElement>('.brand'))?.focus();
       }

@@ -1,17 +1,21 @@
 import type { ActivityEvent, Approval, Workspace } from '../shared/types';
 
 const recordedText = (value: unknown): string | null => typeof value === 'string' && value.length > 0 ? value : null;
+const latest = (events: ActivityEvent[], matches: (event: ActivityEvent) => boolean) => events.reduce<ActivityEvent | undefined>((found, event) => matches(event) && (!found || event.id > found.id) ? event : found, undefined);
 
 /** Summaries are deterministic UI copy; only the backend can authorize execution. */
 export function approvalContext(approval: Approval, workspaceId: string | null, workspaces: Workspace[], events: ActivityEvent[]) {
   const taskEvents = events.filter(event => event.taskId === approval.taskId);
   const request = taskEvents.find(event => event.type === 'TOOL_REQUESTED' && event.data.toolCallId === approval.toolCallId);
   const agentId = recordedText(request?.data.agentId);
-  const started = agentId && taskEvents.find(event => event.type === 'AGENT_STARTED' && event.data.agentId === agentId && event.id < request!.id);
+  const started = agentId && latest(taskEvents, event => event.type === 'AGENT_STARTED' && event.data.agentId === agentId && event.id < request!.id);
+  // Array order can combine a durable snapshot with live events. Use the last
+  // identity recorded before this exact proposal, including permitted fallback.
+  const identity = agentId && latest(taskEvents, event => event.data.agentId === agentId && event.id < request!.id && ['AGENT_STARTED', 'MODEL_REROUTED', 'MODEL_CALL_COMPLETED'].includes(event.type));
   const role = started && recordedText(started.data.role);
   const cloud = approval.tool === 'cloud_egress';
   const agent = role ? role.charAt(0).toUpperCase() + role.slice(1).replaceAll('_', ' ') : cloud ? 'Task controller' : 'Agent not recorded';
-  const model = (started && recordedText(started.data.modelId)) || (cloud && recordedText(approval.arguments.model)) || 'Model not recorded';
+  const model = (cloud ? recordedText(approval.arguments.model) : identity && recordedText(identity.data[identity.type === 'MODEL_REROUTED' ? 'to' : 'modelId'])) || 'Model not recorded';
   const workspace = approval.tool === 'personal_tasks' ? 'Your personal task list' : workspaceId === null ? 'No workspace assigned' : workspaces.find(item => item.id === workspaceId)?.name ?? `Workspace unavailable (${workspaceId})`;
   const path = recordedText(approval.arguments.path);
   let action = `Requested tool: ${approval.tool}`;

@@ -5,7 +5,7 @@ Status vocabulary: **Complete and verified**, **Implemented but insufficiently v
 | ID | Requirement / directive section | Current status | Required evidence / dependency |
 |---|---|---|---|
 | A01 | Latest-source audit, repeatable baseline, ledger (§3,26) | Partially implemented | Fresh source/CI/tests/build/browser results; requirements inventory |
-| A02 | Passing portable CI and release gates (§22) | Partially implemented | ec0b1cd all three host gates and Linux/macOS browser gates pass; Windows111pass/1failure traced to save acknowledgement waiting for telemetry. Native Linux run38062805371 passed. Fix and new Studio hosted gates remain open. |
+| A02 | Passing portable CI and release gates (§22) | Partially implemented | c861696 all three host gates and Linux/macOS browser gates pass; Windows browser gate pending in run38066150868. Local full125browser pass. Native Linux run38062805371 passed. Release protection remains G05. |
 | A03 | Authorization/revocation/security review (§4,11) | Implemented but insufficiently verified | Dispatch race regressions and full threat-model review |
 | A04 | Overall task deadlines (§11) | Complete and verified | Durable admission/queue/active/approval/resource/restart/finalization regressions, full check 1214 passed/one skip, build and 14 affected browser cases; focused review findings fixed. Native migration portability remains A06/G02. |
 | A05 | Suspended execution and uncertain-effect recovery (§11) | Partially implemented | Durable resume and no duplicate mutation scenarios |
@@ -15,12 +15,12 @@ Status vocabulary: **Complete and verified**, **Implemented but insufficiently v
 | B01 | Professional design research and three concepts (§13–14) | Complete and verified | `design-research.md`: inspected official/product/community sources, maintenance/license limits; `design-system.md`: ten-criterion comparison, Studio selected. UI implementation remains B02–B11. |
 | B02 | New semantic light/dark design system (§14) | Partially implemented | Semantic token layer and compatibility roles integrated; initial light/dark visual/axe checks pass. All feature primitives and states remain open. |
 | B03 | New adaptive shell and modular presentation (§18,20) | Partially implemented | Studio shell, explicit account destinations, feature/layout ownership; broad integration and responsive focus acceptance in progress |
-| B04 | Conversation/composer redesign (§15A) | Partially implemented | New pane-aware welcome and usable model trigger; full message/composer presentation redesign remains open, existing functional flows retained |
+| B04 | Conversation/composer redesign (§15A) | Partially implemented | New pane-aware welcome and usable model trigger; confirmed delayed-send draft loss fixed with actual browser regression; full message/composer presentation redesign remains open, existing functional flows retained |
 | B05 | Execution Workbench (§15B) | Partially implemented | Dependency graph and modular output/log/check/diff/approval views integrated; visual/state acceptance in progress, full handoff/artifact inspection still open |
 | B06 | Project Workspace (§15C) | Not implemented | Real files/diff/tests/checkpoints/publication/rollback/memory |
 | B07 | Model Studio (§15D) | Not implemented | Measured vs estimated quality/resource/runtime/cost/reasoning |
 | B08 | Devices and Connections (§15E) | Not implemented | Host/browser/Companion separation and revocation |
-| B09 | First-class approvals (§15F) | Partially implemented | Redesigned exact-consequence review with device/scope/expiry |
+| B09 | First-class approvals (§15F) | Partially implemented | Focused consequence-first review, explicit host/scope/deadline/arguments, truthful one-request cloud consent and corrected fallback provenance implemented; five focused approval cases and 41 affected browser checks pass; real captures inspected in both themes on phone/desktop and rejection in short landscape. Full sensitive-action taxonomy and remaining states stay open |
 | B10 | Settings and onboarding (§15G–H) | Not implemented | Personal vs host administration; everyday and advanced flows |
 | B11 | Responsive, interaction, performance, accessibility (§16–19) | Partially implemented | Every new screen/state/viewport; WCAG 2.2 AA target, no certification claim |
 | C01 | Larger realistic repository import/discovery (§7) | Partially implemented | Hundreds of files, bounded configurable tiers and relevant search |

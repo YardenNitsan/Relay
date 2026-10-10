@@ -84,7 +84,7 @@ export default function Composer({ draftRequest, onDraftApplied, conversationId,
     if (!draft.trim() || sendLock.current || busy || disabled || stopped || uploading || accessBusy || confirmHostAccess) return;
     if (!textRef.current?.form?.reportValidity()) return;
     sendLock.current = true; setBusy(true); setError(null);
-    try { await onSend(draft.trim()); setDraft(''); try { if (localStorage.getItem(draftKey) === draft) localStorage.removeItem(draftKey); } catch { /* Nothing to clear. */ } }
+    try { await onSend(draft.trim()); setDraft(current => current === draft ? '' : current); try { if (localStorage.getItem(draftKey) === draft) localStorage.removeItem(draftKey); } catch { /* Nothing to clear. */ } }
     catch (caught) { setError(caught); }
     finally { sendLock.current = false; setBusy(false); textRef.current?.focus(); }
   };

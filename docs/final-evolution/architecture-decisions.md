@@ -1,5 +1,11 @@
 # Architecture decisions
 
+## FE009 — Focused approval review preserves exact consent
+
+An explicit review dialog supplements inline approval controls; it never opens automatically during streaming. Native modal focus/inertness is retained, with Workbench as the fallback when a resolved approval removes the invoking control. A separate decision footer keeps actions and rejected-consent errors reachable in short windows. Unknown consequences stay unclassified; proposed contents and arguments are bounded untrusted text, with complete downloads and explicit truncation notices.
+
+Cloud egress offers one-request consent only. The current backend asks for each exact context and does not retain task-wide cloud consent, so the UI must not suggest otherwise. File/tool task grants remain exact-action/argument grants within existing policy. Model attribution uses the latest recorded identity before the specific proposal, including permitted fallback; a later reroute cannot rewrite an earlier decision's provenance.
+
 ## FE-009: Durable overall deadline and bounded reconciliation
 
 Accepted. New tasks default to 86,400 elapsed seconds, bounded to 30–604,800 seconds at every admission path. Derive the absolute deadline from durable creation time and options; do not renew on resume or retrofit historical tasks. Use host time consistently at admission, dispatch, transaction finalization and reconciliation. Poll at one second in batches of 128, using migration 10's partial index to exclude terminal history. Cleanup promises are owned separately so a slow provider cannot block expiry of unrelated work. Shutdown joins scheduler reads and cleanup before storage closes. Durable authorization enforces expiry even before a reconciliation sweep. OS clock correction remains an operational limitation of wall-clock deadlines; active execution budgets remain separate.

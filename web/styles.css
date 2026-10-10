@@ -370,21 +370,6 @@ kbd { font: 10px var(--mono); border: 1px solid var(--line); border-radius: 3px;
 .event-detail { margin-left: 27px; padding-bottom: 14px; }
 .bounded-output { margin: 6px 0 10px; padding: 12px; background: var(--canvas); border: 1px solid var(--line); border-radius: 5px; white-space: pre-wrap; overflow-wrap: anywhere; overflow: auto; max-height: 330px; font-size: 10px; line-height: 1.7; }
 .older-events { margin-bottom: 9px; }
-.approval { border: 1px solid var(--warning); border-radius: 7px; background: var(--warning-wash); padding: 16px; margin-bottom: 20px; }
-.approval-heading { display: flex; align-items: center; gap: 9px; color: var(--warning); }
-.approval h3 { font-size: 14px; margin: 0 0 3px; }
-.approval p { font-size: 12px; margin: 12px 0; }
-.approval-heading p { font-size: 10px; margin: 0; }
-.approval-identity { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 5px 12px; margin: 15px 0; font-size: 11px; line-height: 1.5; }
-.approval-identity dt { color: var(--muted); }
-.approval-identity dd { margin: 0; overflow-wrap: anywhere; }
-.approval .approval-action { padding-top: 12px; border-top: 1px solid var(--line); overflow-wrap: anywhere; }
-.approval .approval-reason { color: var(--muted); font-size: 11px; }
-.approval-arguments { font-size: 11px; }
-.approval-arguments summary { cursor: pointer; padding: 6px 0; }
-.approval .hint { font-size: 10px; }
-.approval-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 15px; }
-.approval-actions .button { font-size: 11px; min-height: 44px; }
 .field-label { display: flex; flex-direction: column; gap: 7px; font-size: 11px; }
 .field-label select { font-size: 11px; }
 .diff-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 18px 0 8px; }
@@ -559,9 +544,6 @@ kbd { font: 10px var(--mono); border: 1px solid var(--line); border-radius: 3px;
   .inspector-heading { padding: 20px 22px; }
   .inspector-heading .icon-button { width: 44px; height: 44px; }
   .inspector-body { padding: 20px 22px 32px; }
-  .approval-actions { display: grid; grid-template-columns: 1fr 1fr; }
-  .approval-actions .button { min-height: 44px; font-size: 12px; }
-  .approval-actions .button:last-child { grid-column: 1 / -1; }
   .event-row summary { padding: 14px 0; }
   .event-text strong { font-size: 13px; }
   .event-text > span { font-size: 12px; }
@@ -769,9 +751,6 @@ kbd { font: 10px var(--mono); border: 1px solid var(--line); border-radius: 3px;
   .modal { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
   .modal .button, .modal .text-button, .modal .icon-button, .activity-panel button, .activity-panel select { min-height: 44px; }
   .modal .icon-button { min-width: 44px; }
-  .approval-actions .button { min-height: 48px; }
-  .approval p, .approval-identity, .approval .approval-reason, .approval-arguments { font-size: 12px; }
-  .approval .hint { font-size: 11px; }
   .navigation-modal .modal-content { padding: 12px 16px 24px; }
   .receipt-button { min-height: 44px; font-size: 12px; flex-wrap: wrap; gap: 8px; }
   .text-button.response-copy { min-height: 44px; font-size: 12px; }

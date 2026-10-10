@@ -64,6 +64,8 @@ Opened and inspected retained [phone shell](evidence/studio-shell-390-light.png)
 
 Fresh checkpoint `npm.cmd run check` passes strict types and **1218 tests / one platform skip across 114 files**, 245.75 seconds (`studio-workbench-check.log`). The production build including package-derived version reporting passes (`studio-workbench-build.log`). Full browser acceptance is running against this frozen build (`studio-workbench-full-browser.log`); no complete-suite or hosted success is claimed yet.
 
+Update: the frozen Studio checkpoint `c8616968b4f65a8c9ad64b67a1c2571b4cb42550` passed **all 125 browser cases in 16.1 minutes** (`studio-workbench-full-browser.log`). All three hosted host-check jobs in run38066150868 pass; its browser jobs remain pending at this update. Subsequent focused-approval changes are a separate increment and are not covered by this full-suite result.
+
 ## Required scenario definitions
 
 All remain open until fresh evidence is linked. Historical/fixture results are not live acceptance.
@@ -84,3 +86,9 @@ All remain open until fresh evidence is linked. Historical/fixture results are n
 | S12 | DB upgrade/restore | Native locks, historical records/references preserved, restored execution gated |
 | S13 | Mobile review/approval | Actual rendered exact-consequence review, reachable controls, keyboard/axe/visual checks |
 | S14 | Remote auth/revocation | Genuine authorized gateway/session; no cross-account access; revoked streams/tools stop |
+
+## Focused approval and draft increment ? 10 October
+
+The frozen c861696 Studio build completed all **125/125 browser cases in 16.1 minutes** (`studio-workbench-full-browser.log`). Subsequent approval/draft changes passed strict types and production build (`approval-build.log`), **nine focused unit tests** (`approval-unit-check.log`: seven approval provenance, two graph layout), and **41/41 affected browser cases in 5.2 minutes** (`approval-browser.log`). Command: `npm.cmd run test:e2e -- tests/e2e/approval-review.spec.ts tests/e2e/composer-draft.spec.ts tests/e2e/conversation-create.spec.ts tests/e2e/access.spec.ts tests/e2e/workbench.spec.ts tests/e2e/product.spec.ts tests/e2e/refinement.spec.ts`. The prior full 1218-test backend check belongs to c861696; no fresh full-test total is inferred.
+
+New approval cases cover 320/1440 light/dark, actual denial and approved write/diff, Escape/focus restoration, axe, geometry, and 844x390 decision rejection feedback. The rejection response is controlled UI evidence, not live account revocation. Five real UI captures are retained as `evidence/approval-review-*.png`. Fallback identity regressions failed before the provenance fix; delayed-send draft retention failed before the conditional-clear fix and now survives send completion and reload. Existing authorization APIs and grants were preserved. This is a verified increment, not completion of B or the full directive.

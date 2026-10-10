@@ -2,6 +2,8 @@
 
 Status: open, internal engineering review; no independent penetration-test claim.
 
+Approval presentation audit found inaccurate model provenance after a permitted fallback: the view used only AGENT_STARTED. Two failing regressions reproduced it; the view now selects the latest recorded identity before the exact tool proposal, excluding later events and other task/agent identities. Unknown identity stays unknown. The focused-review increment changes no authorization endpoint or permission grant. Cloud UI offers one-request consent because backend cloud consent is not retained task-wide. Source review found no actionable remaining defect in that increment; real browser consent/error/focus acceptance is still running. This is a presentation-integrity fix, not evidence of an authorization bypass.
+
 | Boundary | Invariant | Current review / acceptance |
 |---|---|---|
 | Browser/session/LAN/remote | Verified identity, origin/Host/CSRF, revocation, per-user records | Existing tests; fresh baseline and adversarial inventory pending |

@@ -16,7 +16,7 @@ Opened and inspected actual fixture captures at 390px in both themes, 1440px lig
 
 Review found that objective context outside the body could crowd approvals out of short screens, and resizing could strand keyboard focus on hidden controls. Objective context now scrolls inside the body, with bounded expanded prose. A remembered-focus hook transfers focus when CSS has already hidden the old active element. Actual browser regressions cover desktop-to-phone and short landscape; denial remains reachable and operates on a real fixture approval. At 390px height the remaining inspection viewport is small; a more focused approval surface remains B09 work, not a solved full-product usability claim.
 
-The 52-case integrated run passed 51 cases. Its long-objective setup initially hit the real context-admission safeguard before approval; selecting an explicit 16,384-token budget made the intended approval scenario pass. No production budget or safeguard changed. A previous full foundation run passed 115/117: an obsolete exact palette expectation and Chrome `ERR_NO_BUFFER_SPACE` during chunk loading were recorded; both affected flows pass in the integrated subset. Fresh full gates remain required for this checkpoint.
+The 52-case integrated run passed 51 cases. Its long-objective setup initially hit the real context-admission safeguard before approval; selecting an explicit 16,384-token budget made the intended approval scenario pass. No production budget or safeguard changed. A previous full foundation run passed 115/117: an obsolete exact palette expectation and Chrome `ERR_NO_BUFFER_SPACE` during chunk loading were recorded; both affected flows pass in the integrated subset. The subsequent frozen c861696 build passes the complete 125-case browser gate in 16.1 minutes.
 
 ## Per-surface gate
 
@@ -32,13 +32,19 @@ For each redesigned surface, retain realistic screenshots and verify:
 
 | Surface | Current review status |
 | --- | --- |
-| Shell and welcome | Visual review and affected browser checks pass; fresh full gate pending |
+| Shell and welcome | Visual review and full 125-case Studio browser gate pass at c861696; future increments verified separately |
 | Conversation/composer | Welcome and model-trigger changes reviewed; full composer/message redesign remains open |
 | Workbench | Dependency layout, output/log/check separation, focus and short-screen controls reviewed; handoff/artifact depth and full-state coverage remain open |
 | Projects | Existing view retained; redesign open |
 | Model Studio | Existing view retained; redesign open |
 | Devices/connections | Existing view retained; Companion implementation and redesign open |
-| Approvals | Existing durable actions pass in new Workbench; complete consequence-first redesign and compact decision view remain open |
+| Approvals | Focused consequence-first review inspected at 320/1440px in both themes and 844x390 rejection; five focused and 41 affected browser checks pass. Other sensitive-operation states remain open |
 | Settings/onboarding | Existing flows retained; redesign open |
 
 Automated axe results supplement screenshot and keyboard review. They do not establish complete WCAG 2.2 AA conformance.
+
+## Focused approvals and draft preservation
+
+The focused review resolves the earlier short-screen inspection problem: its independently scrolling body and fixed decision/error footer retain at least 140px of body at 844x390 and reachable 44px decision targets. Actual fixture screenshots were opened in light/dark at 320 and 1440px, plus the short-landscape rejected decision. Escape restores the review trigger; a resolved approval moves focus to the visible Workbench. The injected rejection tests UI feedback only, not account-revocation acceptance. Actual denial and approved managed writes pass. Proposed source and exact arguments remain untrusted text with bounded previews and full downloads. Cloud egress has one-request consent only. No accessibility certification is claimed.
+
+A real delayed-message request reproduced loss of newer composer text after a successful send. Clearing only the submitted draft fixes this; the browser checks preservation after completion and reload in a saved conversation. Full conversation/composer redesign remains open.

@@ -32,6 +32,26 @@ describe('approval identity and scope', () => {
     expect(result.risk).toContain('2,048 bytes');
     expect(result.risk).toContain('leaves this host');
   });
+  it('attributes a tool proposal to its actual model after fallback, independent of event-array order', () => {
+    const result = approvalContext(approval, 'task-workspace', workspaces, [
+      event(1, 'AGENT_STARTED', { agentId: 'worker-a', role: 'worker', modelId: 'ollama/failed' }),
+      event(5, 'MODEL_REROUTED', { agentId: 'worker-a', from: 'ollama/actual', to: 'ollama/later' }),
+      event(4, 'TOOL_REQUESTED', { toolCallId: 'call-a', agentId: 'worker-a' }),
+      event(3, 'MODEL_CALL_COMPLETED', { agentId: 'worker-a', modelId: 'ollama/actual' }),
+      event(2, 'MODEL_REROUTED', { agentId: 'worker-a', from: 'ollama/failed', to: 'ollama/actual' }),
+      event(3, 'MODEL_CALL_COMPLETED', { agentId: 'other-agent', modelId: 'wrong-agent' }),
+      event(3, 'MODEL_CALL_COMPLETED', { agentId: 'worker-a', modelId: 'wrong-task' }, 'other-task'),
+    ]);
+    expect(result).toMatchObject({ agent: 'Worker', model: 'ollama/actual' });
+  });
+  it('uses recorded rerouting when old history lacks a call-completed event', () => {
+    const result = approvalContext(approval, null, [], [
+      event(1, 'AGENT_STARTED', { agentId: 'worker-a', role: 'worker', modelId: 'ollama/failed' }),
+      event(2, 'MODEL_REROUTED', { agentId: 'worker-a', to: 'ollama/fallback' }),
+      event(3, 'TOOL_REQUESTED', { toolCallId: 'call-a', agentId: 'worker-a' }),
+    ]);
+    expect(result.model).toBe('ollama/fallback');
+  });
   it('preserves the exact policy reason for unclassified operations', () => {
     const result = approvalContext({ ...approval, tool: 'new_tool', reason: 'Exact recorded policy explanation.' }, null, [], []);
     expect(result.reason).toBe('Exact recorded policy explanation.');

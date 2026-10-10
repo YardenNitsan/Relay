@@ -6,6 +6,7 @@ import {z} from 'zod';
 import {privateDirectory} from '../host/private-storage.js';
 import {openDatabase} from './database.js';
 import {Store} from './store.js';
+import {relocateManagedWorktrees} from './worktree-relocation.js';
 import appPackage from '../../package.json' with {type:'json'};
 
 export interface BackupLimits {maxFiles:number;maxBytes:number;maxFileBytes:number;}
@@ -192,6 +193,10 @@ export async function restoreBackup(input:BackupInput&{destinationDir:string}):P
     for(const dir of [...manifest.directories].sort((a,b)=>a.split('/').length-b.split('/').length))await mkdir(join(stage,dir),{mode:0o700});
     for(const file of manifest.files)await decryptFile(root,file,key,join(stage,file.path));
     markerSchema.parse(JSON.parse((await readBounded(stage,'backend.json',4096)).toString('utf8')));
+    const dataDirectory=join(destination,'data');
+    // Only authenticated staging is repaired; old absolute pointers are never followed.
+    // Git must not run here: these bindings become usable only after the final rename.
+    const relocation=await relocateManagedWorktrees(stage,dataDirectory);
     const db=await openDatabase(join(stage,'postgres'));
     try{
       const store=new Store(db);await store.init();await store.recover();
@@ -203,10 +208,10 @@ export async function restoreBackup(input:BackupInput&{destinationDir:string}):P
           await tx.query('INSERT INTO provider_connections(provider,enabled) VALUES ($1,false) ON CONFLICT(provider) DO UPDATE SET enabled=false',[provider]);
           await tx.query('INSERT INTO user_provider_connections(user_id,provider,enabled) SELECT id,$1,false FROM users ON CONFLICT(user_id,provider) DO UPDATE SET enabled=false',[provider]);
         }
-        await tx.query("INSERT INTO audit_events(operation,metadata) VALUES ('BACKUP_RESTORED',$1)",[JSON.stringify({format:1,createdAt:manifest.createdAt,restorationPending:true,credentialsInvalidated:true})]);
+        await tx.query("INSERT INTO audit_events(operation,metadata) VALUES ('BACKUP_RESTORED',$1)",[JSON.stringify({format:1,createdAt:manifest.createdAt,restorationPending:true,credentialsInvalidated:true,repairedWorktrees:relocation.repaired})]);
       });
     }finally{await db.close();}
-    await unlink(join(stage,'service.lock'));const dataDirectory=join(destination,'data');await rename(stage,dataDirectory);stage=undefined;return {...summary(manifest),dataDirectory};
+    await unlink(join(stage,'service.lock'));await rename(stage,dataDirectory);stage=undefined;return {...summary(manifest),dataDirectory};
   }finally{
     key.fill(0);
     if(stage&&identity){const current=await lstat(stage).catch(()=>undefined);if(current?.dev===identity.dev&&current.ino===identity.ino&&!current.isSymbolicLink()&&inside(destination,stage)&&comparable(await realpath(stage))===comparable(stage))await rm(stage,{recursive:true,force:true});}

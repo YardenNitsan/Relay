@@ -1,0 +1,17 @@
+# Managed Git branches
+
+On the modernization branch, the local owner can open a project and choose **Create isolated branch**. Relay captures the current managed text files and creates a separate workspace backed by a genuine linked Git worktree. Select that workspace in a conversation to use the existing file tools, approvals, container tests and snapshot diffs there. Parent files and sibling branches stay separate.
+
+These are Relay branches. They do not identify or check out a branch in the original source repository. Relay creates a private bare SHA-256 repository, imports admitted raw text and creates generated branch names. It never runs Git against the original `.git`, loads its configuration, invokes project hooks or fetches a remote. The initial text-only representation uses mode `100644`; executable bits, binary files and original Git history are not imported.
+
+The child inherits the parent's immutable owner, but has its own workspace ID. A shared-workspace grant does not automatically grant access to its children. Creation is currently local-owner-only. Personal workspace quotas, storage headroom, file limits, session checks and emergency stop remain enforced. Concurrent writable agents and automatic branch allocation are not enabled by this feature.
+
+The current limits are 2,000 admitted files, 1 MiB per text file and 50 MiB total. Repositories and journals count toward the aggregate managed-storage quota. Git metadata stays outside model-visible snapshots; the generated `.git` pointer is excluded from file tools and container input. Worktree creation uses `--no-checkout`, raw file copying and index-only initialization to avoid attribute-driven content transformations. See the [Git worktree documentation](https://git-scm.com/docs/git-worktree).
+
+Each child starts with `sourcePath: null`. **Merging into the parent, publishing a branch to original source, source-branch selection, and conflict resolution remain unavailable.** Downloading saved text files remains possible. Existing source publication continues to apply only to its separately imported workspaces.
+
+Creation records a prepared allocation and a full registration intent before the SQL/filesystem publication stages. Interrupted operations retain those records and their files; they are not automatically retried or deleted. Stop joins the tracked operation, and client disconnect/deadline cancellation propagates into Git and registration. A successful response follows durable registration. A lost response can have an uncertain result: inspect the project list before requesting another branch.
+
+Automatic reconciliation and discard of interrupted registrations are still open. Preserve the entire data directory and journals for recovery; do not edit pointers or remove Git administrative directories manually. Encrypted embedded restore validates and relocates the copied reciprocal Git pointers before publishing its new data directory. Original absolute paths are treated as strings and never accessed. Prepared-only registrations remain unpublished; contradictory bindings refuse the restore. A real Windows encrypted round trip verifies independent HEADs/indexes and dirty files with the original directory unavailable. Cross-platform restore acceptance remains open. See [backup recovery](backups.md).
+
+Implementation and validation are tracked in [the C02 plan](final-evolution/git-worktrees-plan.md), [acceptance results](final-evolution/acceptance-results.md) and [requirements matrix](final-evolution/requirements-matrix.md).

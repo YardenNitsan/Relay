@@ -4,7 +4,7 @@
   "updatedAt": "2026-10-10",
   "baselineCommit": "9d563bc973dbcc177921ab918db88561c8280e48",
   "branch": "modernization/final-evolution",
-  "currentMilestone": "C05 one actual targeted coding success and one failed repeat retained; C02 Git isolation next",
+  "currentMilestone": "C02 managed forks and encrypted restore verified locally; ready to push, then B07 Model Studio",
   "requirementIds": [
     "A01",
     "A02",
@@ -23,7 +23,8 @@
     "A03",
     "C04",
     "B06",
-    "D01"
+    "D01",
+    "C02"
   ],
   "worktree": "C:/Users/yarde/Documents/codexp/Relay-modernization",
   "implementedChanges": [
@@ -66,7 +67,10 @@
     "B06 same-file re-click no-op, explicit first-workspace phone action and landscape content >=160px; reproduced red and verified green.",
     "C05 coding-0O93wv: actual local9B32K/8192 completes8calls/256978ms, visible2/2, independent9/9, published9/9, exact rollback, no unrelated edits; private host closed and stored sessions0.",
     "C05 unchanged repeat coding-IORGAe fails: unapproved extra command denied, incomplete activity repair independently scores8/9; no publication, owned task cancelled, host/sessions closed.",
-    "Coding acceptance terminal output bounded to summary; full receipts remain in report."
+    "Coding acceptance terminal output bounded to summary; full receipts remain in report.",
+    "C02 genuine Relay-owned linked worktrees with raw snapshot import, separate workspace UUIDs, immutable Git provenance, migration11, owner fork API/UI, fresh authorization and joined registration/stop journals; final acceptance pending.",
+    "C02 compact landscape branch provenance regression reproduced127.625px, corrected to preserve>=160px editor; final10browser cases pass with waiting/error feedback and light/dark captures.",
+    "C02 encrypted restore repairs only authenticated staging Git pointers; actual two published branches plus prepared-only registration restore after original path becomes unavailable, preserving HEAD/index/raw/dirty files and stopped state.22helper adversarial cases pass."
   ],
   "changedFiles": [
     ".github/workflows/native-integrations.yml",
@@ -248,9 +252,27 @@
     "tests/task-demand-multilingual.test.ts",
     "docs/final-evolution/evidence/coding-acceptance-success-windows.json",
     "docs/final-evolution/evidence/coding-acceptance-repeat-windows.json",
-    "docs/final-evolution/evidence/coding-repeat-independent-windows.json"
+    "docs/final-evolution/evidence/coding-repeat-independent-windows.json",
+    "server/tools/git-worktrees.ts",
+    "shared/git-worktrees.ts",
+    "tests/git-worktrees.test.ts",
+    "tests/workspace-forks.test.ts",
+    "tests/e2e/project-fork.spec.ts",
+    "web/features/projects/ForkProject.tsx",
+    "docs/managed-branches.md",
+    "docs/final-evolution/git-worktrees-plan.md",
+    "server/db/backup.ts",
+    "server/db/worktree-relocation.ts",
+    "tests/backup-worktrees.test.ts",
+    "tests/worktree-relocation.test.ts",
+    "tests/e2e/project-fork-states.spec.ts",
+    "docs/backups.md",
+    "docs/final-evolution/worktree-relocation-plan.md",
+    "docs/final-evolution/evidence/native-integrations-worktrees-windows.json",
+    "docs/final-evolution/model-studio-plan.md",
+    "docs/validation.md"
   ],
-  "testStatus": "Strict1270tests/one skip and build pass. Final presentation types/build pass. Full frozen145/151,affected66/68,then8/8final corrective cases pass1.0min. All18viewport/theme cases pass; reviewed retained screenshots. No fresh complete155local/hosted claim.",
+  "testStatus": "Final strict typecheck/full1305passed/one skip across123files273.47s and production build pass.31affected browser+10final branch cases pass; native PostgreSQL17.11 migration11/32-table restore/sandbox pass; actual encrypted worktree roundtrip and22adversarial helper cases pass.",
   "lastPassingCommands": [
     "npm.cmd ci",
     "npm.cmd run check (baseline)",
@@ -310,22 +332,39 @@
     "node --import tsx scripts/coding-acceptance.ts --model=lmstudio/qwen3.5-9b-uncensored-hauhaucs-aggressive.gguf --context=32768 --output=8192 (coding-0O93wv passed; independent/published9tests each; exact rollback)",
     "npm.cmd run typecheck (bounded coding-report summary)",
     "npm.cmd test -- tests/coding-acceptance-options.test.ts tests/coding-acceptance.test.ts (16passed)",
-    "node --import tsx scripts/coding-acceptance.ts --sandbox-only (coding-7y5iDb preflight passed, bounded summary)"
+    "node --import tsx scripts/coding-acceptance.ts --sandbox-only (coding-7y5iDb preflight passed, bounded summary)",
+    "npm.cmd test -- tests/api.test.ts tests/git-worktrees.test.ts tests/migrations.test.ts tests/storage-budget.test.ts tests/personal-workspaces.test.ts (52passed,26.34s before final publication tracking)",
+    "npm.cmd test -- tests/git-worktrees.test.ts tests/tools-new-git.test.ts tests/storage-budget.test.ts (19passed; actual linked indexes, raw bytes, revocation and joined stop)",
+    "npm.cmd run check (C02 initial:1281passed/one skip,121files,272.84s)",
+    "npm.cmd run build (C02 initial)",
+    "npm.cmd test -- tests/api.test.ts tests/workspace-forks.test.ts tests/git-worktrees.test.ts (31passed,final route guards)",
+    "npm.cmd run test:e2e -- tests/e2e/project-fork.spec.ts tests/e2e/project-draft.spec.ts tests/e2e/projects-studio.spec.ts tests/e2e/publication.spec.ts (31passed)",
+    "npm.cmd run build (compact branch correction)",
+    "npm.cmd run test:e2e -- tests/e2e/project-fork.spec.ts tests/e2e/project-fork-states.spec.ts (10passed,1.3min)",
+    "node scripts/native-integrations-docker.mjs (migration11,32-table restore,native sandbox pass)",
+    "npm.cmd run typecheck (staged restore integration)",
+    "npm.cmd test -- tests/backup-worktrees.test.ts tests/backup.test.ts tests/migrations.test.ts tests/git-worktrees.test.ts (41passed,23.53s)",
+    "npm.cmd test -- tests/worktree-relocation.test.ts --maxWorkers=1 (22passed)",
+    "npm.cmd run check (final C02/restore:1305passed/one skip,123files,273.47s)",
+    "npm.cmd run build (final C02/restore)"
   ],
-  "lastPassingCommit": "6d154db651df4184d038a5fdf7b7497fead47d37",
-  "lastPassingCommitScope": "Pushed B06/D01/C05-option checkpoint. Strict1270tests/one skip/build; final UI types/build/eight cases pass;18responsive Project cases pass. All3host checks and native38081728982 pass;3browser jobs still active. Prior full/affected failures and follow-ups are explicit in acceptance-results.",
+  "lastPassingCommit": "f21317cee3234d198a2c91c5ff61b19ce5e58b58",
+  "lastPassingCommitScope": "Pushed f21317c actual coding success/failed repeat evidence and bounded reporting; all6host/browser38083153810 pass. C02 integrated gate running separately.",
   "knownFailures": [
     "Real coding: larger9B RAM admission refusal; smaller9B initial missing-runtime-temp load error repaired;16K context paused;32K wrong activity repair/output-limit pause after7calls. Earlier trials had no publication; later coding-0O93wv succeeds.",
     "Gemma4 12B32K candidate also refused unchanged RAM admission; no inference occurred.",
     "C04 initial containerd config ID lookup failed; unique build tag now resolves actual engine immutable ID.",
     "C04 initial .NET CoreLib OOM under1MiB file limit fixed by bounded profile64MiB, native red/green pass.",
-    "Historical B06 browser failures corrected; frozenfull145/151 andaffected66/68 failures all covered by passing follow-ups. Same-file/short-height/empty-action red cases pass after fixes. Fresh hosted whole-suite still pending.",
-    "Identical32K/8192 local9B repeat coding-IORGAe fails after9calls/293050ms, awaiting user after denied extra command; separate real-container diagnostic8/9 reveals unfiltered foreign AGENT_STARTED. No publication. No third cherry-picked retry."
+    "Identical32K/8192 local9B repeat coding-IORGAe fails after9calls/293050ms, awaiting user after denied extra command; separate real-container diagnostic8/9 reveals unfiltered foreign AGENT_STARTED. No publication. No third cherry-picked retry.",
+    "Historical B06 failures are fixed and6d154db complete hosted155browser/all3host gates pass.",
+    "C02 compact initial2/6: stale fixture catalog and real landscape editor127.625px. Corrected10/10browser passes; no reduced height assertion.",
+    "Encrypted worktree restore initially failed actualGit because pointers referenced unavailable original. Corrected41focused integration cases pass; cross-platform restore and interrupted-registration reconciliation remain open."
   ],
   "outstandingSecurityReviews": [
     "Full threat-model review",
     "A08 reference-aware artifact retention review",
-    "Focused deadline and sandbox reviews found no remaining concrete defects; broader execution review remains"
+    "Focused deadline and sandbox reviews found no remaining concrete defects; broader execution review remains",
+    "Focused C02 fork/registration and staged restore integration reviews found no additional actionable defect; broader source integration/reconciliation remain open."
   ],
   "externalBlockers": [
     "Second physical Companion device not established",
@@ -334,7 +373,7 @@
     "License/admin protection authorization pending",
     "Draft PR connector HTTP403; branch pushes work"
   ],
-  "nextActionableWorkItem": "Inspect host/browser38081729034 final outcomes (all3hostchecks pass,3browserjobs active); review C02 Git worktree plan and implement first isolated increment. Finish evidence commit/push before next code milestone.",
+  "nextActionableWorkItem": "Commit/push verified C02 fork/restore increment; track its hosted checks. Execute model-studio-plan.md: first active evaluation recovery regression, then catalog/inspector/Connections redesign with browser/visual acceptance.",
   "remainingDependencies": [
     "A native recovery/restore/retention",
     "B full redesign",

@@ -115,3 +115,4 @@
   .project-index-list { flex-shrink: 0; }
   .project-file-document .workspace-editor textarea { min-height: 120px; height: 120px; }
 }
+.project-branch-label{padding-top:var(--space-2);font-size:var(--text-caption);color:var(--muted);overflow-wrap:anywhere}

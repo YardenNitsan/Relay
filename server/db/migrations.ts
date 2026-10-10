@@ -72,6 +72,10 @@ export const migrations: readonly Migration[] = [
       WHERE status NOT IN ('completed','failed','cancelled')
         AND options->'budget'->>'maxElapsedSeconds' IS NOT NULL;
   `},
+  {version:11,name:'managed-workspace-git-provenance',sql:`
+    ALTER TABLE workspaces ADD COLUMN git jsonb;
+    ALTER TABLE workspaces ADD CONSTRAINT workspaces_git_object CHECK (git IS NULL OR jsonb_typeof(git)='object');
+  `},
 ];
 const checksum = (migration: Migration) => createHash('sha256')
   .update(JSON.stringify([migration.version, migration.name, migration.sql.replace(/\r\n/g, '\n')])).digest('hex');

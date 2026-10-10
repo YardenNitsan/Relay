@@ -16,7 +16,8 @@ export async function verifyNativeUpgrade(first:Store,second:Store,options:TaskO
   await first.db.query("INSERT INTO task_schedules(id,user_id,name,objective,options,session_version,grant_snapshot,interval_minutes,missed_policy,next_run_at) VALUES ('upgrade-schedule','owner','Health report','Preserved schedule',$1,0,'{}',60,'once',now()+interval '1 day')",[JSON.stringify(options)]);
   await first.db.query("INSERT INTO users(id,name,role,permissions) VALUES ('upgrade-user','Restricted account','chat','{\"providers\":[\"ollama\"],\"workspaceIds\":[],\"maxAccess\":\"read_only\",\"maxConcurrentTasks\":1,\"maxCallsPerTask\":4,\"maxSecondsPerTask\":60,\"dailyCloudBudgetUsd\":0}')");
   const tables=['conversations','tasks','messages','approvals','workspaces','memory_notes','task_schedules','users'];
-  const snapshot=async()=>Promise.all(tables.map(table=>first.db.query(`SELECT * FROM ${table} WHERE id LIKE 'upgrade-%' ORDER BY id`)));
+  // Compare every historical field; the new nullable Git column is asserted separately.
+  const snapshot=async()=>Promise.all(tables.map(table=>first.db.query(table==='workspaces'?"SELECT to_jsonb(w)-'git' AS record FROM workspaces w WHERE id LIKE 'upgrade-%' ORDER BY id":`SELECT * FROM ${table} WHERE id LIKE 'upgrade-%' ORDER BY id`)));
   const before=await snapshot(),history=await first.db.query('SELECT * FROM schema_migrations ORDER BY version');
   let upgrades:Promise<PromiseSettledResult<void>[]>|undefined;
   try {
@@ -39,7 +40,8 @@ export async function verifyNativeUpgrade(first:Store,second:Store,options:TaskO
   assert.equal(Number((await first.db.query('SELECT max(version) AS version FROM schema_migrations'))[0].version),migrations.at(-1)!.version);
   assert.equal((await first.task('upgrade-task')).options.budget.maxElapsedSeconds,undefined,'Historical deadline policy must remain unchanged');
   assert.ok((await first.db.query("SELECT indexname FROM pg_indexes WHERE indexname='tasks_pending_deadlines'")).length);
-  return ['Two independently pooled upgrades wait on the native advisory lock, then apply migration 10 once',
+  assert.equal((await first.db.query("SELECT git FROM workspaces WHERE id='upgrade-workspace'"))[0].git,null,'Historical snapshots must not acquire invented Git provenance');
+  return [`Two independently pooled upgrades wait on the native advisory lock, then apply migrations through ${migrations.at(-1)!.version} once`,
     'Version 9 conversations, messages, pending approvals, scoped memory, schedules, workspaces and restricted grants survive unchanged',
     'Historical task deadline policy and immutable migration ledger are preserved'];
 }

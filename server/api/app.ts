@@ -283,6 +283,20 @@ export async function createApp(services:Services,options:AppOptions={}):Promise
     const workspace=await broker.createWorkspace(body.name,body.sourcePath,localOwner&&!body.personal?undefined:p.user.id,async()=>{if(!await sessions.live(p))throw new AppError('REVOKED','Your account session was revoked',401);});
     await store.saveWorkspace(workspace);await store.audit(null,'WORKSPACE_CREATED',{workspaceId:workspace.id,imported:!!body.sourcePath,userId:p.user.id});return workspace;
   });
+  app.post('/api/workspaces/:id/fork',async(request,reply)=>{
+    const p=owner(request),id=routeId(request);
+    const {name}=z.object({name:z.string().trim().min(1).max(128)}).strict().parse(request.body);
+    const authorize=async()=>{await workspaceAccess(p,id,true);};
+    await authorize();
+    const controller=new AbortController(),socket=request.raw.socket,previousTimeout=socket.timeout??0;
+    socket.setTimeout?.(65_000);const timer=setTimeout(()=>controller.abort('fork_deadline'),60_000);timer.unref();
+    const disconnected=()=>{if(!reply.raw.writableFinished)controller.abort('client_disconnected');};reply.raw.on('close',disconnected);
+    try{return await engine.mutateWorkspace(id,()=>broker.forkWorkspace(id,name,authorize,async(workspace,guard)=>{
+        guard();await store.saveWorkspace(workspace);guard();
+        await store.audit(null,'WORKSPACE_FORKED',{workspaceId:workspace.id,parentWorkspaceId:id,branch:workspace.git!.branch,userId:p.user.id});guard();
+      },controller.signal));}
+    finally{clearTimeout(timer);reply.raw.off('close',disconnected);if(!socket.destroyed)socket.setTimeout?.(previousTimeout);}
+  });
   app.get('/api/workspaces/:id/files',async request=>{await workspaceAccess(principal(request),routeId(request));return {files:await broker.listFiles(routeId(request))};});
   app.get('/api/workspaces/:id/file',async request=>{
     await workspaceAccess(principal(request),routeId(request));const {path}=z.object({path:z.string().min(1).max(512)}).strict().parse(request.query);

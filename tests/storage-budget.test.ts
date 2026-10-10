@@ -20,6 +20,11 @@ it('includes private publication journals when admitting unrelated managed write
   await mkdir(join(root,'publications'));await writeFile(join(root,'publications','review.json'),'1234567890');
   expect((await budget.assertCapacity(5)).usedBytes).toBe(60);await expect(budget.assertCapacity(6)).rejects.toThrow(/quota/i);
 });
+it('includes persistent Git objects and worktree journals in the aggregate quota',async()=>{
+  const budget=new StorageBudget(await fixture(),{limitBytes:65,reserveBytes:10,disk:async()=>({total:1000,available:500})});
+  await mkdir(join(root,'git-projects'));await writeFile(join(root,'git-projects','objects'),'1234567890');
+  expect((await budget.assertCapacity(5)).usedBytes).toBe(60);await expect(budget.assertCapacity(6)).rejects.toThrow(/quota/i);
+});
 it('enforces the content ceiling even before any managed directories exist',async()=>{
   root=await mkdtemp(join(tmpdir(),'relay-storage-empty-'));const budget=new StorageBudget(root,{limitBytes:10,reserveBytes:1,disk:async()=>({total:1000,available:500})});await expect(budget.assertCapacity(11)).rejects.toThrow(/quota/i);
 });

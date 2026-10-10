@@ -12,6 +12,14 @@ beforeEach(async () => { db = await openDatabase(); });
 afterEach(async () => { await db.close(); });
 
 describe('versioned database initialization', () => {
+  it('preserves version10 workspace records and leaves historical Git provenance unknown',async()=>{
+    await migrate(db,migrations.filter(item=>item.version<=10));
+    await db.query("INSERT INTO workspaces(id,name,source_path,file_count,owner_user_id) VALUES ('old-snapshot','Retain project','/original/project',18,'owner')");
+    const history=await db.query('SELECT * FROM schema_migrations ORDER BY version');
+    await new Store(db).init();
+    expect((await db.query("SELECT * FROM workspaces WHERE id='old-snapshot'"))[0]).toMatchObject({name:'Retain project',source_path:'/original/project',file_count:18,owner_user_id:'owner',git:null});
+    expect(await db.query('SELECT * FROM schema_migrations WHERE version<=10 ORDER BY version')).toEqual(history);
+  });
   it('upgrades version 8 evaluation protocols while retaining old records and rejecting unknown suites',async()=>{
     await migrate(db,migrations.filter(item=>item.version<=8));const oldHistory=await db.query('SELECT * FROM schema_migrations ORDER BY version');const store=new Store(db),conversation=await store.createConversation();
     const {task}=await store.createTask(conversation.id,'Retained evaluation',{depth:'fast',modelId:null,access:'read_only',workspaceId:null,contextTokens:8192,budget:{maxCalls:3,maxSeconds:30,maxIterations:3,maxCostUsd:0,localOnly:true}});

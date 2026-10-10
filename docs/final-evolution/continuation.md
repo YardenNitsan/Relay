@@ -6,13 +6,17 @@ Work in `C:/Users/yarde/Documents/codexp/Relay-modernization` on `modernization/
 
 ## Active work
 
-B06 Projects is committed and pushed at6d154db651df4184d038a5fdf7b7497fead47d37. Combined strict1270tests/one skip across119files pass264.81s, production build passes; final UI refinements pass types/build again. Frozen full151 browser:145passed, six old navigation/route-teardown failures. Rebuilt affected68:66passed,two phone hidden-text locators failed. All corrections and final review findings pass an eight-case rerun1.0min. All18Projects viewport/theme cases passed. Logs: projects-intent-check/build/browser.log, projects-final-types.log, projects-reviewed-build.log, projects-final-review-{red,green}.log. No fresh complete155local/hosted pass is claimed.
+C02 managed forks and encrypted restore relocation are implemented but uncommitted. Full initial strict1281/one skip/build,31final boundary cases,31affected browser cases and10final branch viewport/state cases pass. The compact run first reproduced a127.625px landscape editor; metadata now lives in the adaptive header, preserving>=160px. Waiting/error fixtures refresh their externally seeded catalog. Native migration11/32-table restore/sandbox pass; evidence native-integrations-worktrees-windows.json. Actual encrypted restore first failed stale absolute pointers; staged-only repair now passes41backup/Git/migration tests, with22adversarial helper cases. No original path is accessed; two published branches plus a prepared-only registration retain exact HEAD/index/dirty state and stopped execution.
+
+**Final combined check/build exited0:**1305tests/one skip,123files,273.47s plus strict types and production build. Logs git-fork-final-check/build.log. Focused integration review found no additional actionable defect. No check/browser/inference process remains active. Commit/push this coherent C02 increment, track its own hosted gates, then execute model-studio-plan.md. Source/history import, integration/conflicts and interrupted-registration reconciliation remain open.
+
+B06 Projects is committed and pushed at6d154db651df4184d038a5fdf7b7497fead47d37. Combined strict1270tests/one skip across119files pass264.81s, production build passes; final UI refinements pass types/build again. Frozen full151 browser:145passed, six old navigation/route-teardown failures. Rebuilt affected68:66passed,two phone hidden-text locators failed. All corrections and final review findings pass an eight-case rerun1.0min. All18Projects viewport/theme cases passed. Logs: projects-intent-check/build/browser.log, projects-final-types.log, projects-reviewed-build.log, projects-final-review-{red,green}.log. Hosted full155 browser and all3host checks now pass on6d154db (run38081729034).
 
 The final review fixed dirty/busy/shortcut/refetch loss, responsive/view focus, same-file re-click false discard, insufficient landscape content and undiscoverable empty phone creation. Retained before/after captures were opened in light/dark at phone/tablet/desktop/landscape, plus loading/error/empty/discard.
 
 **Actual coding-0O93wv passed:**8calls/256978ms, visible2/2, fresh independent9/9, published9/9, exact rollback and unchanged non-target tree. Private host closed; read-only SQL confirms zero sessions and one completed task. Evidence coding-acceptance-success-windows.json. **Identical repeat failed** after9calls/293050ms: extra node-e command denied and activity repair incomplete. Independent actual-container diagnostic passes8/9, failing foreign AGENT_STARTED. No publication. Owned task cancelled during cleanup, private4323 host closed, stored sessions0. Evidence coding-acceptance-repeat-windows.json and coding-repeat-independent-windows.json. This is one success and one failed repeat, not reliable completion. No inference remains active.
 
-Hosted native38081728982 passes on6d154db. Host/browser38081729034 is running; All three OS host checks pass; three browser jobs remain active. The connector commit-workflow query wrongly returned empty; public REST GET https://api.github.com/repos/YardenNitsan/Relay/actions/runs/38081729034/jobs returns actual status without credentials.
+Hosted native38081728982 and all6host/browser38081729034 pass on6d154db. All6f21317c host/browser38083153810 jobs also pass; C02 will have its own new hosted run. The connector commit-workflow query wrongly returned empty; public REST GET https://api.github.com/repos/YardenNitsan/Relay/actions/runs/38081729034/jobs returns actual status without credentials.
 
 An earlier overlapping runner refused4319 but removed the first runner's trace artifact; isolated case passed. Require explicit session completion before any new browser/build.
 
@@ -21,7 +25,7 @@ An earlier overlapping runner refused4319 but removed the first runner's trace a
 - 331416b freezes the bilingual experiment, datasets, evaluator protocol and initial evidence.
 - 8ed67df integrates the unchanged phrase candidate into advisory demand/category/reasoning.
 - add1306 adds explicit coding acceptance output options, preserving16K/4096defaults and all safety/grading limits.
-- These commits and B06 are pushed. Current evidence/documentation follow-ups are uncommitted; update and push before the next code milestone. The user explicitly requests updated README/ledger and GitHub push.
+- These commits and B06 are pushed. Coding evidence/reporting follow-up f21317c is also pushed. Current C02 implementation and documentation are uncommitted. The user explicitly requests updated README/ledger and GitHub push.
 
 D01 quiet-host reproduction: phrase26/56 vsbaseline14/56 satisfied specified cases; forbidden5vs11; lexical prototype7/56 rejected. English/Hebrew28each, synthetic and independently agent-authored. Thirty phrase cases remain failures. Candidate/data were frozen before the implementer loaded heldout; do not retune against them. Initial evaluator binding omission is disclosed; freeze-v2 now binds evaluator/thresholds for reproduction, not a fresh unseen set. Short-case p95 0.183ms;16KiB Hebrew stress11.06ms. Forty-three focused hard-gate tests pass. No semantic/local classifier model or actual model task-success improvement established. D01–D03 remain partial.
 
@@ -47,8 +51,8 @@ C04 pinned Node24.21.0/Python3.14.8/.NET10.0.401 small native red/green pass. Pr
 
 ## Remaining dependencies
 
-1. Inspect hosted full gates38081729034; update/push evidence. Bounded reporting change passed typecheck,16focusedtests and real sandbox preflight coding-7y5iDb. No private acceptance host is active. Review docs/final-evolution/git-worktrees-plan.md when the scoped reviewer finishes; implement C02 first increment.
-2. C02 product Git worktrees; C03 new-directory/Git-aware publication; C04 controlled package sources and realistic language builds. Existing Git is bare snapshots/read-only diffs.
+1. C02 final1305full check/build, browser31+10, native migration11 and encrypted restore pass. Commit/push and track its hosted checks. Then execute model-studio-plan.md, beginning with active evaluation recovery before replacing the model presentation. No private inference acceptance host is active.
+2. C02 product Git worktrees; C03 new-directory/Git-aware publication; C04 controlled package sources and realistic language builds. Managed forks now use real linked worktrees; source-aware import/integration remains open.
 3. B complete conversation/composer,Model Studio,connections,settings/onboarding,project tests/checkpoints/memory and deeper Workbench evidence.
 4. A03/A05 full threat/recovery; A08 garbage collection must include ToolStore JSON,publication journals,sandbox markers and host checkpoints,not just SQL.
 5. D executable model quality/isolated collaboration; E Companion; F project intelligence/browser/integrations/automation; G performance/native/accessibility/package/release and14scenarios.

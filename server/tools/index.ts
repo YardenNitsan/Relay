@@ -17,6 +17,7 @@ import { ToolStore, type ChangeEntry, type Checkpoint } from './store';
 import { UncertainToolEffect } from './errors';
 import { PublicHttpClient } from './http';
 import { ManagedGit } from './git';
+import { ManagedWorktrees } from './git-worktrees';
 import { captureGitBaseline } from './git-baseline';
 import { StorageBudget } from './storage-budget';
 import { McpRegistry } from '../mcp';
@@ -33,11 +34,13 @@ export class ToolBroker {
   private readonly sandbox: DockerSandbox;
   private readonly http = new PublicHttpClient();
   private readonly git: ManagedGit;
+  private readonly worktrees: ManagedWorktrees;
+  private readonly forkOperations=new Set<Promise<Workspace>>();
   private readonly hostFiles: HostFileBroker;
   private readonly personal: PersonalTasks | undefined;
   private queue: Promise<unknown> = Promise.resolve();
   private generation = 0;
-  constructor(dataDir: string, private readonly isStopped: () => boolean, readonly mcp = new McpRegistry(), private readonly durableStore?: Store, private readonly googleWorkspace?:GoogleWorkspace) { this.store = new ToolStore(dataDir); this.sandbox = new DockerSandbox(this.store); this.git = new ManagedGit(this.store); this.hostFiles = new HostFileBroker(dataDir); this.personal = durableStore ? new PersonalTasks(durableStore) : undefined; }
+  constructor(dataDir: string, private readonly isStopped: () => boolean, readonly mcp = new McpRegistry(), private readonly durableStore?: Store, private readonly googleWorkspace?:GoogleWorkspace) { this.store = new ToolStore(dataDir); this.sandbox = new DockerSandbox(this.store); this.git = new ManagedGit(this.store); this.worktrees = new ManagedWorktrees(this.store); this.hostFiles = new HostFileBroker(dataDir); this.personal = durableStore ? new PersonalTasks(durableStore) : undefined; }
   get dataDirectory():string {return this.store.root;}
   codeEvaluationStatus(){return new CodeEvaluationSandbox(this.store,this.sandbox).status();}
   codeEvaluationPreflight(signal:AbortSignal,authorize:()=>Promise<void>){const guard=this.guard(signal);return this.serial(async()=>{guard();await authorize();guard();return new CodeEvaluationSandbox(this.store,this.sandbox).preflight(signal,guard);});}
@@ -88,6 +91,27 @@ export class ToolBroker {
     });
   }
   async listWorkspaces(): Promise<Workspace[]> { return this.serial(() => this.store.workspaces()); }
+  forkWorkspace(parentId:string,name:string,authorize:()=>Promise<void>,persist:(workspace:Workspace,guard:Guard)=>Promise<void>,signal:AbortSignal=new AbortController().signal):Promise<Workspace> {
+    const guard=this.guard(signal);
+    const operation=this.serial(async()=>{
+      guard();await authorize();guard();
+      if(!name.trim()||name.length>128)throw new Error('Workspace name must contain 1–128 characters');
+      const parent=await this.workspace(parentId);
+      if(parent.record.ownerUserId&&(await this.store.workspaces()).filter(item=>item.ownerUserId===parent.record.ownerUserId).length>=8)throw new AppError('WORKSPACE_QUOTA','Each account can create up to eight personal workspaces.',429);
+      const files=await snapshot(parent.root,true);guard();
+      const id=randomUUID();
+      const identity=await this.worktrees.create(parent.record.git?.repositoryId??parentId,id,files,signal,guard,authorize);
+      const record:Workspace={id,name:name.trim(),sourcePath:null,ownerUserId:parent.record.ownerUserId??null,createdAt:new Date().toISOString(),fileCount:files.size,git:{repositoryId:identity.repositoryId,parentWorkspaceId:parentId,branch:identity.branch,baseCommit:identity.baseCommit}};
+      await authorize();guard();await captureGitBaseline(this.store,id,files,'workspace_creation',guard);
+      await this.store.recordForkRegistration(record,'prepared');
+      await authorize();guard();await persist(record,guard);guard();
+      await authorize();guard();await this.store.saveWorkspace(record);guard();
+      await this.store.recordForkRegistration(record,'published');guard();
+      return record;
+    });
+    this.forkOperations.add(operation);void operation.finally(()=>this.forkOperations.delete(operation)).catch(()=>{});
+    return operation;
+  }
   async listFiles(workspaceId: string): Promise<string[]> {
     return this.serial(async () => listTextFiles((await this.workspace(workspaceId)).root));
   }
@@ -271,5 +295,10 @@ export class ToolBroker {
     });
   }
   async sandboxStatus(): Promise<{ available: boolean; reason: string }> { return this.sandbox.status(); }
-  async stopAll(): Promise<void> { this.generation++; this.http.stopAll(); this.git.stopAll(); this.mcp.stopAll(); await this.sandbox.stopAll(); }
+  async stopAll(): Promise<void> {
+    this.generation++;this.http.stopAll();this.git.stopAll();this.mcp.stopAll();
+    const results=await Promise.allSettled([this.sandbox.stopAll(),this.worktrees.stopAll(),...this.forkOperations]);
+    // Cancelled fork requests retain journals; resource cleanup failures still propagate.
+    for(const result of results.slice(0,2))if(result.status==='rejected')throw result.reason;
+  }
 }

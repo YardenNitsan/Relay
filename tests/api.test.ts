@@ -25,6 +25,26 @@ beforeEach(async()=>{
 });
 afterEach(async()=>{await engine.shutdown();await app.close();await store.close();await rm(dir,{recursive:true,force:true});});
 describe('local HTTP boundary',()=>{
+  it('forks an owner-reviewed workspace into an independent Git branch and persists its identity',async()=>{
+    const headers={host,cookie,'x-relay-csrf':csrf};
+    const parent=(await app.inject({method:'POST',url:'/api/workspaces',headers,payload:{name:'Original',personal:true}})).json();
+    expect((await app.inject({method:'POST',url:`/api/workspaces/${parent.id}/files`,headers,payload:{path:'a.txt',content:'base'}})).statusCode).toBe(200);
+    const url=`/api/workspaces/${parent.id}/fork`;
+    expect((await app.inject({method:'POST',url,headers:{host,cookie},payload:{name:'Branch'}})).statusCode).toBe(403);
+    const response=await app.inject({method:'POST',url,headers,payload:{name:'Branch'}});
+    expect(response.statusCode,response.body).toBe(200);
+    const fork=response.json();expect(fork.id).not.toBe(parent.id);expect(fork.sourcePath).toBeNull();expect(fork.ownerUserId).toBe('owner');
+    expect(fork.git).toMatchObject({parentWorkspaceId:parent.id,repositoryId:parent.id,branch:`relay/${fork.id}`});
+    expect(fork.git.baseCommit).toMatch(/^[a-f0-9]{64}$/);
+    expect((await store.db.query('SELECT git FROM workspaces WHERE id=$1',[fork.id]))[0].git).toEqual(fork.git);
+    expect((await app.inject({url:`/api/workspaces/${fork.id}/file?path=a.txt`,headers})).json().content).toBe('base');
+    expect((await app.inject({method:'POST',url:`/api/workspaces/${fork.id}/files`,headers,payload:{path:'new.txt',content:'branch only'}})).statusCode).toBe(200);
+    expect((await app.inject({url:`/api/workspaces/${parent.id}/files`,headers})).json().files).toEqual(['a.txt']);
+    const listing=(await app.inject({url:'/api/workspaces',headers})).json();
+    expect(listing.find((item:{id:string})=>item.id===fork.id).git).toEqual(fork.git);
+    await store.db.query("UPDATE users SET role='chat' WHERE id='owner'");
+    expect((await app.inject({method:'POST',url,headers,payload:{name:'Denied fork'}})).statusCode).toBe(403);
+  });
   it('exports metadata-only diagnostics and authenticates task timing reads',async()=>{
     const options:TaskOptions={depth:'fast',modelId:null,access:'read_only',workspaceId:null,contextTokens:8192,budget:{maxCalls:4,maxSeconds:60,maxIterations:2,maxCostUsd:null,localOnly:true}};
     const {task}=await store.createTask((await store.createConversation()).id,'private diagnostic objective sentinel',options);

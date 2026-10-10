@@ -10,10 +10,11 @@ import DeviceFolder from '../../components/DeviceFolder';
 import Publication from '../../components/Publication';
 import ProjectFiles from './ProjectFiles';
 import CreateProject from './CreateProject';
+import ForkProject from './ForkProject';
 import './projects.css';
 
 interface Props {selected:string|null;onSelect:(id:string|null)=>void;owner?:boolean;userId?:string;canWriteShared?:boolean}
-type View='index'|'files'|'publication'|'create'|'device';
+type View='index'|'files'|'publication'|'create'|'device'|'fork';
 
 export default function ProjectWorkspace({selected,onSelect,owner=true,userId,canWriteShared=false}:Props){
   const client=useQueryClient(),request=useGuardedModalAction();
@@ -68,10 +69,11 @@ export default function ProjectWorkspace({selected,onSelect,owner=true,userId,ca
       <div className="project-mobile-heading"><button className="text-button" onClick={()=>navigate('index')}><ArrowLeft size={16}/>All projects</button><button className="icon-button" aria-label="New workspace" onClick={()=>navigate('create')}><Plus size={18}/></button></div>
       {view==='index'&&<div className="project-start"><p className="project-eyebrow">Work with real files</p><h3>Give your objective a place to work.</h3><p>Select a project to explore its files, review changes and choose the context for your next conversation.</p><button className="button primary" onClick={()=>navigate('create')}><Plus size={17}/>Create a workspace</button><p className="hint">Personal files stay separate from shared workspaces. Agent permissions are chosen in the conversation.</p></div>}
       {view==='create'&&<div className="project-scroll"><CreateProject owner={owner} onCreated={created}/></div>}
+      {view==='fork'&&workspace&&<div className="project-scroll"><ForkProject parent={workspace} onCreated={created}/></div>}
       <div className="project-scroll" hidden={view!=='device'}><DeviceFolder key={userId??'anonymous'} userId={userId} onImported={remember}/></div>
       {(view==='files'||view==='publication')&&(workspace?<>
-        <header className="project-title"><div><p className="project-eyebrow">{workspace.ownerUserId===userId?'Personal workspace':'Shared workspace'} / Relay Host</p><h3>{workspace.name}</h3><p className="muted">{workspace.fileCount} files / created {shortDate(workspace.createdAt)}</p></div><button className={`button ${selected===workspace.id?'':'primary'}`} disabled={selected===workspace.id} onClick={()=>onSelect(workspace.id)}>{selected===workspace.id?<><Check size={16}/>In this conversation</>:'Use for conversation'}</button></header>
-        <nav className="project-sections" aria-label="Project views"><button aria-current={view==='files'?'page':undefined} onClick={()=>navigate('files')}>Files</button>{owner&&workspace.sourcePath&&<button aria-current={view==='publication'?'page':undefined} onClick={()=>navigate('publication')}>Original source & review</button>}</nav>
+        <header className="project-title"><div><p className="project-eyebrow">{workspace.ownerUserId===userId?'Personal workspace':'Shared workspace'} / Relay Host</p><h3>{workspace.name}</h3><p className="muted">{workspace.fileCount} files / created {shortDate(workspace.createdAt)}</p>{workspace.git&&<p className="project-branch-label">Isolated Git branch / baseline <code>{workspace.git.baseCommit.slice(0,12)}</code></p>}</div><button className={`button ${selected===workspace.id?'':'primary'}`} disabled={selected===workspace.id} onClick={()=>onSelect(workspace.id)}>{selected===workspace.id?<><Check size={16}/>In this conversation</>:'Use for conversation'}</button></header>
+        <nav className="project-sections" aria-label="Project views"><button aria-current={view==='files'?'page':undefined} onClick={()=>navigate('files')}>Files</button>{owner&&workspace.sourcePath&&<button aria-current={view==='publication'?'page':undefined} onClick={()=>navigate('publication')}>Original source & review</button>}{owner&&<button onClick={()=>navigate('fork')}>Create isolated branch</button>}</nav>
         <div className="project-scroll" key={`${workspace.id}-${view}`}>
           {view==='files'?<ProjectFiles id={workspace.id} writable={workspace.ownerUserId===userId||owner||canWriteShared}/>:<><div className="project-source"><p className="project-eyebrow">Original on Relay Host</p><code>{workspace.sourcePath}</code><p className="hint">This workspace is a managed copy. Review exact changes before publishing to the original.</p></div><Publication workspaceId={workspace.id}/></>}
         </div>

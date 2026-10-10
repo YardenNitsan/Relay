@@ -10,6 +10,8 @@ Version 10 adds a partial index for unfinished tasks with overall deadlines. It 
 
 ## Before upgrading a real host
 
+Modernization migration 11 adds nullable managed Git provenance to workspace rows. Historical workspaces remain snapshots with `git: null`; no source branch or commit is invented. The private ToolStore schema accepts the same validated provenance, and later metadata saves preserve its identity. This development change has not been applied to the running production database.
+
 An offline encrypted embedded backup/restore CLI is now available; see [backups](backups.md). It requires the backend identity marker introduced by this release, so an older installation without that marker still needs a deliberate stopped-data preservation step before its first upgrade. Do not start the upgraded application merely to create a marker before preserving valuable data. Native PostgreSQL needs its supported backup tooling. Preserve a recoverable copy before upgrading:
 
 See the [platform data-location table](operations.md) and verify any configured override before copying files.

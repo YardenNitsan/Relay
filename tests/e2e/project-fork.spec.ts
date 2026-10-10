@@ -1,0 +1,41 @@
+import { expect, test } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+import { pairBrowser, projectIndex } from './helpers';
+
+for (const [width,height] of [[320,740],[390,900],[844,390],[1440,900]]) for(const theme of ['light','dark']) test(`isolated Git branch creation and files at ${width} ${theme}`, async ({ page }) => {
+  await page.setViewportSize({ width, height });
+  await page.addInitScript(value => localStorage.setItem('relay:theme:v1', value),theme);
+  await page.goto('/'); await pairBrowser(page);
+  await page.getByRole('button', { name: /^(Choose workspace|Workspace)$/ }).click();
+  const dialog = await projectIndex(page);
+  await dialog.getByRole('button', { name: 'New workspace', exact: true }).filter({ visible: true }).click();
+  await dialog.getByRole('textbox', { name: 'Name', exact: true }).fill('Branch acceptance');
+  await dialog.getByRole('button', { name: 'Create workspace', exact: true }).click();
+  await expect(dialog.getByRole('heading', { name: 'Branch acceptance', exact: true })).toBeVisible();
+  const parentId=await page.evaluate(async()=>{
+    const session=await(await fetch('/api/session')).json();const projects=await(await fetch('/api/workspaces')).json();
+    const parent=projects.find((project:{name:string})=>project.name==='Branch acceptance');
+    const response=await fetch(`/api/workspaces/${parent.id}/files`,{method:'POST',headers:{'content-type':'application/json','x-relay-csrf':session.csrfToken},body:JSON.stringify({path:'src/reconcile.ts',content:'export const reconcile = (cents: number) => cents / 100;\n'})});
+    if(!response.ok)throw new Error('Could not create source fixture');return parent.id as string;
+  });
+  await dialog.getByRole('button', { name: 'Create isolated branch', exact: true }).click();
+  await expect(dialog.getByRole('heading', { name: 'Work in an isolated branch', exact: true })).toBeVisible();
+  await dialog.getByRole('textbox', { name: 'Branch workspace name', exact: true }).fill('Independent repair');
+  await page.screenshot({ path: `output/playwright/project-fork-${width}-${theme}.png`, animations: 'disabled' });
+  expect((await new AxeBuilder({ page }).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze()).violations).toEqual([]);
+  await dialog.getByRole('button', { name: 'Create branch workspace', exact: true }).click();
+  await expect(dialog.getByRole('heading', { name: 'Independent repair', exact: true })).toBeVisible();
+  await expect(dialog.getByText(/Isolated Git branch/)).toBeVisible();
+  await expect(dialog.getByRole('button', { name: 'Original source & review', exact: true })).toHaveCount(0);
+  await dialog.getByRole('button',{name:'src/reconcile.ts',exact:true}).click();
+  const editor=dialog.getByRole('textbox',{name:'File contents',exact:true});
+  await expect(editor).toHaveValue('export const reconcile = (cents: number) => cents / 100;\n');
+  if(height<=500)expect((await dialog.locator('.project-editor-body').boundingBox())!.height).toBeGreaterThanOrEqual(160);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: `output/playwright/project-fork-ready-${width}-${theme}.png`, animations: 'disabled' });
+  await editor.fill('export const reconcile = (cents: number) => Math.round(cents) / 100;\n');
+  await dialog.getByRole('button',{name:'Save changes',exact:true}).click();
+  await expect(dialog.getByRole('button',{name:'Save changes',exact:true})).toBeDisabled();
+  const original=await page.evaluate(async id=>(await(await fetch(`/api/workspaces/${id}/file?path=src/reconcile.ts`)).json()).content,parentId);
+  expect(original).toBe('export const reconcile = (cents: number) => cents / 100;\n');
+});

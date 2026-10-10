@@ -288,7 +288,7 @@ export class Store {
     });
   }
   async audit(taskId:string|null,operation:string,metadata:Record<string,unknown>) { await this.db.query('INSERT INTO audit_events(task_id,operation,metadata) VALUES ($1,$2,$3)',[taskId,operation,JSON.stringify(metadata)]); }
-  async saveWorkspace(w:Workspace) { await this.db.query('INSERT INTO workspaces(id,name,source_path,file_count,created_at,owner_user_id) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT(id) DO UPDATE SET file_count=excluded.file_count',[w.id,w.name,w.sourcePath,w.fileCount,w.createdAt,w.ownerUserId??null]); }
+  async saveWorkspace(w:Workspace) { await this.db.query('INSERT INTO workspaces(id,name,source_path,file_count,created_at,owner_user_id,git) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(id) DO UPDATE SET file_count=excluded.file_count',[w.id,w.name,w.sourcePath,w.fileCount,w.createdAt,w.ownerUserId??null,w.git?JSON.stringify(w.git):null]); }
   async recover() {
     await this.db.transaction(async tx=>{
       await tx.query(`UPDATE tasks SET execution_used_ms=execution_used_ms+execution_reserved_ms,

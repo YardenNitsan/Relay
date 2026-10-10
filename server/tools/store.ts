@@ -5,8 +5,9 @@ import { z } from 'zod';
 import type { Workspace } from '../../shared/types';
 import { boundedText } from './files';
 import { inspectPath, readFlags, safePath } from './platform';
+import { workspaceGitSchema } from '../../shared/git-worktrees';
 
-const workspaceSchema = z.object({ ownerUserId:z.string().min(1).max(160).nullable().optional(), id: z.uuid(), name: z.string().min(1).max(128), sourcePath: z.string().nullable(), createdAt: z.iso.datetime(), fileCount: z.number().int().min(0).max(2000) }).strict();
+const workspaceSchema = z.object({ ownerUserId:z.string().min(1).max(160).nullable().optional(), id: z.uuid(), name: z.string().min(1).max(128), sourcePath: z.string().nullable(), createdAt: z.iso.datetime(), fileCount: z.number().int().min(0).max(2000), git:workspaceGitSchema.nullable().optional() }).strict();
 const entrySchema = z.object({ path: z.string(), before: z.string().nullable(), after: z.string().nullable() }).strict();
 const checkpointSchema = z.object({ id: z.uuid(), taskId: z.string().min(1).max(160), workspaceId: z.uuid(), createdAt: z.iso.datetime(), state: z.enum(['prepared', 'committed', 'reverted']), entries: z.array(entrySchema).max(2000) }).strict();
 export type Checkpoint = z.infer<typeof checkpointSchema>;
@@ -20,7 +21,7 @@ export class ToolStore {
     if (this.initialized) return;
     await mkdir(this.root, { recursive: true, mode: 0o700 });
     await inspectPath(this.root);
-    for (const folder of ['workspaces', 'checkpoints', 'runs', 'containers', 'baselines', 'git-runs']) {
+    for (const folder of ['workspaces', 'checkpoints', 'runs', 'containers', 'baselines', 'git-runs', 'git-projects']) {
       const target = await inspectPath(this.root, folder);
       await mkdir(target, { recursive: true, mode: 0o700 });
       await inspectPath(this.root, folder);
@@ -40,9 +41,15 @@ export class ToolStore {
     const records = await this.workspaces();
     const index = records.findIndex(item => item.id === workspace.id);
     if(index>=0&&(records[index].ownerUserId??null)!==(workspace.ownerUserId??null))throw new Error('Workspace ownership is immutable');
+    if(index>=0&&JSON.stringify(records[index].git??null)!==JSON.stringify(workspace.git??null))throw new Error('Workspace Git identity is immutable');
     if (index < 0) records.push(workspace); else records[index] = workspace;
     z.array(workspaceSchema).max(1000).parse(records);
     await this.writeJson('workspaces.json', records, 1024 * 1024);
+  }
+  async recordForkRegistration(workspace:Workspace,state:'prepared'|'published'):Promise<void> {
+    workspaceSchema.parse(workspace);
+    if(!workspace.git)throw new Error('Missing Git workspace identity');
+    await this.writeJson(`git-projects/${workspace.git.repositoryId}/operations/${workspace.id}.registration-${state}.json`,{state,workspace});
   }
   async checkpoint(id: string): Promise<Checkpoint> {
     z.uuid().parse(id); await this.init();

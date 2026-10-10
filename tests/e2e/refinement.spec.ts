@@ -190,10 +190,10 @@ test('conversation remains readable in both themes, with factual activity availa
   await page.getByRole('button', { name: 'Send objective' }).click();
   await expect(page.getByText('Completed', { exact: true }).first()).toBeVisible();
   await page.getByRole('button', { name: 'Activity', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Behind the work' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Execution Workbench' })).toBeVisible();
   await page.screenshot({ path: 'output/playwright/refinement-conversation-light.png', animations: 'disabled' });
   await page.getByRole('button', { name: 'Switch to dark theme', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Relay home', exact: true })).toHaveCSS('color', 'rgb(231, 237, 244)');
+  await expect(page.getByRole('button', { name: 'Relay home', exact: true })).toHaveCSS('color', 'rgb(237, 242, 251)');
   expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([]);
   await page.screenshot({ path: 'output/playwright/refinement-conversation-dark.png', animations: 'disabled' });
 });

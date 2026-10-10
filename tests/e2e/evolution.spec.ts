@@ -7,6 +7,11 @@ for (const size of [{ width: 320, height: 640 }, { width: 390, height: 844 }, { 
     await page.setViewportSize(size);
     await page.goto('/'); await pairBrowser(page);
     const objective = page.getByRole('textbox', { name: 'Objective' });
+    const model = page.getByRole('button', { name: 'Choose model', exact: true });
+    const modelLabel = model.locator('span');
+    await expect(modelLabel).toHaveText('Auto');
+    expect(await modelLabel.evaluate(element => element.clientWidth >= element.scrollWidth)).toBe(true);
+    expect((await model.boundingBox())!.height).toBeGreaterThanOrEqual(44);
     await objective.fill('Keep my existing draft.');
     await page.getByRole('button', { name: 'Break down a problem' }).click();
     await expect(objective).toHaveValue(/Keep my existing draft\.[\s\S]*Break this problem/);

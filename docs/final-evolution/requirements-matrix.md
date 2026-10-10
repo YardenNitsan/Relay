@@ -5,7 +5,7 @@ Status vocabulary: **Complete and verified**, **Implemented but insufficiently v
 | ID | Requirement / directive section | Current status | Required evidence / dependency |
 |---|---|---|---|
 | A01 | Latest-source audit, repeatable baseline, ledger (§3,26) | Partially implemented | Fresh source/CI/tests/build/browser results; requirements inventory |
-| A02 | Passing portable CI and release gates (§22) | Partially implemented | b5ebc30 host gates pass on all three OSes; Linux/macOS browser gates pass, Windows browser pending; d53cc91 native Linux and latest full gates pending |
+| A02 | Passing portable CI and release gates (§22) | Partially implemented | ec0b1cd all three host gates and Linux/macOS browser gates pass; Windows111pass/1failure traced to save acknowledgement waiting for telemetry. Native Linux run38062805371 passed. Fix and new Studio hosted gates remain open. |
 | A03 | Authorization/revocation/security review (§4,11) | Implemented but insufficiently verified | Dispatch race regressions and full threat-model review |
 | A04 | Overall task deadlines (§11) | Complete and verified | Durable admission/queue/active/approval/resource/restart/finalization regressions, full check 1214 passed/one skip, build and 14 affected browser cases; focused review findings fixed. Native migration portability remains A06/G02. |
 | A05 | Suspended execution and uncertain-effect recovery (§11) | Partially implemented | Durable resume and no duplicate mutation scenarios |
@@ -13,10 +13,10 @@ Status vocabulary: **Complete and verified**, **Implemented but insufficiently v
 | A07 | Encrypted realistic backup/restore (§11) | Complete and verified | 47.6 MB stopped synthetic snapshot: 2,000 tasks, 4,000 messages, memory/schedules/grants, 200 referenced artifacts; exact retained data/hash checks, session and pending-approval revocation, restored execution blocked |
 | A08 | Reference-aware artifact retention (§11) | Partially implemented | No deletion of live/historical protected references |
 | B01 | Professional design research and three concepts (§13–14) | Complete and verified | `design-research.md`: inspected official/product/community sources, maintenance/license limits; `design-system.md`: ten-criterion comparison, Studio selected. UI implementation remains B02–B11. |
-| B02 | New semantic light/dark design system (§14) | Not implemented | Tokens/primitives integrated; visual/contrast checks |
-| B03 | New adaptive shell and modular presentation (§18,20) | Not implemented | Existing features preserved; account-scoped navigation |
-| B04 | Conversation/composer redesign (§15A) | Not implemented | Streaming, attachments, model/agent/permissions, draft, history/search, cancel |
-| B05 | Execution Workbench (§15B) | Not implemented | Honest graph, model/agent, tool/handoff/evidence/approval/recovery |
+| B02 | New semantic light/dark design system (§14) | Partially implemented | Semantic token layer and compatibility roles integrated; initial light/dark visual/axe checks pass. All feature primitives and states remain open. |
+| B03 | New adaptive shell and modular presentation (§18,20) | Partially implemented | Studio shell, explicit account destinations, feature/layout ownership; broad integration and responsive focus acceptance in progress |
+| B04 | Conversation/composer redesign (§15A) | Partially implemented | New pane-aware welcome and usable model trigger; full message/composer presentation redesign remains open, existing functional flows retained |
+| B05 | Execution Workbench (§15B) | Partially implemented | Dependency graph and modular output/log/check/diff/approval views integrated; visual/state acceptance in progress, full handoff/artifact inspection still open |
 | B06 | Project Workspace (§15C) | Not implemented | Real files/diff/tests/checkpoints/publication/rollback/memory |
 | B07 | Model Studio (§15D) | Not implemented | Measured vs estimated quality/resource/runtime/cost/reasoning |
 | B08 | Devices and Connections (§15E) | Not implemented | Host/browser/Companion separation and revocation |

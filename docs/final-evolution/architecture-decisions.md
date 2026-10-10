@@ -35,3 +35,11 @@ Proposed for E. Companion must validate local grants and sensitive approvals ind
 ## FE-006: Inline execution and bounded review
 
 Accepted. Use one implementation stream while tracing shared boundaries. Specialist responsibilities are review lenses, not a reason to spawn duplicate workers. A fresh review may be delegated under the applicable execution/review skill after a concrete coherent change exists.
+
+## FE-007: Dependency presentation does not assert execution or verification
+
+Accepted for the Workbench. Group actual recorded steps by dependency level, with explicit names for preceding steps. A level describes dependencies, not concurrent execution. Keep missing, cyclic and duplicate identities visible as unresolved instead of inventing an order. Agent outputs remain labeled model responses; verification comes from the separate recorded checks. The current handoff event contains preparation metadata, not the full handoff: the UI labels it accordingly. No presentation component creates permissions or changes graph execution.
+
+## FE-008: Storage retention must include broker recovery references
+
+Audit finding for A08, implementation still open. Database `artifacts` and `checkpoints` rows are not the entire reference graph: `ToolStore` keeps prepared/committed/reverted checkpoint JSON, publication journals retain recovery state, sandbox markers identify interrupted containers, and host checkpoints live separately. Existing SQL retention deliberately preserves workspace/host tasks and never cleans filesystem artifacts. A future collector must coordinate with the broker mutation boundary, preserve all durable and uncertain-effect references, revalidate after preview, and refuse unsafe filesystem objects. Treating an absent SQL row or an old timestamp as permission to delete a directory would be incorrect. Current behavior preserves these files; it does not satisfy reference-aware garbage collection.

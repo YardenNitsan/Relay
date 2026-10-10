@@ -1,4 +1,5 @@
 import { Client,StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
+import appPackage from '../../package.json' with {type:'json'};
 import { createHash } from 'node:crypto';
 import type { ToolContext,ToolDecision,ToolRequest,ToolResult } from '../../shared/types';
 import { validateNetworkUrl } from '../tools/network-policy';
@@ -74,7 +75,7 @@ export class McpRegistry {
     const controller=new AbortController();const run={serverId,controller};this.active.add(run);
     const timeout=setTimeout(()=>controller.abort(),30_000);timeout.unref();const signal=AbortSignal.any([controller.signal,taskSignal]);
     const session=new PinnedMcpSession(url,signal);
-    const client=new Client({name:'Relay',version:'0.1.1'},{capabilities:{},versionNegotiation:{mode:{pin:MCP_PROTOCOL},probe:{maxRetries:0,timeoutMs:10_000}},inputRequired:{autoFulfill:false,maxRounds:0},listMaxPages:3,jsonSchemaValidator:safeValidator});
+    const client=new Client({name:'Relay',version:appPackage.version},{capabilities:{},versionNegotiation:{mode:{pin:MCP_PROTOCOL},probe:{maxRetries:0,timeoutMs:10_000}},inputRequired:{autoFulfill:false,maxRounds:0},listMaxPages:3,jsonSchemaValidator:safeValidator});
     const transport=new StreamableHTTPClientTransport(new URL(url),{fetch:session.fetch,requestInit:{redirect:'error'},reconnectionOptions:{maxRetries:0,maxReconnectionDelay:0,initialReconnectionDelay:0,reconnectionDelayGrowFactor:1},onInsufficientScope:'throw',maxStepUpRetries:0});
     const abort=()=>{void client.close().catch(()=>undefined);};signal.addEventListener('abort',abort,{once:true});
     try {signal.throwIfAborted();await client.connect(transport,{signal,timeout:10_000,maxTotalTimeout:10_000});signal.throwIfAborted();return await operation(client,signal);}

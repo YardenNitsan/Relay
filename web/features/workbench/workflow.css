@@ -1,0 +1,28 @@
+.workflow-intro { color: var(--color-text-secondary); font-size: var(--text-caption); margin-block: var(--space-3) var(--space-6); }
+.workflow-levels, .workflow-level > ol { list-style: none; padding: 0; margin: 0; }
+.workflow-level { padding-bottom: var(--space-6); }
+.workflow-level > h4 { display: flex; justify-content: space-between; gap: var(--space-2); font-size: var(--text-caption); font-weight: 500; color: var(--color-text-secondary); margin: 0 0 var(--space-2); }
+.workflow-level > h4 span { font-weight: 400; }
+.workflow-level > ol { display: grid; gap: var(--space-2); }
+.workflow-agent { min-width: 0; border: 1px solid var(--color-border); border-radius: var(--radius-control); }
+.workflow-agent summary { min-height: var(--target-touch); }
+.workflow-agent > details > summary { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3); }
+.workflow-agent > details > summary::marker { content: ''; }
+.workflow-agent > details > summary::-webkit-details-marker { display: none; }
+.workflow-agent > details > summary > svg { flex-shrink: 0; }
+.workflow-agent > details[open] > summary > svg { transform: rotate(180deg); }
+.workflow-node { display: grid; place-items: center; width: 28px; height: 28px; flex-shrink: 0; color: var(--color-text-secondary); }
+.workflow-agent[data-state='completed'] .workflow-node { color: var(--color-success); }
+.workflow-agent[data-state='running'] .workflow-node { color: var(--color-action); }
+.workflow-agent[data-state='failed'] .workflow-node { color: var(--color-danger); }
+.workflow-agent-label { flex: 1; min-width: 0; font-size: var(--text-ui); overflow-wrap: anywhere; }
+.workflow-agent-label strong { display: block; font-weight: 500; }
+.workflow-agent-label > span { display: block; color: var(--color-text-secondary); font-size: var(--text-caption); margin-top: var(--space-1); }
+.workflow-state { color: var(--color-text-secondary); font-size: var(--text-caption); }
+.workflow-model { display: block; color: var(--color-text-secondary); font: var(--text-caption)/1.6 var(--font-code); padding: 0 var(--space-3) var(--space-3); overflow-wrap: anywhere; }
+.workflow-agent-content { padding: var(--space-3); border-top: 1px solid var(--color-border); font-size: var(--text-ui); overflow-wrap: anywhere; }
+.workflow-agent-content h4 { font-size: var(--text-ui); font-weight: 500; margin: var(--space-4) 0 var(--space-2); }
+.workflow-facts { margin: 0; display: grid; gap: var(--space-3); }
+.workflow-facts dt { font-size: var(--text-caption); color: var(--color-text-secondary); }
+.workflow-facts dd { margin: var(--space-1) 0 0; }
+.workflow-output-note, .workflow-handoff > p, .workflow-unresolved > p { font-size: var(--text-caption); color: var(--color-text-secondary); }

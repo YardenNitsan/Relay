@@ -1,4 +1,5 @@
 import {reasoningEfforts} from '../../shared/model-controls.js';
+import appPackage from '../../package.json' with {type:'json'};
 import {retentionRoutes} from './retention.js';
 import {registerMemoryRoutes} from './memory.js';
 import {registerPublicationRoutes} from './publication.js';
@@ -140,7 +141,7 @@ export async function createApp(services:Services,options:AppOptions={}):Promise
   await mcpRoutes(app,store,broker.mcp,principal,owner);
   const task=async(request:FastifyRequest)=>store.task(routeId(request),principal(request).user.id);
   const remoteEnabled=()=>services.remoteControl?services.remoteControl.enabled&&services.remoteControl.listening:!!options.remote;
-  const systemStatus=async()=>{const control=await store.control();return {stopped:control.stopped,stopGeneration:control.generation,database:store.db.kind,sandbox:await broker.sandboxStatus(),version:'0.1.1',scheduling:{maxExecutingTasks:executionSlotLimit,maxLocalInference:1,approvalWaitUsesSlot:false,accountLimitIncludesWaiting:true},hostName:hostname(),remoteEnabled:remoteEnabled()};};
+  const systemStatus=async()=>{const control=await store.control();return {stopped:control.stopped,stopGeneration:control.generation,database:store.db.kind,sandbox:await broker.sandboxStatus(),version:appPackage.version,scheduling:{maxExecutingTasks:executionSlotLimit,maxLocalInference:1,approvalWaitUsesSlot:false,accountLimitIncludesWaiting:true},hostName:hostname(),remoteEnabled:remoteEnabled()};};
   app.setErrorHandler((error,request,reply)=>{
     const code=error instanceof AppError?error.code:error instanceof ZodError?'VALIDATION_ERROR':'OPERATION_FAILED';
     const status=error instanceof AppError?error.status:error instanceof ZodError?400:error&&typeof error==='object'&&'statusCode' in error&&typeof error.statusCode==='number'?error.statusCode:500;

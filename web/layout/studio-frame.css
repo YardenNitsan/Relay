@@ -1,0 +1,45 @@
+.app.studio-frame { display: grid; grid-template-columns: 176px minmax(0, 1fr); background: var(--color-canvas); }
+.studio-document { display: flex; flex-direction: column; min-width: 0; min-height: 0; background: var(--color-surface); }
+.studio-navigation { display: flex; flex-direction: column; gap: var(--space-6); min-height: 0; overflow-y: auto; padding: var(--space-4) var(--space-3); border-inline-end: 1px solid var(--color-border); }
+.studio-brand { margin: 0 var(--space-2) var(--space-2); min-height: var(--target-touch); min-width: var(--target-touch); }
+.studio-destinations, .studio-administration { display: grid; gap: var(--space-1); }
+.studio-administration { margin-top: auto; padding-top: var(--space-4); border-top: 1px solid var(--color-border); }
+.studio-navigation button:not(.brand) { display: flex; align-items: center; gap: var(--space-3); min-height: var(--target-touch); padding: var(--space-2); border-radius: var(--radius-control); text-align: start; color: var(--color-text-secondary); font-size: var(--text-ui); }
+.studio-navigation button:hover { background: var(--color-surface-subtle); color: var(--color-text-primary); }
+.studio-navigation button[aria-current] { color: var(--color-action); background: var(--color-action-surface); box-shadow: inset 2px 0 var(--color-action); }
+.studio-host { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-2); border-top: 1px solid var(--color-border); font-size: var(--text-caption); color: var(--color-text-secondary); }
+.studio-host > div { min-width: 0; }
+.studio-host strong { display: block; margin-top: var(--space-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-text-primary); font-weight: 500; }
+.studio-host-symbol { display: grid; place-items: center; flex-shrink: 0; }
+.studio-header { display: flex; align-items: center; gap: var(--space-2); min-height: 64px; padding: var(--space-2) var(--space-6); border-bottom: 1px solid var(--color-border); flex-shrink: 0; }
+.studio-header .conversation-switcher { color: var(--color-text-primary); font-weight: 500; max-width: min(60vw, 640px); min-height: var(--target-touch); }
+.studio-header .icon-button { width: var(--target-touch); height: var(--target-touch); }
+.studio-header-actions { margin-inline-start: auto; display: flex; align-items: center; gap: var(--space-2); }
+.studio-header .stop-all { min-height: var(--target-touch); font-size: var(--text-caption); }
+.studio-brand-mobile, .studio-menu { display: none; }
+.studio-document .workspace-layout { background: var(--color-surface); }
+.studio-document .app-footer { background: var(--color-surface); }
+@media (min-width: 701px) and (max-width: 1099px) {
+  .app.studio-frame { grid-template-columns: 72px minmax(0, 1fr); }
+  .studio-navigation { padding-inline: var(--space-2); }
+  .studio-navigation button:not(.brand) { justify-content: center; }
+  .studio-navigation button:not(.brand) span, .studio-brand-name, .studio-host > div { display: none; }
+  .studio-host { justify-content: center; }
+}
+@media (max-width: 700px) {
+  .app.studio-frame { grid-template-columns: minmax(0, 1fr); }
+  .studio-navigation { display: none; }
+  .studio-header { min-height: 60px; padding: var(--space-2); gap: var(--space-1); }
+  .studio-brand-mobile { display: inline-flex; margin: 0 var(--space-1); }
+  .studio-brand-mobile .studio-brand-name, .studio-new { display: none; }
+  .studio-header .conversation-switcher { flex: 1; font-size: var(--text-caption); max-width: none; padding-inline: var(--space-1); gap: var(--space-1); }
+  .studio-header-actions { flex-shrink: 0; gap: var(--space-1); }
+  .studio-menu { display: inline-flex; align-items: center; justify-content: center; width: var(--target-touch); height: var(--target-touch); padding: 0; }
+  .studio-menu span { display: none; }
+  .studio-header .stop-all { padding-inline: var(--space-2); }
+}
+@media (max-height: 540px) {
+  .studio-navigation { gap: var(--space-2); }
+  .studio-host { display: none; }
+  .studio-header { min-height: 52px; padding-block: var(--space-1); }
+}

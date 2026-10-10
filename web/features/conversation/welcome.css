@@ -1,0 +1,29 @@
+.conversation-empty { container-type: inline-size; container-name: welcome; }
+.studio-welcome { width: 100%; min-width: 0; padding-block: var(--space-6); }
+.studio-welcome h1 { max-width: 24ch; font-size: clamp(28px, 3vw, 38px); font-weight: 500; line-height: 1.2; letter-spacing: -.9px; margin: 0 0 var(--space-4); }
+.studio-welcome > p { max-width: 54ch; color: var(--color-text-secondary); margin-bottom: var(--space-8); font-size: var(--text-body); }
+.studio-starting-points { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); margin-bottom: var(--space-8); }
+.studio-starting-points button { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); text-align: start; padding: var(--space-3) 0; min-height: var(--target-touch); border-bottom: 1px solid var(--color-control-border); font-size: var(--text-ui); }
+.studio-starting-points button:hover { color: var(--color-action); border-color: var(--color-action); }
+.studio-connections { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+.studio-connections button { display: flex; align-items: center; gap: var(--space-3); text-align: start; min-height: 64px; padding: var(--space-3); border-radius: var(--radius-control); color: var(--color-text-secondary); }
+.studio-connections button:hover { color: var(--color-action); background: var(--color-surface-subtle); }
+.studio-connections strong { display: block; font-size: var(--text-ui); font-weight: 500; color: var(--color-text-primary); }
+.studio-connections small { display: block; margin-top: var(--space-1); font-size: var(--text-caption); }
+@container welcome (max-width: 540px) {
+  .studio-welcome { padding-block: var(--space-4); }
+  .studio-welcome > p { margin-bottom: var(--space-4); }
+  .studio-starting-points { grid-template-columns: minmax(0, 1fr); gap: 0; margin-bottom: var(--space-4); }
+  .studio-connections { gap: var(--space-1); }
+  .studio-connections button { padding-inline: 0; gap: var(--space-2); }
+}
+@container welcome (max-width: 300px) {
+  .studio-connections { grid-template-columns: minmax(0, 1fr); }
+  .studio-welcome h1 { font-size: 28px; }
+}
+@media (max-height: 540px) {
+  .studio-welcome { padding-block: var(--space-2); }
+  .studio-welcome h1 { font-size: 28px; }
+  .studio-welcome > p { margin-bottom: var(--space-3); }
+  .studio-starting-points { margin-bottom: var(--space-3); }
+}

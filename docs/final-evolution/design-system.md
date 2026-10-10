@@ -82,6 +82,8 @@ Command palette provides navigation and contextual commands, with visible equiva
 - 1440px and above: three regions; bound prose width and give surplus width to useful diff/evidence content. Do not stretch paragraphs across 2560px.
 - Short height: compress chrome before content; approval action region reachable without trapping the content scroll. Preserve one main scroll owner per view. Container constraints may override width breakpoints.
 
+Initial Studio implementation uses a 700px phone-menu boundary, a 72px compact rail through 1099px, and a 176px labeled rail above it. Workbench replaces the document below1000px; visual inspection at701px demonstrated that fitting both panes technically still produced an unusably narrow composer. Welcome adapts to its own pane using container queries. These tested content constraints refine the conceptual window classes above.
+
 ## Implementation boundaries and acceptance
 
 Separate `web/design/` tokens/primitives, `web/layout/` shell/navigation and feature presentation modules from query/mutation hooks. Retain existing domain types, auth/session behavior, streaming and API clients. Do not add a global state store for layout booleans. Prefer semantic native elements and existing tested primitives; a new dependency needs a demonstrated gap.

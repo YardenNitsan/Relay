@@ -31,8 +31,11 @@ export default function ResourcePolicy() {
     try {
       const updated = await mutation<PolicyState>('/hardware/policy', selected);
       client.setQueryData(['resource-policy'], updated); setDraft(null);
-      await Promise.all(['hardware', 'model-assessment', 'models'].map(key => client.invalidateQueries({ queryKey: [key] })));
       setSaved(true);
+      // The policy POST is the commit acknowledgement. Telemetry/discovery can
+      // be slow or unavailable and must not keep a successful save disabled.
+      // Each query retains its own loading/error state during background refresh.
+      void Promise.all(['hardware', 'model-assessment', 'models'].map(key => client.invalidateQueries({ queryKey: [key] }))).catch(() => undefined);
     } catch (caught) { setError(caught); }
     finally { setSaving(false); }
   };

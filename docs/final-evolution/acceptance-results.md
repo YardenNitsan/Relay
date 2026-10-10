@@ -52,7 +52,19 @@ Windows browser job 114241379497 on `b5ebc30` finished with 109 passing/two fail
 
 Inspected fresh fixture captures of the welcome/composer at 1440x900 and 390x844 and the 390px approval view. Existing strengths: readable text, labeled permission scope, prominent decision block. Weaknesses to address: desktop navigation mixes administration with the primary work surface; mobile composer and welcome content compete for short-height space; execution evidence lives behind generic activity navigation; the approval exposes the raw tool identifier before a plain-language operation. Retain exact arguments as inspectable evidence while improving the primary hierarchy. These observations do not establish full baseline visual/a11y coverage.
 
-## Required scenarios
+## Studio and Workbench integration checkpoint
+
+New semantic light/dark tokens, an adaptive Studio shell, pane-aware welcome and a modular dependency Workbench replace the previous shell and linear agent list. The Workbench separates model output, tool work, changed files and independent verification. Same-level dependencies do not imply parallel execution. Existing session, draft, approval and mutation contracts remain in use. API/MCP version reporting now derives from package.json, fixing stale 0.1.1 text without a version bump.
+
+The initial Studio subset passed 28 cases; the six-width model-label regression plus shell checks passed 12. A full foundation run passed 115/117: one obsolete exact palette expectation, and a Chrome `ERR_NO_BUFFER_SPACE` while loading a JavaScript chunk. The later integrated 52-case subset passed 51; its final long-objective approval setup hit the real context safeguard. Selecting an explicit 16,384-token budget through Advanced controls made that exact case pass (6.3 seconds total). No production safeguard was weakened. All previously failing affected flows, the controlled pending-telemetry regression, keyboard resize focus, actual approval/diff actions and new light/dark axe checks pass in those scoped runs. Logs: `studio-full-browser.log`, `workbench-browser.log`, `workbench-landscape-verified.log`. Full checkpoint gates remain pending.
+
+Hosted Windows save latency was reproduced locally before the fix: a successful policy POST persisted Balanced while the UI awaited deliberately held telemetry. Acknowledgement now follows the committed POST; query refresh continues independently with its own loading/error state. Focused read-only review found no actionable remaining defect. Hosted CI of this change is still required.
+
+Opened and inspected retained [phone shell](evidence/studio-shell-390-light.png), [desktop shell](evidence/studio-shell-1440-dark.png), [phone Workbench light](evidence/workbench-390-light.png), [phone dark](evidence/workbench-390-dark.png), [desktop Workbench](evidence/workbench-1440-light.png), [branching presentation fixture](evidence/workbench-branching-1024.png) and [short landscape approval](evidence/workbench-landscape-approval.png). Focused reviews found and drove fixes for cramped 701px panes, hidden-control focus loss and objective context crowding the approval. The short-screen approval remains a candidate for a dedicated review surface. These results are fixture-provider/UI acceptance, not real model quality or full redesign completion.
+
+Fresh checkpoint `npm.cmd run check` passes strict types and **1218 tests / one platform skip across 114 files**, 245.75 seconds (`studio-workbench-check.log`). The production build including package-derived version reporting passes (`studio-workbench-build.log`). Full browser acceptance is running against this frozen build (`studio-workbench-full-browser.log`); no complete-suite or hosted success is claimed yet.
+
+## Required scenario definitions
 
 All remain open until fresh evidence is linked. Historical/fixture results are not live acceptance.
 

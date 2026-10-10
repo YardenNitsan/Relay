@@ -25,11 +25,11 @@ Architecture: retain the TypeScript modular monolith, Fastify, PostgreSQL/PGlite
 Files: `.github/workflows/verify.yml`, test environment scripts/config, `tests/helpers/`, private-storage boundary only if investigation demonstrates a production defect, and this directory.
 
 - [x] Fetch latest source; inspect current Actions jobs and open issues.
-- [ ] Run fresh locked installation, strict types/full tests, production build and browser baseline. Record every failure without attributing fixtures to real inference.
-- [ ] Reproduce CI filesystem alias and Windows ownership failures independently. Fix fixture provisioning without weakening production link/ownership refusal. Add behavior regressions for the new provisioning helper.
-- [ ] Separate bounded CI stages so a serial browser suite can finish; retain all three OS jobs and native evidence distinctions.
+- [x] Run fresh locked installation, strict types/full tests, production build and browser baseline. Record every failure without attributing fixtures to real inference.
+- [x] Reproduce CI filesystem alias and Windows ownership failures independently. Fix fixture provisioning without weakening production link/ownership refusal. Add behavior regressions for the new provisioning helper.
+- [x] Separate bounded CI stages so a serial browser suite can finish; retain all three OS jobs and native evidence distinctions.
 - [ ] Run check/build/E2E on the resulting source; obtain remote job results through an authorized branch/PR workflow.
-- [ ] Commit a coherent foundation change and update progress, exact checks and continuation.
+- [x] Commit a coherent foundation change and update progress, exact checks and continuation. Later A02 hosted browser failures remain open until fixed and rechecked.
 
 ### A2: Reliability and native data acceptance
 
@@ -41,8 +41,8 @@ Run `scripts/native-integrations-docker.mjs` after infrastructure availability/p
 
 ### B: Complete new frontend (begins during A; continues through C–G)
 
-- [ ] Research at least 15 accessible primary/firsthand sources; explicitly label unavailable pages and opinion evidence.
-- [ ] Compare three original concepts, select one, document tokens and screen architecture.
+- [x] Research at least 15 accessible primary/firsthand sources; explicitly label unavailable pages and opinion evidence.
+- [x] Compare three original concepts, select one, document tokens and screen architecture.
 - [ ] Capture existing conversation, workbench, projects, models, connections, approvals, settings and onboarding as baseline.
 - [ ] Implement semantic token/primitives layer, adaptive application shell and explicit feature navigation with preserved account gates.
 - [ ] Replace conversation/composer and execution workbench; retain durable streaming, drafts, cancellation and first-class approval access.

@@ -16,7 +16,7 @@ test('conversation streams, persists on reload, and exposes the real execution r
   const url=page.url();expect(url).toContain('conversation=');
   await page.reload();await expect(page.getByText('A deterministic response for browser testing.',{exact:false})).toBeVisible();
   await page.getByRole('button',{name:'Activity',exact:true}).click();
-  await expect(page.getByRole('heading',{name:'Behind the work'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Execution Workbench'})).toBeVisible();
   await page.getByRole('tab',{name:'Verification'}).click();
   await expect(page.getByText(/no objective external verification/)).toBeVisible();
 });

@@ -38,6 +38,14 @@ Docker Desktop was installed but stopped. Starting it through its CLI made the l
 
 After the cleanup fix: strict types and **1216 tests / one skip, 113 files** passed in 246.81 seconds (`sandbox-final-check.log`); production build passed. Added acceptance scripts also pass the subsequent strict check (`native-final-typecheck.log`). GitHub host checks for `b5ebc30` pass on all three OSes; browser jobs are still separate pending gates. The native integration workflow now also runs for relevant modernization-branch pushes, since PR creation is unavailable through the connector.
 
+[Hosted native Linux run 38062805371](https://github.com/YardenNitsan/Relay/actions/runs/38062805371) passed on `d53cc91`: PostgreSQL 17.11 upgrade/locking, all 32 restored public tables and real Docker isolation/cancellation/emergency checks. Reported cancellation was 315 ms on that runner; this is one acceptance observation, not a latency guarantee.
+
+## Independent controls during telemetry failure
+
+A Windows browser run had timed out waiting for resource-policy controls. Source inspection showed that the entire hardware screen withheld independent controls until telemetry arrived. A deterministic 503 browser regression reproduced that user-visible defect. The screen now mounts configuration, retention and diagnostics independently of telemetry, with stable component positions as measurements load or recover. No simulated measurement replaces missing data.
+
+Strict types/production build passed (`hardware-policy-build.log`); both resource-policy browser scenarios passed (`hardware-policy-verified.log`, 17.0 seconds), including actual save/restore while telemetry returns 503, failed-save handling, persisted policy and axe. Inspected the rendered [telemetry error with usable controls](evidence/hardware-unavailable.png). This is a workflow fix in the existing UI; B02–B11 redesign remains open.
+
 ## Before-design inspection
 
 Inspected fresh fixture captures of the welcome/composer at 1440x900 and 390x844 and the 390px approval view. Existing strengths: readable text, labeled permission scope, prominent decision block. Weaknesses to address: desktop navigation mixes administration with the primary work surface; mobile composer and welcome content compete for short-height space; execution evidence lives behind generic activity navigation; the approval exposes the raw tool identifier before a plain-language operation. Retain exact arguments as inspectable evidence while improving the primary hierarchy. These observations do not establish full baseline visual/a11y coverage.

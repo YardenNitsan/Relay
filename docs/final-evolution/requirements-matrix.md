@@ -2,10 +2,10 @@
 
 Status vocabulary: **Complete and verified**, **Implemented but insufficiently verified**, **Partially implemented**, **Not implemented**, **Blocked by unavailable external resources**. Broad rows are not complete merely because some components exist. Historical 0.1.2 evidence is baseline context, not fresh acceptance.
 
-| ID | Requirement / directive section | Starting status | Required evidence / dependency |
+| ID | Requirement / directive section | Current status | Required evidence / dependency |
 |---|---|---|---|
 | A01 | Latest-source audit, repeatable baseline, ledger (§3,26) | Partially implemented | Fresh source/CI/tests/build/browser results; requirements inventory |
-| A02 | Passing portable CI and release gates (§22) | Partially implemented | Windows/macOS failing; Linux job timeout; all three remote gates |
+| A02 | Passing portable CI and release gates (§22) | Partially implemented | b5ebc30 host gates pass on all three OSes; Linux/macOS browser gates pass, Windows browser pending; d53cc91 native Linux and latest full gates pending |
 | A03 | Authorization/revocation/security review (§4,11) | Implemented but insufficiently verified | Dispatch race regressions and full threat-model review |
 | A04 | Overall task deadlines (§11) | Complete and verified | Durable admission/queue/active/approval/resource/restart/finalization regressions, full check 1214 passed/one skip, build and 14 affected browser cases; focused review findings fixed. Native migration portability remains A06/G02. |
 | A05 | Suspended execution and uncertain-effect recovery (§11) | Partially implemented | Durable resume and no duplicate mutation scenarios |

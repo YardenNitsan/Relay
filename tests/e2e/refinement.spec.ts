@@ -105,6 +105,29 @@ test('pairing gates private data, masks the token and persists only the authenti
   await expect(page.getByText('Local service connected', { exact: true })).toBeVisible();
 });
 
+test('resource policy remains usable when hardware telemetry is unavailable', async ({ page }) => {
+  await page.route('**/api/hardware',route=>route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Telemetry is temporarily unavailable.'})}));
+  await page.goto('/');await pairBrowser(page);
+  await page.getByRole('button',{name:'Machine',exact:true}).click();
+  const dialog=page.getByRole('dialog',{name:'This machine'});
+  await expect(dialog.getByRole('alert')).toContainText('Telemetry is temporarily unavailable.');
+  const profile=dialog.getByLabel('Resource profile');
+  await expect(profile).toHaveValue('safe');
+  await profile.selectOption('balanced');
+  try {
+    await dialog.getByRole('button',{name:'Save resource policy',exact:true}).click();
+    await expect(dialog.getByText('Applied: Balanced',{exact:true})).toBeVisible();
+    await expect(dialog.getByRole('alert')).toContainText('Telemetry is temporarily unavailable.');
+    await expect(dialog.getByRole('button',{name:'Save resource policy',exact:true})).toBeDisabled();
+    expect((await new AxeBuilder({page}).include('dialog').withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze()).violations).toEqual([]);
+    await page.screenshot({path:'output/playwright/hardware-unavailable.png'});
+  } finally {
+    await profile.selectOption('safe');
+    await dialog.getByRole('button',{name:'Save resource policy',exact:true}).click();
+    await expect(dialog.getByText('Applied: Safe',{exact:true})).toBeVisible();
+  }
+});
+
 test('resource policy distinguishes drafts, rejected changes and persisted host policy', async ({ page }) => {
   await page.goto('/');
   await pairBrowser(page);

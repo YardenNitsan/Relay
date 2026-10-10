@@ -32,3 +32,7 @@ Pinned Node24.21.0 Docker executes the pristine visible cases (2 pass), seeded c
 | Same model, explicit 32K | Two approved source writes, rerun still fails, subsequent repair hits 4096-token output cap | 450.425s |
 
 All attempts used explicit required local models, normal admission/watchdog and no cloud credentials/fallback. Missing LM Studio temporary directory was recreated without changing settings or restarting the owner service; loaded-instance discovery was empty before retry. The 32K attempt corrected deadline units but used the wrong field for activity ownership. No final partial tool proposal or source publication occurred. Durations are driver-observed task intervals, not inference-only or internal first-token latency. C05 remains open. Context sizing and model recovery need improvement; these observations do not justify weakening reserves, discarding receipts or claiming routing superiority.
+
+A fifth coding candidate, installed Gemma4 12B QAT at32K context, was refused before inference by unchanged safe RAM admission (estimated14,680,508,671bytes RAM). Evidence coding-IZXsS1 is retained. This is resource admission evidence, not model task-quality evidence.
+
+Native language checks: fixed Node execution197ms, Python303ms and offline C# build/run2026ms in separate512MiB/one-CPU containers. These are small correctness-fixture receipt durations on Windows Docker Desktop; no before/after inference speed or medium-project performance claim is made.

@@ -39,12 +39,15 @@ async function docker(args: string[], timeoutMs: number, signal?: AbortSignal,ex
   });
 }
 
-export function sandboxArguments(helperPath: string, name: string, imageId: string, argv: string[]): string[] {
+export function sandboxArguments(helperPath: string, name: string, imageId: string, argv: string[], profile: DevelopmentProfileId = 'default'): string[] {
+  // .NET clips its W^X executable-memory mapping to RLIMIT_FSIZE. A 1MiB cap
+  // prevents CoreLib loading. Only its explicitly selected profile gets 64MiB;
+  // physical/container/tmpfs limits and the 1MiB exported-file cap are unchanged.
   if (!helperPath || /[,\r\n\0]/.test(helperPath) || !/^relay-[0-9a-f-]{36}$/.test(name) || !/^sha256:[a-f0-9]{64}$/.test(imageId)) throw new Error('Invalid sandbox configuration');
   if (!argv.length || !argv[0] || argv[0].startsWith('-') || argv.some(value => value.includes('\0'))) throw new Error('Invalid command arguments');
   // Durable explicit cleanup owns removal, including crash recovery. Docker
   // AutoRemove otherwise races rm even when our callers share one promise.
-  return ['run', '--interactive', '--pull=never', '--name', name, '--init', '--no-healthcheck', '--log-driver', 'none', '--network', 'none', '--cap-drop', 'ALL', '--cap-add', 'SETUID', '--cap-add', 'SETGID', '--cap-add', 'KILL', '--security-opt', 'no-new-privileges:true', '--read-only', '--pids-limit', '64', '--memory', '512m', '--memory-swap', '512m', '--cpus', '1', '--ulimit', 'fsize=1048576:1048576', '--ulimit', 'nofile=256:256', '--shm-size', '16m', '--tmpfs', '/tmp:rw,nosuid,nodev,size=64m,nr_inodes=10000,mode=1777', '--tmpfs', '/workspace:rw,nosuid,nodev,size=64m,nr_inodes=10000,mode=0777', '--mount', `type=bind,source=${helperPath},target=/relay-supervisor.cjs,readonly`, '--workdir', '/workspace', '--user', '0:0', '--env', 'NODE_OPTIONS=', '--env', 'NODE_PATH=', '--env', 'HOME=/tmp', '--env', 'TMPDIR=/tmp', '--entrypoint', '/usr/local/bin/node', imageId, '--max-old-space-size=128', '/relay-supervisor.cjs'];
+  return ['run', '--interactive', '--pull=never', '--name', name, '--init', '--no-healthcheck', '--log-driver', 'none', '--network', 'none', '--cap-drop', 'ALL', '--cap-add', 'SETUID', '--cap-add', 'SETGID', '--cap-add', 'KILL', '--security-opt', 'no-new-privileges:true', '--read-only', '--pids-limit', '64', '--memory', '512m', '--memory-swap', '512m', '--cpus', '1', '--ulimit', profile === 'dotnet' ? 'fsize=67108864:67108864' : 'fsize=1048576:1048576', '--ulimit', 'nofile=256:256', '--shm-size', '16m', '--tmpfs', '/tmp:rw,nosuid,nodev,size=64m,nr_inodes=10000,mode=1777', '--tmpfs', '/workspace:rw,nosuid,nodev,size=64m,nr_inodes=10000,mode=0777', '--mount', `type=bind,source=${helperPath},target=/relay-supervisor.cjs,readonly`, '--workdir', '/workspace', '--user', '0:0', '--env', 'NODE_OPTIONS=', '--env', 'NODE_PATH=', '--env', 'HOME=/tmp', '--env', 'TMPDIR=/tmp', '--entrypoint', '/usr/local/bin/node', imageId, '--max-old-space-size=128', '/relay-supervisor.cjs'];
 }
 
 export class DockerSandbox {
@@ -88,7 +91,7 @@ export class DockerSandbox {
     try {
       const helper=await this.supervisor();const files=await snapshot(stagePath,true);guard();
       const output=new SandboxOutput(config.profile);await this.store.recordContainer(name);guard();
-      const result=await docker(sandboxArguments(helper,name,config.imageId,argv),timeoutSeconds*1000+15_000,controller.signal,{input:sandboxInput(files,argv,timeoutSeconds*1000,config.profile),output});
+      const result=await docker(sandboxArguments(helper,name,config.imageId,argv,config.profile),timeoutSeconds*1000+15_000,controller.signal,{input:sandboxInput(files,argv,timeoutSeconds*1000,config.profile),output});
       if(result.exitCode!==0)throw new Error('Isolated supervisor failed; the selected language runtime, trusted Node 24 and enforced process/storage limits are required');guard();return {...output.finish(),imageId:config.imageId};
     }
     finally { signal.removeEventListener('abort', abort); try { await this.remove(name); } finally { this.active.delete(name); } }

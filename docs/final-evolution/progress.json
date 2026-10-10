@@ -4,7 +4,7 @@
   "updatedAt": "2026-10-10",
   "baselineCommit": "9d563bc973dbcc177921ab918db88561c8280e48",
   "branch": "modernization/final-evolution",
-  "currentMilestone": "C05 real coding acceptance driver verified; C04 trusted development images next",
+  "currentMilestone": "C04 trusted image/native language verification; B06 project redesign next",
   "requirementIds": [
     "A01",
     "A02",
@@ -20,7 +20,9 @@
     "C05",
     "B09",
     "C03",
-    "A03"
+    "A03",
+    "C04",
+    "B06"
   ],
   "worktree": "C:/Users/yarde/Documents/codexp/Relay-modernization",
   "implementedChanges": [
@@ -51,7 +53,10 @@
     "FE-011 ordinary host dispatch passes fresh durable authorization before create/delete and between write chunks; six real-file red/green regressions",
     "FE-012 daemon AutoRemove removed; explicit durable sandbox cleanup is sole removal owner",
     "Versioned 514-file coding corpus, real supervised local-model driver, independent scope/behavior grading and gated publication/rollback",
-    "Workbench fixture interception precedes task caching; fixes confirmed hosted macOS test race"
+    "Workbench fixture interception precedes task caching; fixes confirmed hosted macOS test race",
+    "Pinned official Node/Python/.NET development image provisioning with isolated context and local builder enforcement",
+    "Actual offline small multi-file runtime red/green acceptance across three profiles",
+    "Bounded dotnet executable mapping/file limit64MiB; physical and exported workspace limits preserved; native measurement verified"
   ],
   "changedFiles": [
     ".github/workflows/native-integrations.yml",
@@ -164,9 +169,21 @@
     "docs/final-evolution/development-images-plan.md",
     "docs/final-evolution/evidence/coding-acceptance-windows.json",
     "docs/final-evolution/evidence/coding-live-1440-light.png",
-    "docs/final-evolution/evidence/coding-live-390-dark.png"
+    "docs/final-evolution/evidence/coding-live-390-dark.png",
+    "development-images/README.md",
+    "development-images/node.Dockerfile",
+    "development-images/python.Dockerfile",
+    "development-images/dotnet.Dockerfile",
+    "scripts/development-image-policy.ts",
+    "scripts/provision-development-images.ts",
+    "scripts/development-language-acceptance.ts",
+    "tests/development-provisioning.test.ts",
+    "tests/development-profiles.test.ts",
+    "docs/development-environments.md",
+    "docs/final-evolution/evidence/native-languages-windows.json",
+    "docs/final-evolution/project-workspace-plan.md"
   ],
-  "testStatus": "Strict types,1249 tests/one skip in116 files/258.92s; build;7 Workbench browser cases/54.8s pass. Actual Node container pristine2pass/seeded2fail/independent9pass/stale-result1fail. Four real model trials refused/paused; no successful repair/publication. Native Linux hosted38070458360 passes.",
+  "testStatus": "C04 strict types/1253tests/one skip across117files in263.78s,build,actual Node/Python/.NET seeded/fixed programs+kernel limits,and native sandbox isolation/cancel/emergency pass. Hosted language acceptance pending.",
   "lastPassingCommands": [
     "npm.cmd ci",
     "npm.cmd run check (baseline)",
@@ -207,13 +224,21 @@
     "npm.cmd run check (coding driver:1249 passed/one skip,116 files,258.92s)",
     "npm.cmd run build (coding driver)",
     "npm.cmd run test:e2e -- tests/e2e/workbench.spec.ts (7 passed,54.8s)",
-    "node --import tsx scripts/coding-acceptance.ts --sandbox-only (coding-manai4 actual container preflight pass)"
+    "node --import tsx scripts/coding-acceptance.ts --sandbox-only (coding-manai4 actual container preflight pass)",
+    "npm.cmd run check (C04:1253passed/one skip,117files,263.78s)",
+    "npm.cmd run build (C04)",
+    "node --import tsx scripts/provision-development-images.ts all (explicit local builder,3images)",
+    "node --import tsx scripts/development-language-acceptance.ts output/final-evolution/development-images-Klc373/report.json (6red/green outcomes and native dotnet boundaries)",
+    "node --import tsx scripts/native-integrations.ts sandbox (new pinned Node image; actual isolation/cancel/emergency pass)"
   ],
-  "lastPassingCommit": "988d7b02c1ce9aee154bf3abbf19e73bc8b98bdb",
-  "lastPassingCommitScope": "59 focused tests, actual local native Docker/PostgreSQL and hosted Linux native38070458360; new driver full check/build/browser verified before next commit",
+  "lastPassingCommit": "e0e1bb45b212290435ce1969fcecd913662ecd6d",
+  "lastPassingCommitScope": "Coding driver strict types/1249tests/one skip,build,7 Workbench cases; actual model failures retained; hosted38071652895 pending.",
   "knownFailures": [
     "Hosted macOS browser38069003236/38069750281:132pass/1 branching fixture failed due late route interception; corrected local7case run passes, hosted follow-up required.",
-    "Real coding: larger9B RAM admission refusal; smaller9B initial missing-runtime-temp load error repaired;16K context paused;32K wrong activity repair/output-limit pause after7calls. No publication."
+    "Real coding: larger9B RAM admission refusal; smaller9B initial missing-runtime-temp load error repaired;16K context paused;32K wrong activity repair/output-limit pause after7calls. No publication.",
+    "Gemma4 12B32K candidate also refused unchanged RAM admission; no inference occurred.",
+    "C04 initial containerd config ID lookup failed; unique build tag now resolves actual engine immutable ID.",
+    "C04 initial .NET CoreLib OOM under1MiB file limit fixed by bounded profile64MiB, native red/green pass."
   ],
   "outstandingSecurityReviews": [
     "Full threat-model review",
@@ -227,7 +252,7 @@
     "License/admin protection authorization pending",
     "Draft PR connector HTTP403; branch pushes work"
   ],
-  "nextActionableWorkItem": "Commit/push verified coding driver/evidence and fixture correction; inspect hosted CI. Attempt separately selected installed Gemma12B with32K through ordinary admission or advance C04 development-images-plan. Keep C05 success/publication open.",
+  "nextActionableWorkItem": "Commit/push verified C04 files excluding new project-draft.spec.ts; inspect hosted CI. Execute B06 project-workspace-plan: run new dirty-file outer-close regression red, implement safe close/navigation then full presentation rebuild and visual acceptance.",
   "remainingDependencies": [
     "A native recovery/restore/retention",
     "B full redesign",

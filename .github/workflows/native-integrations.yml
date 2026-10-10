@@ -9,6 +9,8 @@ on:
       - 'server/orchestration/**'
       - 'shared/**'
       - 'scripts/native-*'
+      - 'scripts/*development*'
+      - 'development-images/**'
       - '.github/workflows/native-integrations.yml'
   pull_request:
     paths:
@@ -17,10 +19,35 @@ on:
       - 'server/orchestration/**'
       - 'shared/**'
       - 'scripts/native-*'
+      - 'scripts/*development*'
+      - 'development-images/**'
       - '.github/workflows/native-integrations.yml'
 permissions:
   contents: read
 jobs:
+  languages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: node --import tsx scripts/provision-development-images.ts all
+      - run: node --import tsx scripts/development-language-acceptance.ts output/final-evolution/development-images-latest.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: native-language-evidence
+          path: |
+            output/final-evolution/development-images-*/report.json
+            output/final-evolution/development-images-*/*-build.log
+            output/final-evolution/native-languages-*/report.json
+          retention-days: 14
   integration:
     runs-on: ubuntu-latest
     timeout-minutes: 12

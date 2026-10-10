@@ -14,10 +14,10 @@ Native .NET build output is binary, whereas workspace exchange accepts bounded U
 
 ## Dependency-ordered work
 
-- [ ] Resolve and record official Node24, Python3 and .NET10 image digests/platforms, inspect upstream source/licensing and create minimal reviewed Dockerfiles/lock manifest.
-- [ ] Implement explicit local-engine provisioning with fixed registry references, bounded owned build context and no host-user data. Emit actual resulting immutable image IDs without changing the running host's configuration.
-- [ ] Verify trusted Node and language probes inside each built image through the actual DockerSandbox, not host execution or an unrestricted `docker run` substituted for broker acceptance.
-- [ ] Execute multi-file Python tests and a multi-file C# build/test with actual failing-before/passing-after behavior, offline sources and disposable binary output. Keep original workspace hashes intact except approved source edits.
+- [x] Resolve and record official Node24, Python3 and .NET10 image digests/platforms, inspect upstream source/licensing and create minimal reviewed Dockerfiles/lock manifest.
+- [x] Implement explicit local-engine provisioning with fixed registry references, bounded owned build context and no host-user data. Emit actual resulting immutable image IDs without changing the running host's configuration.
+- [x] Verify trusted Node and language probes inside each built image through the actual DockerSandbox, not host execution or an unrestricted `docker run` substituted for broker acceptance.
+- [x] Execute multi-file Python tests and a multi-file C# build/test with actual failing-before/passing-after behavior, offline sources and disposable binary output. Keep original workspace hashes intact except approved source edits.
 - [ ] Record actual versions/image IDs, limits, errors and supported host/container architecture. Add deterministic regressions for confirmed defects; run native and relevant security checks.
 - [ ] Add repeatable hosted native acceptance where resource limits permit, document exact owner commands and remaining package-restoration/platform gates; update C04/C05 honestly.
 
@@ -32,3 +32,5 @@ No step in this plan is marked complete by research or a successful image build 
 - .NET10 SDK Noble: `sha256:e70cdb7f80b0348f5cb85f19a8f670fca061f033d57eed12fa003d58b0e06317`; amd64 manifest `sha256:0eeb52c76e35a5431ca707ad2bc75e38006a05393045d8532ae44c15d9474523`.
 
 Node/Python amd64 manifests use the same Debian base digest. ARM manifests exist but are not native acceptance. Verify resulting runtime libraries and actual broker execution before checking off image support.
+
+Observed result: Windows Docker Desktop Linux/amd64 builds and executes all three profiles. Node24.21.0/Python3.14.8/.NET10.0.401 reject seeded faults and pass corrected programs. Initial .NET CoreLib OOM came from1MiB executable-mapping/file limit; a documented64MiB dotnet-only limit preserves all physical/export quotas and W^X. CI job added; hosted acceptance remains open. Scope is small multi-file runtime acceptance, not medium-sized applications.

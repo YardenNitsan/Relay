@@ -1,0 +1,157 @@
+{
+  "testedAt": "2026-10-10T17:32:16.298Z",
+  "platform": "win32",
+  "scope": "Small offline multi-file runtime acceptance; not medium-project build or model coding acceptance",
+  "checks": [
+    {
+      "profile": "node",
+      "broken": true,
+      "stdout": "",
+      "stderr": "node:internal/modules/run_main:107\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n10 !== 21\n\n    at file:///workspace/test.mjs:1:83\n    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)\n    at async node:internal/modules/esm/loader:647:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: 10,\n  expected: 21,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v24.21.0\n",
+      "exitCode": 1,
+      "truncated": false,
+      "durationMs": 213,
+      "toolchain": {
+        "profile": "node",
+        "version": "24.21.0"
+      },
+      "imageId": "sha256:132c6735b12722d8c8c8d083f5a01bb6380ee39277de15e4599de5b0226f7c2c"
+    },
+    {
+      "profile": "node",
+      "broken": false,
+      "stdout": "VERIFIED: node two cases\n",
+      "stderr": "",
+      "exitCode": 0,
+      "truncated": false,
+      "durationMs": 197,
+      "toolchain": {
+        "profile": "node",
+        "version": "24.21.0"
+      },
+      "imageId": "sha256:132c6735b12722d8c8c8d083f5a01bb6380ee39277de15e4599de5b0226f7c2c"
+    },
+    {
+      "profile": "python",
+      "broken": true,
+      "stdout": "",
+      "stderr": "test_total (test_invoice.InvoiceTests.test_total) ... FAIL\ntest_zero (test_invoice.InvoiceTests.test_zero) ... FAIL\n\n======================================================================\nFAIL: test_total (test_invoice.InvoiceTests.test_total)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/test_invoice.py\", line 4, in test_total\n    def test_total(self): self.assertEqual(total(7, 3), 21)\n                          ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^\nAssertionError: 10 != 21\n\n======================================================================\nFAIL: test_zero (test_invoice.InvoiceTests.test_zero)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/test_invoice.py\", line 5, in test_zero\n    def test_zero(self): self.assertEqual(total(0, 8), 0)\n                         ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^\nAssertionError: 8 != 0\n\n----------------------------------------------------------------------\nRan 2 tests in 0.001s\n\nFAILED (failures=2)\n",
+      "exitCode": 1,
+      "truncated": false,
+      "durationMs": 346,
+      "toolchain": {
+        "profile": "python",
+        "version": "3.14.8"
+      },
+      "imageId": "sha256:4f38c5b8fd0a2b840fd23ee5b61e4f59d8e176e8790827887c3d8a1b7e5b4e20"
+    },
+    {
+      "profile": "python",
+      "broken": false,
+      "stdout": "",
+      "stderr": "test_total (test_invoice.InvoiceTests.test_total) ... ok\ntest_zero (test_invoice.InvoiceTests.test_zero) ... ok\n\n----------------------------------------------------------------------\nRan 2 tests in 0.000s\n\nOK\n",
+      "exitCode": 0,
+      "truncated": false,
+      "durationMs": 303,
+      "toolchain": {
+        "profile": "python",
+        "version": "3.14.8"
+      },
+      "imageId": "sha256:4f38c5b8fd0a2b840fd23ee5b61e4f59d8e176e8790827887c3d8a1b7e5b4e20"
+    },
+    {
+      "profile": "dotnet",
+      "broken": true,
+      "stdout": "\n\n    0 Warning(s)\n    0 Error(s)\n\nTime Elapsed 00:00:01.77\n",
+      "stderr": "An issue was encountered verifying workloads. For more information, run \"dotnet workload update\".\nREGRESSION: invoice total\n",
+      "exitCode": 23,
+      "truncated": false,
+      "durationMs": 2518,
+      "toolchain": {
+        "profile": "dotnet",
+        "version": "10.0.401"
+      },
+      "imageId": "sha256:395039951d3da4700bb8b37e7567e8162c5b7630c095e3eadf37c58d6c4f3358"
+    },
+    {
+      "profile": "dotnet",
+      "broken": false,
+      "stdout": "\n\n    0 Warning(s)\n    0 Error(s)\n\nTime Elapsed 00:00:01.51\nVERIFIED: dotnet two cases\n",
+      "stderr": "An issue was encountered verifying workloads. For more information, run \"dotnet workload update\".\n",
+      "exitCode": 0,
+      "truncated": false,
+      "durationMs": 2026,
+      "toolchain": {
+        "profile": "dotnet",
+        "version": "10.0.401"
+      },
+      "imageId": "sha256:395039951d3da4700bb8b37e7567e8162c5b7630c095e3eadf37c58d6c4f3358"
+    },
+    {
+      "profile": "dotnet",
+      "boundaryMeasurement": {
+        "uid": 1000,
+        "memory": "536870912",
+        "pids": "64",
+        "cpu": "100000 100000",
+        "limits": "Limit                     Soft Limit           Hard Limit           Units     \nMax cpu time              unlimited            unlimited            seconds   \nMax file size             67108864             67108864             bytes     \nMax data size             unlimited            unlimited            bytes     \nMax stack size            8388608              unlimited            bytes     \nMax core file size        0                    unlimited            bytes     \nMax resident set          unlimited            unlimited            bytes     \nMax processes             unlimited            unlimited            processes \nMax open files            256                  256                  files     \nMax locked memory         unlimited            unlimited            bytes     \nMax address space         unlimited            unlimited            bytes     \nMax file locks            unlimited            unlimited            locks     \nMax pending signals       62949                62949                signals   \nMax msgqueue size         819200               819200               bytes     \nMax nice priority         0                    0                    \nMax realtime priority     0                    0                    \nMax realtime timeout      unlimited            unlimited            us        \n",
+        "wxOverride": null
+      },
+      "stdout": "{\"uid\":1000,\"memory\":\"536870912\",\"pids\":\"64\",\"cpu\":\"100000 100000\",\"limits\":\"Limit                     Soft Limit           Hard Limit           Units     \\nMax cpu time              unlimited            unlimited            seconds   \\nMax file size             67108864             67108864             bytes     \\nMax data size             unlimited            unlimited            bytes     \\nMax stack size            8388608              unlimited            bytes     \\nMax core file size        0                    unlimited            bytes     \\nMax resident set          unlimited            unlimited            bytes     \\nMax processes             unlimited            unlimited            processes \\nMax open files            256                  256                  files     \\nMax locked memory         unlimited            unlimited            bytes     \\nMax address space         unlimited            unlimited            bytes     \\nMax file locks            unlimited            unlimited            locks     \\nMax pending signals       62949                62949                signals   \\nMax msgqueue size         819200               819200               bytes     \\nMax nice priority         0                    0                    \\nMax realtime priority     0                    0                    \\nMax realtime timeout      unlimited            unlimited            us        \\n\",\"wxOverride\":null}\n",
+      "stderr": "",
+      "exitCode": 0,
+      "truncated": false,
+      "durationMs": 234,
+      "toolchain": {
+        "profile": "dotnet",
+        "version": "10.0.401"
+      },
+      "imageId": "sha256:395039951d3da4700bb8b37e7567e8162c5b7630c095e3eadf37c58d6c4f3358"
+    }
+  ],
+  "provisioning": {
+    "testedAt": "2026-10-10T17:32:57.058Z",
+    "engine": {
+      "OSType": "linux",
+      "Architecture": "x86_64"
+    },
+    "images": [
+      {
+        "profile": "node",
+        "imageId": "sha256:132c6735b12722d8c8c8d083f5a01bb6380ee39277de15e4599de5b0226f7c2c",
+        "buildConfigId": "sha256:8d7f8a470ab53174c0ffeb627acb05439f7b263559954a36b06ba15678b3789f",
+        "architecture": "amd64",
+        "dockerfileSha256": "6609d98e3d56288c91ef4c55c9a815b4cd1bbfc05cd20954c6eef2a19a8cb0f8",
+        "configurationVariable": "RELAY_SANDBOX_NODE_IMAGE"
+      },
+      {
+        "profile": "python",
+        "imageId": "sha256:4f38c5b8fd0a2b840fd23ee5b61e4f59d8e176e8790827887c3d8a1b7e5b4e20",
+        "buildConfigId": "sha256:b7638935027ebd8fc0f8874fdf12aa3119ee75b077ed7e7e9b16a5f3a2753269",
+        "architecture": "amd64",
+        "dockerfileSha256": "c9382c129b55a5ebca1ad10797956f64ad89f977617f159518adde1ab52d0fcf",
+        "configurationVariable": "RELAY_SANDBOX_PYTHON_IMAGE"
+      },
+      {
+        "profile": "dotnet",
+        "imageId": "sha256:395039951d3da4700bb8b37e7567e8162c5b7630c095e3eadf37c58d6c4f3358",
+        "buildConfigId": "sha256:917e19a5671e022216f828435e2cb2e7b2b0c972c8ecb431d9013977aa70fa92",
+        "architecture": "amd64",
+        "dockerfileSha256": "666f32ab4500b4ec46703a24a9a4725ee63f6be610b23f9c81ff83aeeb4c7bd7",
+        "configurationVariable": "RELAY_SANDBOX_DOTNET_IMAGE"
+      }
+    ]
+  },
+  "initialFailure": {
+    "stdout": "{\"exists\":true,\"status\":137,\"signal\":null,\"stdout\":\"\",\"stderr\":\"Failed to load System.Private.CoreLib.dll (error code 0x8007000E)\\nPath: /usr/share/dotnet/shared/Microsoft.NETCore.App/10.0.12/System.Private.CoreLib.dll\\nError message: Out Of Memory\\nFailed to create CoreCLR, HRESULT: 0x8007000E\\n\"}\n",
+    "stderr": "",
+    "exitCode": 0,
+    "truncated": false,
+    "durationMs": 194,
+    "toolchain": {
+      "profile": "default",
+      "version": "24.21.0"
+    },
+    "imageId": "sha256:395039951d3da4700bb8b37e7567e8162c5b7630c095e3eadf37c58d6c4f3358"
+  }
+}

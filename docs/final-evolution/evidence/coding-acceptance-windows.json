@@ -988,5 +988,139 @@
     "One deliberately seeded two-file task within a filtered real source tree; not a full application build or broad model benchmark.",
     "Final model-file independent verification/publication/rollback path remains unaccepted until a completed task passes it.",
     "No calibrated latency comparison or routing-quality improvement is established."
-  ]
+  ],
+  "additionalTrial": {
+    "root": "coding-IZXsS1",
+    "state": "blocked_admission",
+    "cloud": "disabled",
+    "secrets": "No inherited environment/vault credentials",
+    "contextTokens": 32768,
+    "approvals": [],
+    "models": [
+      {
+        "id": "lmstudio/qwen2.5-coder-14b-instruct-uncensored",
+        "name": "Qwen2.5 Coder 14B Instruct Uncensored",
+        "state": "available",
+        "local": true,
+        "capabilities": {
+          "tools": false,
+          "vision": false,
+          "reasoning": false,
+          "structured": false
+        },
+        "contextWindow": 32768
+      },
+      {
+        "id": "lmstudio/google/gemma-4-12b-qat",
+        "name": "Gemma 4 12B QAT",
+        "state": "available",
+        "local": true,
+        "capabilities": {
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "structured": false
+        },
+        "contextWindow": 262144
+      },
+      {
+        "id": "lmstudio/qwen3.5-9b-uncensored-hauhaucs-aggressive.gguf",
+        "name": "Qwen3.5 9B Uncensored HauhauCS Aggressive",
+        "state": "available",
+        "local": true,
+        "capabilities": {
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "structured": false
+        },
+        "contextWindow": 262144
+      },
+      {
+        "id": "lmstudio/qwen3.6-35b-a3b-uncensored-hauhaucs-aggressive",
+        "name": "Qwen3.6 35B A3B Uncensored HauhauCS Aggressive Q2 K P",
+        "state": "available",
+        "local": true,
+        "capabilities": {
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "structured": false
+        },
+        "contextWindow": 262144
+      },
+      {
+        "id": "lmstudio/qwen3.5-9b-uncensored-hauhaucs-aggressive",
+        "name": "Qwen3.5 9B Uncensored HauhauCS Aggressive",
+        "state": "available",
+        "local": true,
+        "capabilities": {
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "structured": false
+        },
+        "contextWindow": 262144
+      },
+      {
+        "id": "lmstudio/qwen3-14b-abliterated",
+        "name": "Qwen3 14B Abliterated",
+        "state": "available",
+        "local": true,
+        "capabilities": {
+          "tools": true,
+          "vision": false,
+          "reasoning": true,
+          "structured": false
+        },
+        "contextWindow": 40960
+      },
+      {
+        "id": "lmstudio/qwen3-coder-30b-a3b-instruct",
+        "name": "Qwen3 Coder 30B A3B Instruct",
+        "state": "available",
+        "local": true,
+        "capabilities": {
+          "tools": true,
+          "vision": false,
+          "reasoning": false,
+          "structured": false
+        },
+        "contextWindow": 262144
+      },
+      {
+        "id": "lmstudio/qwen/qwen3.8-27b",
+        "name": "Qwen3.8 27B",
+        "state": "available",
+        "local": true,
+        "capabilities": {
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "structured": false
+        },
+        "contextWindow": 262144
+      }
+    ],
+    "resourcePolicy": {
+      "profile": "safe"
+    },
+    "selectedModel": {
+      "id": "lmstudio/google/gemma-4-12b-qat",
+      "provider": "lmstudio",
+      "name": "Gemma 4 12B QAT"
+    },
+    "admission": {
+      "allowed": false,
+      "decision": "queue",
+      "reasons": [
+        "Safe resource policy reserves the greater of 4 GiB or 20% of physical RAM, and 1 GiB or 15% of discrete VRAM.",
+        "Insufficient physical RAM for runtime estimate, load buffers and safety headroom."
+      ],
+      "estimatedRamBytes": 14680508671,
+      "estimatedVramBytes": 539411652,
+      "contextTokens": 32768,
+      "confidence": "estimated"
+    }
+  }
 }

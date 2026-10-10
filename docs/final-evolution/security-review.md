@@ -41,3 +41,9 @@ FE-012: hosted native run 38069750202 exposed another removal owner: Docker's `-
 ## Coding acceptance isolation and evidence
 
 A disposable API-only loopback host uses normal pairing, CSRF, real local-only provider routing, native resource admission/watchdog and supervised broker execution. Only exact two-file writes and exact offline test argv receive approval. Independent checks require unchanged non-target files and fresh combined visible/hidden test results before source publication; a stale earlier passing receipt cannot establish current correctness. Cleanup reports are retained on error. No successful publication is claimed from the four paused/refused trials. Native Linux cleanup follow-up38070458360 passes; this supersedes its pending status above.
+
+## C04 development image review
+
+Native .NET CoreLib loading failed under the universal1MiB process file-size limit. Pinned runtime source shows that limit also bounds its W^X executable mapping. The explicit dotnet profile now uses64MiB while RAM,CPU,PID,tmpfs,network,privilege and1MiB exported-file limits remain unchanged. Actual kernel measurements and failing/passing C# compile/run receipts are retained in evidence/native-languages-windows.json. This policy adjustment permits larger disposable files but no larger managed-file export or host access.
+
+Internal review identified inherited BUILDX_BUILDER as a remote execution route during owner provisioning. A regression failed before the fix; non-default overrides are now rejected and build explicitly selects the default local engine builder. Fresh three-image provisioning passes after the fix. Build contexts contain only reviewed Dockerfiles; no user repositories or credentials are copied. Image redistribution/license notices remain separate release work; no Relay license was selected.

@@ -16,6 +16,13 @@ const record = (profile = 'python') => ({ type: 'result', stdout: 'test result',
 const output = (value: unknown) => Buffer.from(`${JSON.stringify(value)}\n${JSON.stringify({ type: 'complete', files: 0, bytes: 0 })}\n`);
 
 describe('owner-configured isolated development profiles', () => {
+  it('bounds the dotnet executable mapping without increasing container or exported workspace capacity', () => {
+    const ordinary=sandboxArguments('/safe/supervisor.cjs','relay-00000000-0000-4000-8000-000000000000',pinned,['node']);
+    const dotnet=sandboxArguments('/safe/supervisor.cjs','relay-00000000-0000-4000-8000-000000000000',pinned,['dotnet'],'dotnet');
+    expect(ordinary).toContain('fsize=1048576:1048576');
+    expect(dotnet).toContain('fsize=67108864:67108864');
+    expect(dotnet.map(value=>value==='fsize=67108864:67108864'?'fsize=1048576:1048576':value)).toEqual(ordinary);
+  });
   it('retains the legacy image only for default and requires explicit digest pins for language profiles', () => {
     expect(developmentProfile(undefined, { RELAY_SANDBOX_IMAGE: 'trusted-legacy:local' })).toMatchObject({ id: 'default', image: 'trusted-legacy:local' });
     for (const id of ['node', 'python', 'dotnet'] as const) {

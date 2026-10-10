@@ -1,5 +1,5 @@
 import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
-import {mkdir,mkdtemp,readFile,writeFile,rm,rename,lstat} from 'node:fs/promises';
+import {mkdir,mkdtemp,readFile,writeFile,rm,rename,lstat,symlink} from 'node:fs/promises';
 import {join,resolve} from 'node:path';
 import {openDatabase} from '../server/db/database';
 import {Store,row} from '../server/db/store';
@@ -8,6 +8,7 @@ import {ToolBroker} from '../server/tools';
 import {HostFileBroker} from '../server/tools/host-files';
 import {PublicationService} from '../server/tools/publication';
 import {sha256} from '../server/tools/files';
+import * as toolFiles from '../server/tools/files';
 
 let root:string,source:string,data:string,store:Store,broker:ToolBroker,service:PublicationService,actor:Principal,workspaceId:string,host:HostFileBroker;
 beforeEach(async()=>{
@@ -59,11 +60,142 @@ describe('explicit original project publication',()=>{
     const rollback=await restarted.rollbackPreview(current,preview.id);await restarted.apply(current,rollback.id,confirm(rollback.digest));
     expect(await readFile(join(source,'one.ts'),'utf8')).toBe('export const one = 1;\n');
   });
-  it('does not restore over a later owner edit and refuses unsupported additions/deletions',async()=>{
+  it('does not restore over a later owner edit',async()=>{
     const preview=await service.preview(actor,workspaceId);await service.apply(actor,preview.id,confirm(preview.digest));await writeFile(join(source,'one.ts'),'Owner post-publication edit');
     await expect(service.rollbackPreview(actor,preview.id)).rejects.toThrow(/conflict|changed/i);
+  });
+  it('publishes frozen additions, deletions and a rename pair, preserving absent versus empty files through rollback',async()=>{
     await broker.changeFile(workspaceId,'new.ts','new file',null);
-    await expect(service.preview(actor,workspaceId)).rejects.toThrow(/existing|addition|deletion/i);
+    await broker.changeFile(workspaceId,'empty.txt','',null);
+    await broker.changeFile(workspaceId,'renamed.ts','export const two = 2;\n',null);
+    await broker.changeFile(workspaceId,'two.ts',null,sha256('export const two = 20;\n'));
+    const preview=await service.preview(actor,workspaceId);
+    expect(preview.entries.find(entry=>entry.path==='empty.txt')).toMatchObject({before:null,after:'',beforeHash:null,identity:null});
+    expect(preview.entries.find(entry=>entry.path==='two.ts')).toMatchObject({before:'export const two = 2;\n',after:null,afterHash:null});
+    await broker.changeFile(workspaceId,'new.ts','unapproved change',sha256('new file'));
+    await service.apply(actor,preview.id,confirm(preview.digest));
+    expect(await readFile(join(source,'new.ts'),'utf8')).toBe('new file');
+    expect(await readFile(join(source,'empty.txt'),'utf8')).toBe('');
+    await expect(lstat(join(source,'two.ts'))).rejects.toMatchObject({code:'ENOENT'});
+    expect(await readFile(join(source,'renamed.ts'),'utf8')).toBe('export const two = 2;\n');
+    const rollback=await service.rollbackPreview(actor,preview.id);await service.apply(actor,rollback.id,confirm(rollback.digest));
+    expect(await readFile(join(source,'two.ts'),'utf8')).toBe('export const two = 2;\n');
+    for(const path of ['new.ts','empty.txt','renamed.ts'])await expect(lstat(join(source,path))).rejects.toMatchObject({code:'ENOENT'});
+    expect((await service.get(actor,preview.id)).status).toBe('rolled_back');
+  });
+  it('preflights new-path collisions before any existing source file is modified',async()=>{
+    await broker.changeFile(workspaceId,'z-new.ts','approved addition',null);
+    const preview=await service.preview(actor,workspaceId);await writeFile(join(source,'z-new.ts'),'independent owner file');
+    await expect(service.apply(actor,preview.id,confirm(preview.digest))).rejects.toMatchObject({code:'PUBLICATION_CONFLICT'});
+    expect(await readFile(join(source,'one.ts'),'utf8')).toBe('export const one = 1;\n');
+    expect(await readFile(join(source,'z-new.ts'),'utf8')).toBe('independent owner file');
+  });
+  it('binds the parent identity of an absent target and refuses a replacement directory',async()=>{
+    await mkdir(join(source,'lib'));await broker.changeFile(workspaceId,'lib/new.ts','new file',null);
+    const preview=await service.preview(actor,workspaceId);
+    await rename(join(source,'lib'),join(source,'old-lib'));await mkdir(join(source,'lib'));
+    await expect(service.apply(actor,preview.id,confirm(preview.digest))).rejects.toMatchObject({code:'PUBLICATION_IDENTITY'});
+    await expect(lstat(join(source,'lib/new.ts'))).rejects.toMatchObject({code:'ENOENT'});
+  });
+  it('refuses rollback over a same-content replacement of a created file',async()=>{
+    await broker.changeFile(workspaceId,'new.ts','created by Relay',null);
+    const preview=await service.preview(actor,workspaceId);await service.apply(actor,preview.id,confirm(preview.digest));
+    await rename(join(source,'new.ts'),join(source,'original-new.ts'));await writeFile(join(source,'new.ts'),'created by Relay');
+    const restarted=new PublicationService(store,data,async(_id,operation)=>operation(),{host});
+    await expect(restarted.rollbackPreview(actor,preview.id)).rejects.toMatchObject({code:'PUBLICATION_IDENTITY'});
+    expect(await readFile(join(source,'new.ts'),'utf8')).toBe('created by Relay');
+  });
+  it('recovers a recorded empty creation after cancellation without replaying or touching later entries',async()=>{
+    await broker.changeFile(workspaceId,'a-empty.txt','',null);
+    const preview=await service.preview(actor,workspaceId),execute=host.execute.bind(host),controller=new AbortController();
+    vi.spyOn(host,'execute').mockImplementation(async(...args)=>{const result=await execute(...args);if(args[0]==='host_write')controller.abort();return result;});
+    await expect(service.apply(actor,preview.id,confirm(preview.digest),controller.signal)).rejects.toMatchObject({code:'PUBLICATION_UNCERTAIN'});
+    expect(await readFile(join(source,'a-empty.txt'),'utf8')).toBe('');
+    expect(await readFile(join(source,'one.ts'),'utf8')).toBe('export const one = 1;\n');
+    const restarted=new PublicationService(store,data,async(_id,operation)=>operation(),{host});
+    await expect(restarted.apply(actor,preview.id,confirm(preview.digest))).rejects.toMatchObject({code:'PUBLICATION_UNCERTAIN'});
+    const rollback=await restarted.rollbackPreview(actor,preview.id);expect(rollback.entries).toHaveLength(1);
+    await restarted.apply(actor,rollback.id,confirm(rollback.digest));await expect(lstat(join(source,'a-empty.txt'))).rejects.toMatchObject({code:'ENOENT'});
+  });
+  it('keeps an unrecorded creation uncertain across restart even when approved bytes match',async()=>{
+    await broker.changeFile(workspaceId,'new.ts','created file',null);
+    const preview=await service.preview(actor,workspaceId);await service.apply(actor,preview.id,confirm(preview.digest));
+    await writeFile(join(data,'publications',`${preview.id}.json`),JSON.stringify({...await service.get(actor,preview.id),status:'uncertain',createdIdentities:{}}));
+    const restarted=new PublicationService(store,data,async(_id,operation)=>operation(),{host});
+    await expect(restarted.rollbackPreview(actor,preview.id)).rejects.toMatchObject({code:'PUBLICATION_IDENTITY'});
+    await expect(restarted.reconcile(actor,preview.id,confirm(preview.digest))).rejects.toMatchObject({code:'PUBLICATION_IDENTITY'});
+    expect(await readFile(join(source,'new.ts'),'utf8')).toBe('created file');
+  });
+  it('uses presence-aware successful receipts for sequential additions and deletions',async()=>{
+    await broker.changeFile(workspaceId,'new.ts','first',null);
+    await broker.changeFile(workspaceId,'two.ts',null,sha256('export const two = 20;\n'));
+    const first=await service.preview(actor,workspaceId);await service.apply(actor,first.id,confirm(first.digest));
+    await broker.changeFile(workspaceId,'new.ts','second',sha256('first'));
+    const second=await service.preview(actor,workspaceId);expect(second.entries).toHaveLength(1);expect(second.entries[0].before).toBe('first');
+    await service.apply(actor,second.id,confirm(second.digest));
+    await broker.changeFile(workspaceId,'new.ts',null,sha256('second'));
+    const third=await service.preview(actor,workspaceId);expect(third.entries).toHaveLength(1);expect(third.entries[0].after).toBeNull();
+    await service.apply(actor,third.id,confirm(third.digest));
+    await expect(service.preview(actor,workspaceId)).rejects.toMatchObject({code:'PUBLICATION_EMPTY'});
+  });
+  it('reads and applies an unchanged version1 approval digest and creates a new reviewed rollback',async()=>{
+    const preview=await service.preview(actor,workspaceId);
+    const {createdIdentities:_,...legacy}=preview;legacy.version=1;
+    legacy.entries=legacy.entries.map(({parentIdentity:__,...entry})=>entry);
+    legacy.digest=sha256(JSON.stringify({version:legacy.version,id:legacy.id,workspaceId:legacy.workspaceId,userId:legacy.userId,sessionVersion:legacy.sessionVersion,stopGeneration:legacy.stopGeneration,sourcePath:legacy.sourcePath,sourceIdentity:legacy.sourceIdentity,direction:legacy.direction,parentId:legacy.parentId,expiresAt:legacy.expiresAt,entries:legacy.entries.map(({before:___,after:____,...entry})=>entry)}));
+    await writeFile(join(data,'publications',`${legacy.id}.json`),JSON.stringify(legacy));
+    const restarted=new PublicationService(store,data,async(_id,operation)=>operation(),{host});
+    expect((await restarted.get(actor,legacy.id)).digest).toBe(legacy.digest);
+    await restarted.apply(actor,legacy.id,confirm(legacy.digest));
+    const rollback=await restarted.rollbackPreview(actor,legacy.id);expect(rollback.version).toBe(2);
+    await restarted.apply(actor,rollback.id,confirm(rollback.digest));expect(await readFile(join(source,'one.ts'),'utf8')).toBe('export const one = 1;\n');
+  });
+  it('recreates a deleted empty file only through a fresh rollback approval',async()=>{
+    await writeFile(join(source,'empty.txt'),'');const workspace=await broker.createWorkspace('Empty deletion',source);await store.saveWorkspace(workspace);
+    await broker.changeFile(workspace.id,'empty.txt',null,sha256(''));
+    const preview=await service.preview(actor,workspace.id);expect(preview.entries[0]).toMatchObject({before:'',after:null});
+    await service.apply(actor,preview.id,confirm(preview.digest));
+    const rollback=await service.rollbackPreview(actor,preview.id);await expect(lstat(join(source,'empty.txt'))).rejects.toMatchObject({code:'ENOENT'});
+    await service.apply(actor,rollback.id,confirm(rollback.digest));expect(await readFile(join(source,'empty.txt'),'utf8')).toBe('');
+  });
+  it('refuses missing or linked publication parents without creating directories or touching the link target',async()=>{
+    await broker.changeFile(workspaceId,'new-directory/new.ts','new file',null);
+    await expect(service.preview(actor,workspaceId)).rejects.toMatchObject({code:'PUBLICATION_PARENT'});await expect(lstat(join(source,'new-directory'))).rejects.toMatchObject({code:'ENOENT'});
+    const elsewhere=join(root,'elsewhere');await mkdir(elsewhere);
+    await symlink(elsewhere,join(source,'new-directory'),process.platform==='win32'?'junction':'dir');
+    await expect(service.preview(actor,workspaceId)).rejects.toThrow(/link|reparse/i);
+    await expect(lstat(join(elsewhere,'new.ts'))).rejects.toMatchObject({code:'ENOENT'});
+  });
+  it.each(['session','stop'])('rechecks %s authority immediately before deleting the original file',async(reason)=>{
+    await broker.changeFile(workspaceId,'one.ts',null,sha256('export const one = 10;\n'));
+    const preview=await service.preview(actor,workspaceId),replace=toolFiles.replaceText;
+    vi.spyOn(toolFiles,'replaceText').mockImplementation(async(...args)=>{
+      if(args[2]===null){if(reason==='session')await store.db.query("DELETE FROM sessions WHERE id='fixture'");else await store.setStopped(true);}
+      return replace(...args);
+    });
+    await expect(service.apply(actor,preview.id,confirm(preview.digest))).rejects.toMatchObject({code:'PUBLICATION_UNCERTAIN'});
+    expect(await readFile(join(source,'one.ts'),'utf8')).toBe('export const one = 1;\n');
+  });
+  it.each(['session','stop'])('rechecks %s authority before exclusive creation, leaving no empty original file',async(reason)=>{
+    await broker.changeFile(workspaceId,'a-new.ts','new content',null);const preview=await service.preview(actor,workspaceId);
+    // Enter the real handle writer after mutate's earlier authorization. Revoke
+    // before its final asynchronous path inspection and exclusive open.
+    const writer=host as unknown as {writePreservingMetadata:(...args:unknown[])=>Promise<void>},write=writer.writePreservingMetadata.bind(host);
+    vi.spyOn(writer,'writePreservingMetadata').mockImplementation(async(...args)=>{
+      if(reason==='session')await store.db.query("DELETE FROM sessions WHERE id='fixture'");else await store.setStopped(true);
+      return write(...args);
+    });
+    await expect(service.apply(actor,preview.id,confirm(preview.digest))).rejects.toMatchObject({code:'PUBLICATION_UNCERTAIN'});
+    await expect(lstat(join(source,'a-new.ts'))).rejects.toMatchObject({code:'ENOENT'});
+  });
+  it('rejects a delayed preview after a newer rollback so receipt order remains the actual mutation order',async()=>{
+    await broker.changeFile(workspaceId,'new.ts','new file',null);
+    const first=await service.preview(actor,workspaceId),delayed=await service.preview(actor,workspaceId);
+    await service.apply(actor,first.id,confirm(first.digest));const rollback=await service.rollbackPreview(actor,first.id);await service.apply(actor,rollback.id,confirm(rollback.digest));
+    await expect(service.apply(actor,delayed.id,confirm(delayed.digest))).rejects.toMatchObject({code:'PUBLICATION_STALE'});
+    const fresh=await service.preview(actor,workspaceId);await service.apply(actor,fresh.id,confirm(fresh.digest));
+    expect(await readFile(join(source,'new.ts'),'utf8')).toBe('new file');
+    await expect(service.preview(actor,workspaceId)).rejects.toMatchObject({code:'PUBLICATION_EMPTY'});
   });
   it('uses successful publication receipts as the next baseline without silently replacing the Git baseline',async()=>{
     const first=await service.preview(actor,workspaceId);await service.apply(actor,first.id,confirm(first.digest));

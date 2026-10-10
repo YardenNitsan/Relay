@@ -25,6 +25,23 @@ beforeEach(async () => {
 afterEach(async () => { await rm(root, { recursive: true, force: true }); });
 
 describe('owner host file boundary', () => {
+  it('inspects absent versus empty files under the same protected path and credential boundary', async () => {
+    const path=join(files,'empty.txt');
+    const absent=await broker.inspectFile(path);expect(absent).toMatchObject({hash:null,identity:null});
+    await writeFile(path,'');const empty=await broker.inspectFile(path);
+    expect(empty.hash).toBe(sha256(''));expect(empty.identity).not.toBeNull();expect(empty.parentIdentity).toEqual(absent.parentIdentity);
+    await expect(broker.inspectFile(join(app,'missing.txt'))).rejects.toThrow(/Protected Relay/);
+    await writeFile(path,'api_key = secret-value');await expect(broker.inspectFile(path)).rejects.toThrow(/credential/);
+    await expect(broker.inspectFile(join(files,'missing-directory/new.txt'))).rejects.toThrow();
+  });
+  it('persists exclusive creation identity before writing and stops on failed observation', async () => {
+    const path=join(files,'created.txt');let observed=false;
+    await expect(broker.execute('host_write',{path,content:'must not be written',expectedHash:null},signal(),guard,'observed',undefined,async identity=>{
+      observed=true;const info=await lstat(path,{bigint:true});expect(identity).toEqual({dev:String(info.dev),ino:String(info.ino)});
+      expect(await readFile(path,'utf8')).toBe('');throw new Error('Journal unavailable');
+    })).rejects.toBeInstanceOf(UncertainToolEffect);
+    expect(observed).toBe(true);expect(await readFile(path,'utf8')).toBe('');
+  });
   it('reads real files and returns evidence and original content hashes', async () => {
     const path = join(files, 'notes.txt'); await writeFile(path, 'real content');
     const value = await broker.execute('host_read', { path }, signal(), guard);

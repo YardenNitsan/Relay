@@ -49,7 +49,7 @@ Run `scripts/native-integrations-docker.mjs` after infrastructure availability/p
 - [ ] Replace projects/diff/test/publication, Model Studio, devices/connections, grouped settings and both onboarding paths.
 - [ ] Inspect every major screen in both themes, desktop/mobile, loading/error/long-content/streaming states. Record captures and corrections. Test 320/360/390/768/1024/1440/1920/2560 and short landscape, zoom, focus and touch controls.
 
-### Next B09 increment: focused approval review
+### B09 focused approval increment (verified; broader taxonomy open)
 
 The reviewed 844x390 capture leaves approximately 96px for inline approval inspection after task chrome. Preserve inline decisions and exact backend authorization, but offer an explicit **Review action** surface that uses the available window. Select this over automatic modal interruption (would steal focus during streaming) and a permanent third pane (would worsen compact layouts).
 
@@ -81,3 +81,7 @@ Run all fourteen acceptance scenarios, threat-model regression review, native pl
 ## Evidence contract
 
 Every coherent milestone updates `progress.json`, requirements status and acceptance evidence. Store exact commands, commit identity, results, changed files, security reviews, external prerequisites and next work. Keep logs/screenshots under ignored `output/final-evolution/` during investigation; retain selected sanitized acceptance artifacts in versioned evidence when reviewed. No credentials or real user content in tracked artifacts. A session boundary requires `INCOMPLETE — CONTINUATION REQUIRED` and a precise recoverable handoff.
+
+### C03 publication increment and next coding acceptance
+
+The existing-directory presence-aware increment in publication-plan.md is verified: full1237test check/one skip, build, five actual UI publication cases and reviewed phone/desktop captures. Full C03 remains open for new directories and Git-aware workflow. Next, construct a repeatable coding acceptance against a substantial versioned source fixture, execute actual tests in the pinned isolated Node image, and separately attempt real local-model repair. Record seeded defects and independent outcome checks explicitly; never describe controlled provider output as actual inference. C02 independent Git worktrees and C04 dependency restoration remain required.

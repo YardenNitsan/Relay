@@ -1,6 +1,6 @@
 import {randomUUID} from 'node:crypto';
 import {lstat,open,readdir} from 'node:fs/promises';
-import {join} from 'node:path';
+import {dirname,join} from 'node:path';
 import {z} from 'zod';
 import {publicationSchema,publicationConfirmationSchema,type Publication,type PublicationSummary} from '../../shared/publication';
 import {authorizeOwner,type Principal} from '../auth/policy';
@@ -11,7 +11,7 @@ import {privateDirectory,writePrivate} from '../host/private-storage';
 import {HostFileBroker} from './host-files';
 import {ToolStore} from './store';
 import {readGitBaseline} from './git-baseline';
-import {boundedText,sha256,snapshot} from './files';
+import {boundedText,hashOrNull,sha256,snapshot} from './files';
 import {inspectPath,readFlags,safePath,sourceRoot} from './platform';
 import {StorageBudget} from './storage-budget';
 
@@ -19,6 +19,8 @@ type Maintenance=<T>(workspaceId:string,operation:()=>Promise<T>)=>Promise<T>;
 const MAX_RECORDS=100,MAX_JOURNAL_BYTES=8*1024*1024,MAX_CONTENT_BYTES=2*1024*1024;
 const identity=async(path:string)=>{const info=await lstat(path,{bigint:true});return {dev:String(info.dev),ino:String(info.ino)};};
 const sameIdentity=(a:{dev:string;ino:string},b:{dev:string;ino:string})=>a.dev===b.dev&&a.ino===b.ino;
+const optionalIdentity=async(path:string)=>{try{return await identity(path);}catch(error){if((error as NodeJS.ErrnoException).code==='ENOENT')return null;throw error;}};
+const createdIdentity=(record:Publication,path:string)=>record.createdIdentities&&Object.hasOwn(record.createdIdentities,path)?record.createdIdentities[path]:undefined;
 const digest=(record:Publication)=>sha256(JSON.stringify({version:record.version,id:record.id,workspaceId:record.workspaceId,userId:record.userId,sessionVersion:record.sessionVersion,stopGeneration:record.stopGeneration,sourcePath:record.sourcePath,sourceIdentity:record.sourceIdentity,direction:record.direction,parentId:record.parentId,expiresAt:record.expiresAt,entries:record.entries.map(({before:_,after:__,...entry})=>entry)}));
 
 /** Owner UI only. No tool definition exposes original-project publication to a model. */
@@ -47,7 +49,7 @@ export class PublicationService {
     z.string().uuid().parse(id);await this.init();const path=await inspectPath(this.tools.root,`publications/${id}.json`);let file;
     try{file=await open(path,readFlags());const info=await file.stat();if(!info.isFile()||info.nlink!==1||info.size>MAX_JOURNAL_BYTES)throw new Error('Invalid publication journal');
       const record=publicationSchema.parse(JSON.parse(await file.readFile('utf8')));
-      if(record.id!==id||record.entries.some(entry=>{safePath(entry.path);boundedText(entry.before);boundedText(entry.after);return sha256(entry.before)!==entry.beforeHash||sha256(entry.after)!==entry.afterHash;})||digest(record)!==record.digest)throw new Error('Publication journal integrity failed');
+      if(record.id!==id||record.entries.some(entry=>{safePath(entry.path);if(entry.before!==null)boundedText(entry.before);if(entry.after!==null)boundedText(entry.after);return hashOrNull(entry.before)!==entry.beforeHash||hashOrNull(entry.after)!==entry.afterHash;})||digest(record)!==record.digest)throw new Error('Publication journal integrity failed');
       return record;
     }finally{await file?.close();}
   }
@@ -59,21 +61,32 @@ export class PublicationService {
     const path=await sourceRoot(record.sourcePath,this.dataDir);
     if(path!==record.sourcePath||!sameIdentity(await identity(path),record.sourceIdentity))throw new AppError('PUBLICATION_IDENTITY','Original project directory identity changed.',409);
   }
-  private async inspectEntry(record:Publication,entry:Publication['entries'][number],expectedHash:string,actor:Principal){
+  private async inspectEntry(record:Publication,entry:Publication['entries'][number],side:'before'|'after',actor:Principal){
     await this.scope(record);const path=join(record.sourcePath,safePath(entry.path));
-    if(!sameIdentity(await identity(path),entry.identity))throw new AppError('PUBLICATION_IDENTITY',`Original file identity changed: ${entry.path}`,409);
-    const result=JSON.parse((await this.host.execute('host_read',{path},undefined,()=>{},undefined,()=>this.authorize(actor).then(()=>{}))).content) as {sha256:string;redacted:boolean};
-    if(result.redacted)throw new AppError('PUBLICATION_PROTECTED','Protected credential content cannot be published.',403);
-    if(result.sha256!==expectedHash)throw new AppError('PUBLICATION_CONFLICT',`Original file changed: ${entry.path}. No overwrite is permitted.`,409);
-    if(!sameIdentity(await identity(path),entry.identity))throw new AppError('PUBLICATION_IDENTITY','Original file identity changed during inspection.',409);
+    const state=await this.host.inspectFile(path,()=>this.authorize(actor).then(()=>{}));
+    if(entry.parentIdentity&&!sameIdentity(state.parentIdentity,entry.parentIdentity))throw new AppError('PUBLICATION_IDENTITY',`Original parent identity changed: ${entry.path}`,409);
+    const expectedHash=side==='before'?entry.beforeHash:entry.afterHash;
+    if(state.hash!==expectedHash)throw new AppError('PUBLICATION_CONFLICT',`Original file changed: ${entry.path}. No overwrite is permitted.`,409);
+    if(expectedHash!==null){
+      const expectedIdentity=side==='after'&&entry.before===null?createdIdentity(record,entry.path):entry.identity;
+      if(!expectedIdentity||!state.identity||!sameIdentity(state.identity,expectedIdentity))throw new AppError('PUBLICATION_IDENTITY',`Original file identity changed or its creation receipt is missing: ${entry.path}`,409);
+    }
+    return state;
+  }
+  private async authorizeMutation(actor:Principal,record:Publication,entry:Publication['entries'][number],signal:AbortSignal){
+    checkSignal(signal);await this.authorize(actor,record,true);await this.scope(record);
+    const path=join(record.sourcePath,safePath(entry.path));
+    if(entry.parentIdentity&&!sameIdentity(await identity(dirname(path)),entry.parentIdentity))throw new AppError('PUBLICATION_IDENTITY','Original parent identity changed before writing.',409);
+    const expected=createdIdentity(record,entry.path)??entry.identity,actual=await optionalIdentity(path);
+    if(expected===null?actual!==null:!actual||!sameIdentity(actual,expected))throw new AppError('PUBLICATION_IDENTITY','Original file identity changed before writing.',409);
   }
   private async newRecord(actor:Principal,workspace:Workspace,entries:Publication['entries'],direction:'publish'|'rollback',parentId:string|null,records:Publication[]):Promise<Publication>{
     if(records.length>=MAX_RECORDS)throw new AppError('PUBLICATION_CAPACITY','Publication history reached 100 reviews. Preserve recovery records and perform owner maintenance.',409);
-    if(!entries.length)throw new AppError('PUBLICATION_EMPTY','No existing-file modifications are available to review.',409);
-    if(entries.length>20||entries.reduce((sum,entry)=>sum+Buffer.byteLength(entry.before)+Buffer.byteLength(entry.after),0)>MAX_CONTENT_BYTES)throw new AppError('PUBLICATION_LIMIT','Publish at most 20 files and 2 MiB of combined before/after text per review.',409);
+    if(!entries.length)throw new AppError('PUBLICATION_EMPTY','No file changes are available to review.',409);
+    if(entries.length>20||entries.reduce((sum,entry)=>sum+Buffer.byteLength(entry.before??'')+Buffer.byteLength(entry.after??''),0)>MAX_CONTENT_BYTES)throw new AppError('PUBLICATION_LIMIT','Publish at most 20 files and 2 MiB of combined before/after text per review.',409);
     const control=await this.authorize(actor,undefined,true),createdAt=new Date(this.now()).toISOString();
-    const record:Publication={version:1,id:randomUUID(),sequence:(records.at(-1)?.sequence??0)+1,userId:actor.user.id,sessionVersion:actor.user.sessionVersion,stopGeneration:control.generation,workspaceId:workspace.id,sourcePath:workspace.sourcePath!,sourceIdentity:await identity(workspace.sourcePath!),direction,parentId,createdAt,expiresAt:new Date(this.now()+600_000).toISOString(),digest:'0'.repeat(64),status:'preview',completed:[],error:null,entries};
-    record.digest=digest(record);for(const entry of entries)await this.inspectEntry(record,entry,entry.beforeHash,actor);
+    const record:Publication={version:2,id:randomUUID(),sequence:(records.at(-1)?.sequence??0)+1,userId:actor.user.id,sessionVersion:actor.user.sessionVersion,stopGeneration:control.generation,workspaceId:workspace.id,sourcePath:workspace.sourcePath!,sourceIdentity:await identity(workspace.sourcePath!),direction,parentId,createdAt,expiresAt:new Date(this.now()+600_000).toISOString(),digest:'0'.repeat(64),status:'preview',completed:[],error:null,entries,createdIdentities:{}};
+    record.digest=digest(record);for(const entry of entries)await this.inspectEntry(record,entry,'before',actor);
     await this.authorize(actor,record,true);await new StorageBudget(this.dataDir).assertCapacity(2*Buffer.byteLength(JSON.stringify(record))+2*1024*1024);await this.save(record);return record;
   }
   async preview(actor:Principal,workspaceId:string):Promise<Publication>{return this.serial(()=>this.maintenance(workspaceId,async()=>{
@@ -83,12 +96,16 @@ export class PublicationService {
     if(records.some(record=>record.sourcePath===workspace.sourcePath&&['applying','uncertain'].includes(record.status)))throw new AppError('PUBLICATION_UNCERTAIN','Review the existing uncertain publication before publishing again.',409);
     await sourceRoot(workspace.sourcePath!,this.dataDir);const current=await snapshot(await this.tools.workspaceRoot(workspaceId),true),baseline=await readGitBaseline(this.tools,workspaceId,current,()=>{});
     if(baseline.metadata.kind!=='workspace_creation')throw new AppError('PUBLICATION_BASELINE','This project has no authentic import baseline. Import a fresh managed copy.',409);
-    for(const record of records)if(record.workspaceId===workspaceId&&record.sourcePath===workspace.sourcePath&&record.status==='completed')for(const entry of record.entries)baseline.files.set(entry.path,entry.after);
+    for(const record of records)if(record.workspaceId===workspaceId&&record.sourcePath===workspace.sourcePath&&record.status==='completed')for(const entry of record.entries){if(entry.after===null)baseline.files.delete(entry.path);else baseline.files.set(entry.path,entry.after);}
     const entries:Publication['entries']=[];
     for(const path of [...new Set([...baseline.files.keys(),...current.keys()])].sort()){
-      const before=baseline.files.get(path),after=current.get(path);if(before===after)continue;
-      if(before===undefined||after===undefined)throw new AppError('PUBLICATION_EXISTING_ONLY','This publication workflow supports existing-file modifications only. Review additions and deletions separately.',409);
-      entries.push({path:safePath(path),before,after,beforeHash:sha256(before),afterHash:sha256(after),identity:await identity(join(workspace.sourcePath!,path))});
+      const before=baseline.files.get(path)??null,after=current.get(path)??null;if(before===after)continue;
+      const state=await this.host.inspectFile(join(workspace.sourcePath!,safePath(path)),()=>this.authorize(actor).then(()=>{})).catch(error=>{
+        if((error as NodeJS.ErrnoException).code==='ENOENT')throw new AppError('PUBLICATION_PARENT',`Publication requires an existing destination directory: ${dirname(path)}.`,409);
+        throw error;
+      });
+      if(state.hash!==hashOrNull(before))throw new AppError('PUBLICATION_CONFLICT',`Original file changed: ${path}. No overwrite is permitted.`,409);
+      entries.push({path,before,after,beforeHash:hashOrNull(before),afterHash:hashOrNull(after),identity:state.identity,parentIdentity:state.parentIdentity});
     }
     return this.newRecord(actor,workspace,entries,'publish',null,records);
   }));}
@@ -103,17 +120,29 @@ export class PublicationService {
       if(Date.parse(record.expiresAt)<=this.now())throw new AppError('PUBLICATION_EXPIRED','This preview expired. Create a fresh review.',409);
       return this.maintenance(record.workspaceId,async()=>{
         checkSignal(signal);await this.authorize(actor,record,true);await this.scope(record);
-        if((await this.records()).some(other=>other.id!==record.id&&other.id!==record.parentId&&other.sourcePath===record.sourcePath&&['applying','uncertain'].includes(other.status)))throw new AppError('PUBLICATION_UNCERTAIN','Another publication for this source requires recovery review.',409);
-        for(const entry of record.entries)await this.inspectEntry(record,entry,entry.beforeHash,actor);
+        const records=await this.records();
+        if(records.some(other=>other.id!==record.id&&other.id!==record.parentId&&other.sourcePath===record.sourcePath&&['applying','uncertain'].includes(other.status)))throw new AppError('PUBLICATION_UNCERTAIN','Another publication for this source requires recovery review.',409);
+        // Journal sequence is also the mutation order. An older preview cannot
+        // run after a newer receipt, even when rollback restored matching bytes.
+        // Apply this to legacy reviews too, without changing their exact digest.
+        if(records.some(other=>other.sourcePath===record.sourcePath&&other.sequence>record.sequence&&other.status!=='preview'))throw new AppError('PUBLICATION_STALE','A newer publication or recovery superseded this preview. Prepare a fresh review.',409);
+        for(const entry of record.entries)await this.inspectEntry(record,entry,'before',actor);
         checkSignal(signal);record.status='applying';await this.save(record);
         try{
           for(const entry of record.entries){
-            await this.authorize(actor,record,true);await this.inspectEntry(record,entry,entry.beforeHash,actor);
-            const authorize=async()=>{checkSignal(signal);await this.authorize(actor,record,true);await this.scope(record);if(!sameIdentity(await identity(join(record.sourcePath,entry.path)),entry.identity))throw new AppError('PUBLICATION_IDENTITY','Original file identity changed before writing.',409);};
-            await this.host.execute('host_write',{path:join(record.sourcePath,entry.path),content:entry.after,expectedHash:entry.beforeHash},signal,()=>{},`publication-${record.id}`,authorize);
+            await this.authorize(actor,record,true);await this.inspectEntry(record,entry,'before',actor);
+            const authorize=()=>this.authorizeMutation(actor,record,entry,signal);
+            const onCreated=async(created:{dev:string;ino:string})=>{
+              // Save identity even if cancellation/revocation arrived after O_EXCL:
+              // recording an already-created object grants no further authority.
+              record.createdIdentities={...record.createdIdentities,[entry.path]:created};await this.save(record);
+            };
+            const args={path:join(record.sourcePath,entry.path),expectedHash:entry.beforeHash};
+            if(entry.after===null)await this.host.execute('host_delete',args,signal,()=>{},`publication-${record.id}`,authorize);
+            else await this.host.execute('host_write',{...args,content:entry.after},signal,()=>{},`publication-${record.id}`,authorize,entry.before===null?onCreated:undefined);
             record.completed.push(entry.path);await this.save(record);
           }
-          for(const entry of record.entries)await this.inspectEntry(record,entry,entry.afterHash,actor);
+          for(const entry of record.entries)await this.inspectEntry(record,entry,'after',actor);
           checkSignal(signal);await this.authorize(actor,record,true);
           await this.store.audit(null,'PROJECT_PUBLICATION_COMPLETED',{publicationId:record.id,workspaceId:record.workspaceId,direction:record.direction,files:record.entries.length,userId:actor.user.id});
           record.status='completed';await this.save(record);
@@ -129,8 +158,8 @@ export class PublicationService {
     return this.maintenance(parent.workspaceId,async()=>{
       await this.authorize(actor,undefined,true);await this.scope(parent);const entries:Publication['entries']=[];
       for(const entry of parent.entries){
-        try{await this.inspectEntry(parent,entry,entry.beforeHash,actor);continue;}catch(error){if(!(error instanceof AppError)||error.code!=='PUBLICATION_CONFLICT')throw error;}
-        await this.inspectEntry(parent,entry,entry.afterHash,actor);entries.push({...entry,before:entry.after,after:entry.before,beforeHash:entry.afterHash,afterHash:entry.beforeHash});
+        try{await this.inspectEntry(parent,entry,'before',actor);continue;}catch(error){if(!(error instanceof AppError)||error.code!=='PUBLICATION_CONFLICT')throw error;}
+        const state=await this.inspectEntry(parent,entry,'after',actor);entries.push({...entry,before:entry.after,after:entry.before,beforeHash:entry.afterHash,afterHash:entry.beforeHash,identity:state.identity,parentIdentity:state.parentIdentity});
       }
       return this.newRecord(actor,{id:parent.workspaceId,sourcePath:parent.sourcePath} as Workspace,entries.reverse(),'rollback',parent.id,await this.records());
     });
@@ -143,8 +172,8 @@ export class PublicationService {
       return this.maintenance(record.workspaceId,async()=>{
       await this.scope(record);let before=true,after=true;
       for(const entry of record.entries){
-        try{await this.inspectEntry(record,entry,entry.beforeHash,actor);after=false;}
-        catch(error){if(!(error instanceof AppError)||error.code!=='PUBLICATION_CONFLICT')throw error;await this.inspectEntry(record,entry,entry.afterHash,actor);before=false;}
+        try{await this.inspectEntry(record,entry,'before',actor);after=false;}
+        catch(error){if(!(error instanceof AppError)||error.code!=='PUBLICATION_CONFLICT')throw error;await this.inspectEntry(record,entry,'after',actor);before=false;}
       }
       if(!before&&!after)throw new AppError('PUBLICATION_PARTIAL','Files are in a mixed state. Review rollback or inspect private checkpoints before closing this receipt.',409);
       await this.authorize(actor,record);record.status=before?'rolled_back':'completed';record.error=null;record.completed=after?record.entries.map(entry=>entry.path):[];await this.save(record);

@@ -2,12 +2,26 @@ import {z} from 'zod';
 
 const hash=z.string().regex(/^[a-f0-9]{64}$/);
 const identity=z.object({dev:z.string().max(40),ino:z.string().max(40)}).strict();
+export type PublicationFileIdentity=z.infer<typeof identity>;
+const path=z.string().min(1).max(2048);
 export const publicationSchema=z.object({
-  version:z.literal(1),id:z.string().uuid(),sequence:z.number().int().positive(),workspaceId:z.string().uuid(),userId:z.string().max(160),sessionVersion:z.number().int().nonnegative(),stopGeneration:z.number().int().nonnegative(),
+  version:z.union([z.literal(1),z.literal(2)]),id:z.string().uuid(),sequence:z.number().int().positive(),workspaceId:z.string().uuid(),userId:z.string().max(160),sessionVersion:z.number().int().nonnegative(),stopGeneration:z.number().int().nonnegative(),
   sourcePath:z.string().max(2048),sourceIdentity:identity,direction:z.enum(['publish','rollback']),parentId:z.string().uuid().nullable(),createdAt:z.iso.datetime(),expiresAt:z.iso.datetime(),digest:hash,
   status:z.enum(['preview','applying','completed','uncertain','rolled_back']),completed:z.array(z.string().max(2048)).max(20),error:z.string().max(500).nullable(),
-  entries:z.array(z.object({path:z.string().max(2048),before:z.string().max(1024*1024),after:z.string().max(1024*1024),beforeHash:hash,afterHash:hash,identity}).strict()).min(1).max(20),
-}).strict();
+  entries:z.array(z.object({path,before:z.string().max(1024*1024).nullable(),after:z.string().max(1024*1024).nullable(),beforeHash:hash.nullable(),afterHash:hash.nullable(),identity:identity.nullable(),parentIdentity:identity.optional()}).strict()).min(1).max(20),
+  createdIdentities:z.record(path,identity).optional(),
+}).strict().superRefine((record,context)=>{
+  const invalid=(message:string)=>context.addIssue({code:'custom',message});
+  if(new Set(record.entries.map(entry=>entry.path)).size!==record.entries.length)invalid('Duplicate publication paths');
+  for(const entry of record.entries){
+    if(entry.before===entry.after||(entry.before===null)!==(entry.beforeHash===null)||(entry.after===null)!==(entry.afterHash===null)||(entry.before===null)!==(entry.identity===null))invalid('Inconsistent publication file state');
+    if(record.version===1&&(entry.before===null||entry.after===null||entry.parentIdentity!==undefined))invalid('Legacy publication requires existing files');
+    if(record.version===2&&!entry.parentIdentity)invalid('Publication parent identity required');
+  }
+  if(record.version===1&&record.createdIdentities!==undefined)invalid('Legacy publication has no creation receipts');
+  if(record.version===2&&!record.createdIdentities)invalid('Publication creation receipts required');
+  for(const key of Object.keys(record.createdIdentities??{}))if(!record.entries.some(entry=>entry.path===key&&entry.before===null))invalid('Unexpected creation receipt');
+});
 export type Publication=z.infer<typeof publicationSchema>;
 export type PublicationSummary=Pick<Publication,'id'|'workspaceId'|'direction'|'createdAt'|'status'|'completed'|'error'|'parentId'> & {files:number};
 export const publicationConfirmationSchema=z.object({digest:hash,confirmed:z.literal(true)}).strict();

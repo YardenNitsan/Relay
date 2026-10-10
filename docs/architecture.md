@@ -127,7 +127,7 @@ See [model selection](model-selection.md) and [pricing evidence](provider-pricin
 
 ## Reviewed publication and private account tools
 
-`tools/publication.ts` owns immutable, hash-bound source reviews and durable uncertain-effect receipts. Only authenticated local-owner API actions can apply or roll back those exact existing-file changes. Engine reserves the managed workspace and host mutation lane; the host-file boundary rechecks the exact session during bounded writes. This does not grant models an original-project publication tool or unrestricted Git/shell access. See [publication](publication.md).
+`tools/publication.ts` owns immutable, hash-bound source reviews and durable uncertain-effect receipts. Only authenticated local-owner API actions can apply or roll back those exact text-file changes (including reviewed creation/deletion within existing directories). Engine reserves the managed workspace and host mutation lane; the host-file boundary rechecks the exact session during bounded writes. This does not grant models an original-project publication tool or unrestricted Git/shell access. See [publication](publication.md).
 
 Google Workspace reads use a separate broker adapter and explicit per-task account scopes. Retained task history permanently restricts opted-in conversations to local inference and read-only tools. Store admission, cloud dispatch and tool dispatch independently enforce that restriction. Retrieved mail/events remain untrusted content. See [Google Workspace](google-workspace.md).
 

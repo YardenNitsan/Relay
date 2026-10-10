@@ -11,6 +11,11 @@ import { boundedText, hashOrNull, readText, replaceText, sha256, type Guard } fr
 import { FILE_LIMIT, inside, inspectPath, OUTPUT_LIMIT, protectedName } from './platform';
 import { StorageBudget } from './storage-budget';
 import { UncertainToolEffect } from './errors';
+import type {PublicationFileIdentity} from '../../shared/publication';
+
+export interface HostFileState {hash:string|null;identity:PublicationFileIdentity|null;parentIdentity:PublicationFileIdentity}
+type CreationObserver=(identity:PublicationFileIdentity)=>Promise<void>;
+const fileIdentity=async(path:string):Promise<PublicationFileIdentity>=>{const info=await lstat(path,{bigint:true});return {dev:String(info.dev),ino:String(info.ino)};};
 
 const revision = z.string().regex(/^[a-f0-9]{64}$/);
 const pathArgument = z.string().min(1).max(2048);
@@ -89,7 +94,23 @@ export class HostFileBroker {
     } else this.protectedRoots.push(...posixSystemRoots);
   }
 
-  async execute(tool: string, arguments_: Record<string, unknown>, signal: AbortSignal | undefined, guard: Guard, taskId?: string, authorize?:()=>Promise<void>): Promise<ToolResult> {
+  /** Internal owner-review inspection, deliberately not an LLM tool. Missing leaves
+   * still traverse the complete protected path and require an existing parent. */
+  async inspectFile(value:string,authorize?:()=>Promise<void>):Promise<HostFileState>{
+    const operation=this.queue.then(async()=>{
+      await authorize?.();const path=this.validatePath(value);await this.inspect(path,true,()=>{});
+      const parentIdentity=await fileIdentity(dirname(path)),content=await readText(dirname(path),basename(path),true);
+      if(content!==null&&redactedText(content).redacted)throw new AppError('PUBLICATION_PROTECTED','Protected credential content cannot be published.',403);
+      const identity=content===null?null:await fileIdentity(path);
+      await this.inspect(path,true,()=>{});await authorize?.();
+      const parentAfter=await fileIdentity(dirname(path));
+      if(parentAfter.dev!==parentIdentity.dev||parentAfter.ino!==parentIdentity.ino)throw new AppError('PUBLICATION_IDENTITY','Original parent identity changed during inspection.',409);
+      return {hash:hashOrNull(content),identity,parentIdentity};
+    });
+    this.queue=operation.catch(()=>undefined);return operation;
+  }
+
+  async execute(tool: string, arguments_: Record<string, unknown>, signal: AbortSignal | undefined, guard: Guard, taskId?: string, authorize?:()=>Promise<void>,onCreated?:CreationObserver): Promise<ToolResult> {
     const check = () => { guard(); if (signal?.aborted) throw new AppError('CANCELLED', 'Host file operation was cancelled', 409); };
     check();
     if (!Object.hasOwn(schemas, tool)) throw new Error('Unknown host file tool');
@@ -102,7 +123,7 @@ export class HostFileBroker {
       await this.inspect(path, tool === 'host_write', check);
       if (tool === 'host_list') return this.list(path, check);
       if (tool === 'host_read') return this.read(path, check);
-      return this.mutate(tool as 'host_write' | 'host_delete', path, args, check, taskId,authorize);
+      return this.mutate(tool as 'host_write' | 'host_delete', path, args, check, taskId,authorize,onCreated);
     });
     this.queue = operation.catch(() => undefined);
     return operation;
@@ -193,7 +214,7 @@ export class HostFileBroker {
     await writePrivate(target, JSON.stringify(record)); check();
   }
 
-  private async mutate(tool: 'host_write' | 'host_delete', path: string, args: ParsedRequest, check: Guard, taskId?: string,authorize?:()=>Promise<void>): Promise<ToolResult> {
+  private async mutate(tool: 'host_write' | 'host_delete', path: string, args: ParsedRequest, check: Guard, taskId?: string,authorize?:()=>Promise<void>,onCreated?:CreationObserver): Promise<ToolResult> {
     check(); const before = await readText(dirname(path), basename(path), tool === 'host_write');
     await this.inspect(path, tool === 'host_write', check); check();
     if (before !== null && redactedText(before).redacted) throw new Error('Protected credential content cannot be overwritten or deleted by a host file tool');
@@ -205,8 +226,8 @@ export class HostFileBroker {
     check(); await this.inspect(path, tool === 'host_write', check);
     try {
       await authorize?.();check();
-      if (after === null) await replaceText(dirname(path), basename(path), null, args.expectedHash!, check);
-      else await this.writePreservingMetadata(path, after, args.expectedHash!, check,authorize);
+      if (after === null) await replaceText(dirname(path), basename(path), null, args.expectedHash!, check,authorize);
+      else await this.writePreservingMetadata(path, after, args.expectedHash!, check,authorize,onCreated);
       await this.inspect(path, tool === 'host_delete', check); check();
       if (hashOrNull(await readText(dirname(path), basename(path), tool === 'host_delete')) !== hashOrNull(after)) throw new Error('Host file verification failed');
       check(); checkpoint.state = 'committed'; await this.saveCheckpoint(checkpoint, check);
@@ -223,16 +244,20 @@ export class HostFileBroker {
    * ownership and POSIX mode survive. This is intentionally not an atomic rename:
    * interrupted writes retain the prepared checkpoint and become uncertain effects.
    */
-  private async writePreservingMetadata(path: string, content: string, expectedHash: string | null, check: Guard,authorize?:()=>Promise<void>): Promise<void> {
+  private async writePreservingMetadata(path: string, content: string, expectedHash: string | null, check: Guard,authorize?:()=>Promise<void>,onCreated?:CreationObserver): Promise<void> {
     await this.inspect(path, expectedHash === null, check); check();
     const original = expectedHash === null ? null : await lstat(path); check();
     if (original && (!original.isFile() || original.isSymbolicLink() || original.nlink !== 1)) throw new Error('Host links and non-regular files are forbidden');
     const noFollow = process.platform === 'win32' ? 0 : constants.O_NOFOLLOW;
     const flags = expectedHash === null ? constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | noFollow : constants.O_RDWR | noFollow;
+    // O_EXCL is itself a mutation, including for empty content. Recheck durable
+    // authority after path traversal, before creating the directory entry.
+    if(expectedHash===null){await authorize?.();check();}
     const handle = await open(path, flags, 0o600);
     try {
       check(); const opened = await handle.stat(); check();
       if (!opened.isFile() || opened.nlink !== 1 || original && (opened.dev !== original.dev || opened.ino !== original.ino)) throw new Error('Host file changed while opening');
+      if(expectedHash===null&&onCreated){const created=await handle.stat({bigint:true});await onCreated({dev:String(created.dev),ino:String(created.ino)});check();}
       if (expectedHash !== null) {
         if (opened.size > FILE_LIMIT) throw new Error('Host file exceeds the 1 MiB size limit');
         const buffer = Buffer.alloc(FILE_LIMIT + 1); let length = 0;

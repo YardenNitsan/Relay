@@ -87,8 +87,16 @@ All remain open until fresh evidence is linked. Historical/fixture results are n
 | S13 | Mobile review/approval | Actual rendered exact-consequence review, reachable controls, keyboard/axe/visual checks |
 | S14 | Remote auth/revocation | Genuine authorized gateway/session; no cross-account access; revoked streams/tools stop |
 
-## Focused approval and draft increment ? 10 October
+## Focused approval and draft increment - 10 October
 
 The frozen c861696 Studio build completed all **125/125 browser cases in 16.1 minutes** (`studio-workbench-full-browser.log`). Subsequent approval/draft changes passed strict types and production build (`approval-build.log`), **nine focused unit tests** (`approval-unit-check.log`: seven approval provenance, two graph layout), and **41/41 affected browser cases in 5.2 minutes** (`approval-browser.log`). Command: `npm.cmd run test:e2e -- tests/e2e/approval-review.spec.ts tests/e2e/composer-draft.spec.ts tests/e2e/conversation-create.spec.ts tests/e2e/access.spec.ts tests/e2e/workbench.spec.ts tests/e2e/product.spec.ts tests/e2e/refinement.spec.ts`. The prior full 1218-test backend check belongs to c861696; no fresh full-test total is inferred.
 
 New approval cases cover 320/1440 light/dark, actual denial and approved write/diff, Escape/focus restoration, axe, geometry, and 844x390 decision rejection feedback. The rejection response is controlled UI evidence, not live account revocation. Five real UI captures are retained as `evidence/approval-review-*.png`. Fallback identity regressions failed before the provenance fix; delayed-send draft retention failed before the conditional-clear fix and now survives send completion and reload. Existing authorization APIs and grants were preserved. This is a verified increment, not completion of B or the full directive.
+
+## Presence-aware publication increment - 10 October
+
+`npm.cmd run check` passes strict types and **1237 tests/one platform skip across114files in259.39s**, followed by the production build and **5/5 publication browser cases in38.1s**. Logs: `publication-full-check.log`, `publication-final-build.log`, `publication-final-browser.log`. The initial browser run passed4/5; the remaining fixture used visible theme text instead of its actual accessible name. The corrected rebuilt run passes all5.
+
+Actual disposable source files, a real database and the normal authenticated/CSRF UI exercise modifications, creation, deletion, a rename pair, empty-versus-absent state, unrelated-edit preservation, conflict refusal, explicit rollback and legacy journal compatibility. Focused security regressions reproduce and fix revocation immediately before unlink/exclusive create and stale-preview ordering after rollback. Cancellation, missing creation identity, directory replacement and linked parents refuse unsafe recovery. The UI shows Add/Delete/Modify and exact absence, plus metadata consequences. Phone320 light anddesktop1440 dark captures were opened and retained as `evidence/publication-presence-*.png`; axe and overflow checks pass. This extends the existing Projects view; B06 redesign remains open.
+
+Limits: existing destination directories only, text files,20files/2MiB per review; rename is creation/deletion and content rollback does not restore old filesystem metadata. No Git stage/push, no host shell, no publication agent tool. Same-user native filesystem races remain a documented limit. Real model multi-file coding acceptance and new-directory/Git integration remain open.

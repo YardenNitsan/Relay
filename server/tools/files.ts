@@ -52,17 +52,20 @@ export async function ensureParent(root: string, path: string): Promise<void> {
   }
 }
 
-export async function replaceText(root: string, path: string, content: string | null, expectedHash: string | null, guard: Guard): Promise<void> {
+export async function replaceText(root: string, path: string, content: string | null, expectedHash: string | null, guard: Guard, beforeDelete?:()=>Promise<void>): Promise<void> {
   safePath(path); if (content !== null) boundedText(content);
   guard();
   if (hashOrNull(await readText(root, path, true)) !== expectedHash) throw new Error(`Content conflict: ${path} changed since it was read`);
-  await ensureParent(root, path);
-  const target = await inspectPath(root, path);
   if (content === null) {
-    guard(); await unlink(target);
+    const target = await inspectPath(root, path);
+    // Deletion never creates missing parents. Durable authorization must be
+    // checked after the asynchronous pre-read/traversal, immediately at unlink.
+    await beforeDelete?.();guard(); await unlink(target);
     if (await readText(root, path, true) !== null) throw new Error('File deletion verification failed');
     return;
   }
+  await ensureParent(root, path);
+  const target = await inspectPath(root, path);
   const temp = join(dirname(target), `.relay-${randomUUID()}.tmp`);
   let temporaryExists = false;
   try {

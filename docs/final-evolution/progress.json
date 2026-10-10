@@ -4,7 +4,7 @@
   "updatedAt": "2026-10-10",
   "baselineCommit": "9d563bc973dbcc177921ab918db88561c8280e48",
   "branch": "modernization/final-evolution",
-  "currentMilestone": "B09 approval/draft increment verified; next C03 publication safety design and implementation",
+  "currentMilestone": "C03 existing-directory publication increment verified; next C05 larger real coding acceptance",
   "requirementIds": [
     "A01",
     "A02",
@@ -43,7 +43,10 @@
     "API/MCP advertised version derives from package.json, correcting stale 0.1.1 without a release bump",
     "Approval fallback attribution regression fixed using event identity before the exact proposal; 2 red/7 green tests",
     "Focused consequence-first approval dialog with reachable decision/error footer, native focus fallback and truthful one-request cloud consent; integrated acceptance passes",
-    "Delayed-send draft loss reproduced and fixed; newer saved-conversation draft survives completion and reload"
+    "Delayed-send draft loss reproduced and fixed; newer saved-conversation draft survives completion and reload",
+    "Version2 publication journals distinguish absent/empty, bind parents and record exclusive-created identities; legacy v1 digests remain valid",
+    "Reviewed additions/deletions and rename pairs with frozen state, conservative recovery and content rollback",
+    "Reproduced/fixed durable revocation gaps before unlink and exclusive create; reject out-of-order older previews after newer receipt"
   ],
   "changedFiles": [
     ".github/workflows/native-integrations.yml",
@@ -134,9 +137,19 @@
     "web/approval.test.ts",
     "web/features/workbench/approval.css",
     "tests/e2e/approval-review.spec.ts",
-    "tests/e2e/composer-draft.spec.ts"
+    "tests/e2e/composer-draft.spec.ts",
+    "server/tools/files.ts",
+    "server/tools/host-files.ts",
+    "server/tools/publication.ts",
+    "shared/publication.ts",
+    "web/components/Publication.tsx",
+    "tests/publication.test.ts",
+    "tests/host-files.test.ts",
+    "tests/e2e/publication.spec.ts",
+    "docs/publication.md",
+    "docs/final-evolution/publication-plan.md"
   ],
-  "testStatus": "Studio c861696: full1218pass/one skip, build,125browser. Subsequent approval/draft increment: strict types/build,9 focused unit tests and41 affected browser cases pass. Hosted c861696 all3host andLinux/macOSbrowser pass; Windowsbrowser pending.",
+  "testStatus": "Publication working tree: strict types,1237pass/one skip114files259.39s; build;5browser38.1s; inspected320light/1440dark captures. Final focused review no remaining concrete finding. Prior c861696 all6host/browser CIjobs success; d1e19fe CI running.",
   "lastPassingCommands": [
     "npm.cmd ci",
     "npm.cmd run check (baseline)",
@@ -164,10 +177,13 @@
     "npm.cmd run test:e2e (c861696 frozen Studio build: 125 passed in 16.1min)",
     "npm.cmd run build (approval/draft increment)",
     "npm.cmd test -- web/approval.test.ts tests/workflow-layout.test.ts (9 passed)",
-    "npm.cmd run test:e2e -- tests/e2e/approval-review.spec.ts tests/e2e/composer-draft.spec.ts tests/e2e/conversation-create.spec.ts tests/e2e/access.spec.ts tests/e2e/workbench.spec.ts tests/e2e/product.spec.ts tests/e2e/refinement.spec.ts (41 passed)"
+    "npm.cmd run test:e2e -- tests/e2e/approval-review.spec.ts tests/e2e/composer-draft.spec.ts tests/e2e/conversation-create.spec.ts tests/e2e/access.spec.ts tests/e2e/workbench.spec.ts tests/e2e/product.spec.ts tests/e2e/refinement.spec.ts (41 passed)",
+    "npm.cmd run check (publication:1237 passed/one skip)",
+    "npm.cmd run build (final publication)",
+    "npm.cmd run test:e2e -- tests/e2e/publication.spec.ts (5 passed)"
   ],
-  "lastPassingCommit": "c8616968b4f65a8c9ad64b67a1c2571b4cb42550",
-  "lastPassingCommitScope": "Committed Studio: strict types,1218 tests/one skip, production build,125browser pass. All3host andLinux/macOSbrowser hosted gates pass; Windowsbrowser pending. Subsequent approval/draft working tree separately verified and ready to commit.",
+  "lastPassingCommit": "d1e19fe",
+  "lastPassingCommitScope": "Approval/draft increment: strict types/build,9 focused unit tests,41 affected browser cases. Prior c861696 complete125browser and1218unit pass; hosted run38066150868 all6jobs success.",
   "knownFailures": [],
   "outstandingSecurityReviews": [
     "Full threat-model review",
@@ -181,7 +197,7 @@
     "License/admin protection authorization pending",
     "Draft PR connector HTTP403; branch pushes work"
   ],
-  "nextActionableWorkItem": "Commit/push verified B09 and draft fixes, check hosted gates; implement C03 controlled addition/deletion/rename publication after documenting frozen-state identities, exact consent, uncertain effects and rollback design. Continue remaining A-G work.",
+  "nextActionableWorkItem": "Commit/push verified publication increment, inspect hosted gates; implement repeatable substantial-source coding fixture and actual sandbox verification, attempt real local-model multi-file repair with independent checks. Continue C02/C03-directory/C04 and remaining A-G work.",
   "remainingDependencies": [
     "A native recovery/restore/retention",
     "B full redesign",

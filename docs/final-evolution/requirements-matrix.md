@@ -5,7 +5,7 @@ Status vocabulary: **Complete and verified**, **Implemented but insufficiently v
 | ID | Requirement / directive section | Current status | Required evidence / dependency |
 |---|---|---|---|
 | A01 | Latest-source audit, repeatable baseline, ledger (§3,26) | Partially implemented | Fresh source/CI/tests/build/browser results; requirements inventory |
-| A02 | Passing portable CI and release gates (§22) | Partially implemented | c861696 all three host gates and Linux/macOS browser gates pass; Windows browser gate pending in run38066150868. Local full125browser pass. Native Linux run38062805371 passed. Release protection remains G05. |
+| A02 | Passing portable CI and release gates (§22) | Partially implemented | c861696 all six host/browser gates pass on Windows/Linux/macOS in run38066150868. Local full125browser pass; subsequent commits have their own gates. Native Linux run38062805371 passed. Release protection remains G05. |
 | A03 | Authorization/revocation/security review (§4,11) | Implemented but insufficiently verified | Dispatch race regressions and full threat-model review |
 | A04 | Overall task deadlines (§11) | Complete and verified | Durable admission/queue/active/approval/resource/restart/finalization regressions, full check 1214 passed/one skip, build and 14 affected browser cases; focused review findings fixed. Native migration portability remains A06/G02. |
 | A05 | Suspended execution and uncertain-effect recovery (§11) | Partially implemented | Durable resume and no duplicate mutation scenarios |
@@ -25,7 +25,7 @@ Status vocabulary: **Complete and verified**, **Implemented but insufficiently v
 | B11 | Responsive, interaction, performance, accessibility (§16–19) | Partially implemented | Every new screen/state/viewport; WCAG 2.2 AA target, no certification claim |
 | C01 | Larger realistic repository import/discovery (§7) | Partially implemented | Hundreds of files, bounded configurable tiers and relevant search |
 | C02 | Safe branch-aware Git worktrees (§7) | Not implemented | Dirty source preservation, isolation, conflicts, review |
-| C03 | Create/delete/rename/multi-file publication (§7) | Partially implemented | Existing-file publication present; additions/deletions/renames and rollback |
+| C03 | Create/delete/rename/multi-file publication (§7) | Partially implemented | Presence-aware additions/deletions and rename pairs within existing directories, exact review/rollback, legacy journals and revocation regressions pass; new directories, metadata-preserving renames and Git-aware integration remain open |
 | C04 | Reproducible language images/dependency policy (§7) | Partially implemented | Actual TS/JS, Python, .NET execution and source/network controls |
 | C05 | Real coding end-to-end acceptance (§4,7) | Partially implemented | Real Docker isolation/read-back/cancellation/emergency acceptance passes after cleanup-race fix; realistic multi-file model task and independent verification remain open |
 | D01 | Multilingual overlapping task understanding (§5) | Partially implemented | Held-out English/Hebrew paraphrase and intent comparison |

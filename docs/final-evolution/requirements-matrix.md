@@ -1,0 +1,52 @@
+# Final evolution requirements matrix
+
+Status vocabulary: **Complete and verified**, **Implemented but insufficiently verified**, **Partially implemented**, **Not implemented**, **Blocked by unavailable external resources**. Broad rows are not complete merely because some components exist. Historical 0.1.2 evidence is baseline context, not fresh acceptance.
+
+| ID | Requirement / directive section | Starting status | Required evidence / dependency |
+|---|---|---|---|
+| A01 | Latest-source audit, repeatable baseline, ledger (§3,26) | Partially implemented | Fresh source/CI/tests/build/browser results; requirements inventory |
+| A02 | Passing portable CI and release gates (§22) | Partially implemented | Windows/macOS failing; Linux job timeout; all three remote gates |
+| A03 | Authorization/revocation/security review (§4,11) | Implemented but insufficiently verified | Dispatch race regressions and full threat-model review |
+| A04 | Overall task deadlines (§11) | Not implemented | Queue, active, wait, approval, restart, finalization expiry |
+| A05 | Suspended execution and uncertain-effect recovery (§11) | Partially implemented | Durable resume and no duplicate mutation scenarios |
+| A06 | Native PostgreSQL upgrades/locking/restore (§11) | Blocked by unavailable external resources | Docker daemon currently unavailable; independent DB connections required |
+| A07 | Encrypted realistic backup/restore (§11) | Implemented but insufficiently verified | Fresh synthetic production-like drill; preserved state/artifact references |
+| A08 | Reference-aware artifact retention (§11) | Partially implemented | No deletion of live/historical protected references |
+| B01 | Professional design research and three concepts (§13–14) | Complete and verified | `design-research.md`: inspected official/product/community sources, maintenance/license limits; `design-system.md`: ten-criterion comparison, Studio selected. UI implementation remains B02–B11. |
+| B02 | New semantic light/dark design system (§14) | Not implemented | Tokens/primitives integrated; visual/contrast checks |
+| B03 | New adaptive shell and modular presentation (§18,20) | Not implemented | Existing features preserved; account-scoped navigation |
+| B04 | Conversation/composer redesign (§15A) | Not implemented | Streaming, attachments, model/agent/permissions, draft, history/search, cancel |
+| B05 | Execution Workbench (§15B) | Not implemented | Honest graph, model/agent, tool/handoff/evidence/approval/recovery |
+| B06 | Project Workspace (§15C) | Not implemented | Real files/diff/tests/checkpoints/publication/rollback/memory |
+| B07 | Model Studio (§15D) | Not implemented | Measured vs estimated quality/resource/runtime/cost/reasoning |
+| B08 | Devices and Connections (§15E) | Not implemented | Host/browser/Companion separation and revocation |
+| B09 | First-class approvals (§15F) | Partially implemented | Redesigned exact-consequence review with device/scope/expiry |
+| B10 | Settings and onboarding (§15G–H) | Not implemented | Personal vs host administration; everyday and advanced flows |
+| B11 | Responsive, interaction, performance, accessibility (§16–19) | Partially implemented | Every new screen/state/viewport; WCAG 2.2 AA target, no certification claim |
+| C01 | Larger realistic repository import/discovery (§7) | Partially implemented | Hundreds of files, bounded configurable tiers and relevant search |
+| C02 | Safe branch-aware Git worktrees (§7) | Not implemented | Dirty source preservation, isolation, conflicts, review |
+| C03 | Create/delete/rename/multi-file publication (§7) | Partially implemented | Existing-file publication present; additions/deletions/renames and rollback |
+| C04 | Reproducible language images/dependency policy (§7) | Partially implemented | Actual TS/JS, Python, .NET execution and source/network controls |
+| C05 | Real coding end-to-end acceptance (§4,7) | Blocked by unavailable external resources | Running approved sandbox plus real model task and independent verification |
+| D01 | Multilingual overlapping task understanding (§5) | Partially implemented | Held-out English/Hebrew paraphrase and intent comparison |
+| D02 | Versioned executable capability benchmarks (§5) | Partially implemented | Challenging multi-file/tasks, outcome graders, held-out set |
+| D03 | Evidence-aware intelligent routing (§5) | Partially implemented | Comparable selection/task-quality evidence; hard constraints first |
+| D04 | Dynamic safe collaborative execution (§6) | Partially implemented | Multiple isolated workers, durable integration/cancel/resources; depends C02 |
+| D05 | Structured handoffs and collaboration utility (§6) | Partially implemented | Receipts/artifacts/context attribution and single-vs-multi outcome benchmark |
+| D06 | Hardware admission/residency/performance (§11,23) | Partially implemented | Comparable live resource/latency measurements with reserves unchanged |
+| E01 | Companion identity/transport/pairing/revocation (§8) | Not implemented | Authenticated encrypted outbound connection, replay/identity tests |
+| E02 | Companion local permissions/folders/execution (§8) | Not implemented | Local approval independent of host; no unrestricted shell |
+| E03 | Genuine two-device acceptance (§8) | Blocked by unavailable external resources | Second authorized computer and approved TLS enrollment |
+| F01 | Project intelligence/indexing/retrieval (§9) | Partially implemented | Incremental scoped evidence classes, controls, relevance comparison |
+| F02 | Google Workspace live read acceptance (§10) | Blocked by unavailable external resources | Configured OAuth application and owner consent |
+| F03 | Explicit external writes with duplicate prevention (§10) | Not implemented | Draft/send/event changes; denial/timeout/restart tests |
+| F04 | Isolated browser automation (§10) | Not implemented | Controlled navigation/interactions with untrusted page boundaries |
+| F05 | Useful schedules/notifications/conditional automation (§10) | Partially implemented | Mutation grants/receipts first, missed-run and recovery acceptance |
+| G01 | All fourteen real-world scenarios (§21) | Partially implemented | See acceptance-results; fixture/live evidence separated |
+| G02 | Native OS/hardware and packaging (§11,22) | Implemented but insufficiently verified | Windows/Linux/macOS functional claims and signed release limits |
+| G03 | Performance budgets and comparable measurements (§23) | Not implemented | Startup/input/history/discovery/load/tools/queue/memory/bundle/retrieval |
+| G04 | Threat-model review and security regressions (§11) | Partially implemented | Full boundary inventory and actionable finding closure |
+| G05 | Branch protection and license (§22) | Blocked by unavailable external resources | main currently unprotected; owner approval required for license/admin policy |
+| G06 | Final evidence, screenshots, comparison and scorecard (§25,27) | Not implemented | Honest evidence-based evaluation; no invented scores or unfinished green rows |
+
+No final-evolution requirement is yet complete. Local-only historical chat and the existing 0.1.2 test suite do not imply the new coding, Companion or redesign criteria are met.

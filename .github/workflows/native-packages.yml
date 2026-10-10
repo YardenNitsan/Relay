@@ -20,7 +20,13 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
-      - run: npm run check
+      - name: Check (Windows native account ownership)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: ./scripts/windows-test-token.ps1 -Command npm.cmd -CommandArguments @('run', 'check')
+      - name: Check
+        if: runner.os != 'Windows'
+        run: npm run check
       - run: npm run build
       - run: node scripts/notices.mjs
       - name: Fetch verified runtime and build destination package

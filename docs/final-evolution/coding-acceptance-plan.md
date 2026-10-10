@@ -14,22 +14,24 @@
 
 Files: scripts/coding-fixture.ts, scripts/coding-acceptance.ts; evidence under ignored output and final-evolution/evidence.
 
-- [ ] Export fixed-commit regular text blobs through git cat-file; bound path/entry/byte counts with existing policy. Never run repository hooks or code on the host.
-- [ ] Preserve a manifest of commit, file count, bytes, hashes and omissions. Seed seconds-versus-milliseconds and cross-task activity attribution regressions only in disposable source.
-- [ ] Write visible Node test harness before running faulty source; prove each seeded regression fails in the actual pinned sandbox and pristine source passes.
-- [ ] Keep an independent expanded grading harness outside the agent workspace. Reject changed tests, unrelated files, incomplete/missing tests or fake tool receipts.
+- [x] Export fixed-commit regular text blobs through git cat-file; bound path/entry/byte counts with existing policy. Never run repository hooks or code on the host.
+- [x] Preserve a manifest of commit, file count, bytes, hashes and omissions. Seed seconds-versus-milliseconds and cross-task activity attribution regressions only in disposable source.
+- [x] Write visible Node test harness before running faulty source; prove each seeded regression fails in the actual pinned sandbox and pristine source passes.
+- [x] Keep an independent expanded grading harness outside the agent workspace. Reject changed tests, unrelated files, incomplete/missing tests or fake tool receipts.
 
 ## Task2: Actual model execution
 
-- [ ] Start private API-only host on a loopback port with fresh data, normal owner pairing and local-only disabled-cloud provider policy. Preserve production host/runtime configuration. Real admission and memory reserves must remain enabled.
-- [ ] Discover installed models and record measured admission. Explicit required model only; no cloud fallback, downloads or fabricated provider responses.
-- [ ] Submit bounded supervised task through HTTP. Approve only target file writes and exact offline test command. Deny other mutations/external actions.
-- [ ] Record status, durable tool receipts, timings, errors, model identity and source diff; stop on pause/failure and retain truthful evidence.
+- [x] Start private API-only host on a loopback port with fresh data, normal owner pairing and local-only disabled-cloud provider policy. Preserve production host/runtime configuration. Real admission and memory reserves must remain enabled.
+- [x] Discover installed models and record measured admission. Explicit required model only; no cloud fallback, downloads or fabricated provider responses.
+- [x] Submit bounded supervised task through HTTP. Approve only target file writes and exact offline test command. Deny other mutations/external actions.
+- [x] Record status, durable tool receipts, timings, errors, model identity and source diff; stop on pause/failure and retain truthful evidence.
 
 ## Task3: Independent verification and reviewed publication
 
 - [ ] Verify actual file hashes and unchanged non-target tree, then run independent tests in a fresh sandbox stage.
 - [ ] Require actual completed test receipt and independent passing outcome, not assistant text alone.
 - [ ] On success, exact owner review publishes only the two fixture changes; independently verify source results and reviewed rollback. No user repository or Git push is a target.
-- [ ] Close acceptance session and stop its owned services/containers. Retain sanitized reports and recovery data; no simulated background continuation.
-- [ ] Update ledger with precise passes/failures and remaining C01/C02/C03-directory/C04/full-build acceptance. Continue the backlog.
+- [x] Close acceptance session and stop its owned services/containers. Retain sanitized reports and recovery data; no simulated background continuation.
+- [x] Update ledger with precise passes/failures and remaining C01/C02/C03-directory/C04/full-build acceptance. Continue the backlog.
+
+Preflight and supervised execution were observed; no model completed. Successful independent grading/publication/rollback remains open. See evidence/coding-acceptance-windows.json for four retained failures.

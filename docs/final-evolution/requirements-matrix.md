@@ -27,7 +27,7 @@ Status vocabulary: **Complete and verified**, **Implemented but insufficiently v
 | C02 | Safe branch-aware Git worktrees (§7) | Not implemented | Dirty source preservation, isolation, conflicts, review |
 | C03 | Create/delete/rename/multi-file publication (§7) | Partially implemented | Presence-aware additions/deletions and rename pairs within existing directories, exact review/rollback, legacy journals and revocation regressions pass; new directories, metadata-preserving renames and Git-aware integration remain open |
 | C04 | Reproducible language images/dependency policy (§7) | Partially implemented | Actual TS/JS, Python, .NET execution and source/network controls |
-| C05 | Real coding end-to-end acceptance (§4,7) | Partially implemented | Real Docker isolation/read-back/cancellation/emergency acceptance passes after cleanup-race fix; realistic multi-file model task and independent verification remain open |
+| C05 | Real coding end-to-end acceptance (§4,7) | Partially implemented | 514-file fixed-source corpus, actual Node container red/green preflight and strict final grader; real local model attempts read/test/write but pause on context/output limits with remaining defect. No successful final model repair/publication yet; full-build/language acceptance open |
 | D01 | Multilingual overlapping task understanding (§5) | Partially implemented | Held-out English/Hebrew paraphrase and intent comparison |
 | D02 | Versioned executable capability benchmarks (§5) | Partially implemented | Challenging multi-file/tasks, outcome graders, held-out set |
 | D03 | Evidence-aware intelligent routing (§5) | Partially implemented | Comparable selection/task-quality evidence; hard constraints first |

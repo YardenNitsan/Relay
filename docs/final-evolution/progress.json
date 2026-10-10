@@ -4,7 +4,7 @@
   "updatedAt": "2026-10-10",
   "baselineCommit": "9d563bc973dbcc177921ab918db88561c8280e48",
   "branch": "modernization/final-evolution",
-  "currentMilestone": "C05 actual local-model source-scale coding acceptance; A02 native cleanup regression",
+  "currentMilestone": "C05 real coding acceptance driver verified; C04 trusted development images next",
   "requirementIds": [
     "A01",
     "A02",
@@ -49,7 +49,9 @@
     "Reviewed additions/deletions and rename pairs with frozen state, conservative recovery and content rollback",
     "Reproduced/fixed durable revocation gaps before unlink and exclusive create; reject out-of-order older previews after newer receipt",
     "FE-011 ordinary host dispatch passes fresh durable authorization before create/delete and between write chunks; six real-file red/green regressions",
-    "FE-012 daemon AutoRemove removed; explicit durable sandbox cleanup is sole removal owner"
+    "FE-012 daemon AutoRemove removed; explicit durable sandbox cleanup is sole removal owner",
+    "Versioned 514-file coding corpus, real supervised local-model driver, independent scope/behavior grading and gated publication/rollback",
+    "Workbench fixture interception precedes task caching; fixes confirmed hosted macOS test race"
   ],
   "changedFiles": [
     ".github/workflows/native-integrations.yml",
@@ -154,9 +156,17 @@
     "tests/host-mutation-authorization.test.ts",
     "docs/final-evolution/coding-acceptance-plan.md",
     "tests/tools-new-sandbox.test.ts",
-    "docs/final-evolution/evidence/native-integrations-windows-explicit-cleanup.json"
+    "docs/final-evolution/evidence/native-integrations-windows-explicit-cleanup.json",
+    "scripts/coding-fixture.ts",
+    "scripts/coding-acceptance.ts",
+    "scripts/coding-model-acceptance.ts",
+    "tests/coding-acceptance.test.ts",
+    "docs/final-evolution/development-images-plan.md",
+    "docs/final-evolution/evidence/coding-acceptance-windows.json",
+    "docs/final-evolution/evidence/coding-live-1440-light.png",
+    "docs/final-evolution/evidence/coding-live-390-dark.png"
   ],
-  "testStatus": "A03 full1243pass/one skip. AutoRemove59focused and native Docker/PostgreSQL pass, hosted pending. C05 sandbox preflight passes; large9B admission refused; smaller9B load paused due missing LM Studio internal temp directory (native ENOENT log, no loaded instances). Missing directory restored without settings/restart; new explicit attempt running.",
+  "testStatus": "Strict types,1249 tests/one skip in116 files/258.92s; build;7 Workbench browser cases/54.8s pass. Actual Node container pristine2pass/seeded2fail/independent9pass/stale-result1fail. Four real model trials refused/paused; no successful repair/publication. Native Linux hosted38070458360 passes.",
   "lastPassingCommands": [
     "npm.cmd ci",
     "npm.cmd run check (baseline)",
@@ -193,12 +203,17 @@
     "npm.cmd run test:e2e -- tests/e2e/host-access.spec.ts (2 passed,12.2s)",
     "npm.cmd test -- tests/tools-new-sandbox.test.ts tests/sandbox-cleanup.test.ts tests/development-profiles.test.ts tests/tools.test.ts (59 passed)",
     "node scripts/native-integrations-docker.mjs (explicit cleanup: actual Windows Docker/PostgreSQL pass)",
-    "npm.cmd run typecheck (coding acceptance scripts)"
+    "npm.cmd run typecheck (coding acceptance scripts)",
+    "npm.cmd run check (coding driver:1249 passed/one skip,116 files,258.92s)",
+    "npm.cmd run build (coding driver)",
+    "npm.cmd run test:e2e -- tests/e2e/workbench.spec.ts (7 passed,54.8s)",
+    "node --import tsx scripts/coding-acceptance.ts --sandbox-only (coding-manai4 actual container preflight pass)"
   ],
-  "lastPassingCommit": "2ab60bfb05d62dc786b1bfad4cbe7b401ebe9bd9",
-  "lastPassingCommitScope": "Local strict types/1243 tests/one skip,build,2 host browser cases; native hosted cleanup failure separately tracked.",
+  "lastPassingCommit": "988d7b02c1ce9aee154bf3abbf19e73bc8b98bdb",
+  "lastPassingCommitScope": "59 focused tests, actual local native Docker/PostgreSQL and hosted Linux native38070458360; new driver full check/build/browser verified before next commit",
   "knownFailures": [
-    "Native CI38069750202: Docker AutoRemove races explicit removal. Candidate removes --rm;59 focused tests and fresh local native integrations pass; hosted follow-up pending."
+    "Hosted macOS browser38069003236/38069750281:132pass/1 branching fixture failed due late route interception; corrected local7case run passes, hosted follow-up required.",
+    "Real coding: larger9B RAM admission refusal; smaller9B initial missing-runtime-temp load error repaired;16K context paused;32K wrong activity repair/output-limit pause after7calls. No publication."
   ],
   "outstandingSecurityReviews": [
     "Full threat-model review",
@@ -212,7 +227,7 @@
     "License/admin protection authorization pending",
     "Draft PR connector HTTP403; branch pushes work"
   ],
-  "nextActionableWorkItem": "Observe coding-SzIWUq/model-live.json and actual acceptance session67642; retain model outcomes. Finish acceptance driver review and full check/build, commit scripts/evidence, inspect hosted cleanup follow-up.",
+  "nextActionableWorkItem": "Commit/push verified coding driver/evidence and fixture correction; inspect hosted CI. Attempt separately selected installed Gemma12B with32K through ordinary admission or advance C04 development-images-plan. Keep C05 success/publication open.",
   "remainingDependencies": [
     "A native recovery/restore/retention",
     "B full redesign",
@@ -221,5 +236,10 @@
     "E Companion",
     "F memory/automation",
     "G full acceptance"
-  ]
+  ],
+  "activeExecution": {
+    "privateModelHost": null,
+    "modelInference": null,
+    "checks": null
+  }
 }

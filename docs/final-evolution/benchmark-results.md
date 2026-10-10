@@ -17,3 +17,18 @@ This narrowly supports indexing bounded expiry discovery as retained history gro
 ## Studio bundle observation
 
 Same local Node/dependency lock and Vite production command: the fresh v0.1.2 baseline entry chunk was 486.47 kB / 148.69 kB gzip; the initial integrated Studio/Workbench build is 492.63 kB / 150.58 kB gzip (Vite's decimal kB report). Entry gzip increased 1.89 kB, approximately 1.3%. This is a chunk-size comparison, not total route transfer, rendering speed, or inference latency. Offline font assets and lazy feature chunks remain separate. Logs: `baseline-build.log`, `workbench-build.log` under ignored local output. No new dependency was added. Full frontend runtime budgets and repeatable latency/memory measurements remain G03 work.
+
+## Controlled source-scale coding baseline
+
+[Actual Windows evidence](evidence/coding-acceptance-windows.json) contains a fixed public Relay commit with 534 tracked paths, 21 recorded policy/binary omissions and one added visible harness: 514 text files, 3,980,270 bytes. Two deliberately seeded defects affect deadline units and cross-task activity attribution. This is a targeted repair in substantial source, not a full application build or broad coding benchmark.
+
+Pinned Node24.21.0 Docker executes the pristine visible cases (2 pass), seeded cases (2 fail), expanded pristine grader (9 pass) and a stale-result counterexample (1 fail). The final grader reruns both visible and hidden cases against final contents; previous passing receipts cannot substitute. Five deterministic scope tests reject test edits, unrelated changes, path substitution and incomplete repair.
+
+| Actual local attempt | Result | Observed task duration |
+| --- | --- | --- |
+| Larger installed Qwen3.5 9B, 16K | RAM admission refused under unchanged Safe policy | No task admitted |
+| Smaller installed 9B GGUF, 16K | Load paused; LM Studio log reports missing internal temp directory | 6.050s |
+| Same smaller model after directory repair, 16K | Three source reads and actual failing tests; conservative context bound pauses before edits | 66.781s |
+| Same model, explicit 32K | Two approved source writes, rerun still fails, subsequent repair hits 4096-token output cap | 450.425s |
+
+All attempts used explicit required local models, normal admission/watchdog and no cloud credentials/fallback. Missing LM Studio temporary directory was recreated without changing settings or restarting the owner service; loaded-instance discovery was empty before retry. The 32K attempt corrected deadline units but used the wrong field for activity ownership. No final partial tool proposal or source publication occurred. Durations are driver-observed task intervals, not inference-only or internal first-token latency. C05 remains open. Context sizing and model recovery need improvement; these observations do not justify weakening reserves, discarding receipts or claiming routing superiority.

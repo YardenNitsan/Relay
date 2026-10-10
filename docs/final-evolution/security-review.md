@@ -37,3 +37,7 @@ All six regressions and 49 focused boundary cases pass. The full strict-type che
 ## A02 sandbox cleanup follow-up
 
 FE-012: hosted native run 38069750202 exposed another removal owner: Docker's `--rm` daemon AutoRemove. It can race Relay's explicit shared removal operation. Remove `--rm`; keep explicit cleanup, durable recovery markers, refusal after unverified cleanup and retry. Do not reinterpret a daemon race error as verified absence. A configuration regression failed before the change; all 59 affected tests and a fresh actual Windows Docker/PostgreSQL run pass. Internal source review found no additional confirmed sandbox defect. Hosted Linux acceptance remains pending at this checkpoint.
+
+## Coding acceptance isolation and evidence
+
+A disposable API-only loopback host uses normal pairing, CSRF, real local-only provider routing, native resource admission/watchdog and supervised broker execution. Only exact two-file writes and exact offline test argv receive approval. Independent checks require unchanged non-target files and fresh combined visible/hidden test results before source publication; a stale earlier passing receipt cannot establish current correctness. Cleanup reports are retained on error. No successful publication is claimed from the four paused/refused trials. Native Linux cleanup follow-up38070458360 passes; this supersedes its pending status above.

@@ -37,17 +37,19 @@ for(const width of [390,1440])for(const theme of ['light','dark'] as const) {
 }
 
 test('Workbench shows branching dependencies and long model names without implying parallel execution',async({page})=>{
-  await page.setViewportSize({width:1024,height:900});await page.goto('/');await pairBrowser(page);
-  await page.getByRole('textbox',{name:'Objective'}).fill('Explain the execution model');
-  await page.getByRole('button',{name:'Send objective'}).click();
-  await expect(page.getByText('Completed',{exact:true}).first()).toBeVisible();
   // Presentation fixture only. This is not multi-agent execution acceptance.
+  // Install before TaskModels primes the shared task-query cache. A late route
+  // depends on stale-time/refetch timing and can leave the original graph cached.
   await page.route(/\/api\/tasks\/[^/]+$/,async route=>{
     const response=await route.fetch();const data=await response.json() as TaskDetail;
     const step=(id:string,title:string,dependencies:string[],status:TaskStep['status']):TaskStep=>({id,title,dependencies,status,taskId:data.task.id,role:'coder',modelId:'local/a-very-long-model-name-with-a-large-context-window-and-quantization-details',output:status==='completed'?'Reported work. Independent verification remains separate.':null});
     data.steps=[step('review','Review both implementations',['backend','frontend'],'pending'),step('backend','Implement backend',['plan'],'completed'),step('frontend','Implement frontend',['plan'],'running'),step('plan','Inspect repository',[],'completed')];
     await route.fulfill({response,json:data});
   });
+  await page.setViewportSize({width:1024,height:900});await page.goto('/');await pairBrowser(page);
+  await page.getByRole('textbox',{name:'Objective'}).fill('Explain the execution model');
+  await page.getByRole('button',{name:'Send objective'}).click();
+  await expect(page.getByText('Completed',{exact:true}).first()).toBeVisible();
   await page.getByRole('button',{name:'Activity',exact:true}).click();
   const graph=page.getByRole('list',{name:'Agent steps',exact:true});
   await expect(graph.getByRole('list',{name:'Dependency level 2'}).locator(':scope > li')).toHaveCount(2);

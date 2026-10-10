@@ -35,8 +35,8 @@ jobs:
       - run: npm ci
       - run: node scripts/native-integrations-docker.mjs
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        if: success()
+        if: always()
         with:
           name: native-integration-evidence
-          path: output/native-integrations.json
+          path: output/native-*.json
           retention-days: 14

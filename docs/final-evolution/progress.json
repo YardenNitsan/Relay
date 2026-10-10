@@ -4,7 +4,7 @@
   "updatedAt": "2026-10-10",
   "baselineCommit": "9d563bc973dbcc177921ab918db88561c8280e48",
   "branch": "modernization/final-evolution",
-  "currentMilestone": "A03 verified ordinary host revocation fix; C05 source-scale coding acceptance implementation",
+  "currentMilestone": "C05 actual local-model source-scale coding acceptance; A02 native cleanup regression",
   "requirementIds": [
     "A01",
     "A02",
@@ -48,7 +48,8 @@
     "Version2 publication journals distinguish absent/empty, bind parents and record exclusive-created identities; legacy v1 digests remain valid",
     "Reviewed additions/deletions and rename pairs with frozen state, conservative recovery and content rollback",
     "Reproduced/fixed durable revocation gaps before unlink and exclusive create; reject out-of-order older previews after newer receipt",
-    "FE-011 ordinary host dispatch passes fresh durable authorization before create/delete and between write chunks; six real-file red/green regressions"
+    "FE-011 ordinary host dispatch passes fresh durable authorization before create/delete and between write chunks; six real-file red/green regressions",
+    "FE-012 daemon AutoRemove removed; explicit durable sandbox cleanup is sole removal owner"
   ],
   "changedFiles": [
     ".github/workflows/native-integrations.yml",
@@ -151,9 +152,11 @@
     "docs/publication.md",
     "docs/final-evolution/publication-plan.md",
     "tests/host-mutation-authorization.test.ts",
-    "docs/final-evolution/coding-acceptance-plan.md"
+    "docs/final-evolution/coding-acceptance-plan.md",
+    "tests/tools-new-sandbox.test.ts",
+    "docs/final-evolution/evidence/native-integrations-windows-explicit-cleanup.json"
   ],
-  "testStatus": "A03: six red regressions before fix; 49 focused pass; full strict types/1243 tests pass with one skip, build and 2 host-access browser cases pass. Focused internal review has no actionable finding.",
+  "testStatus": "A03 full1243pass/one skip. AutoRemove59focused and native Docker/PostgreSQL pass, hosted pending. C05 sandbox preflight passes; large9B admission refused; smaller9B load paused due missing LM Studio internal temp directory (native ENOENT log, no loaded instances). Missing directory restored without settings/restart; new explicit attempt running.",
   "lastPassingCommands": [
     "npm.cmd ci",
     "npm.cmd run check (baseline)",
@@ -187,11 +190,16 @@
     "npm.cmd run test:e2e -- tests/e2e/publication.spec.ts (5 passed)",
     "npm.cmd run check (host mutation:1243 passed/one skip,115 files,262.31s)",
     "npm.cmd run build (host mutation)",
-    "npm.cmd run test:e2e -- tests/e2e/host-access.spec.ts (2 passed,12.2s)"
+    "npm.cmd run test:e2e -- tests/e2e/host-access.spec.ts (2 passed,12.2s)",
+    "npm.cmd test -- tests/tools-new-sandbox.test.ts tests/sandbox-cleanup.test.ts tests/development-profiles.test.ts tests/tools.test.ts (59 passed)",
+    "node scripts/native-integrations-docker.mjs (explicit cleanup: actual Windows Docker/PostgreSQL pass)",
+    "npm.cmd run typecheck (coding acceptance scripts)"
   ],
-  "lastPassingCommit": "deed1ae03295ae85b422dde238f349c1e945ebf4",
-  "lastPassingCommitScope": "Presence-aware publication: strict types,1237tests/one skip,build,5browser,visual review and final focused source review pass.",
-  "knownFailures": [],
+  "lastPassingCommit": "2ab60bfb05d62dc786b1bfad4cbe7b401ebe9bd9",
+  "lastPassingCommitScope": "Local strict types/1243 tests/one skip,build,2 host browser cases; native hosted cleanup failure separately tracked.",
+  "knownFailures": [
+    "Native CI38069750202: Docker AutoRemove races explicit removal. Candidate removes --rm;59 focused tests and fresh local native integrations pass; hosted follow-up pending."
+  ],
   "outstandingSecurityReviews": [
     "Full threat-model review",
     "A08 reference-aware artifact retention review",
@@ -204,7 +212,7 @@
     "License/admin protection authorization pending",
     "Draft PR connector HTTP403; branch pushes work"
   ],
-  "nextActionableWorkItem": "Implement coding-acceptance-plan.md: bounded versioned source export, actual sandbox pristine/failing checks, then admitted real local model and independent grading.",
+  "nextActionableWorkItem": "Observe coding-SzIWUq/model-live.json and actual acceptance session67642; retain model outcomes. Finish acceptance driver review and full check/build, commit scripts/evidence, inspect hosted cleanup follow-up.",
   "remainingDependencies": [
     "A native recovery/restore/retention",
     "B full redesign",

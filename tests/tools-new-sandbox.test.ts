@@ -34,4 +34,10 @@ describe('bounded container workspace exchange',()=>{
     expect(args[args.indexOf('--entrypoint')+1]).toBe('/usr/local/bin/node');expect(args).not.toContain('--privileged');
   });
   it('ships a syntactically valid immutable trusted supervisor',()=>{expect(()=>new Script(SANDBOX_SUPERVISOR)).not.toThrow();});
+  it('leaves container removal exclusively to the durable owned cleanup path',()=>{
+    const args=sandboxArguments('/private/supervisor.cjs','relay-00000000-0000-4000-8000-000000000000',`sha256:${'a'.repeat(64)}`,['node','--version']);
+    // Docker AutoRemove races an explicit rm even when application callers join
+    // one promise. A stopped container retains its recovery marker until rm.
+    expect(args).not.toContain('--rm');
+  });
 });

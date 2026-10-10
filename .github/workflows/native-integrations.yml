@@ -1,13 +1,22 @@
 name: Native database and container integration
 on:
   workflow_dispatch:
+  push:
+    branches: [main, modernization/final-evolution]
+    paths:
+      - 'server/db/**'
+      - 'server/tools/**'
+      - 'server/orchestration/**'
+      - 'shared/**'
+      - 'scripts/native-*'
+      - '.github/workflows/native-integrations.yml'
   pull_request:
     paths:
       - 'server/db/**'
       - 'server/tools/**'
       - 'server/orchestration/**'
       - 'shared/**'
-      - 'scripts/native-integrations*'
+      - 'scripts/native-*'
       - '.github/workflows/native-integrations.yml'
 permissions:
   contents: read

@@ -11,6 +11,7 @@ import { openDatabase } from '../server/db/database.js';
 import { Store } from '../server/db/store.js';
 import { ToolBroker } from '../server/tools/index.js';
 import { ToolStore } from '../server/tools/store.js';
+import {verifyNativeUpgrade} from './native-upgrade-acceptance.js';
 import type { TaskOptions, ToolContext, ToolRequest } from '../shared/types.js';
 
 const run = promisify(execFile);
@@ -33,6 +34,7 @@ if (mode === 'postgres') {
   try {
     assert.equal((await store.db.query("SELECT tablename FROM pg_tables WHERE schemaname='public'")).length, 0, 'Integration requires an empty disposable database');
     report.serverVersion = String((await store.db.query('SHOW server_version'))[0]?.server_version);
+    checks.push(...await verifyNativeUpgrade(store,second,options));
     await store.init();
     await store.init();
     checks.push('Current schema and additive migrations initialize idempotently on native PostgreSQL');
@@ -97,6 +99,7 @@ if (mode === 'postgres') {
     await assert.rejects(docker(['inspect', name]));
     assert.equal((await ledger.containers()).length, 0);
   }
+  let executionFailure:unknown;
   try {
     const status = await broker.sandboxStatus();
     assert.ok(status.available, status.reason);
@@ -125,10 +128,16 @@ if (mode === 'postgres') {
     const emergency = broker.execute(context, command(['node', '-e', 'setInterval(()=>{},1000)'], 30));
     const emergencyOutcome = emergency.then(() => null, error => error as Error);
     const emergencyName = await waitForManagedContainer(); stopped = true; await broker.stopAll();
-    assert.match(String(await emergencyOutcome), /cancel|stop/i); await absent(emergencyName);
+    const emergencyResult=await emergencyOutcome;
+    if(emergencyResult&&!/cancel|stop/i.test(String(emergencyResult)))throw emergencyResult;
+    assert.match(String(emergencyResult), /cancel|stop/i); await absent(emergencyName);
     await assert.rejects(broker.execute(context, command(['node', '-v'])), /stop/i);
     checks.push('Emergency stop kills managed execution and rejects new tool calls');
-  } finally { delete process.env.OPENAI_API_KEY; stopped = true; await broker.stopAll(); }
+  } catch(error) { executionFailure=error;throw error; }
+  finally {
+    delete process.env.OPENAI_API_KEY; stopped = true;
+    try {await broker.stopAll();}catch(cleanup){throw new AggregateError(executionFailure?[executionFailure,cleanup]:[cleanup],'Native sandbox acceptance or cleanup failed');}
+  }
 }
 report.passed = true;
 await writeFile(join('output', `native-${mode}.json`), JSON.stringify(report, null, 2) + '\n');

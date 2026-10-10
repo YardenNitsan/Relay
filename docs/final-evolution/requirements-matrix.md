@@ -9,8 +9,8 @@ Status vocabulary: **Complete and verified**, **Implemented but insufficiently v
 | A03 | Authorization/revocation/security review (§4,11) | Implemented but insufficiently verified | Dispatch race regressions and full threat-model review |
 | A04 | Overall task deadlines (§11) | Complete and verified | Durable admission/queue/active/approval/resource/restart/finalization regressions, full check 1214 passed/one skip, build and 14 affected browser cases; focused review findings fixed. Native migration portability remains A06/G02. |
 | A05 | Suspended execution and uncertain-effect recovery (§11) | Partially implemented | Durable resume and no duplicate mutation scenarios |
-| A06 | Native PostgreSQL upgrades/locking/restore (§11) | Blocked by unavailable external resources | Docker daemon currently unavailable; independent DB connections required |
-| A07 | Encrypted realistic backup/restore (§11) | Implemented but insufficiently verified | Fresh synthetic production-like drill; preserved state/artifact references |
+| A06 | Native PostgreSQL upgrades/locking/restore (§11) | Complete and verified | PostgreSQL 17.11, two-pool actual migration lock contention, retained version-9 records; pg_dump/pg_restore into separate database with all 32 public tables/rows compared and foreign-key enforcement checked. Scope: local Docker, not remote production cluster. |
+| A07 | Encrypted realistic backup/restore (§11) | Complete and verified | 47.6 MB stopped synthetic snapshot: 2,000 tasks, 4,000 messages, memory/schedules/grants, 200 referenced artifacts; exact retained data/hash checks, session and pending-approval revocation, restored execution blocked |
 | A08 | Reference-aware artifact retention (§11) | Partially implemented | No deletion of live/historical protected references |
 | B01 | Professional design research and three concepts (§13–14) | Complete and verified | `design-research.md`: inspected official/product/community sources, maintenance/license limits; `design-system.md`: ten-criterion comparison, Studio selected. UI implementation remains B02–B11. |
 | B02 | New semantic light/dark design system (§14) | Not implemented | Tokens/primitives integrated; visual/contrast checks |
@@ -27,7 +27,7 @@ Status vocabulary: **Complete and verified**, **Implemented but insufficiently v
 | C02 | Safe branch-aware Git worktrees (§7) | Not implemented | Dirty source preservation, isolation, conflicts, review |
 | C03 | Create/delete/rename/multi-file publication (§7) | Partially implemented | Existing-file publication present; additions/deletions/renames and rollback |
 | C04 | Reproducible language images/dependency policy (§7) | Partially implemented | Actual TS/JS, Python, .NET execution and source/network controls |
-| C05 | Real coding end-to-end acceptance (§4,7) | Blocked by unavailable external resources | Running approved sandbox plus real model task and independent verification |
+| C05 | Real coding end-to-end acceptance (§4,7) | Partially implemented | Real Docker isolation/read-back/cancellation/emergency acceptance passes after cleanup-race fix; realistic multi-file model task and independent verification remain open |
 | D01 | Multilingual overlapping task understanding (§5) | Partially implemented | Held-out English/Hebrew paraphrase and intent comparison |
 | D02 | Versioned executable capability benchmarks (§5) | Partially implemented | Challenging multi-file/tasks, outcome graders, held-out set |
 | D03 | Evidence-aware intelligent routing (§5) | Partially implemented | Comparable selection/task-quality evidence; hard constraints first |
@@ -49,4 +49,4 @@ Status vocabulary: **Complete and verified**, **Implemented but insufficiently v
 | G05 | Branch protection and license (§22) | Blocked by unavailable external resources | main currently unprotected; owner approval required for license/admin policy |
 | G06 | Final evidence, screenshots, comparison and scorecard (§25,27) | Not implemented | Honest evidence-based evaluation; no invented scores or unfinished green rows |
 
-Only the bounded deadline requirement A04 and research/concept requirement B01 are complete. Local-only historical chat and the existing test suite do not imply the new coding, Companion or redesign criteria are met.
+Only A04 (deadlines), A06 (native database acceptance), A07 (encrypted restore drill) and B01 (research/concepts) are complete within their documented verification scope. Local-only historical chat and the existing test suite do not imply the new coding, Companion or redesign criteria are met.

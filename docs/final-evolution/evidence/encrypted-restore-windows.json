@@ -1,0 +1,66 @@
+{
+  "protocol": "relay-encrypted-restore-v1",
+  "testedAt": "2026-10-10T15:11:17.081Z",
+  "platform": "win32",
+  "node": "v24.11.1",
+  "passed": true,
+  "records": [
+    {
+      "table": "conversations",
+      "count": 100,
+      "sha256": "13d2c7220397211598d60bc23f2143c13e263b8ac534d84af303ec6c3f1392d3"
+    },
+    {
+      "table": "tasks",
+      "count": 2000,
+      "sha256": "318a6b53d19055ae17e9b8c4aba359ddfb7096cbae96b6f5e985051c78b0fc66"
+    },
+    {
+      "table": "messages",
+      "count": 4000,
+      "sha256": "c16f6db129a7eced8b33bf8175f8f6f2c002cde6efd3cae6dfd82cfccbb6cec6"
+    },
+    {
+      "table": "approvals",
+      "count": 10,
+      "sha256": "48b6cdba7c856fec1563e8c0c15a0b01cca9b3129ce263315427e190045fb5ca"
+    },
+    {
+      "table": "memory_notes",
+      "count": 50,
+      "sha256": "65a1ddc005446091d0ae3acd5c9bc30c10c52b7eca9241dc3c33003a05c79e72"
+    },
+    {
+      "table": "task_schedules",
+      "count": 10,
+      "sha256": "5772f1a276ab23975708c43685031c77f6cafed074300ef1a22b5ad99e8db654"
+    },
+    {
+      "table": "artifacts",
+      "count": 200,
+      "sha256": "a32a60c0b4f721901621347809aa1b9f12e9bfe444e5ba6cf235ac7404755de1"
+    },
+    {
+      "table": "users",
+      "count": 2,
+      "sha256": "f429035f52e489de9684ba6038b0d9ae257226e60737f2de1661e071385dc3b7"
+    }
+  ],
+  "artifactsVerified": 200,
+  "backup": {
+    "format": 1,
+    "backend": "embedded",
+    "files": 1332,
+    "bytes": 47632853,
+    "createdAt": "2026-10-10T15:11:07.624Z"
+  },
+  "createMs": 6374.1329000000005,
+  "verifyMs": 1097.0488000000005,
+  "restoreMs": 2710.9693000000007,
+  "checks": [
+    "Retained relational hashes match except required pending-approval denial",
+    "Every referenced artifact read back and hashed",
+    "Sessions revoked and pending approvals denied with arguments retained",
+    "Restored execution remains stopped pending review"
+  ]
+}

@@ -1,0 +1,227 @@
+{
+  "testedAt": "2026-10-10T15:12:30.174Z",
+  "images": {
+    "postgres:17-alpine": {
+      "reference": "postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24",
+      "id": "sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24",
+      "digests": [
+        "postgres@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24"
+      ]
+    },
+    "node:24-alpine": {
+      "reference": "node:24-alpine@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1",
+      "id": "sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1",
+      "digests": [
+        "node@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1"
+      ]
+    }
+  },
+  "postgres": {
+    "testedAt": "2026-10-10T15:12:25.130Z",
+    "platform": "win32",
+    "node": "v24.11.1",
+    "mode": "postgres",
+    "checks": [
+      "Two independently pooled upgrades wait on the native advisory lock, then apply migration 10 once",
+      "Version 9 conversations, messages, pending approvals, scoped memory, schedules, workspaces and restricted grants survive unchanged",
+      "Historical task deadline policy and immutable migration ledger are preserved",
+      "Current schema and additive migrations initialize idempotently on native PostgreSQL",
+      "Two independent PostgreSQL pools admit exactly one of twelve simultaneous conversation tasks",
+      "Failed transactions roll back their relational writes",
+      "Recovery pauses interrupted work and concurrent resume reserves a single execution slot",
+      "Emergency stop is authoritative across independent PostgreSQL connections",
+      "Durable budget columns and monotonic replayable events exist in the native schema"
+    ],
+    "serverVersion": "17.11",
+    "passed": true
+  },
+  "restore": {
+    "testedAt": "2026-10-10T15:12:26.336Z",
+    "protocol": "relay-native-postgres-restore-v1",
+    "platform": "win32",
+    "passed": true,
+    "tables": [
+      {
+        "table": "agent_runs",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "approvals",
+        "rows": 1,
+        "sha256": "747a33e146aa59e752d9dcba124bfa93dad910f34df2b63d96eb631d57781829"
+      },
+      {
+        "table": "artifacts",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "audit_events",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "checkpoints",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "conversations",
+        "rows": 3,
+        "sha256": "e1f731b59742e214ca884cb6a4019d1286227328812eae1a3847685e5b321748"
+      },
+      {
+        "table": "events",
+        "rows": 8,
+        "sha256": "649d34b5369755de451323b292156ebe895d1abf88527d30f40f7f72bc3cf490"
+      },
+      {
+        "table": "findings",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "inference_requests",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "inference_tokens",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "lan_invitations",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "memory_notes",
+        "rows": 1,
+        "sha256": "8eef5fc51ea43f71a4dbda01d91ffd2e7d8adcc56597002fb3f4761d0162b32d"
+      },
+      {
+        "table": "messages",
+        "rows": 2,
+        "sha256": "d118c1033a66c7216c4940fd52e78b346d01391e7a13793734ac7799be3cdf2b"
+      },
+      {
+        "table": "model_calibrations",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "model_calls",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "model_evaluations",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "model_profiles",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "permission_decisions",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "personal_tasks",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "provider_connections",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "schedule_runs",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "schema_migrations",
+        "rows": 10,
+        "sha256": "99babbb1a04590afd33f9c27053a386095b9dfe6d5768594794a98d102385971"
+      },
+      {
+        "table": "sessions",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "settings",
+        "rows": 1,
+        "sha256": "c1a9a84b604fe02ef50df1874918e885ca40165750d41541fa894b8294943724"
+      },
+      {
+        "table": "task_schedules",
+        "rows": 1,
+        "sha256": "79b78c1c04b0b6b28811d531d3bb6ff5501a2efff2310771797d81001f74910d"
+      },
+      {
+        "table": "task_steps",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "tasks",
+        "rows": 2,
+        "sha256": "5aa546bd2c7d8608ec2f44ffcef4c930bc56a089c89f40227315b8b3c7fb5b7f"
+      },
+      {
+        "table": "tool_calls",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "user_provider_connections",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "users",
+        "rows": 2,
+        "sha256": "7b6570a554e273000a07172f5e00f0a89a4e5e5f9fa43209f9431b6d47d7dc6d"
+      },
+      {
+        "table": "verification",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "workspaces",
+        "rows": 1,
+        "sha256": "8e5476c000f2135df85fbef519a63775740f589badf7f67dc70861bcbff6d674"
+      }
+    ],
+    "checks": [
+      "Actual pg_dump custom archive and pg_restore into separate disposable database",
+      "Every public table and row compared to the stopped source",
+      "Restored foreign-key enforcement checked"
+    ]
+  },
+  "sandbox": {
+    "testedAt": "2026-10-10T15:12:26.741Z",
+    "platform": "win32",
+    "node": "v24.11.1",
+    "mode": "sandbox",
+    "checks": [
+      "Real broker runs non-root with read-only root, no capabilities, seccomp, no-new-privileges and no provider environment",
+      "Real cgroups enforce 512 MiB memory, 64 PIDs and one CPU; only loopback networking exists",
+      "Successful isolated file changes commit with actual file read-back evidence",
+      "Cancellation terminates the running container and removes its durable cleanup marker",
+      "Emergency stop kills managed execution and rejects new tool calls"
+    ],
+    "image": "sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1",
+    "cancellationMs": 431,
+    "passed": true
+  }
+}

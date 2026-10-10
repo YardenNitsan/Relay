@@ -4,13 +4,15 @@
     "updatedAt":  "2026-10-10",
     "baselineCommit":  "9d563bc973dbcc177921ab918db88561c8280e48",
     "branch":  "modernization/final-evolution",
-    "currentMilestone":  "A2",
+    "currentMilestone":  "A2: native acceptance verified; retention and full CI remain, then B implementation",
     "requirementIds":  [
                            "A01",
                            "A02",
                            "A04",
+                           "A06",
+                           "A07",
                            "B01",
-                           "B11"
+                           "C05"
                        ],
     "worktree":  "C:/Users/yarde/Documents/codexp/Relay-modernization",
     "implementedChanges":  [
@@ -20,7 +22,11 @@
                                "Independent expiry cleanup, shutdown-owned scheduler reads, partial pending-task index migration 10",
                                "Absolute deadline UI and advanced controls",
                                "Candidate native .NET Windows ACL reads preserving security checks",
-                               "Unknown hardware meter accessibility semantics"
+                               "Unknown hardware meter accessibility semantics",
+                               "Shared sandbox cleanup fixes real concurrent Docker rm failure",
+                               "Native PostgreSQL migration-lock, v9 preservation and dump/restore acceptance",
+                               "Pinned native integration images and modernization push gate",
+                               "Larger synthetic encrypted restore and referenced-artifact verification"
                            ],
     "changedFiles":  [
                          "server/orchestration/",
@@ -38,7 +44,7 @@
                          "docs/final-evolution/",
                          "docs/database-upgrades.md"
                      ],
-    "testStatus":  "Strict types, 1214 tests passed/one skip across 112 files, production build, 12 evolution/retention browser cases and 2 phone approval cases passed. Deadline benchmark and selected visual inspection complete. Hosted current-commit gates pending.",
+    "testStatus":  "1216 tests passed/one skip across 113 files, strict types and production build passed. Actual native upgrade/restore/sandbox and encrypted embedded restore passed. Three-OS b5ebc30 host CI passed; browser gates pending.",
     "lastPassingCommands":  [
                                 "npm.cmd ci",
                                 "npm.cmd run check (baseline)",
@@ -50,28 +56,32 @@
                                 "npm.cmd run build (deadline)",
                                 "npm.cmd run test:e2e -- tests/e2e/retention.spec.ts tests/e2e/evolution.spec.ts (12 passed)",
                                 "npm.cmd run test:e2e -- tests/e2e/access.spec.ts -g phone (2 passed)",
-                                "node --import tsx scripts/benchmark-deadlines.ts"
+                                "node --import tsx scripts/benchmark-deadlines.ts",
+                                "npm.cmd run check (sandbox: 1216 passed, one skip)",
+                                "npm.cmd run build (sandbox)",
+                                "npm.cmd run typecheck (acceptance scripts)",
+                                "node scripts/native-integrations-docker.mjs (upgrade, 32-table restore, sandbox)",
+                                "node --import tsx scripts/backup-acceptance.ts (47.6 MB, 200 artifacts)"
                             ],
-    "lastPassingCommit":  "6d9b8e0",
-    "lastPassingCommitScope":  "CI fixes locally verified; deadline implementation verified in working tree, committing next. Hosted CI pending.",
+    "lastPassingCommit":  "b5ebc30",
+    "lastPassingCommitScope":  "Deadline milestone locally verified and hosted host checks pass; subsequent sandbox/native acceptance changes verified in working tree and ready to commit.",
     "knownFailures":  [
-                          "Windows hosted TLS timeout candidate requires new CI result",
-                          "macOS hosted unknown-telemetry axe regression now passes locally; new CI result pending"
+                          "Old Windows browser run had resource-policy control absent after 5s hardware-loading wait; inspect current CI before deciding cause",
+                          "Latest three-OS browser gates and native Linux CI pending"
                       ],
     "outstandingSecurityReviews":  [
                                        "Full threat-model review",
-                                       "Four focused deadline findings fixed and re-reviewed without new concrete defects; full suite pending",
-                                       "Hosted native TLS acceptance"
+                                       "A08 reference-aware artifact retention review",
+                                       "Focused deadline and sandbox reviews found no remaining concrete defects; broader execution review remains"
                                    ],
     "externalBlockers":  [
-                             "Docker engine not running",
-                             "Second physical Companion device unavailable",
-                             "Google OAuth app/consent unavailable",
+                             "Second physical Companion device not established",
+                             "Google OAuth application and owner consent unavailable",
                              "Native macOS and physical Linux GPU unavailable locally",
-                             "Owner license/admin protection authorization pending",
-                             "Draft PR connector HTTP403 Resource not accessible by integration; branch pushes succeed"
+                             "License/admin protection authorization pending",
+                             "Draft PR connector HTTP403; branch pushes work"
                          ],
-    "nextActionableWorkItem":  "Commit deadline milestone, push, inspect latest hosted CI; continue A native recovery/backup and B Studio implementation",
+    "nextActionableWorkItem":  "Commit native reliability milestone, push and inspect hosted jobs; investigate any remaining browser failure, then implement Studio tokens/shell/conversation/workbench alongside artifact retention review",
     "remainingDependencies":  [
                                   "A native recovery/restore/retention",
                                   "B full redesign",

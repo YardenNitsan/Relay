@@ -11,11 +11,16 @@ if (server.OSType !== 'linux') throw new Error('A running local Linux Docker eng
 const context = JSON.parse(call(['context', 'inspect', '--format', '{{json .Endpoints.docker.Host}}']));
 if (!context.startsWith('unix:///') && !context.startsWith('npipe:////./pipe/')) throw new Error('Integration refuses remote Docker engines');
 const images = {};
-for (const tag of ['postgres:17-alpine', 'node:24-alpine']) {
-  call(['pull', tag], { stdio: 'inherit', timeout: 180_000 });
-  const inspected = JSON.parse(call(['image', 'inspect', tag]))[0];
+// Verified official image identities from the 2026-10-10 native acceptance run.
+const references = {
+  'postgres:17-alpine': 'postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24',
+  'node:24-alpine': 'node:24-alpine@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1',
+};
+for (const [tag, reference] of Object.entries(references)) {
+  call(['pull', reference], { stdio: 'inherit', timeout: 180_000 });
+  const inspected = JSON.parse(call(['image', 'inspect', reference]))[0];
   if (!/^sha256:[a-f0-9]{64}$/.test(inspected.Id)) throw new Error('Invalid immutable image identity');
-  images[tag] = { id: inspected.Id, digests: inspected.RepoDigests };
+  images[tag] = { reference, id: inspected.Id, digests: inspected.RepoDigests };
 }
 const name = `relay-integration-postgres-${randomUUID()}`;
 const password = randomBytes(32).toString('base64url');
@@ -33,11 +38,18 @@ try {
   const binding = ports['5432/tcp']?.[0];
   if (binding?.HostIp !== '127.0.0.1') throw new Error('Database binding was not restricted to loopback');
   execFileSync(process.execPath, ['--import', 'tsx', 'scripts/native-integrations.ts', 'postgres'], { stdio: 'inherit', windowsHide: true, timeout: 90_000, env: { ...process.env, RELAY_TEST_DATABASE_URL: `postgresql://postgres:${password}@127.0.0.1:${binding.HostPort}/${database}` } });
+  // The source pools have closed. Archive/restore remain inside this script's
+  // disposable container; no production database or host data path is accepted.
+  call(['exec',name,'pg_dump','-U','postgres','-d',database,'--format=custom','--file=/tmp/relay-native.dump']);
+  call(['exec',name,'createdb','-U','postgres',`${database}_restored`]);
+  call(['exec',name,'pg_restore','-U','postgres','-d',`${database}_restored`,'/tmp/relay-native.dump']);
+  execFileSync(process.execPath,['--import','tsx','scripts/native-restore-acceptance.ts'],{stdio:'inherit',windowsHide:true,timeout:90_000,env:{...process.env,RELAY_TEST_DATABASE_URL:`postgresql://postgres:${password}@127.0.0.1:${binding.HostPort}/${database}`}});
   execFileSync(process.execPath, ['--import', 'tsx', 'scripts/native-integrations.ts', 'sandbox'], { stdio: 'inherit', windowsHide: true, timeout: 90_000, env: { ...process.env, RELAY_SANDBOX_IMAGE: images['node:24-alpine'].id } });
   const postgres = JSON.parse(await readFile('output/native-postgres.json', 'utf8'));
   const sandbox = JSON.parse(await readFile('output/native-sandbox.json', 'utf8'));
+  const restore = JSON.parse(await readFile('output/native-postgres-restore.json','utf8'));
   await mkdir('output', { recursive: true });
-  await writeFile('output/native-integrations.json', JSON.stringify({ testedAt: new Date().toISOString(), images, postgres, sandbox }, null, 2) + '\n');
+  await writeFile('output/native-integrations.json', JSON.stringify({ testedAt: new Date().toISOString(), images, postgres, restore, sandbox }, null, 2) + '\n');
 } finally {
   if (launched) call(['rm', '--force', name], { stdio: 'ignore' });
 }

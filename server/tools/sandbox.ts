@@ -48,6 +48,7 @@ export function sandboxArguments(helperPath: string, name: string, imageId: stri
 export class DockerSandbox {
   private active = new Map<string, AbortController>();
   private cleanupFailures = new Set<string>();
+  private removals = new Map<string,Promise<void>>();
   constructor(private readonly store: ToolStore) {}
   async status(profile?:DevelopmentProfileId): Promise<{ available: boolean; reason: string }> {
     try { const config=await this.configuration(profile); return { available: true, reason: `Local Linux Docker engine and configured ${config.profile} image available. Language runtime, Node 24 supervisor, privilege-drop and bounded tmpfs are verified at execution; no writable host mounts.` }; }
@@ -90,18 +91,27 @@ export class DockerSandbox {
     }
     finally { signal.removeEventListener('abort', abort); try { await this.remove(name); } finally { this.active.delete(name); } }
   }
-  private async remove(name: string): Promise<void> {
+  private remove(name: string): Promise<void> {
+    const active=this.removals.get(name);if(active)return active;
+    // Cancellation, execution finalization and emergency stop own the same join.
+    // A concurrent Docker rm fails while removal is in progress; it is not proof
+    // of cleanup failure or permission to forget the durable recovery marker.
+    const pending=this.removeOnce(name).finally(()=>{this.removals.delete(name);});
+    this.removals.set(name,pending);return pending;
+  }
+  private async removeOnce(name: string): Promise<void> {
     try {
       const result = await docker(['rm', '--force', name], 10_000);
-      if (result.exitCode !== 0 && !/No such container/i.test(result.stderr)) throw new Error('Docker container termination could not be verified');
+      if (result.exitCode !== 0 && !/No such container/i.test(result.stderr)) throw new Error('Docker container termination could not be verified', {cause:`Docker exit ${result.exitCode}: ${result.stderr}`});
       await this.store.forgetContainer(name);
       this.cleanupFailures.delete(name);
-    } catch { this.cleanupFailures.add(name); throw new Error(`Container cleanup could not be verified: ${name}. Further commands are disabled.`); }
+    } catch (cause) { this.cleanupFailures.add(name); throw new Error(`Container cleanup could not be verified: ${name}. Further commands are disabled.`, {cause}); }
   }
   async stopAll(): Promise<void> {
     const names = new Set([...this.active.keys(), ...this.cleanupFailures, ...await this.store.containers()]);
     for (const controller of this.active.values()) controller.abort();
     const results = await Promise.allSettled([...names].map(name => this.remove(name)));
-    if (results.some(result => result.status === 'rejected')) throw new Error('Emergency stop prevented new work but some Docker container cleanup remains unverified');
+    const failures=results.filter(result=>result.status==='rejected');
+    if (failures.length) throw new AggregateError(failures.map(result=>result.reason),'Emergency stop prevented new work but some Docker container cleanup remains unverified');
   }
 }

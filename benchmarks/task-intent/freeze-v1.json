@@ -1,0 +1,16 @@
+{
+  "protocol": "relay-intent-comparison-v1",
+  "frozenAt": "2026-10-10T19:21:03.049Z",
+  "hashes": {
+    "candidates.ts": "f2dcb0838a132065ab46adf90a19fab0c30df6063fe7da16b5470849da89e043",
+    "baseline-v1.ts": "423f2308c76069c85683176e8a8e06ea781e3aad0d874313f7893eaa5adc141d",
+    "development-v1.json": "b51627c4f87421c1416507588ea898e6ef1bc49ee5f31804614429d9454528c8",
+    "heldout-v1.json": "fe380f823233e9a1a81207470dcdb01877de9e71f57f13fa29d2690220a5c313"
+  },
+  "gate": {
+    "minimumCaseGainPercentagePoints": 10,
+    "maximumExtraForbiddenLabels": 0,
+    "maximumP95Milliseconds": 2
+  },
+  "rule": "Do not tune these candidates after held-out evaluation. A future experiment needs a new held-out corpus."
+}

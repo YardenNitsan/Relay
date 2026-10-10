@@ -1,0 +1,2646 @@
+{
+  "protocol": "relay-intent-comparison-v1",
+  "measuredAt": "2026-10-10T19:21:07.594Z",
+  "mode": "--heldout",
+  "corpus": "relay-intent-heldout-v1",
+  "provenance": "independently authored synthetic objectives; not production traffic",
+  "hashes": {
+    "candidates.ts": "f2dcb0838a132065ab46adf90a19fab0c30df6063fe7da16b5470849da89e043",
+    "baseline-v1.ts": "423f2308c76069c85683176e8a8e06ea781e3aad0d874313f7893eaa5adc141d",
+    "development-v1.json": "b51627c4f87421c1416507588ea898e6ef1bc49ee5f31804614429d9454528c8",
+    "heldout-v1.json": "fe380f823233e9a1a81207470dcdb01877de9e71f57f13fa29d2690220a5c313"
+  },
+  "environment": {
+    "node": "v24.11.1",
+    "platform": "win32",
+    "architecture": "x64",
+    "cpu": "Intel(R) Core(TM) Ultra 7 265KF"
+  },
+  "limitations": [
+    "Synthetic labeled objectives, not production traffic or model task success.",
+    "Partially specified labels: no precision/F1 claim.",
+    "Prototype uses development examples only and is lexical, not semantic embeddings.",
+    "Timing measures this process; repeat without concurrent heavy work before promotion."
+  ],
+  "results": {
+    "baseline": {
+      "cases": 56,
+      "satisfied": 14,
+      "caseSatisfaction": 0.25,
+      "required": 76,
+      "found": 22,
+      "requiredRecall": 0.2894736842105263,
+      "forbiddenViolations": 11,
+      "perLabel": {
+        "debugging": {
+          "required": 6,
+          "found": 0
+        },
+        "coding": {
+          "required": 10,
+          "found": 2
+        },
+        "repository_architecture": {
+          "required": 2,
+          "found": 1
+        },
+        "multi_file_implementation": {
+          "required": 2,
+          "found": 1
+        },
+        "document_analysis": {
+          "required": 6,
+          "found": 0
+        },
+        "structured_extraction": {
+          "required": 6,
+          "found": 3
+        },
+        "research_synthesis": {
+          "required": 4,
+          "found": 2
+        },
+        "tool_driven": {
+          "required": 4,
+          "found": 1
+        },
+        "planning_delegation": {
+          "required": 4,
+          "found": 1
+        },
+        "review_verification": {
+          "required": 6,
+          "found": 3
+        },
+        "security_review": {
+          "required": 4,
+          "found": 0
+        },
+        "mathematics": {
+          "required": 4,
+          "found": 1
+        },
+        "complex_reasoning": {
+          "required": 2,
+          "found": 1
+        },
+        "multimodal": {
+          "required": 4,
+          "found": 0
+        },
+        "factual_explanation": {
+          "required": 8,
+          "found": 2
+        },
+        "conversation": {
+          "required": 4,
+          "found": 4
+        }
+      },
+      "failures": [
+        {
+          "id": "en-001",
+          "missing": [
+            "debugging"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-002",
+          "missing": [
+            "debugging",
+            "coding"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "en-004",
+          "missing": [
+            "coding"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-005",
+          "missing": [
+            "document_analysis"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-006",
+          "missing": [
+            "document_analysis"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-008",
+          "missing": [
+            "tool_driven"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-011",
+          "missing": [
+            "security_review"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-014",
+          "missing": [
+            "multimodal"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-017",
+          "missing": [
+            "debugging",
+            "coding"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "en-019",
+          "missing": [
+            "planning_delegation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-020",
+          "missing": [
+            "multimodal",
+            "structured_extraction"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-021",
+          "missing": [
+            "security_review"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-023",
+          "missing": [
+            "factual_explanation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-024",
+          "missing": [
+            "factual_explanation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-026",
+          "missing": [
+            "mathematics"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-027",
+          "missing": [
+            "document_analysis"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-001",
+          "missing": [
+            "debugging",
+            "coding"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "he-002",
+          "missing": [
+            "debugging",
+            "coding"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "he-003",
+          "missing": [
+            "repository_architecture"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-004",
+          "missing": [
+            "coding",
+            "multi_file_implementation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-005",
+          "missing": [
+            "document_analysis"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-006",
+          "missing": [
+            "document_analysis"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "he-007",
+          "missing": [
+            "research_synthesis"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "he-008",
+          "missing": [
+            "tool_driven"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-009",
+          "missing": [
+            "planning_delegation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-010",
+          "missing": [
+            "review_verification"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "he-011",
+          "missing": [
+            "security_review"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "he-012",
+          "missing": [
+            "mathematics"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-013",
+          "missing": [
+            "complex_reasoning"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-014",
+          "missing": [
+            "multimodal"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-015",
+          "missing": [
+            "factual_explanation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-017",
+          "missing": [
+            "debugging",
+            "coding"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "he-018",
+          "missing": [
+            "coding",
+            "review_verification",
+            "tool_driven"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-019",
+          "missing": [
+            "planning_delegation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-020",
+          "missing": [
+            "multimodal",
+            "structured_extraction"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-021",
+          "missing": [
+            "security_review",
+            "review_verification"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "he-022",
+          "missing": [
+            "factual_explanation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-023",
+          "missing": [
+            "factual_explanation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-024",
+          "missing": [
+            "factual_explanation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-025",
+          "missing": [
+            "research_synthesis"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "he-026",
+          "missing": [
+            "mathematics"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-027",
+          "missing": [
+            "document_analysis",
+            "structured_extraction"
+          ],
+          "forbidden": []
+        }
+      ],
+      "languages": {
+        "en": {
+          "cases": 28,
+          "satisfied": 12,
+          "caseSatisfaction": 0.42857142857142855,
+          "required": 38,
+          "found": 19,
+          "requiredRecall": 0.5,
+          "forbiddenViolations": 2,
+          "perLabel": {
+            "debugging": {
+              "required": 3,
+              "found": 0
+            },
+            "coding": {
+              "required": 5,
+              "found": 2
+            },
+            "repository_architecture": {
+              "required": 1,
+              "found": 1
+            },
+            "multi_file_implementation": {
+              "required": 1,
+              "found": 1
+            },
+            "document_analysis": {
+              "required": 3,
+              "found": 0
+            },
+            "structured_extraction": {
+              "required": 3,
+              "found": 2
+            },
+            "research_synthesis": {
+              "required": 2,
+              "found": 2
+            },
+            "tool_driven": {
+              "required": 2,
+              "found": 1
+            },
+            "planning_delegation": {
+              "required": 2,
+              "found": 1
+            },
+            "review_verification": {
+              "required": 3,
+              "found": 3
+            },
+            "security_review": {
+              "required": 2,
+              "found": 0
+            },
+            "mathematics": {
+              "required": 2,
+              "found": 1
+            },
+            "complex_reasoning": {
+              "required": 1,
+              "found": 1
+            },
+            "multimodal": {
+              "required": 2,
+              "found": 0
+            },
+            "factual_explanation": {
+              "required": 4,
+              "found": 2
+            },
+            "conversation": {
+              "required": 2,
+              "found": 2
+            }
+          },
+          "failures": [
+            {
+              "id": "en-001",
+              "missing": [
+                "debugging"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-002",
+              "missing": [
+                "debugging",
+                "coding"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "en-004",
+              "missing": [
+                "coding"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-005",
+              "missing": [
+                "document_analysis"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-006",
+              "missing": [
+                "document_analysis"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-008",
+              "missing": [
+                "tool_driven"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-011",
+              "missing": [
+                "security_review"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-014",
+              "missing": [
+                "multimodal"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-017",
+              "missing": [
+                "debugging",
+                "coding"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "en-019",
+              "missing": [
+                "planning_delegation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-020",
+              "missing": [
+                "multimodal",
+                "structured_extraction"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-021",
+              "missing": [
+                "security_review"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-023",
+              "missing": [
+                "factual_explanation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-024",
+              "missing": [
+                "factual_explanation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-026",
+              "missing": [
+                "mathematics"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-027",
+              "missing": [
+                "document_analysis"
+              ],
+              "forbidden": []
+            }
+          ]
+        },
+        "he": {
+          "cases": 28,
+          "satisfied": 2,
+          "caseSatisfaction": 0.07142857142857142,
+          "required": 38,
+          "found": 3,
+          "requiredRecall": 0.07894736842105263,
+          "forbiddenViolations": 9,
+          "perLabel": {
+            "debugging": {
+              "required": 3,
+              "found": 0
+            },
+            "coding": {
+              "required": 5,
+              "found": 0
+            },
+            "repository_architecture": {
+              "required": 1,
+              "found": 0
+            },
+            "multi_file_implementation": {
+              "required": 1,
+              "found": 0
+            },
+            "document_analysis": {
+              "required": 3,
+              "found": 0
+            },
+            "structured_extraction": {
+              "required": 3,
+              "found": 1
+            },
+            "research_synthesis": {
+              "required": 2,
+              "found": 0
+            },
+            "tool_driven": {
+              "required": 2,
+              "found": 0
+            },
+            "planning_delegation": {
+              "required": 2,
+              "found": 0
+            },
+            "review_verification": {
+              "required": 3,
+              "found": 0
+            },
+            "security_review": {
+              "required": 2,
+              "found": 0
+            },
+            "mathematics": {
+              "required": 2,
+              "found": 0
+            },
+            "complex_reasoning": {
+              "required": 1,
+              "found": 0
+            },
+            "multimodal": {
+              "required": 2,
+              "found": 0
+            },
+            "factual_explanation": {
+              "required": 4,
+              "found": 0
+            },
+            "conversation": {
+              "required": 2,
+              "found": 2
+            }
+          },
+          "failures": [
+            {
+              "id": "he-001",
+              "missing": [
+                "debugging",
+                "coding"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "he-002",
+              "missing": [
+                "debugging",
+                "coding"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "he-003",
+              "missing": [
+                "repository_architecture"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-004",
+              "missing": [
+                "coding",
+                "multi_file_implementation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-005",
+              "missing": [
+                "document_analysis"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-006",
+              "missing": [
+                "document_analysis"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "he-007",
+              "missing": [
+                "research_synthesis"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "he-008",
+              "missing": [
+                "tool_driven"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-009",
+              "missing": [
+                "planning_delegation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-010",
+              "missing": [
+                "review_verification"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "he-011",
+              "missing": [
+                "security_review"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "he-012",
+              "missing": [
+                "mathematics"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-013",
+              "missing": [
+                "complex_reasoning"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-014",
+              "missing": [
+                "multimodal"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-015",
+              "missing": [
+                "factual_explanation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-017",
+              "missing": [
+                "debugging",
+                "coding"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "he-018",
+              "missing": [
+                "coding",
+                "review_verification",
+                "tool_driven"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-019",
+              "missing": [
+                "planning_delegation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-020",
+              "missing": [
+                "multimodal",
+                "structured_extraction"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-021",
+              "missing": [
+                "security_review",
+                "review_verification"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "he-022",
+              "missing": [
+                "factual_explanation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-023",
+              "missing": [
+                "factual_explanation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-024",
+              "missing": [
+                "factual_explanation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-025",
+              "missing": [
+                "research_synthesis"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "he-026",
+              "missing": [
+                "mathematics"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-027",
+              "missing": [
+                "document_analysis",
+                "structured_extraction"
+              ],
+              "forbidden": []
+            }
+          ]
+        }
+      },
+      "timing": {
+        "iterations": 1000,
+        "medianMs": 0.002200000000016189,
+        "p95Ms": 0.0036000000000058208,
+        "boundedInputMs": 0.06370000000001141
+      }
+    },
+    "phrases": {
+      "cases": 56,
+      "satisfied": 26,
+      "caseSatisfaction": 0.4642857142857143,
+      "required": 76,
+      "found": 44,
+      "requiredRecall": 0.5789473684210527,
+      "forbiddenViolations": 5,
+      "perLabel": {
+        "debugging": {
+          "required": 6,
+          "found": 1
+        },
+        "coding": {
+          "required": 10,
+          "found": 9
+        },
+        "repository_architecture": {
+          "required": 2,
+          "found": 2
+        },
+        "multi_file_implementation": {
+          "required": 2,
+          "found": 1
+        },
+        "document_analysis": {
+          "required": 6,
+          "found": 2
+        },
+        "structured_extraction": {
+          "required": 6,
+          "found": 4
+        },
+        "research_synthesis": {
+          "required": 4,
+          "found": 3
+        },
+        "tool_driven": {
+          "required": 4,
+          "found": 3
+        },
+        "planning_delegation": {
+          "required": 4,
+          "found": 2
+        },
+        "review_verification": {
+          "required": 6,
+          "found": 6
+        },
+        "security_review": {
+          "required": 4,
+          "found": 3
+        },
+        "mathematics": {
+          "required": 4,
+          "found": 1
+        },
+        "complex_reasoning": {
+          "required": 2,
+          "found": 1
+        },
+        "multimodal": {
+          "required": 4,
+          "found": 2
+        },
+        "factual_explanation": {
+          "required": 8,
+          "found": 3
+        },
+        "conversation": {
+          "required": 4,
+          "found": 1
+        }
+      },
+      "failures": [
+        {
+          "id": "en-001",
+          "missing": [
+            "debugging"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-005",
+          "missing": [
+            "document_analysis"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-008",
+          "missing": [
+            "tool_driven"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-017",
+          "missing": [
+            "debugging",
+            "coding"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "en-019",
+          "missing": [
+            "planning_delegation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-020",
+          "missing": [
+            "multimodal"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-021",
+          "missing": [
+            "security_review"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-023",
+          "missing": [
+            "factual_explanation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-024",
+          "missing": [
+            "factual_explanation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-025",
+          "missing": [
+            "research_synthesis"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "en-026",
+          "missing": [
+            "mathematics"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-027",
+          "missing": [
+            "document_analysis"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-028",
+          "missing": [
+            "conversation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-001",
+          "missing": [
+            "debugging"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-002",
+          "missing": [
+            "debugging"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-003",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ]
+        },
+        {
+          "id": "he-004",
+          "missing": [
+            "multi_file_implementation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-005",
+          "missing": [
+            "document_analysis"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-012",
+          "missing": [
+            "mathematics"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-013",
+          "missing": [
+            "complex_reasoning"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-015",
+          "missing": [
+            "factual_explanation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-016",
+          "missing": [
+            "conversation"
+          ],
+          "forbidden": [
+            "coding"
+          ]
+        },
+        {
+          "id": "he-017",
+          "missing": [
+            "debugging"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-019",
+          "missing": [
+            "planning_delegation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-020",
+          "missing": [
+            "multimodal",
+            "structured_extraction"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-022",
+          "missing": [
+            "factual_explanation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-023",
+          "missing": [
+            "factual_explanation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-026",
+          "missing": [
+            "mathematics"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-027",
+          "missing": [
+            "document_analysis",
+            "structured_extraction"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-028",
+          "missing": [
+            "conversation"
+          ],
+          "forbidden": [
+            "planning_delegation"
+          ]
+        }
+      ],
+      "languages": {
+        "en": {
+          "cases": 28,
+          "satisfied": 15,
+          "caseSatisfaction": 0.5357142857142857,
+          "required": 38,
+          "found": 24,
+          "requiredRecall": 0.631578947368421,
+          "forbiddenViolations": 2,
+          "perLabel": {
+            "debugging": {
+              "required": 3,
+              "found": 1
+            },
+            "coding": {
+              "required": 5,
+              "found": 4
+            },
+            "repository_architecture": {
+              "required": 1,
+              "found": 1
+            },
+            "multi_file_implementation": {
+              "required": 1,
+              "found": 1
+            },
+            "document_analysis": {
+              "required": 3,
+              "found": 1
+            },
+            "structured_extraction": {
+              "required": 3,
+              "found": 3
+            },
+            "research_synthesis": {
+              "required": 2,
+              "found": 1
+            },
+            "tool_driven": {
+              "required": 2,
+              "found": 1
+            },
+            "planning_delegation": {
+              "required": 2,
+              "found": 1
+            },
+            "review_verification": {
+              "required": 3,
+              "found": 3
+            },
+            "security_review": {
+              "required": 2,
+              "found": 1
+            },
+            "mathematics": {
+              "required": 2,
+              "found": 1
+            },
+            "complex_reasoning": {
+              "required": 1,
+              "found": 1
+            },
+            "multimodal": {
+              "required": 2,
+              "found": 1
+            },
+            "factual_explanation": {
+              "required": 4,
+              "found": 2
+            },
+            "conversation": {
+              "required": 2,
+              "found": 1
+            }
+          },
+          "failures": [
+            {
+              "id": "en-001",
+              "missing": [
+                "debugging"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-005",
+              "missing": [
+                "document_analysis"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-008",
+              "missing": [
+                "tool_driven"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-017",
+              "missing": [
+                "debugging",
+                "coding"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "en-019",
+              "missing": [
+                "planning_delegation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-020",
+              "missing": [
+                "multimodal"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-021",
+              "missing": [
+                "security_review"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-023",
+              "missing": [
+                "factual_explanation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-024",
+              "missing": [
+                "factual_explanation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-025",
+              "missing": [
+                "research_synthesis"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "en-026",
+              "missing": [
+                "mathematics"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-027",
+              "missing": [
+                "document_analysis"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-028",
+              "missing": [
+                "conversation"
+              ],
+              "forbidden": []
+            }
+          ]
+        },
+        "he": {
+          "cases": 28,
+          "satisfied": 11,
+          "caseSatisfaction": 0.39285714285714285,
+          "required": 38,
+          "found": 20,
+          "requiredRecall": 0.5263157894736842,
+          "forbiddenViolations": 3,
+          "perLabel": {
+            "debugging": {
+              "required": 3,
+              "found": 0
+            },
+            "coding": {
+              "required": 5,
+              "found": 5
+            },
+            "repository_architecture": {
+              "required": 1,
+              "found": 1
+            },
+            "multi_file_implementation": {
+              "required": 1,
+              "found": 0
+            },
+            "document_analysis": {
+              "required": 3,
+              "found": 1
+            },
+            "structured_extraction": {
+              "required": 3,
+              "found": 1
+            },
+            "research_synthesis": {
+              "required": 2,
+              "found": 2
+            },
+            "tool_driven": {
+              "required": 2,
+              "found": 2
+            },
+            "planning_delegation": {
+              "required": 2,
+              "found": 1
+            },
+            "review_verification": {
+              "required": 3,
+              "found": 3
+            },
+            "security_review": {
+              "required": 2,
+              "found": 2
+            },
+            "mathematics": {
+              "required": 2,
+              "found": 0
+            },
+            "complex_reasoning": {
+              "required": 1,
+              "found": 0
+            },
+            "multimodal": {
+              "required": 2,
+              "found": 1
+            },
+            "factual_explanation": {
+              "required": 4,
+              "found": 1
+            },
+            "conversation": {
+              "required": 2,
+              "found": 0
+            }
+          },
+          "failures": [
+            {
+              "id": "he-001",
+              "missing": [
+                "debugging"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-002",
+              "missing": [
+                "debugging"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-003",
+              "missing": [],
+              "forbidden": [
+                "coding"
+              ]
+            },
+            {
+              "id": "he-004",
+              "missing": [
+                "multi_file_implementation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-005",
+              "missing": [
+                "document_analysis"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-012",
+              "missing": [
+                "mathematics"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-013",
+              "missing": [
+                "complex_reasoning"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-015",
+              "missing": [
+                "factual_explanation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-016",
+              "missing": [
+                "conversation"
+              ],
+              "forbidden": [
+                "coding"
+              ]
+            },
+            {
+              "id": "he-017",
+              "missing": [
+                "debugging"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-019",
+              "missing": [
+                "planning_delegation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-020",
+              "missing": [
+                "multimodal",
+                "structured_extraction"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-022",
+              "missing": [
+                "factual_explanation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-023",
+              "missing": [
+                "factual_explanation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-026",
+              "missing": [
+                "mathematics"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-027",
+              "missing": [
+                "document_analysis",
+                "structured_extraction"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-028",
+              "missing": [
+                "conversation"
+              ],
+              "forbidden": [
+                "planning_delegation"
+              ]
+            }
+          ]
+        }
+      },
+      "timing": {
+        "iterations": 1000,
+        "medianMs": 0.0795999999999708,
+        "p95Ms": 0.18590000000000373,
+        "boundedInputMs": 10.989499999999964
+      }
+    },
+    "prototype": {
+      "cases": 56,
+      "satisfied": 7,
+      "caseSatisfaction": 0.125,
+      "required": 76,
+      "found": 9,
+      "requiredRecall": 0.11842105263157894,
+      "forbiddenViolations": 18,
+      "perLabel": {
+        "debugging": {
+          "required": 6,
+          "found": 0
+        },
+        "coding": {
+          "required": 10,
+          "found": 0
+        },
+        "repository_architecture": {
+          "required": 2,
+          "found": 1
+        },
+        "multi_file_implementation": {
+          "required": 2,
+          "found": 0
+        },
+        "document_analysis": {
+          "required": 6,
+          "found": 2
+        },
+        "structured_extraction": {
+          "required": 6,
+          "found": 1
+        },
+        "research_synthesis": {
+          "required": 4,
+          "found": 0
+        },
+        "tool_driven": {
+          "required": 4,
+          "found": 0
+        },
+        "planning_delegation": {
+          "required": 4,
+          "found": 1
+        },
+        "review_verification": {
+          "required": 6,
+          "found": 0
+        },
+        "security_review": {
+          "required": 4,
+          "found": 0
+        },
+        "mathematics": {
+          "required": 4,
+          "found": 0
+        },
+        "complex_reasoning": {
+          "required": 2,
+          "found": 0
+        },
+        "multimodal": {
+          "required": 4,
+          "found": 0
+        },
+        "factual_explanation": {
+          "required": 8,
+          "found": 0
+        },
+        "conversation": {
+          "required": 4,
+          "found": 4
+        }
+      },
+      "failures": [
+        {
+          "id": "en-001",
+          "missing": [
+            "debugging",
+            "coding"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "en-002",
+          "missing": [
+            "debugging",
+            "coding"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "en-004",
+          "missing": [
+            "coding",
+            "multi_file_implementation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-005",
+          "missing": [
+            "structured_extraction"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-006",
+          "missing": [
+            "document_analysis"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "en-007",
+          "missing": [
+            "research_synthesis"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "en-008",
+          "missing": [
+            "tool_driven"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-010",
+          "missing": [
+            "review_verification"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "en-011",
+          "missing": [
+            "security_review"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "en-012",
+          "missing": [
+            "mathematics"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-013",
+          "missing": [
+            "complex_reasoning"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-014",
+          "missing": [
+            "multimodal"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-015",
+          "missing": [
+            "factual_explanation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-017",
+          "missing": [
+            "debugging",
+            "coding"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "en-018",
+          "missing": [
+            "coding",
+            "review_verification",
+            "tool_driven"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-019",
+          "missing": [
+            "planning_delegation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-020",
+          "missing": [
+            "multimodal",
+            "structured_extraction"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-021",
+          "missing": [
+            "security_review",
+            "review_verification"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "en-022",
+          "missing": [
+            "factual_explanation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-023",
+          "missing": [
+            "factual_explanation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-024",
+          "missing": [
+            "factual_explanation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "en-025",
+          "missing": [
+            "research_synthesis"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "en-026",
+          "missing": [
+            "mathematics"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-001",
+          "missing": [
+            "debugging",
+            "coding"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "he-002",
+          "missing": [
+            "debugging",
+            "coding"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "he-003",
+          "missing": [
+            "repository_architecture"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-004",
+          "missing": [
+            "coding",
+            "multi_file_implementation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-005",
+          "missing": [
+            "document_analysis",
+            "structured_extraction"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-006",
+          "missing": [
+            "document_analysis"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "he-007",
+          "missing": [
+            "research_synthesis"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "he-008",
+          "missing": [
+            "tool_driven"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-009",
+          "missing": [
+            "planning_delegation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-010",
+          "missing": [
+            "review_verification"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "he-011",
+          "missing": [
+            "security_review"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "he-012",
+          "missing": [
+            "mathematics"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-013",
+          "missing": [
+            "complex_reasoning"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-014",
+          "missing": [
+            "multimodal"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-015",
+          "missing": [
+            "factual_explanation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-017",
+          "missing": [
+            "debugging",
+            "coding"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "he-018",
+          "missing": [
+            "coding",
+            "review_verification",
+            "tool_driven"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-019",
+          "missing": [
+            "planning_delegation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-020",
+          "missing": [
+            "multimodal",
+            "structured_extraction"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-021",
+          "missing": [
+            "security_review",
+            "review_verification"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "he-022",
+          "missing": [
+            "factual_explanation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-023",
+          "missing": [
+            "factual_explanation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-024",
+          "missing": [
+            "factual_explanation"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-025",
+          "missing": [
+            "research_synthesis"
+          ],
+          "forbidden": [
+            "conversation"
+          ]
+        },
+        {
+          "id": "he-026",
+          "missing": [
+            "mathematics"
+          ],
+          "forbidden": []
+        },
+        {
+          "id": "he-027",
+          "missing": [
+            "document_analysis",
+            "structured_extraction"
+          ],
+          "forbidden": []
+        }
+      ],
+      "languages": {
+        "en": {
+          "cases": 28,
+          "satisfied": 5,
+          "caseSatisfaction": 0.17857142857142858,
+          "required": 38,
+          "found": 7,
+          "requiredRecall": 0.18421052631578946,
+          "forbiddenViolations": 9,
+          "perLabel": {
+            "debugging": {
+              "required": 3,
+              "found": 0
+            },
+            "coding": {
+              "required": 5,
+              "found": 0
+            },
+            "repository_architecture": {
+              "required": 1,
+              "found": 1
+            },
+            "multi_file_implementation": {
+              "required": 1,
+              "found": 0
+            },
+            "document_analysis": {
+              "required": 3,
+              "found": 2
+            },
+            "structured_extraction": {
+              "required": 3,
+              "found": 1
+            },
+            "research_synthesis": {
+              "required": 2,
+              "found": 0
+            },
+            "tool_driven": {
+              "required": 2,
+              "found": 0
+            },
+            "planning_delegation": {
+              "required": 2,
+              "found": 1
+            },
+            "review_verification": {
+              "required": 3,
+              "found": 0
+            },
+            "security_review": {
+              "required": 2,
+              "found": 0
+            },
+            "mathematics": {
+              "required": 2,
+              "found": 0
+            },
+            "complex_reasoning": {
+              "required": 1,
+              "found": 0
+            },
+            "multimodal": {
+              "required": 2,
+              "found": 0
+            },
+            "factual_explanation": {
+              "required": 4,
+              "found": 0
+            },
+            "conversation": {
+              "required": 2,
+              "found": 2
+            }
+          },
+          "failures": [
+            {
+              "id": "en-001",
+              "missing": [
+                "debugging",
+                "coding"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "en-002",
+              "missing": [
+                "debugging",
+                "coding"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "en-004",
+              "missing": [
+                "coding",
+                "multi_file_implementation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-005",
+              "missing": [
+                "structured_extraction"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-006",
+              "missing": [
+                "document_analysis"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "en-007",
+              "missing": [
+                "research_synthesis"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "en-008",
+              "missing": [
+                "tool_driven"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-010",
+              "missing": [
+                "review_verification"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "en-011",
+              "missing": [
+                "security_review"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "en-012",
+              "missing": [
+                "mathematics"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-013",
+              "missing": [
+                "complex_reasoning"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-014",
+              "missing": [
+                "multimodal"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-015",
+              "missing": [
+                "factual_explanation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-017",
+              "missing": [
+                "debugging",
+                "coding"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "en-018",
+              "missing": [
+                "coding",
+                "review_verification",
+                "tool_driven"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-019",
+              "missing": [
+                "planning_delegation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-020",
+              "missing": [
+                "multimodal",
+                "structured_extraction"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-021",
+              "missing": [
+                "security_review",
+                "review_verification"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "en-022",
+              "missing": [
+                "factual_explanation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-023",
+              "missing": [
+                "factual_explanation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-024",
+              "missing": [
+                "factual_explanation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "en-025",
+              "missing": [
+                "research_synthesis"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "en-026",
+              "missing": [
+                "mathematics"
+              ],
+              "forbidden": []
+            }
+          ]
+        },
+        "he": {
+          "cases": 28,
+          "satisfied": 2,
+          "caseSatisfaction": 0.07142857142857142,
+          "required": 38,
+          "found": 2,
+          "requiredRecall": 0.05263157894736842,
+          "forbiddenViolations": 9,
+          "perLabel": {
+            "debugging": {
+              "required": 3,
+              "found": 0
+            },
+            "coding": {
+              "required": 5,
+              "found": 0
+            },
+            "repository_architecture": {
+              "required": 1,
+              "found": 0
+            },
+            "multi_file_implementation": {
+              "required": 1,
+              "found": 0
+            },
+            "document_analysis": {
+              "required": 3,
+              "found": 0
+            },
+            "structured_extraction": {
+              "required": 3,
+              "found": 0
+            },
+            "research_synthesis": {
+              "required": 2,
+              "found": 0
+            },
+            "tool_driven": {
+              "required": 2,
+              "found": 0
+            },
+            "planning_delegation": {
+              "required": 2,
+              "found": 0
+            },
+            "review_verification": {
+              "required": 3,
+              "found": 0
+            },
+            "security_review": {
+              "required": 2,
+              "found": 0
+            },
+            "mathematics": {
+              "required": 2,
+              "found": 0
+            },
+            "complex_reasoning": {
+              "required": 1,
+              "found": 0
+            },
+            "multimodal": {
+              "required": 2,
+              "found": 0
+            },
+            "factual_explanation": {
+              "required": 4,
+              "found": 0
+            },
+            "conversation": {
+              "required": 2,
+              "found": 2
+            }
+          },
+          "failures": [
+            {
+              "id": "he-001",
+              "missing": [
+                "debugging",
+                "coding"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "he-002",
+              "missing": [
+                "debugging",
+                "coding"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "he-003",
+              "missing": [
+                "repository_architecture"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-004",
+              "missing": [
+                "coding",
+                "multi_file_implementation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-005",
+              "missing": [
+                "document_analysis",
+                "structured_extraction"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-006",
+              "missing": [
+                "document_analysis"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "he-007",
+              "missing": [
+                "research_synthesis"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "he-008",
+              "missing": [
+                "tool_driven"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-009",
+              "missing": [
+                "planning_delegation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-010",
+              "missing": [
+                "review_verification"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "he-011",
+              "missing": [
+                "security_review"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "he-012",
+              "missing": [
+                "mathematics"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-013",
+              "missing": [
+                "complex_reasoning"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-014",
+              "missing": [
+                "multimodal"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-015",
+              "missing": [
+                "factual_explanation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-017",
+              "missing": [
+                "debugging",
+                "coding"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "he-018",
+              "missing": [
+                "coding",
+                "review_verification",
+                "tool_driven"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-019",
+              "missing": [
+                "planning_delegation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-020",
+              "missing": [
+                "multimodal",
+                "structured_extraction"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-021",
+              "missing": [
+                "security_review",
+                "review_verification"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "he-022",
+              "missing": [
+                "factual_explanation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-023",
+              "missing": [
+                "factual_explanation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-024",
+              "missing": [
+                "factual_explanation"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-025",
+              "missing": [
+                "research_synthesis"
+              ],
+              "forbidden": [
+                "conversation"
+              ]
+            },
+            {
+              "id": "he-026",
+              "missing": [
+                "mathematics"
+              ],
+              "forbidden": []
+            },
+            {
+              "id": "he-027",
+              "missing": [
+                "document_analysis",
+                "structured_extraction"
+              ],
+              "forbidden": []
+            }
+          ]
+        }
+      },
+      "timing": {
+        "iterations": 1000,
+        "medianMs": 0.05580000000003338,
+        "p95Ms": 0.07619999999997162,
+        "boundedInputMs": 1.1774000000000342
+      }
+    }
+  },
+  "gates": {
+    "phrases": {
+      "caseGainPercentagePoints": 21.42857142857143,
+      "accepted": true
+    },
+    "prototype": {
+      "caseGainPercentagePoints": -12.5,
+      "accepted": false
+    }
+  }
+}

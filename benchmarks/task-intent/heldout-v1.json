@@ -1,0 +1,398 @@
+{
+  "version": "relay-intent-heldout-v1",
+  "provenance": "independently authored synthetic objectives; not production traffic",
+  "cases": [
+    {
+      "id": "en-001",
+      "language": "en",
+      "objective": "The basket total stays the same after I remove an item. Find the cause in the checkout code and make the total update correctly.",
+      "required": ["debugging", "coding"],
+      "forbidden": ["conversation"]
+    },
+    {
+      "id": "en-002",
+      "language": "en",
+      "objective": "Since yesterday, retrying a failed upload creates two database records. Trace the faulty path and repair it.",
+      "required": ["debugging", "coding"],
+      "forbidden": ["conversation"]
+    },
+    {
+      "id": "en-003",
+      "language": "en",
+      "objective": "Map this repository's modules and explain how the HTTP layer, domain services, and persistence layer depend on each other.",
+      "required": ["repository_architecture"],
+      "forbidden": ["coding", "debugging"]
+    },
+    {
+      "id": "en-004",
+      "language": "en",
+      "objective": "Add a delivery-notes field across the database migration, API schema, and checkout form, updating all three files together.",
+      "required": ["coding", "multi_file_implementation"],
+      "forbidden": ["debugging"]
+    },
+    {
+      "id": "en-005",
+      "language": "en",
+      "objective": "Read the attached lease and return JSON containing the parties, monthly rent, deposit, and termination notice period; use null where absent.",
+      "required": ["document_analysis", "structured_extraction"],
+      "forbidden": ["coding", "research_synthesis"]
+    },
+    {
+      "id": "en-006",
+      "language": "en",
+      "objective": "Read these two policy documents and explain where their rules for travel reimbursement contradict each other.",
+      "required": ["document_analysis"],
+      "forbidden": ["coding", "conversation"]
+    },
+    {
+      "id": "en-007",
+      "language": "en",
+      "objective": "Find independent studies on heat pumps in cold climates and synthesize their findings, including disagreements and source links.",
+      "required": ["research_synthesis"],
+      "forbidden": ["coding", "conversation"]
+    },
+    {
+      "id": "en-008",
+      "language": "en",
+      "objective": "Use the file tools to list the PDFs in the provided folder, then copy the three newest into its existing Review subfolder.",
+      "required": ["tool_driven"],
+      "forbidden": ["coding", "document_analysis"]
+    },
+    {
+      "id": "en-009",
+      "language": "en",
+      "objective": "Plan our database migration as tasks for the backend engineer, operations engineer, and tester, with dependencies and a rollback checkpoint.",
+      "required": ["planning_delegation"],
+      "forbidden": ["coding", "debugging"]
+    },
+    {
+      "id": "en-010",
+      "language": "en",
+      "objective": "Review this patch against the acceptance criteria and check whether its tests cover the empty-input and retry cases. Report gaps without editing it.",
+      "required": ["review_verification"],
+      "forbidden": ["conversation"]
+    },
+    {
+      "id": "en-011",
+      "language": "en",
+      "objective": "Audit this password-reset flow for token reuse, account enumeration, and missing rate limits, and explain any exploitable findings.",
+      "required": ["security_review"],
+      "forbidden": ["conversation"]
+    },
+    {
+      "id": "en-012",
+      "language": "en",
+      "objective": "A tank holds 240 litres and loses 12 percent of its contents each hour. Calculate what remains after four hours, showing the arithmetic.",
+      "required": ["mathematics"],
+      "forbidden": ["coding", "research_synthesis"]
+    },
+    {
+      "id": "en-013",
+      "language": "en",
+      "objective": "Four talks A, B, C, and D fill four slots. A is before C, B immediately follows D, and C is not last. Derive every valid order and explain why none are missing.",
+      "required": ["complex_reasoning"],
+      "forbidden": ["coding", "research_synthesis"]
+    },
+    {
+      "id": "en-014",
+      "language": "en",
+      "objective": "Look at this photograph and describe which objects are on the table and where they are relative to the blue cup.",
+      "required": ["multimodal"],
+      "forbidden": ["coding", "document_analysis"]
+    },
+    {
+      "id": "en-015",
+      "language": "en",
+      "objective": "Explain why the Moon causes ocean tides in language a twelve-year-old can follow.",
+      "required": ["factual_explanation"],
+      "forbidden": ["research_synthesis", "coding"]
+    },
+    {
+      "id": "en-016",
+      "language": "en",
+      "objective": "Thanks, that was exactly what I needed. Hope you're having a good day!",
+      "required": ["conversation"],
+      "forbidden": ["coding", "tool_driven"]
+    },
+    {
+      "id": "en-017",
+      "language": "en",
+      "objective": "Calendar events move back one day when saved from Tokyo. Work out what's wrong in the date conversion and correct the implementation.",
+      "required": ["debugging", "coding"],
+      "forbidden": ["conversation"]
+    },
+    {
+      "id": "en-018",
+      "language": "en",
+      "objective": "Implement the slug generator, add tests for accents and repeated spaces, then run those tests to verify the result.",
+      "required": ["coding", "review_verification", "tool_driven"],
+      "forbidden": ["security_review"]
+    },
+    {
+      "id": "en-019",
+      "language": "en",
+      "objective": "Break the community workshop into preparation, event-day, and follow-up tasks; assign responsibilities to the coordinator and two volunteers.",
+      "required": ["planning_delegation"],
+      "forbidden": ["coding", "repository_architecture"]
+    },
+    {
+      "id": "en-020",
+      "language": "en",
+      "objective": "Transcribe the quantities and product names from this photo of a handwritten stock sheet into CSV, marking unreadable cells as unknown.",
+      "required": ["multimodal", "structured_extraction"],
+      "forbidden": ["coding", "research_synthesis"]
+    },
+    {
+      "id": "en-021",
+      "language": "en",
+      "objective": "Check whether these API endpoints let one tenant read another tenant's invoices by changing an ID. Review the authorization checks and report weaknesses.",
+      "required": ["security_review", "review_verification"],
+      "forbidden": ["conversation"]
+    },
+    {
+      "id": "en-022",
+      "language": "en",
+      "objective": "My wooden chair wobbles on a flat floor. Explain how to work out which joint or leg needs repair.",
+      "required": ["factual_explanation"],
+      "forbidden": ["debugging", "coding"]
+    },
+    {
+      "id": "en-023",
+      "language": "en",
+      "objective": "Why does a bicycle chain slip under load, and how is that usually fixed? I'm asking about the physical bike.",
+      "required": ["factual_explanation"],
+      "forbidden": ["debugging", "coding", "tool_driven"]
+    },
+    {
+      "id": "en-024",
+      "language": "en",
+      "objective": "What's the everyday difference between espresso and filter coffee in taste and preparation? A brief explanation is enough.",
+      "required": ["factual_explanation"],
+      "forbidden": ["research_synthesis", "tool_driven"]
+    },
+    {
+      "id": "en-025",
+      "language": "en",
+      "objective": "Compare several published studies of urban tree cover and summer temperatures, explaining how their methods affect the conclusions and citing each study.",
+      "required": ["research_synthesis"],
+      "forbidden": ["conversation", "coding"]
+    },
+    {
+      "id": "en-026",
+      "language": "en",
+      "objective": "Prove that the square root of two is irrational, spelling out the contradiction rather than quoting the result.",
+      "required": ["mathematics"],
+      "forbidden": ["coding", "tool_driven"]
+    },
+    {
+      "id": "en-027",
+      "language": "en",
+      "objective": "From this meeting transcript, extract each agreed action, its owner, and its due date into a table. Leave unspecified owners and dates blank.",
+      "required": ["document_analysis", "structured_extraction"],
+      "forbidden": ["planning_delegation", "coding"]
+    },
+    {
+      "id": "en-028",
+      "language": "en",
+      "objective": "I've had a frustrating day and just want to vent for a minute. Can you listen without trying to solve it?",
+      "required": ["conversation"],
+      "forbidden": ["planning_delegation", "debugging", "tool_driven"]
+    },
+    {
+      "id": "he-001",
+      "language": "he",
+      "objective": "מאז העדכון, לחיצה על שמירה מוחקת את מספר הטלפון מהפרופיל. מצאו את הסיבה בקוד ותקנו אותה.",
+      "required": ["debugging", "coding"],
+      "forbidden": ["conversation"]
+    },
+    {
+      "id": "he-002",
+      "language": "he",
+      "objective": "המסנן בטבלת ההזמנות מציג גם הזמנות שבוטלו, אף שבחרתי רק פעילות. צריך להבין איפה התנאי נשבר ולתקן את המימוש.",
+      "required": ["debugging", "coding"],
+      "forbidden": ["conversation"]
+    },
+    {
+      "id": "he-003",
+      "language": "he",
+      "objective": "עברו על מבנה המאגר והסבירו מי אחראי לניתוב, ללוגיקה העסקית ולגישה למסד הנתונים, ואילו מודולים תלויים באחרים.",
+      "required": ["repository_architecture"],
+      "forbidden": ["coding", "debugging"]
+    },
+    {
+      "id": "he-004",
+      "language": "he",
+      "objective": "הוסיפו תמיכה בכינוי למשתמש באמצעות שינוי מתואם בקובץ הסכמה, בנתיב השרת ובטופס ההרשמה.",
+      "required": ["coding", "multi_file_implementation"],
+      "forbidden": ["debugging"]
+    },
+    {
+      "id": "he-005",
+      "language": "he",
+      "objective": "קראו את החשבוניות המצורפות וחלצו לכל אחת את מספר החשבונית, הספק, התאריך והסכום למערך JSON. אל תנחשו שדות חסרים.",
+      "required": ["document_analysis", "structured_extraction"],
+      "forbidden": ["coding", "research_synthesis"]
+    },
+    {
+      "id": "he-006",
+      "language": "he",
+      "objective": "סכמו את טיוטת ההסכם המצורפת והסבירו אילו התחייבויות מופיעות בה בלי מועד ביצוע ברור.",
+      "required": ["document_analysis"],
+      "forbidden": ["coding", "conversation"]
+    },
+    {
+      "id": "he-007",
+      "language": "he",
+      "objective": "אספו מחקרים ממקורות שונים על השפעת תאורת רחוב על חרקים, והשוו את הממצאים והמגבלות עם קישורים למקורות.",
+      "required": ["research_synthesis"],
+      "forbidden": ["conversation", "coding"]
+    },
+    {
+      "id": "he-008",
+      "language": "he",
+      "objective": "באמצעות כלי הקבצים, פתחו את קובץ היומן שבתיקייה שסיפקתי ושמרו עותק שמכיל רק את השורות מהיום.",
+      "required": ["tool_driven"],
+      "forbidden": ["coding", "debugging"]
+    },
+    {
+      "id": "he-009",
+      "language": "he",
+      "objective": "בנו תוכנית להעברת שירות הדואר: חלקו משימות בין איש התשתיות, התמיכה והבודקת, וסמנו תלויות ונקודת חזרה לאחור.",
+      "required": ["planning_delegation"],
+      "forbidden": ["coding", "debugging"]
+    },
+    {
+      "id": "he-010",
+      "language": "he",
+      "objective": "בדקו את השינוי המוצע מול דרישות הכרטיס ואת כיסוי בדיקות היחידה שלו. דווחו על מקרי קצה שלא נבדקו, בלי לשנות קוד.",
+      "required": ["review_verification"],
+      "forbidden": ["conversation"]
+    },
+    {
+      "id": "he-011",
+      "language": "he",
+      "objective": "סקרו את מנגנון העלאת הקבצים מבחינת אבטחה: עקיפת נתיבים, התחזות לסוג קובץ והרשאות גישה לקבצים של אחרים.",
+      "required": ["security_review"],
+      "forbidden": ["conversation"]
+    },
+    {
+      "id": "he-012",
+      "language": "he",
+      "objective": "מחיר מוצר עלה בעשרים אחוז ואז ירד בעשרים אחוז. אם המחיר המקורי היה 350 שקלים, חשבו את המחיר הסופי והסבירו את השלבים.",
+      "required": ["mathematics"],
+      "forbidden": ["coding", "research_synthesis"]
+    },
+    {
+      "id": "he-013",
+      "language": "he",
+      "objective": "דנה, רון ויעל מציגים בשלושה ימים רצופים. דנה אינה ראשונה, רון מופיע לפני יעל ויעל אינה ביום השני. הסיקו את הסדר והסבירו איך נפסלות החלופות.",
+      "required": ["complex_reasoning"],
+      "forbidden": ["coding", "research_synthesis"]
+    },
+    {
+      "id": "he-014",
+      "language": "he",
+      "objective": "התבוננו בתמונה המצורפת ותארו את ההבדלים החזותיים בין שני החלונות שמופיעים בה, כולל הצבעים והמיקום.",
+      "required": ["multimodal"],
+      "forbidden": ["coding", "debugging"]
+    },
+    {
+      "id": "he-015",
+      "language": "he",
+      "objective": "למה נוצרת קשת בענן? הסבירו בפשטות מה קורה לאור בתוך טיפות המים.",
+      "required": ["factual_explanation"],
+      "forbidden": ["research_synthesis", "coding"]
+    },
+    {
+      "id": "he-016",
+      "language": "he",
+      "objective": "תודה רבה, עזרת לי ממש. שיהיה ערב נעים!",
+      "required": ["conversation"],
+      "forbidden": ["coding", "tool_driven"]
+    },
+    {
+      "id": "he-017",
+      "language": "he",
+      "objective": "אני מתקנת את פונקציית הייבוא: שמות בעברית הפכו לסימני שאלה אחרי השינוי האחרון. אתר את מקור השיבוש והחזר קריאה תקינה של הקובץ.",
+      "required": ["debugging", "coding"],
+      "forbidden": ["conversation"]
+    },
+    {
+      "id": "he-018",
+      "language": "he",
+      "objective": "ממשו פונקציה לאיחוד טווחי מספרים, הוסיפו בדיקות לטווחים חופפים ולרשימה ריקה, והריצו אותן כדי לוודא שהתוצאה נכונה.",
+      "required": ["coding", "review_verification", "tool_driven"],
+      "forbidden": ["security_review"]
+    },
+    {
+      "id": "he-019",
+      "language": "he",
+      "objective": "תכננו יום התנדבות בשכונה וחלקו את האחריות לרישום, לציוד ולהסעות בין שלושת הרכזים, לפי סדר הביצוע.",
+      "required": ["planning_delegation"],
+      "forbidden": ["coding", "repository_architecture"]
+    },
+    {
+      "id": "he-020",
+      "language": "he",
+      "objective": "פענחו את צילום לוח התורנויות והחזירו טבלה של שמות, ימים ושעות. סמנו טקסט שאי אפשר לקרוא במקום להשלים אותו.",
+      "required": ["multimodal", "structured_extraction"],
+      "forbidden": ["coding", "research_synthesis"]
+    },
+    {
+      "id": "he-021",
+      "language": "he",
+      "objective": "בדקו אם משתמש רגיל יכול להפעיל פעולת מנהל באמצעות שליחת בקשה ישירה לשרת, ועברו על אכיפת ההרשאות בכל נקודות הכניסה הרלוונטיות.",
+      "required": ["security_review", "review_verification"],
+      "forbidden": ["conversation"]
+    },
+    {
+      "id": "he-022",
+      "language": "he",
+      "objective": "איך מתקנים רוכסן של מעיל שנתקע בבד? הסבירו דרך עדינה לשחרר אותו בלי לקרוע את הבד.",
+      "required": ["factual_explanation"],
+      "forbidden": ["debugging", "coding", "tool_driven"]
+    },
+    {
+      "id": "he-023",
+      "language": "he",
+      "objective": "תיקנתי את ציר הדלת והיא עדיין חורקת. הסבירו אילו חלקים מכניים כדאי לבדוק ומה יכול לגרום לרעש.",
+      "required": ["factual_explanation"],
+      "forbidden": ["debugging", "coding"]
+    },
+    {
+      "id": "he-024",
+      "language": "he",
+      "objective": "מה ההבדל בין קמח מלא לקמח לבן מבחינת המרקם באפייה? מספיק הסבר קצר למי שאופה בבית.",
+      "required": ["factual_explanation"],
+      "forbidden": ["research_synthesis", "tool_driven"]
+    },
+    {
+      "id": "he-025",
+      "language": "he",
+      "objective": "השוו מחקרים שפורסמו על למידה מרווחת לעומת למידה מרוכזת, תוך הבחנה בין סוגי הניסויים וציון המקורות שעליהם נשען הסיכום.",
+      "required": ["research_synthesis"],
+      "forbidden": ["conversation", "coding"]
+    },
+    {
+      "id": "he-026",
+      "language": "he",
+      "objective": "הוכיחו שסכום שני מספרים אי־זוגיים הוא תמיד זוגי, באמצעות כתיבה אלגברית והסבר של כל שלב.",
+      "required": ["mathematics"],
+      "forbidden": ["coding", "tool_driven"]
+    },
+    {
+      "id": "he-027",
+      "language": "he",
+      "objective": "מתוך תמליל הישיבה הזה, חלצו רק החלטות שכבר התקבלו ואת האחראי שנקבע לכל אחת, בטבלה. אל תציעו משימות חדשות.",
+      "required": ["document_analysis", "structured_extraction"],
+      "forbidden": ["planning_delegation", "coding"]
+    },
+    {
+      "id": "he-028",
+      "language": "he",
+      "objective": "היה לי יום מתיש ואני רק רוצה לפרוק קצת. אפשר פשוט להקשיב לי בלי לבנות תוכנית פעולה?",
+      "required": ["conversation"],
+      "forbidden": ["planning_delegation", "debugging", "tool_driven"]
+    }
+  ]
+}

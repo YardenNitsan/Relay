@@ -51,5 +51,7 @@ finally{
   try{await sandbox.stopAll();}catch(error){report.cleanupError=error instanceof Error?error.message:String(error);process.exitCode=1;}
   await writeFile(join(root,'report.json'),JSON.stringify(report,null,2)+'\n');
   await writeFile(join(output,'coding-latest.json'),JSON.stringify(report,null,2)+'\n');
-  console.log(JSON.stringify({report:join(root,'report.json'),sandboxPreflight:report.sandboxPreflight,files:corpus.manifest.files,bytes:corpus.manifest.bytes,omitted:corpus.manifest.omissions.length,model:report.model,error:report.error}));
+  // Full receipts and model output stay in the report; the terminal gets a bounded summary.
+  const model=report.model as {state:string;durationMs?:number;error?:string;detail?:{task:{callsUsed:number}};publication?:{restored:boolean}};
+  console.log(JSON.stringify({report:join(root,'report.json'),sandboxPreflight:report.sandboxPreflight,files:corpus.manifest.files,bytes:corpus.manifest.bytes,omitted:corpus.manifest.omissions.length,model:{state:model.state,durationMs:model.durationMs,callsUsed:model.detail?.task.callsUsed,publicationRestored:model.publication?.restored,error:model.error},error:report.error,cleanupError:report.cleanupError}));
 }

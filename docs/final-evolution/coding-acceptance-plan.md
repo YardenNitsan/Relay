@@ -28,13 +28,15 @@ Files: scripts/coding-fixture.ts, scripts/coding-acceptance.ts; evidence under i
 
 ## Task3: Independent verification and reviewed publication
 
-- [ ] Verify actual file hashes and unchanged non-target tree, then run independent tests in a fresh sandbox stage.
-- [ ] Require actual completed test receipt and independent passing outcome, not assistant text alone.
-- [ ] On success, exact owner review publishes only the two fixture changes; independently verify source results and reviewed rollback. No user repository or Git push is a target.
+- [x] Verify actual file hashes and unchanged non-target tree, then run independent tests in a fresh sandbox stage.
+- [x] Require actual completed test receipt and independent passing outcome, not assistant text alone.
+- [x] On success, exact owner review publishes only the two fixture changes; independently verify source results and reviewed rollback. No user repository or Git push is a target.
 - [x] Close acceptance session and stop its owned services/containers. Retain sanitized reports and recovery data; no simulated background continuation.
 - [x] Update ledger with precise passes/failures and remaining C01/C02/C03-directory/C04/full-build acceptance. Continue the backlog.
 
-Preflight and supervised execution were observed; no model completed. Successful independent grading/publication/rollback remains open. See evidence/coding-acceptance-windows.json for four retained failures.
+Initial trials failed; retain them in evidence/coding-acceptance-windows.json. The explicit 32K/8192 trial coding-0O93wv completes all targeted gates: 8 calls/256,978 ms, visible 2/2, independent 9/9, published source 9/9 and exact rollback. See evidence/coding-acceptance-success-windows.json. This establishes the narrowly defined two-fault workflow, not full C05 application-building capability.
+
+The identical fresh-workspace repeat coding-IORGAe fails: 9 calls/293,050 ms, visible 2/2, but the host waits for user review after denying an unapproved diagnostic command. Post-run independent grading finds 8/9: AGENT_STARTED events remain unfiltered. Nothing is published. Both outcomes remain recorded; this is inconsistent completion, not an established success rate. Future evaluation needs broader frozen tasks and explicit model artifact/sampling identity, without tuning to this known case or relaxing authority/grading.
 
 ## Explicit output-budget follow-up
 

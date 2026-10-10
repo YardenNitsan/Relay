@@ -68,7 +68,7 @@ Update: the frozen Studio checkpoint `c8616968b4f65a8c9ad64b67a1c2571b4cb42550` 
 
 ## Required scenario definitions
 
-All remain open until fresh evidence is linked. Historical/fixture results are not live acceptance.
+These define scenario-level gates. Results below establish only their stated scope; no all-scenario acceptance is claimed. Historical results and provider fixtures are distinguished from actual inference and native execution.
 
 | ID | Scenario | Pass definition |
 |---|---|---|
@@ -142,3 +142,13 @@ All18 Projects combinations pass geometry, keyboard/focus, file search and WCAG-
 Visual review drove persistent file actions, editor fill, a shorter landscape header and an explicit first-workspace phone action. Short landscape body grew from142.8px to at least160px while decisions remain visible. Red/green checks reproduce same-file re-click wrongly offering discard, then verify it leaves the draft untouched. Earlier dirty-close, shortcut replacement, failed list-refetch and resize/navigation focus regressions are also fixed. Retained [before320](evidence/projects-before-320.png), [before1440](evidence/projects-before-1440.png), [phone light](evidence/projects-studio-320x740-light.png), [phone dark](evidence/projects-studio-390x844-dark.png), [desktop light](evidence/projects-studio-1440x960-light.png), [desktop dark](evidence/projects-studio-1440x960-dark.png), [landscape](evidence/projects-studio-844x390-light.png), [empty](evidence/projects-empty-390.png), [error](evidence/projects-error-390.png) and [discard review](evidence/project-draft-close.png) were opened and inspected. These do not establish full accessibility certification or completed B06 Git/test/memory functionality.
 
 D01 uses the unchanged frozen phrase candidate. Forty-three focused multilingual/routing/reasoning/evaluation tests pass before the full check. The quiet internal synthetic comparison improves specified-case satisfaction26/56vs14/56 and forbidden violations5vs11; prototype7/56 is rejected. See benchmark-results.md for provenance, evaluator-freeze limitation, timing and thirty remaining failed cases. Actual model task-selection quality, semantic encoders and local classifier models remain open.
+
+## Actual targeted coding success
+
+[Retained evidence](evidence/coding-acceptance-success-windows.json) records a genuine installed LM Studio9B model,32768context/8192output and unchanged Safe admission/watchdog, local-only policy and exact approvals. The fixed514-file source fixture is unchanged from earlier failed trials. Eight model calls complete in256978ms, with four reads,two writes,two actual Node test commands and Git diff. The final tree preserves every non-target file and repairs both targets. Fresh isolated grading passes9/9; reviewed owner API publication produces the same tree on the disposable original; another fresh9/9 passes; exact reviewed rollback restores the seeded snapshot. No live user repository is published or modified.
+
+The process exits 0, the private 4323 listener closes, and separate read-only database inspection finds zero sessions and one completed task. The retained model text's imprecise units explanation does not substitute for the exact diff and executable checks.
+
+The identical fresh-workspace repeat **fails**. It reaches waiting_for_user after an unapproved diagnostic command is denied; no publication is attempted. Although visible tests pass 2/2, a separate post-run native grader fails one of nine cases because unrelated AGENT_STARTED events still affect activity. The scope check confirms only the two permitted files changed. The driver then cancels its owned unfinished task and closes the host; read-only SQL confirms zero sessions. [Repeat evidence](evidence/coding-acceptance-repeat-windows.json) and [independent diagnostic](evidence/coding-repeat-independent-windows.json) preserve the failed outcome. One success and one failure do not establish consistent coding quality; full application builds, Git worktrees and broader model evaluation remain open.
+
+Native hosted integration/language run [38081728982](https://github.com/YardenNitsan/Relay/actions/runs/38081728982) passes on 6d154db. All three host type/test/build jobs in [38081729034](https://github.com/YardenNitsan/Relay/actions/runs/38081729034) pass; browser jobs remain in progress at this update.

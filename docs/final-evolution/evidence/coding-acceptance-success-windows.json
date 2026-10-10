@@ -1,0 +1,713 @@
+{
+  "schemaVersion": 1,
+  "testedAt": "2026-10-10T19:55:58.941Z",
+  "platform": "win32",
+  "hostNode": "v24.11.1",
+  "implementationCommit": "6d154db651df4184d038a5fdf7b7497fead47d37",
+  "scope": "Versioned substantial-source two-fault repair; not full application build",
+  "rawReport": "output/final-evolution/coding-0O93wv/report.json",
+  "rawReportSha256": "3561d32fc7d974858839ea73dfd41b265a354d17a3fb836c397b6cb036dff3bd",
+  "corpus": {
+    "commit": "d1e19fef2f60a6fbfddf920ef8efd8ae6b4e4988",
+    "trackedPaths": 534,
+    "files": 514,
+    "bytes": 3980270,
+    "omissions": 21,
+    "manifestReference": "coding-acceptance-windows.json"
+  },
+  "sandboxPreflight": "passed",
+  "pristine": {
+    "stdout": "TAP version 13\n# Subtest: overall deadline is expressed in host clock milliseconds\nok 1 - overall deadline is expressed in host clock milliseconds\n  ---\n  duration_ms: 0.710233\n  type: 'test'\n  ...\n# Subtest: activity belongs to the selected task\nok 2 - activity belongs to the selected task\n  ---\n  duration_ms: 0.176289\n  type: 'test'\n  ...\n1..2\n# tests 2\n# suites 0\n# pass 2\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 100.190962\n",
+    "stderr": "",
+    "exitCode": 0,
+    "truncated": false,
+    "durationMs": 327,
+    "toolchain": {
+      "profile": "node",
+      "version": "24.21.0"
+    },
+    "imageId": "sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1",
+    "fileCount": 514
+  },
+  "seeded": {
+    "stdout": "TAP version 13\n# Subtest: overall deadline is expressed in host clock milliseconds\nnot ok 1 - overall deadline is expressed in host clock milliseconds\n  ---\n  duration_ms: 0.949106\n  type: 'test'\n  location: '/workspace/tests/relay-acceptance.test.mjs:5:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    + actual - expected\n    \n    + 1791633600060\n    - 1791633660000\n              ^\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 1791633660000\n  actual: 1791633600060\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (file:///workspace/tests/relay-acceptance.test.mjs:6:10)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1402:25)\n    Test.start (node:internal/test_runner/test:1262:17)\n    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)\n  ...\n# Subtest: activity belongs to the selected task\nnot ok 2 - activity belongs to the selected task\n  ---\n  duration_ms: 0.283217\n  type: 'test'\n  location: '/workspace/tests/relay-acceptance.test.mjs:8:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    + actual - expected\n    \n    + 'Deleting an authorized host file.'\n    - 'Reading authorized files.'\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 'Reading authorized files.'\n  actual: 'Deleting an authorized host file.'\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (file:///workspace/tests/relay-acceptance.test.mjs:10:10)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1402:25)\n    Test.processPendingSubtests (node:internal/test_runner/test:974:18)\n    Test.postRun (node:internal/test_runner/test:1542:19)\n    Test.run (node:internal/test_runner/test:1467:12)\n    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n  ...\n1..2\n# tests 2\n# suites 0\n# pass 0\n# fail 2\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 99.885417\n",
+    "stderr": "",
+    "exitCode": 1,
+    "truncated": false,
+    "durationMs": 311,
+    "toolchain": {
+      "profile": "node",
+      "version": "24.21.0"
+    },
+    "imageId": "sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1",
+    "fileCount": 514
+  },
+  "independentPristine": {
+    "stdout": "TAP version 13\n# Subtest: deadline 30\nok 1 - deadline 30\n  ---\n  duration_ms: 0.59574\n  type: 'test'\n  ...\n# Subtest: deadline 31\nok 2 - deadline 31\n  ---\n  duration_ms: 0.081146\n  type: 'test'\n  ...\n# Subtest: deadline 3600\nok 3 - deadline 3600\n  ---\n  duration_ms: 0.067091\n  type: 'test'\n  ...\n# Subtest: deadline 86400\nok 4 - deadline 86400\n  ---\n  duration_ms: 0.072962\n  type: 'test'\n  ...\n# Subtest: deadline 604800\nok 5 - deadline 604800\n  ---\n  duration_ms: 0.061747\n  type: 'test'\n  ...\n# Subtest: invalid and legacy deadlines\nok 6 - invalid and legacy deadlines\n  ---\n  duration_ms: 0.133096\n  type: 'test'\n  ...\n# Subtest: unrelated activity cannot change fallback or earlier selected activity\nok 7 - unrelated activity cannot change fallback or earlier selected activity\n  ---\n  duration_ms: 0.139587\n  type: 'test'\n  ...\n# Subtest: overall deadline is expressed in host clock milliseconds\nok 8 - overall deadline is expressed in host clock milliseconds\n  ---\n  duration_ms: 0.540407\n  type: 'test'\n  ...\n# Subtest: activity belongs to the selected task\nok 9 - activity belongs to the selected task\n  ---\n  duration_ms: 0.153323\n  type: 'test'\n  ...\n1..9\n# tests 9\n# suites 0\n# pass 9\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 172.661548\n",
+    "stderr": "",
+    "exitCode": 0,
+    "truncated": false,
+    "durationMs": 381,
+    "toolchain": {
+      "profile": "node",
+      "version": "24.21.0"
+    },
+    "imageId": "sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1",
+    "fileCount": 5
+  },
+  "independentRejectsStaleResult": {
+    "stdout": "TAP version 13\n# Subtest: deadline 30\nok 1 - deadline 30\n  ---\n  duration_ms: 0.589066\n  type: 'test'\n  ...\n# Subtest: deadline 31\nok 2 - deadline 31\n  ---\n  duration_ms: 0.074791\n  type: 'test'\n  ...\n# Subtest: deadline 3600\nok 3 - deadline 3600\n  ---\n  duration_ms: 0.062864\n  type: 'test'\n  ...\n# Subtest: deadline 86400\nok 4 - deadline 86400\n  ---\n  duration_ms: 0.082955\n  type: 'test'\n  ...\n# Subtest: deadline 604800\nok 5 - deadline 604800\n  ---\n  duration_ms: 0.058686\n  type: 'test'\n  ...\n# Subtest: invalid and legacy deadlines\nok 6 - invalid and legacy deadlines\n  ---\n  duration_ms: 0.132658\n  type: 'test'\n  ...\n# Subtest: unrelated activity cannot change fallback or earlier selected activity\nok 7 - unrelated activity cannot change fallback or earlier selected activity\n  ---\n  duration_ms: 0.133275\n  type: 'test'\n  ...\n# Subtest: overall deadline is expressed in host clock milliseconds\nnot ok 8 - overall deadline is expressed in host clock milliseconds\n  ---\n  duration_ms: 0.974797\n  type: 'test'\n  location: '/workspace/tests/relay-acceptance.test.mjs:5:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    + actual - expected\n    \n    + 1791633600060\n    - 1791633660000\n              ^\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 1791633660000\n  actual: 1791633600060\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (file:///workspace/tests/relay-acceptance.test.mjs:6:10)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1402:25)\n    Test.start (node:internal/test_runner/test:1262:17)\n    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)\n  ...\n# Subtest: activity belongs to the selected task\nok 9 - activity belongs to the selected task\n  ---\n  duration_ms: 0.154462\n  type: 'test'\n  ...\n1..9\n# tests 9\n# suites 0\n# pass 8\n# fail 1\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 194.263299\n",
+    "stderr": "",
+    "exitCode": 1,
+    "truncated": false,
+    "durationMs": 409,
+    "toolchain": {
+      "profile": "node",
+      "version": "24.21.0"
+    },
+    "imageId": "sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1",
+    "fileCount": 5
+  },
+  "model": {
+    "state": "passed",
+    "selectedModel": {
+      "id": "lmstudio/qwen3.5-9b-uncensored-hauhaucs-aggressive.gguf",
+      "provider": "lmstudio",
+      "name": "Qwen3.5 9B Uncensored HauhauCS Aggressive"
+    },
+    "contextTokens": 32768,
+    "maxOutputTokens": 8192,
+    "cloud": "disabled",
+    "resourcePolicy": {
+      "profile": "safe"
+    },
+    "admission": {
+      "allowed": true,
+      "decision": "run",
+      "reasons": [
+        "Safe resource policy reserves the greater of 4 GiB or 20% of physical RAM, and 1 GiB or 15% of discrete VRAM.",
+        "LM Studio native estimate includes model and context memory. RAM adds at least 1.5 GiB staging/buffers; VRAM adds 15% plus 512 MiB. GPU offload: 75%. One private instance, one prediction, exact 32768-token context. Estimates are not a crash guarantee."
+      ],
+      "estimatedRamBytes": 3691136433,
+      "estimatedVramBytes": 8223797072,
+      "contextTokens": 32768,
+      "confidence": "estimated",
+      "execution": {
+        "numGpu": -1,
+        "lmstudio": {
+          "gpuOffload": 0.75
+        }
+      }
+    },
+    "durationMs": 256978,
+    "callsUsed": 8,
+    "taskStatus": "completed",
+    "options": {
+      "depth": "fast",
+      "access": "supervised",
+      "budget": {
+        "maxCalls": 24,
+        "localOnly": true,
+        "maxCostUsd": 0,
+        "maxSeconds": 1200,
+        "maxIterations": 16,
+        "maxOutputTokens": 8192,
+        "maxElapsedSeconds": 1500
+      },
+      "modelId": "lmstudio/qwen3.5-9b-uncensored-hauhaucs-aggressive.gguf",
+      "assistantId": "coding",
+      "cloudPolicy": "local_only",
+      "workspaceId": "4183f243-d9b8-4673-af6b-acea2f35b90a",
+      "contextTokens": 32768,
+      "modelSelection": "required"
+    },
+    "modelText": "Both failing behaviors have been repaired and all tests now pass (2/2).\n\n**Actual changes:**\n\n1. **shared/task-deadline.ts**: Multiplied `seconds` by 1000 before adding to the timestamp. The original code added seconds directly to a millisecond-based timestamp, causing an off-by-60-second error.\n\n2. **web/task-progress.ts**: Added `if(event.taskId!==task.id)continue;` at the start of the event loop. This filters events so only those belonging to the selected task are processed, preventing cross-task activity leakage.\n\n**Test outcome:** 2 tests pass, 0 fail.",
+    "callEvidence": [
+      {
+        "id": 9,
+        "taskId": "ed095f26-cd24-4094-b936-c33db34a2554",
+        "type": "CALL_BUDGET",
+        "data": {
+          "stepId": "2a20d51e-f3bd-44c7-9713-20a852c56db9",
+          "modelId": "lmstudio/qwen3.5-9b-uncensored-hauhaucs-aggressive.gguf",
+          "reasoning": null,
+          "efficiency": "efficient",
+          "usageSource": "Provider-reported usage is recorded separately after execution.",
+          "maxOutputTokens": 8192,
+          "modelOutputLimit": null,
+          "removedToolCount": 0,
+          "inputSizingMethod": "conservative_utf8_bytes",
+          "requestedReasoning": "auto",
+          "serializedInputBytes": 6506,
+          "requestedOutputTokens": 8192,
+          "inputReservationTokens": 32768,
+          "toolSchemaBytesRemoved": 0
+        },
+        "createdAt": "2026-10-10T19:56:27.238Z"
+      },
+      {
+        "id": 12,
+        "taskId": "ed095f26-cd24-4094-b936-c33db34a2554",
+        "type": "MODEL_CALL_COMPLETED",
+        "data": {
+          "callId": "b6f4b2c8-9822-47e2-a1e1-680448bf3c50",
+          "agentId": "5f06c15b-5523-4461-ad2a-59aa9791c9c3",
+          "costUsd": 0,
+          "modelId": "lmstudio/qwen3.5-9b-uncensored-hauhaucs-aggressive.gguf",
+          "costState": "settled",
+          "inputTokens": 1680,
+          "outputTokens": 143
+        },
+        "createdAt": "2026-10-10T19:56:42.474Z"
+      },
+      {
+        "id": 28,
+        "taskId": "ed095f26-cd24-4094-b936-c33db34a2554",
+        "type": "CALL_BUDGET",
+        "data": {
+          "stepId": "2a20d51e-f3bd-44c7-9713-20a852c56db9",
+          "modelId": "lmstudio/qwen3.5-9b-uncensored-hauhaucs-aggressive.gguf",
+          "reasoning": null,
+          "efficiency": "efficient",
+          "usageSource": "Provider-reported usage is recorded separately after execution.",
+          "maxOutputTokens": 8192,
+          "modelOutputLimit": null,
+          "removedToolCount": 0,
+          "inputSizingMethod": "conservative_utf8_bytes",
+          "requestedReasoning": "auto",
+          "serializedInputBytes": 10658,
+          "requestedOutputTokens": 8192,
+          "inputReservationTokens": 32768,
+          "toolSchemaBytesRemoved": 0
+        },
+        "createdAt": "2026-10-10T19:56:42.519Z"
+      },
+      {
+        "id": 31,
+        "taskId": "ed095f26-cd24-4094-b936-c33db34a2554",
+        "type": "MODEL_CALL_COMPLETED",
+        "data": {
+          "callId": "bf347858-7078-4563-8507-fe59235bdff9",
+          "agentId": "5f06c15b-5523-4461-ad2a-59aa9791c9c3",
+          "costUsd": 0,
+          "modelId": "lmstudio/qwen3.5-9b-uncensored-hauhaucs-aggressive.gguf",
+          "costState": "settled",
+          "inputTokens": 2818,
+          "outputTokens": 581
+        },
+        "createdAt": "2026-10-10T19:57:14.419Z"
+      },
+      {
+        "id": 41,
+        "taskId": "ed095f26-cd24-4094-b936-c33db34a2554",
+        "type": "CALL_BUDGET",
+        "data": {
+          "stepId": "2a20d51e-f3bd-44c7-9713-20a852c56db9",
+          "modelId": "lmstudio/qwen3.5-9b-uncensored-hauhaucs-aggressive.gguf",
+          "reasoning": null,
+          "efficiency": "efficient",
+          "usageSource": "Provider-reported usage is recorded separately after execution.",
+          "maxOutputTokens": 8192,
+          "modelOutputLimit": null,
+          "removedToolCount": 0,
+          "inputSizingMethod": "conservative_utf8_bytes",
+          "requestedReasoning": "auto",
+          "serializedInputBytes": 13416,
+          "requestedOutputTokens": 8192,
+          "inputReservationTokens": 32768,
+          "toolSchemaBytesRemoved": 0
+        },
+        "createdAt": "2026-10-10T19:57:22.242Z"
+      },
+      {
+        "id": 44,
+        "taskId": "ed095f26-cd24-4094-b936-c33db34a2554",
+        "type": "MODEL_CALL_COMPLETED",
+        "data": {
+          "callId": "99bf8114-18b0-4235-98b0-2ca72efc78ad",
+          "agentId": "5f06c15b-5523-4461-ad2a-59aa9791c9c3",
+          "costUsd": 0,
+          "modelId": "lmstudio/qwen3.5-9b-uncensored-hauhaucs-aggressive.gguf",
+          "costState": "settled",
+          "inputTokens": 3746,
+          "outputTokens": 1703
+        },
+        "createdAt": "2026-10-10T19:58:36.039Z"
+      },
+      {
+        "id": 55,
+        "taskId": "ed095f26-cd24-4094-b936-c33db34a2554",
+        "type": "CALL_BUDGET",
+        "data": {
+          "stepId": "2a20d51e-f3bd-44c7-9713-20a852c56db9",
+          "modelId": "lmstudio/qwen3.5-9b-uncensored-hauhaucs-aggressive.gguf",
+          "reasoning": null,
+          "efficiency": "efficient",
+          "usageSource": "Provider-reported usage is recorded separately after execution.",
+          "maxOutputTokens": 8192,
+          "modelOutputLimit": null,
+          "removedToolCount": 0,
+          "inputSizingMethod": "conservative_utf8_bytes",
+          "requestedReasoning": "auto",
+          "serializedInputBytes": 14554,
+          "requestedOutputTokens": 8192,
+          "inputReservationTokens": 32768,
+          "toolSchemaBytesRemoved": 0
+        },
+        "createdAt": "2026-10-10T19:58:37.796Z"
+      },
+      {
+        "id": 58,
+        "taskId": "ed095f26-cd24-4094-b936-c33db34a2554",
+        "type": "MODEL_CALL_COMPLETED",
+        "data": {
+          "callId": "c20e6cd5-4f74-484e-9213-72b518e00331",
+          "agentId": "5f06c15b-5523-4461-ad2a-59aa9791c9c3",
+          "costUsd": 0,
+          "modelId": "lmstudio/qwen3.5-9b-uncensored-hauhaucs-aggressive.gguf",
+          "costState": "settled",
+          "inputTokens": 4132,
+          "outputTokens": 290
+        },
+        "createdAt": "2026-10-10T19:59:00.762Z"
+      },
+      {
+        "id": 64,
+        "taskId": "ed095f26-cd24-4094-b936-c33db34a2554",
+        "type": "CALL_BUDGET",
+        "data": {
+          "stepId": "2a20d51e-f3bd-44c7-9713-20a852c56db9",
+          "modelId": "lmstudio/qwen3.5-9b-uncensored-hauhaucs-aggressive.gguf",
+          "reasoning": null,
+          "efficiency": "efficient",
+          "usageSource": "Provider-reported usage is recorded separately after execution.",
+          "maxOutputTokens": 8192,
+          "modelOutputLimit": null,
+          "removedToolCount": 0,
+          "inputSizingMethod": "conservative_utf8_bytes",
+          "requestedReasoning": "auto",
+          "serializedInputBytes": 15602,
+          "requestedOutputTokens": 8192,
+          "inputReservationTokens": 32768,
+          "toolSchemaBytesRemoved": 0
+        },
+        "createdAt": "2026-10-10T19:59:00.777Z"
+      },
+      {
+        "id": 67,
+        "taskId": "ed095f26-cd24-4094-b936-c33db34a2554",
+        "type": "MODEL_CALL_COMPLETED",
+        "data": {
+          "callId": "3e79447e-4652-4b20-9d58-5dfcc69c8fe5",
+          "agentId": "5f06c15b-5523-4461-ad2a-59aa9791c9c3",
+          "costUsd": 0,
+          "modelId": "lmstudio/qwen3.5-9b-uncensored-hauhaucs-aggressive.gguf",
+          "costState": "settled",
+          "inputTokens": 4421,
+          "outputTokens": 548
+        },
+        "createdAt": "2026-10-10T19:59:32.903Z"
+      },
+      {
+        "id": 78,
+        "taskId": "ed095f26-cd24-4094-b936-c33db34a2554",
+        "type": "CALL_BUDGET",
+        "data": {
+          "stepId": "2a20d51e-f3bd-44c7-9713-20a852c56db9",
+          "modelId": "lmstudio/qwen3.5-9b-uncensored-hauhaucs-aggressive.gguf",
+          "reasoning": null,
+          "efficiency": "efficient",
+          "usageSource": "Provider-reported usage is recorded separately after execution.",
+          "maxOutputTokens": 8192,
+          "modelOutputLimit": null,
+          "removedToolCount": 0,
+          "inputSizingMethod": "conservative_utf8_bytes",
+          "requestedReasoning": "auto",
+          "serializedInputBytes": 17781,
+          "requestedOutputTokens": 8192,
+          "inputReservationTokens": 32768,
+          "toolSchemaBytesRemoved": 0
+        },
+        "createdAt": "2026-10-10T19:59:35.441Z"
+      },
+      {
+        "id": 81,
+        "taskId": "ed095f26-cd24-4094-b936-c33db34a2554",
+        "type": "MODEL_CALL_COMPLETED",
+        "data": {
+          "callId": "508c7762-e521-4fb7-9fed-6a9a9ed73e29",
+          "agentId": "5f06c15b-5523-4461-ad2a-59aa9791c9c3",
+          "costUsd": 0,
+          "modelId": "lmstudio/qwen3.5-9b-uncensored-hauhaucs-aggressive.gguf",
+          "costState": "settled",
+          "inputTokens": 5039,
+          "outputTokens": 89
+        },
+        "createdAt": "2026-10-10T19:59:52.310Z"
+      },
+      {
+        "id": 91,
+        "taskId": "ed095f26-cd24-4094-b936-c33db34a2554",
+        "type": "CALL_BUDGET",
+        "data": {
+          "stepId": "2a20d51e-f3bd-44c7-9713-20a852c56db9",
+          "modelId": "lmstudio/qwen3.5-9b-uncensored-hauhaucs-aggressive.gguf",
+          "reasoning": null,
+          "efficiency": "efficient",
+          "usageSource": "Provider-reported usage is recorded separately after execution.",
+          "maxOutputTokens": 8192,
+          "modelOutputLimit": null,
+          "removedToolCount": 0,
+          "inputSizingMethod": "conservative_utf8_bytes",
+          "requestedReasoning": "auto",
+          "serializedInputBytes": 18865,
+          "requestedOutputTokens": 8192,
+          "inputReservationTokens": 32768,
+          "toolSchemaBytesRemoved": 0
+        },
+        "createdAt": "2026-10-10T20:00:00.053Z"
+      },
+      {
+        "id": 94,
+        "taskId": "ed095f26-cd24-4094-b936-c33db34a2554",
+        "type": "MODEL_CALL_COMPLETED",
+        "data": {
+          "callId": "10eb7344-8fa4-42fd-9734-f9eb609182cc",
+          "agentId": "5f06c15b-5523-4461-ad2a-59aa9791c9c3",
+          "costUsd": 0,
+          "modelId": "lmstudio/qwen3.5-9b-uncensored-hauhaucs-aggressive.gguf",
+          "costState": "settled",
+          "inputTokens": 5413,
+          "outputTokens": 15
+        },
+        "createdAt": "2026-10-10T20:00:14.652Z"
+      },
+      {
+        "id": 100,
+        "taskId": "ed095f26-cd24-4094-b936-c33db34a2554",
+        "type": "CALL_BUDGET",
+        "data": {
+          "stepId": "2a20d51e-f3bd-44c7-9713-20a852c56db9",
+          "modelId": "lmstudio/qwen3.5-9b-uncensored-hauhaucs-aggressive.gguf",
+          "reasoning": null,
+          "efficiency": "efficient",
+          "usageSource": "Provider-reported usage is recorded separately after execution.",
+          "maxOutputTokens": 8192,
+          "modelOutputLimit": null,
+          "removedToolCount": 0,
+          "inputSizingMethod": "conservative_utf8_bytes",
+          "requestedReasoning": "auto",
+          "serializedInputBytes": 21065,
+          "requestedOutputTokens": 8192,
+          "inputReservationTokens": 32768,
+          "toolSchemaBytesRemoved": 0
+        },
+        "createdAt": "2026-10-10T20:00:16.951Z"
+      },
+      {
+        "id": 151,
+        "taskId": "ed095f26-cd24-4094-b936-c33db34a2554",
+        "type": "MODEL_CALL_COMPLETED",
+        "data": {
+          "callId": "dd925841-fb1e-4166-b040-f4b017dd8a6c",
+          "agentId": "5f06c15b-5523-4461-ad2a-59aa9791c9c3",
+          "costUsd": 0,
+          "modelId": "lmstudio/qwen3.5-9b-uncensored-hauhaucs-aggressive.gguf",
+          "costState": "settled",
+          "inputTokens": 5972,
+          "outputTokens": 293
+        },
+        "createdAt": "2026-10-10T20:00:42.125Z"
+      }
+    ],
+    "approvalDecisions": [
+      {
+        "id": "fe6394c6-9c12-48ec-a437-e935261b297d",
+        "tool": "terminal",
+        "decision": "allow_once",
+        "arguments": {
+          "path": null,
+          "expectedHash": null,
+          "argv": [
+            "node",
+            "--test",
+            "--test-reporter=tap",
+            "tests/relay-acceptance.test.mjs"
+          ],
+          "profile": "node",
+          "timeoutSeconds": 30
+        }
+      },
+      {
+        "id": "fd378ae5-11fd-47af-a5e0-d682aeeb154d",
+        "tool": "file_write",
+        "decision": "allow_once",
+        "arguments": {
+          "path": "shared/task-deadline.ts",
+          "expectedHash": "2d1aefc94d95f072600a6e7c99c454a376c952bbd1ad0abd32b9d5211bcd676c",
+          "argv": null,
+          "profile": null,
+          "timeoutSeconds": null
+        }
+      },
+      {
+        "id": "7d8ed634-fa63-4d49-a412-d7ba0c06e468",
+        "tool": "file_write",
+        "decision": "allow_once",
+        "arguments": {
+          "path": "web/task-progress.ts",
+          "expectedHash": "894df4323b047712ec3fdaaf88bc681a150b5026a528da284920f9128b572f62",
+          "argv": null,
+          "profile": null,
+          "timeoutSeconds": null
+        }
+      },
+      {
+        "id": "54c5e1b8-b8d3-458d-853a-dfe1ea714189",
+        "tool": "terminal",
+        "decision": "allow_once",
+        "arguments": {
+          "path": null,
+          "expectedHash": null,
+          "argv": [
+            "node",
+            "--test",
+            "--test-reporter=tap",
+            "tests/relay-acceptance.test.mjs"
+          ],
+          "profile": "node",
+          "timeoutSeconds": 30
+        }
+      }
+    ],
+    "toolReceipts": [
+      {
+        "id": "76145fd1-c194-4ea9-8afd-9ab15e9ae722",
+        "name": "file_read",
+        "arguments": {
+          "path": "shared/task-deadline.ts"
+        },
+        "status": "completed",
+        "result": {
+          "path": "shared/task-deadline.ts",
+          "sha256": "2d1aefc94d95f072600a6e7c99c454a376c952bbd1ad0abd32b9d5211bcd676c",
+          "bytes": 615,
+          "checkpointId": null
+        },
+        "startedAt": "2026-10-10T19:56:42.480Z",
+        "finishedAt": "2026-10-10T19:56:42.492Z"
+      },
+      {
+        "id": "8d8f9ff2-bfd0-4839-8fb4-f71cd7670dc8",
+        "name": "file_read",
+        "arguments": {
+          "path": "web/task-progress.ts"
+        },
+        "status": "completed",
+        "result": {
+          "path": "web/task-progress.ts",
+          "sha256": "894df4323b047712ec3fdaaf88bc681a150b5026a528da284920f9128b572f62",
+          "bytes": 1620,
+          "checkpointId": null
+        },
+        "startedAt": "2026-10-10T19:56:42.497Z",
+        "finishedAt": "2026-10-10T19:56:42.505Z"
+      },
+      {
+        "id": "92540378-2a86-4ca9-a0df-c76b9b786095",
+        "name": "file_read",
+        "arguments": {
+          "path": "tests/relay-acceptance.test.mjs"
+        },
+        "status": "completed",
+        "result": {
+          "path": "tests/relay-acceptance.test.mjs",
+          "sha256": "ffaa85c1d62f7da00ce32bd2c2cd511e759cff67d42d38cb0678b7f8c0458ee1",
+          "bytes": 710,
+          "checkpointId": null
+        },
+        "startedAt": "2026-10-10T19:56:42.508Z",
+        "finishedAt": "2026-10-10T19:56:42.517Z"
+      },
+      {
+        "id": "41db7c91-921e-4bcd-9e8c-81d1c3da43a7",
+        "name": "terminal",
+        "arguments": {
+          "argv": [
+            "node",
+            "--test",
+            "--test-reporter=tap",
+            "tests/relay-acceptance.test.mjs"
+          ],
+          "profile": "node",
+          "timeoutSeconds": 30
+        },
+        "status": "completed",
+        "result": {
+          "stdout": "TAP version 13\n# Subtest: overall deadline is expressed in host clock milliseconds\nnot ok 1 - overall deadline is expressed in host clock milliseconds\n  ---\n  duration_ms: 1.250133\n  type: 'test'\n  location: '/workspace/tests/relay-acceptance.test.mjs:5:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    + actual - expected\n    \n    + 1791633600060\n    - 1791633660000\n              ^\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 1791633660000\n  actual: 1791633600060\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (file:///workspace/tests/relay-acceptance.test.mjs:6:10)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1402:25)\n    Test.start (node:internal/test_runner/test:1262:17)\n    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)\n  ...\n# Subtest: activity belongs to the selected task\nnot ok 2 - activity belongs to the selected task\n  ---\n  duration_ms: 0.260921\n  type: 'test'\n  location: '/workspace/tests/relay-acceptance.test.mjs:8:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    + actual - expected\n    \n    + 'Deleting an authorized host file.'\n    - 'Reading authorized files.'\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 'Reading authorized files.'\n  actual: 'Deleting an authorized host file.'\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (file:///workspace/tests/relay-acceptance.test.mjs:10:10)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1402:25)\n    Test.processPendingSubtests (node:internal/test_runner/test:974:18)\n    Test.postRun (node:internal/test_runner/test:1542:19)\n    Test.run (node:internal/test_runner/test:1467:12)\n    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n  ...\n1..2\n# tests 2\n# suites 0\n# pass 0\n# fail 2\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 99.160249\n",
+          "stderr": "",
+          "exitCode": 1,
+          "truncated": false,
+          "durationMs": 321,
+          "toolchain": {
+            "profile": "node",
+            "version": "24.21.0"
+          },
+          "imageId": "sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1",
+          "checkpointId": null,
+          "filesChanged": 0
+        },
+        "startedAt": "2026-10-10T19:57:15.779Z",
+        "finishedAt": "2026-10-10T19:57:22.239Z"
+      },
+      {
+        "id": "ff71fec9-00b8-4625-a47e-096c40cdec86",
+        "name": "file_write",
+        "arguments": {
+          "path": "shared/task-deadline.ts",
+          "expectedHash": "2d1aefc94d95f072600a6e7c99c454a376c952bbd1ad0abd32b9d5211bcd676c"
+        },
+        "status": "completed",
+        "result": {
+          "path": "shared/task-deadline.ts",
+          "sha256": "dffce35ca76f2f67cbf57bdfda8e92850581d6514fe934a84fd2a481840b3e8c",
+          "bytes": null,
+          "checkpointId": "4e03508c-9cc7-4171-b9b4-e17c330f2ad4"
+        },
+        "startedAt": "2026-10-10T19:58:36.435Z",
+        "finishedAt": "2026-10-10T19:58:37.793Z"
+      },
+      {
+        "id": "280c9553-c15c-4d90-934b-9705c0d1ee98",
+        "name": "file_read",
+        "arguments": {
+          "path": "shared/task-deadline.ts"
+        },
+        "status": "completed",
+        "result": {
+          "path": "shared/task-deadline.ts",
+          "sha256": "dffce35ca76f2f67cbf57bdfda8e92850581d6514fe934a84fd2a481840b3e8c",
+          "bytes": 620,
+          "checkpointId": null
+        },
+        "startedAt": "2026-10-10T19:59:00.766Z",
+        "finishedAt": "2026-10-10T19:59:00.775Z"
+      },
+      {
+        "id": "b3791205-52d3-4148-9fda-e37fe9d1b0f8",
+        "name": "file_write",
+        "arguments": {
+          "path": "web/task-progress.ts",
+          "expectedHash": "894df4323b047712ec3fdaaf88bc681a150b5026a528da284920f9128b572f62"
+        },
+        "status": "completed",
+        "result": {
+          "path": "web/task-progress.ts",
+          "sha256": "42bfdd42c464eb92e3c9c3f44b7d300647a17da72a98d3c22188717daa4bf9a9",
+          "bytes": null,
+          "checkpointId": "c58e5dfd-c2d6-4cdd-93e6-4ca9a53b8a89"
+        },
+        "startedAt": "2026-10-10T19:59:34.083Z",
+        "finishedAt": "2026-10-10T19:59:35.438Z"
+      },
+      {
+        "id": "b44c2b1c-d5c1-4325-acf3-2e0bbe56b4ea",
+        "name": "terminal",
+        "arguments": {
+          "argv": [
+            "node",
+            "--test",
+            "--test-reporter=tap",
+            "tests/relay-acceptance.test.mjs"
+          ],
+          "profile": "node",
+          "timeoutSeconds": 30
+        },
+        "status": "completed",
+        "result": {
+          "stdout": "TAP version 13\n# Subtest: overall deadline is expressed in host clock milliseconds\nok 1 - overall deadline is expressed in host clock milliseconds\n  ---\n  duration_ms: 0.638438\n  type: 'test'\n  ...\n# Subtest: activity belongs to the selected task\nok 2 - activity belongs to the selected task\n  ---\n  duration_ms: 0.182179\n  type: 'test'\n  ...\n1..2\n# tests 2\n# suites 0\n# pass 2\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 93.128386\n",
+          "stderr": "",
+          "exitCode": 0,
+          "truncated": false,
+          "durationMs": 295,
+          "toolchain": {
+            "profile": "node",
+            "version": "24.21.0"
+          },
+          "imageId": "sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1",
+          "checkpointId": null,
+          "filesChanged": 0
+        },
+        "startedAt": "2026-10-10T19:59:53.833Z",
+        "finishedAt": "2026-10-10T20:00:00.050Z"
+      },
+      {
+        "id": "1a9d6e76-252d-47d0-aacf-f697b9f4b51a",
+        "name": "git_diff",
+        "arguments": {},
+        "status": "completed",
+        "result": {
+          "engine": "git version 2.52.0.windows.1",
+          "scope": "managed_workspace_baseline",
+          "baseline": {
+            "kind": "workspace_creation",
+            "createdAt": "2026-10-10T19:56:25.664Z"
+          },
+          "path": null,
+          "content": "diff --git a/shared/task-deadline.ts b/shared/task-deadline.ts\nindex f75e28a..5914520 100644\n--- a/shared/task-deadline.ts\n+++ b/shared/task-deadline.ts\n@@ -9,5 +9,5 @@ export function taskDeadlineMs(task:Pick<TaskRecord,'createdAt'|'options'>):numb\n   const seconds=task.options.budget.maxElapsedSeconds;\n   if(seconds===undefined)return null;\n   if(!Number.isInteger(seconds)||seconds<30||seconds>maximumMaxElapsedSeconds)return NaN;\n-  return Date.parse(task.createdAt)+seconds;\n+  return Date.parse(task.createdAt)+seconds*1000;\n }\ndiff --git a/web/task-progress.ts b/web/task-progress.ts\nindex a84220f..fdfff73 100644\n--- a/web/task-progress.ts\n+++ b/web/task-progress.ts\n@@ -9,6 +9,7 @@ export function taskProgress(task:TaskRecord,events:ActivityEvent[]):string {\n   if(task.status==='planning')return 'Planning the work.';\n   for(let index=events.length-1;index>=0;index--){\n     const event=events[index];\n+    if(event.taskId!==task.id)continue;\n     if(event.type==='TOOL_STARTED'){\n       const labels:Record<string,string>={host_list:'Inspecting a host directory.',host_read:'Reading an authorized host file.',host_write:'Writing a host file.',host_delete:'Deleting an authorized host file.',file_read:'Reading authorized files.',file_list:'Inspecting the workspace.',file_search:'Searching the workspace.',file_write:'Writing a workspace file.',file_delete:'Deleting an authorized workspace file.',terminal:'Running an isolated command.',git_status:'Inspecting workspace changes.',git_diff:'Inspecting the file diff.',http_get:'Reading an authorized web source.',mcp_call:'Calling an approved external tool.'};\n       return labels[String(event.data.tool)]??'Running an authorized tool.';\n",
+          "truncated": false,
+          "trust": "untrusted"
+        },
+        "startedAt": "2026-10-10T20:00:14.656Z",
+        "finishedAt": "2026-10-10T20:00:16.947Z"
+      }
+    ],
+    "independent": {
+      "stdout": "TAP version 13\n# Subtest: deadline 30\nok 1 - deadline 30\n  ---\n  duration_ms: 0.614022\n  type: 'test'\n  ...\n# Subtest: deadline 31\nok 2 - deadline 31\n  ---\n  duration_ms: 0.087148\n  type: 'test'\n  ...\n# Subtest: deadline 3600\nok 3 - deadline 3600\n  ---\n  duration_ms: 0.073535\n  type: 'test'\n  ...\n# Subtest: deadline 86400\nok 4 - deadline 86400\n  ---\n  duration_ms: 0.060838\n  type: 'test'\n  ...\n# Subtest: deadline 604800\nok 5 - deadline 604800\n  ---\n  duration_ms: 0.060625\n  type: 'test'\n  ...\n# Subtest: invalid and legacy deadlines\nok 6 - invalid and legacy deadlines\n  ---\n  duration_ms: 0.384869\n  type: 'test'\n  ...\n# Subtest: unrelated activity cannot change fallback or earlier selected activity\nok 7 - unrelated activity cannot change fallback or earlier selected activity\n  ---\n  duration_ms: 0.153608\n  type: 'test'\n  ...\n# Subtest: overall deadline is expressed in host clock milliseconds\nok 8 - overall deadline is expressed in host clock milliseconds\n  ---\n  duration_ms: 0.542692\n  type: 'test'\n  ...\n# Subtest: activity belongs to the selected task\nok 9 - activity belongs to the selected task\n  ---\n  duration_ms: 0.166931\n  type: 'test'\n  ...\n1..9\n# tests 9\n# suites 0\n# pass 9\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 195.840448\n",
+      "stderr": "",
+      "exitCode": 0,
+      "truncated": false,
+      "durationMs": 406,
+      "toolchain": {
+        "profile": "node",
+        "version": "24.21.0"
+      },
+      "imageId": "sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1",
+      "fileCount": 5
+    },
+    "publishedIndependent": {
+      "stdout": "TAP version 13\n# Subtest: deadline 30\nok 1 - deadline 30\n  ---\n  duration_ms: 0.598673\n  type: 'test'\n  ...\n# Subtest: deadline 31\nok 2 - deadline 31\n  ---\n  duration_ms: 0.08402\n  type: 'test'\n  ...\n# Subtest: deadline 3600\nok 3 - deadline 3600\n  ---\n  duration_ms: 0.070742\n  type: 'test'\n  ...\n# Subtest: deadline 86400\nok 4 - deadline 86400\n  ---\n  duration_ms: 0.058141\n  type: 'test'\n  ...\n# Subtest: deadline 604800\nok 5 - deadline 604800\n  ---\n  duration_ms: 0.054266\n  type: 'test'\n  ...\n# Subtest: invalid and legacy deadlines\nok 6 - invalid and legacy deadlines\n  ---\n  duration_ms: 0.127255\n  type: 'test'\n  ...\n# Subtest: unrelated activity cannot change fallback or earlier selected activity\nok 7 - unrelated activity cannot change fallback or earlier selected activity\n  ---\n  duration_ms: 0.136798\n  type: 'test'\n  ...\n# Subtest: overall deadline is expressed in host clock milliseconds\nok 8 - overall deadline is expressed in host clock milliseconds\n  ---\n  duration_ms: 0.606608\n  type: 'test'\n  ...\n# Subtest: activity belongs to the selected task\nok 9 - activity belongs to the selected task\n  ---\n  duration_ms: 0.152828\n  type: 'test'\n  ...\n1..9\n# tests 9\n# suites 0\n# pass 9\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 181.1679\n",
+      "stderr": "",
+      "exitCode": 0,
+      "truncated": false,
+      "durationMs": 412,
+      "toolchain": {
+        "profile": "node",
+        "version": "24.21.0"
+      },
+      "imageId": "sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1",
+      "fileCount": 5
+    },
+    "publication": {
+      "id": "e3e20b0a-dd87-4226-9047-90976b762d5a",
+      "rollbackId": "538aff50-7ae6-4d66-8cb1-367b42b6eb29",
+      "restored": true
+    }
+  },
+  "cleanup": {
+    "processExitCode": 0,
+    "privatePort4323Closed": true,
+    "sessionClosedByDriver": true,
+    "remainingStoredSessions": 0,
+    "retainedTaskStatuses": [{"status":"completed","count":1}],
+    "verification": "Read-only aggregate SQL after private host shutdown; no Store initialization or session mutation."
+  },
+  "limitations": [
+    "One actual local-model trial, not a general coding success rate or full application build.",
+    "Larger explicit output allowance does not establish a causal speed or quality improvement.",
+    "Fixed public substantial-source fixture with two seeded faults; independent graders operate on five relevant files.",
+    "The model narrative says off-by-60-second error; the verified fix is general seconds-to-milliseconds conversion.",
+    "Git worktrees, controlled package restoration and broader language/application acceptance remain open.",
+    "Exact model weight digest, sampling seed and temperature were not captured in this trial summary. The identical fresh-workspace repeat is retained separately and failed."
+  ]
+}

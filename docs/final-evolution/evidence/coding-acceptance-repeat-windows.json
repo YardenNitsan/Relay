@@ -1,0 +1,224 @@
+{
+  "schemaVersion": 1,
+  "testedAt": "2026-10-10T20:03:46.492Z",
+  "implementationCommit": "6d154db651df4184d038a5fdf7b7497fead47d37",
+  "sourceTrial": "coding-IORGAe",
+  "rawReportSha256": "5c0c2a6af3caface36c7c844043e04e3bd696e0fe601a25eea717e5d2b4fe122",
+  "scope": "Versioned substantial-source two-fault repair; not full application build",
+  "corpus": {
+    "commit": "d1e19fef2f60a6fbfddf920ef8efd8ae6b4e4988",
+    "files": 514,
+    "bytes": 3980270,
+    "omissions": 21
+  },
+  "sandboxPreflight": "passed",
+  "state": "task_waiting_for_user",
+  "selectedModel": {
+    "id": "lmstudio/qwen3.5-9b-uncensored-hauhaucs-aggressive.gguf",
+    "provider": "lmstudio",
+    "name": "Qwen3.5 9B Uncensored HauhauCS Aggressive"
+  },
+  "contextTokens": 32768,
+  "maxOutputTokens": 8192,
+  "resourcePolicy": {
+    "profile": "safe"
+  },
+  "admission": {
+    "allowed": true,
+    "decision": "run",
+    "reasons": [
+      "Safe resource policy reserves the greater of 4 GiB or 20% of physical RAM, and 1 GiB or 15% of discrete VRAM.",
+      "LM Studio native estimate includes model and context memory. RAM adds at least 1.5 GiB staging/buffers; VRAM adds 15% plus 512 MiB. GPU offload: 75%. One private instance, one prediction, exact 32768-token context. Estimates are not a crash guarantee."
+    ],
+    "estimatedRamBytes": 3691136433,
+    "estimatedVramBytes": 8223797072,
+    "contextTokens": 32768,
+    "confidence": "estimated",
+    "execution": {
+      "numGpu": -1,
+      "lmstudio": {
+        "gpuOffload": 0.75
+      }
+    }
+  },
+  "durationMs": 293050,
+  "callsUsed": 9,
+  "error": "The review or objective checks still show unfinished work. Automatic repair is unavailable or its budget is exhausted. Inspect the evidence before continuing.",
+  "modelText": "Both tests now pass (2/2). The git diff confirms these changes:\n\n1. **shared/task-deadline.ts**: Changed `return Date.parse(task.createdAt)+seconds;` to `return (Date.parse(task.createdAt) + seconds * 1000);`. The original code added raw seconds directly to a timestamp in milliseconds, causing an off-by-1000 error. Multiplying by 1000 converts the budget from seconds to milliseconds before adding.\n\n2. **web/task-progress.ts**: Changed `if(event.type==='TOOL_STARTED')` to `if(event.type==='TOOL_STARTED' && event.taskId===task.id);`. The original code checked all events regardless of task ID, so activity from other tasks could appear in the selected task's progress. Adding the `taskId` check ensures only events belonging to the current task are considered.",
+  "approvals": [
+    {
+      "tool": "terminal",
+      "decision": "allow_once",
+      "arguments": {
+        "path": null,
+        "expectedHash": null,
+        "argv": [
+          "node",
+          "--test",
+          "--test-reporter=tap",
+          "tests/relay-acceptance.test.mjs"
+        ],
+        "profile": "node",
+        "timeoutSeconds": 30
+      }
+    },
+    {
+      "tool": "terminal",
+      "decision": "denied",
+      "arguments": {
+        "path": null,
+        "expectedHash": null,
+        "argv": [
+          "node",
+          "-e",
+          "console.log(Date.parse('2026-10-10T12:00:00.000Z'))"
+        ],
+        "profile": "default",
+        "timeoutSeconds": 5
+      }
+    },
+    {
+      "tool": "file_write",
+      "decision": "allow_once",
+      "arguments": {
+        "path": "shared/task-deadline.ts",
+        "expectedHash": "2d1aefc94d95f072600a6e7c99c454a376c952bbd1ad0abd32b9d5211bcd676c",
+        "argv": null,
+        "profile": null,
+        "timeoutSeconds": null
+      }
+    },
+    {
+      "tool": "file_write",
+      "decision": "allow_once",
+      "arguments": {
+        "path": "web/task-progress.ts",
+        "expectedHash": "894df4323b047712ec3fdaaf88bc681a150b5026a528da284920f9128b572f62",
+        "argv": null,
+        "profile": null,
+        "timeoutSeconds": null
+      }
+    },
+    {
+      "tool": "terminal",
+      "decision": "allow_once",
+      "arguments": {
+        "path": null,
+        "expectedHash": null,
+        "argv": [
+          "node",
+          "--test",
+          "--test-reporter=tap",
+          "tests/relay-acceptance.test.mjs"
+        ],
+        "profile": "node",
+        "timeoutSeconds": 30
+      }
+    }
+  ],
+  "visibleTestReceipts": [
+    {
+      "status": "completed",
+      "arguments": {
+        "argv": [
+          "node",
+          "--test",
+          "--test-reporter=tap",
+          "tests/relay-acceptance.test.mjs"
+        ],
+        "profile": "node",
+        "timeoutSeconds": 30
+      },
+      "result": {
+        "stdout": "TAP version 13\n# Subtest: overall deadline is expressed in host clock milliseconds\nnot ok 1 - overall deadline is expressed in host clock milliseconds\n  ---\n  duration_ms: 1.305498\n  type: 'test'\n  location: '/workspace/tests/relay-acceptance.test.mjs:5:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    + actual - expected\n    \n    + 1791633600060\n    - 1791633660000\n              ^\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 1791633660000\n  actual: 1791633600060\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (file:///workspace/tests/relay-acceptance.test.mjs:6:10)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1402:25)\n    Test.start (node:internal/test_runner/test:1262:17)\n    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)\n  ...\n# Subtest: activity belongs to the selected task\nnot ok 2 - activity belongs to the selected task\n  ---\n  duration_ms: 0.281431\n  type: 'test'\n  location: '/workspace/tests/relay-acceptance.test.mjs:8:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    + actual - expected\n    \n    + 'Deleting an authorized host file.'\n    - 'Reading authorized files.'\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 'Reading authorized files.'\n  actual: 'Deleting an authorized host file.'\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (file:///workspace/tests/relay-acceptance.test.mjs:10:10)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1402:25)\n    Test.processPendingSubtests (node:internal/test_runner/test:974:18)\n    Test.postRun (node:internal/test_runner/test:1542:19)\n    Test.run (node:internal/test_runner/test:1467:12)\n    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n  ...\n1..2\n# tests 2\n# suites 0\n# pass 0\n# fail 2\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 84.191049\n",
+        "stderr": "",
+        "exitCode": 1,
+        "truncated": false,
+        "durationMs": 284,
+        "toolchain": {
+          "profile": "node",
+          "version": "24.21.0"
+        },
+        "imageId": "sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1",
+        "checkpointId": null,
+        "filesChanged": 0
+      }
+    },
+    {
+      "status": "completed",
+      "arguments": {
+        "argv": [
+          "node",
+          "--test",
+          "--test-reporter=tap",
+          "tests/relay-acceptance.test.mjs"
+        ],
+        "profile": "node",
+        "timeoutSeconds": 30
+      },
+      "result": {
+        "stdout": "TAP version 13\n# Subtest: overall deadline is expressed in host clock milliseconds\nok 1 - overall deadline is expressed in host clock milliseconds\n  ---\n  duration_ms: 0.511601\n  type: 'test'\n  ...\n# Subtest: activity belongs to the selected task\nok 2 - activity belongs to the selected task\n  ---\n  duration_ms: 0.146697\n  type: 'test'\n  ...\n1..2\n# tests 2\n# suites 0\n# pass 2\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 100.211773\n",
+        "stderr": "",
+        "exitCode": 0,
+        "truncated": false,
+        "durationMs": 304,
+        "toolchain": {
+          "profile": "node",
+          "version": "24.21.0"
+        },
+        "imageId": "sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1",
+        "checkpointId": null,
+        "filesChanged": 0
+      }
+    }
+  ],
+  "diff": [
+    {
+      "engine": "git version 2.52.0.windows.1",
+      "scope": "managed_workspace_baseline",
+      "baseline": {
+        "kind": "workspace_creation",
+        "createdAt": "2026-10-10T20:04:12.802Z"
+      },
+      "path": null,
+      "content": "diff --git a/shared/task-deadline.ts b/shared/task-deadline.ts\nindex f75e28a..d2ca0bd 100644\n--- a/shared/task-deadline.ts\n+++ b/shared/task-deadline.ts\n@@ -9,5 +9,5 @@ export function taskDeadlineMs(task:Pick<TaskRecord,'createdAt'|'options'>):numb\n   const seconds=task.options.budget.maxElapsedSeconds;\n   if(seconds===undefined)return null;\n   if(!Number.isInteger(seconds)||seconds<30||seconds>maximumMaxElapsedSeconds)return NaN;\n-  return Date.parse(task.createdAt)+seconds;\n+  return (Date.parse(task.createdAt) + seconds * 1000);\n }\ndiff --git a/web/task-progress.ts b/web/task-progress.ts\nindex a84220f..97993a5 100644\n--- a/web/task-progress.ts\n+++ b/web/task-progress.ts\n@@ -9,7 +9,7 @@ export function taskProgress(task:TaskRecord,events:ActivityEvent[]):string {\n   if(task.status==='planning')return 'Planning the work.';\n   for(let index=events.length-1;index>=0;index--){\n     const event=events[index];\n-    if(event.type==='TOOL_STARTED'){\n+    if(event.type==='TOOL_STARTED' && event.taskId===task.id){\n       const labels:Record<string,string>={host_list:'Inspecting a host directory.',host_read:'Reading an authorized host file.',host_write:'Writing a host file.',host_delete:'Deleting an authorized host file.',file_read:'Reading authorized files.',file_list:'Inspecting the workspace.',file_search:'Searching the workspace.',file_write:'Writing a workspace file.',file_delete:'Deleting an authorized workspace file.',terminal:'Running an isolated command.',git_status:'Inspecting workspace changes.',git_diff:'Inspecting the file diff.',http_get:'Reading an authorized web source.',mcp_call:'Calling an approved external tool.'};\n       return labels[String(event.data.tool)]??'Running an authorized tool.';\n     }\n",
+      "truncated": false,
+      "trust": "untrusted"
+    }
+  ],
+  "failedVerification": [
+    {
+      "kind": "command_exit",
+      "summary": "Isolated command exited 1",
+      "checkKey": "75d335e59b1a36e34d57113ccfd973fabe637819daaa894771cd43d4d8d94c29",
+      "sequence": 7
+    },
+    {
+      "kind": "tool_outcome",
+      "summary": "terminal: unverified or failed checks",
+      "checkKey": "75d335e59b1a36e34d57113ccfd973fabe637819daaa894771cd43d4d8d94c29",
+      "sequence": 8
+    },
+    {
+      "kind": "tool_denied",
+      "summary": "terminal: User denied this action",
+      "checkKey": "bfb8e568dabdf65f3ba9ecf5dbc38fb9b0460e8e2c1c636a12fdcde8896fe44a",
+      "sequence": 9
+    }
+  ],
+  "independentDiagnostic": "coding-repeat-independent-windows.json",
+  "publication": "not attempted",
+  "cleanup": {
+    "processExitCode": 1,
+    "privatePort4323Closed": true,
+    "remainingStoredSessions": 0,
+    "taskCleanup": "Driver cancels its owned unfinished task before closing the host."
+  },
+  "limitations": [
+    "Second fresh-workspace run of the same declared configuration; not a population success-rate estimate.",
+    "Visible tests passed2/2, but post-run independent grading failed1/9 because AGENT_STARTED events remained unfiltered.",
+    "Host stopped at waiting_for_user after a denied out-of-scope diagnostic command; no authority was expanded and no source was published.",
+    "First successful run remains valid; this repeat demonstrates inconsistent completion and incomplete repair.",
+    "Model weight digest, exact sampling seed and temperature were not captured in these trial summaries; do not claim artifact-pinned statistical reproducibility."
+  ]
+}

@@ -2,6 +2,8 @@
 
 This is the evidence ledger for the current implementation. Successful tests support their specific boundaries; they do not make the entire master directive complete or establish production security certification.
 
+The modernization branch has a separate [final-evolution ledger](final-evolution/acceptance-results.md), [requirements matrix](final-evolution/requirements-matrix.md) and [continuation](final-evolution/continuation.md). Commit 6d154db includes the Projects redesign and measured bilingual intent integration: strict types, 1,270 tests/one skip, build and scoped browser/visual follow-ups pass. An actual local model completed a targeted 514-file/two-fault coding fixture with 9/9 independent tests, reviewed publication and exact rollback. An identical repeat failed; its independent container diagnostic passed only 8/9. Both outcomes are retained. Consistent completion and full application builds remain open. Native hosted run 38081728982 passes; host/browser run 38081729034 is tracked separately. This work is not a completed release or production deployment. The 0.1.2 evidence below remains historical release evidence.
+
 ## Release 0.1.2 — current evidence (10 October 2026)
 
 This section supersedes earlier in-progress and 0.1.1 milestones below. Final implementation: strict types, **1,194 deterministic tests passed / one platform skip across 110 files on Windows and Ubuntu WSL**, production builds, and **110/110 Chrome browser cases passed**. Details and the WSL source snapshot are recorded at the end of this ledger. The subsequent version-only change updated both package manifests to 0.1.2; its strict-type production build passed. No application code changed after the full gates.

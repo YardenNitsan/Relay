@@ -1,0 +1,21 @@
+{
+  "scope": "Post-run diagnostic only; original failed task remains failed and no publication occurred",
+  "sourceTrial": "coding-IORGAe",
+  "scopeCheck": "passed",
+  "stageUnchanged": true,
+  "remainingSessions": [
+    {
+      "count": 0
+    }
+  ],
+  "stdout": "TAP version 13\n# Subtest: deadline 30\nok 1 - deadline 30\n  ---\n  duration_ms: 0.561269\n  type: 'test'\n  ...\n# Subtest: deadline 31\nok 2 - deadline 31\n  ---\n  duration_ms: 0.078364\n  type: 'test'\n  ...\n# Subtest: deadline 3600\nok 3 - deadline 3600\n  ---\n  duration_ms: 0.064723\n  type: 'test'\n  ...\n# Subtest: deadline 86400\nok 4 - deadline 86400\n  ---\n  duration_ms: 0.05729\n  type: 'test'\n  ...\n# Subtest: deadline 604800\nok 5 - deadline 604800\n  ---\n  duration_ms: 0.052323\n  type: 'test'\n  ...\n# Subtest: invalid and legacy deadlines\nok 6 - invalid and legacy deadlines\n  ---\n  duration_ms: 0.119849\n  type: 'test'\n  ...\n# Subtest: unrelated activity cannot change fallback or earlier selected activity\nnot ok 7 - unrelated activity cannot change fallback or earlier selected activity\n  ---\n  duration_ms: 0.711073\n  type: 'test'\n  location: '/workspace/independent.test.mjs:11:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    + actual - expected\n    \n    + 'Checking the answer.'\n    - 'Working on your request.'\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 'Working on your request.'\n  actual: 'Checking the answer.'\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (file:///workspace/independent.test.mjs:14:9)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1402:25)\n    Test.processPendingSubtests (node:internal/test_runner/test:974:18)\n    Test.postRun (node:internal/test_runner/test:1542:19)\n    Test.run (node:internal/test_runner/test:1467:12)\n    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)\n  ...\n# Subtest: overall deadline is expressed in host clock milliseconds\nok 8 - overall deadline is expressed in host clock milliseconds\n  ---\n  duration_ms: 0.502433\n  type: 'test'\n  ...\n# Subtest: activity belongs to the selected task\nok 9 - activity belongs to the selected task\n  ---\n  duration_ms: 0.14203\n  type: 'test'\n  ...\n1..9\n# tests 9\n# suites 0\n# pass 8\n# fail 1\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 175.006187\n",
+  "stderr": "",
+  "exitCode": 1,
+  "truncated": false,
+  "durationMs": 382,
+  "toolchain": {
+    "profile": "node",
+    "version": "24.21.0"
+  },
+  "imageId": "sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1"
+}

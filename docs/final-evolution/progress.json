@@ -4,7 +4,7 @@
   "updatedAt": "2026-10-10",
   "baselineCommit": "9d563bc973dbcc177921ab918db88561c8280e48",
   "branch": "modernization/final-evolution",
-  "currentMilestone": "B06 verified presentation increment ready to push; C05 explicit32K/8192 actual coding retry next",
+  "currentMilestone": "C05 one actual targeted coding success and one failed repeat retained; C02 Git isolation next",
   "requirementIds": [
     "A01",
     "A02",
@@ -62,8 +62,11 @@
     "Modal dirty-draft and busy-operation guards; native discard confirmation focuses safe action after showModal",
     "B06 persistent file footer, guarded command shortcut and background-refetch draft preservation; mobile create/navigation/resize focus",
     "D01 frozen40development/56independent-heldout comparison: phrase26/56vsbaseline14/56, prototype7/56rejected. Unchanged phrase candidate integrated into advisory task demand/category/reasoning; provider/privacy/hardware gates preserved. Evaluator binding correction disclosed.",
-    "C05 explicit --output=8192 experimental option retains old4096default and all admission/grading limits; actual retry pending.",
-    "B06 same-file re-click no-op, explicit first-workspace phone action and landscape content >=160px; reproduced red and verified green."
+    "C05 explicit --output=8192 experimental option retains old4096default and all admission/grading limits; actual success and failed repeat retained.",
+    "B06 same-file re-click no-op, explicit first-workspace phone action and landscape content >=160px; reproduced red and verified green.",
+    "C05 coding-0O93wv: actual local9B32K/8192 completes8calls/256978ms, visible2/2, independent9/9, published9/9, exact rollback, no unrelated edits; private host closed and stored sessions0.",
+    "C05 unchanged repeat coding-IORGAe fails: unapproved extra command denied, incomplete activity repair independently scores8/9; no publication, owned task cancelled, host/sessions closed.",
+    "Coding acceptance terminal output bounded to summary; full receipts remain in report."
   ],
   "changedFiles": [
     ".github/workflows/native-integrations.yml",
@@ -242,7 +245,10 @@
     "server/orchestration/router.ts",
     "tests/coding-acceptance-options.test.ts",
     "tests/routing-reasoning.test.ts",
-    "tests/task-demand-multilingual.test.ts"
+    "tests/task-demand-multilingual.test.ts",
+    "docs/final-evolution/evidence/coding-acceptance-success-windows.json",
+    "docs/final-evolution/evidence/coding-acceptance-repeat-windows.json",
+    "docs/final-evolution/evidence/coding-repeat-independent-windows.json"
   ],
   "testStatus": "Strict1270tests/one skip and build pass. Final presentation types/build pass. Full frozen145/151,affected66/68,then8/8final corrective cases pass1.0min. All18viewport/theme cases pass; reviewed retained screenshots. No fresh complete155local/hosted claim.",
   "lastPassingCommands": [
@@ -300,16 +306,21 @@
     "npm.cmd run build (projects-intent-build.log)",
     "npm.cmd run typecheck (final Project refinements)",
     "npm.cmd run build (projects-reviewed-build.log)",
-    "npm.cmd run test:e2e -- tests/e2e/access.spec.ts tests/e2e/project-draft.spec.ts tests/e2e/projects-studio.spec.ts -g \"phone.*approval|project file draft|844x390|project index exposes\" (8passed,1.0min)"
+    "npm.cmd run test:e2e -- tests/e2e/access.spec.ts tests/e2e/project-draft.spec.ts tests/e2e/projects-studio.spec.ts -g \"phone.*approval|project file draft|844x390|project index exposes\" (8passed,1.0min)",
+    "node --import tsx scripts/coding-acceptance.ts --model=lmstudio/qwen3.5-9b-uncensored-hauhaucs-aggressive.gguf --context=32768 --output=8192 (coding-0O93wv passed; independent/published9tests each; exact rollback)",
+    "npm.cmd run typecheck (bounded coding-report summary)",
+    "npm.cmd test -- tests/coding-acceptance-options.test.ts tests/coding-acceptance.test.ts (16passed)",
+    "node --import tsx scripts/coding-acceptance.ts --sandbox-only (coding-7y5iDb preflight passed, bounded summary)"
   ],
-  "lastPassingCommit": "add1306",
-  "lastPassingCommitScope": "D01 integration8ed67df and C05 explicit experiment optionsadd1306: combined strict1270tests/one skip and build pass with B06 candidate source also present. New browser validation remains pending; hosted gates not yet run on these commits.",
+  "lastPassingCommit": "6d154db651df4184d038a5fdf7b7497fead47d37",
+  "lastPassingCommitScope": "Pushed B06/D01/C05-option checkpoint. Strict1270tests/one skip/build; final UI types/build/eight cases pass;18responsive Project cases pass. All3host checks and native38081728982 pass;3browser jobs still active. Prior full/affected failures and follow-ups are explicit in acceptance-results.",
   "knownFailures": [
-    "Real coding: larger9B RAM admission refusal; smaller9B initial missing-runtime-temp load error repaired;16K context paused;32K wrong activity repair/output-limit pause after7calls. No publication.",
+    "Real coding: larger9B RAM admission refusal; smaller9B initial missing-runtime-temp load error repaired;16K context paused;32K wrong activity repair/output-limit pause after7calls. Earlier trials had no publication; later coding-0O93wv succeeds.",
     "Gemma4 12B32K candidate also refused unchanged RAM admission; no inference occurred.",
     "C04 initial containerd config ID lookup failed; unique build tag now resolves actual engine immutable ID.",
     "C04 initial .NET CoreLib OOM under1MiB file limit fixed by bounded profile64MiB, native red/green pass.",
-    "Historical B06 browser failures corrected; frozenfull145/151 andaffected66/68 failures all covered by passing follow-ups. Same-file/short-height/empty-action red cases pass after fixes. Fresh hosted whole-suite still pending."
+    "Historical B06 browser failures corrected; frozenfull145/151 andaffected66/68 failures all covered by passing follow-ups. Same-file/short-height/empty-action red cases pass after fixes. Fresh hosted whole-suite still pending.",
+    "Identical32K/8192 local9B repeat coding-IORGAe fails after9calls/293050ms, awaiting user after denied extra command; separate real-container diagnostic8/9 reveals unfiltered foreign AGENT_STARTED. No publication. No third cherry-picked retry."
   ],
   "outstandingSecurityReviews": [
     "Full threat-model review",
@@ -323,7 +334,7 @@
     "License/admin protection authorization pending",
     "Draft PR connector HTTP403; branch pushes work"
   ],
-  "nextActionableWorkItem": "Commit/push verified B06 + ledger. Run actual local C05 model with32K context/8192output; exact command in continuation. Preserve all graders/reserves and record outcome. Monitor fresh hosted gates.",
+  "nextActionableWorkItem": "Inspect host/browser38081729034 final outcomes (all3hostchecks pass,3browserjobs active); review C02 Git worktree plan and implement first isolated increment. Finish evidence commit/push before next code milestone.",
   "remainingDependencies": [
     "A native recovery/restore/retention",
     "B full redesign",

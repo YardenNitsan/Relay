@@ -25,14 +25,16 @@ test('all conversations and messages remain reachable beyond recent API limits',
     await expect(dialog.getByText(`Page ${number}`,{exact:true})).toBeVisible();
   }
   await archived.click();
-  await expect(page.locator('.message')).toHaveCount(80);
+  const savedMessages = page.locator('.message[id^="message-"]');
+  await expect(savedMessages).toHaveCount(80);
   await expect(page.getByText('Saved history message 224.', { exact: false })).toBeVisible();
   await page.getByRole('button', { name: 'Earlier messages', exact: true }).click();
   await expect(page.getByText('Saved history message 65.', { exact: false })).toBeVisible();
-  await expect(page.locator('.message')).toHaveCount(80);
+  await expect(savedMessages).toHaveCount(80);
   await page.getByRole('button', { name: 'Earlier messages', exact: true }).click();
   await expect(page.getByText('Archive sentinel:', { exact: false })).toBeVisible();
-  await expect(page.locator('.message')).toHaveCount(65);
+  // Id-less execution receipts are presentation, not additional saved messages.
+  await expect(savedMessages).toHaveCount(65);
   await expect(page.getByRole('button', { name: 'Earlier messages', exact: true })).toBeDisabled();
   await page.getByRole('button', { name: /Execution record/ }).click();
   await expect(page.getByRole('combobox', { name: 'Task', exact: true })).toHaveValue(historyTaskId);
@@ -42,7 +44,7 @@ test('all conversations and messages remain reachable beyond recent API limits',
   await expect(page.getByText('Saved history message 65.', { exact: false })).toBeVisible();
   await page.getByRole('button', { name: 'Return to latest', exact: true }).first().click();
   await expect(page.getByText('Saved history message 224.', { exact: false })).toBeVisible();
-  await expect(page.locator('.message')).toHaveCount(80);
+  await expect(savedMessages).toHaveCount(80);
 });
 
 test('phone full-text search opens an old exact message and survives reload', async ({ page }) => {
@@ -63,7 +65,8 @@ test('phone full-text search opens an old exact message and survives reload', as
   await expect(page.locator(`#message-${historyMessageId}`)).toBeFocused();
   await page.reload();
   await expect(page.locator(`#message-${historyMessageId}`)).toBeVisible();
-  await expect(page.locator('.message')).toHaveCount(1);
+  await expect(page.locator('.message[id^="message-"]')).toHaveCount(1);
+  await expect(page.getByRole('button', { name: /Execution record/ })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: 'output/playwright/history-message-phone.png' });
   await page.getByRole('button', { name: 'Return to latest', exact: true }).first().click();

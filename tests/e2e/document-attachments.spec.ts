@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { pdfFixture, docxFixture } from '../helpers/documents';
-import { pairBrowser } from './helpers';
+import { openProjectChooser, pairBrowser } from './helpers';
 
 for (const width of [320, 1440]) {
   test(`PDF and Word attachments create inspectable text copies at ${width}px`, async ({ page }) => {
@@ -27,7 +27,7 @@ for (const width of [320, 1440]) {
       expect(result.ok()).toBe(true);
       expect((await result.json()).content).toContain(path.includes('report') ? 'A real PDF extraction' : 'A real Word extraction');
     }
-    await page.getByRole('button', { name: 'Workspace', exact: true }).click();
+    await openProjectChooser(page);
     const dialog = page.getByRole('dialog', { name: 'Workspaces', exact: true });
     const item = dialog.getByRole('region', { name: 'Project inspector', exact: true });
     await item.getByRole('button', { name: /attachments\/.*report.*\.txt/ }).click();

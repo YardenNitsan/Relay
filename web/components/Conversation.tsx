@@ -24,18 +24,35 @@ type PageAnchor = { before?: string; after?: string; beforeId?: string; around?:
 
 export default function Conversation({ detail, loading, error, onRetry, streams, events, models, onInspect, onModels, onWorkspace, onDraft, focusMessageId, onReturnLatest }: { detail?: ConversationDetail; loading: boolean; error: unknown; onRetry: () => void; streams: Record<string, { text: string }>; events: ActivityEvent[]; models: ModelProfile[]; onInspect: (id: string, task?: TaskRecord) => void; onModels: () => void; onWorkspace: () => void; onDraft: (text: string) => void; focusMessageId: string | null; onReturnLatest: () => void }) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const [follow, setFollow] = useState(!focusMessageId);
   const [historyNavHidden, setHistoryNavHidden] = useState(false);
   const [anchor, setAnchor] = useState<PageAnchor | null>(() => focusMessageId ? { around: focusMessageId } : null);
   const parameters = new URLSearchParams({ limit: '80', ...anchor });
   const history = useQuery({ queryKey: ['history-messages', detail?.conversation.id, anchor], queryFn: ({ signal }) => api<MessagePage>(`/history/conversations/${detail!.conversation.id}/messages?${parameters}`, { signal }), enabled: Boolean(detail && anchor), staleTime: 30_000 });
   const messageCount = detail?.messages.length ?? 0;
+  const hasMessages = messageCount > 0;
   const messages = anchor ? history.data?.items ?? [] : detail?.messages.slice(-80) ?? [];
   const streamingLength = Object.values(streams).reduce((sum, item) => sum + item.text.length, 0);
   const lastTaskStatus = detail?.tasks.at(-1)?.status;
   useEffect(() => {
     if (!anchor && follow && messageCount > 0 && scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messageCount, streamingLength, follow, lastTaskStatus, anchor]);
+  useEffect(() => {
+    const scroller = scrollRef.current, content = contentRef.current;
+    if (anchor || !follow || !hasMessages || !scroller || !content) return;
+    let frame = 0;
+    const pinAfterLayout = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => { scroller.scrollTop = scroller.scrollHeight; });
+    };
+    // Fonts, formatted content and the visible viewport can resize after the
+    // last data update. Follow those changes only while reading the latest.
+    const observer = new ResizeObserver(pinAfterLayout);
+    observer.observe(scroller);
+    observer.observe(content);
+    return () => { observer.disconnect(); cancelAnimationFrame(frame); };
+  }, [anchor, follow, hasMessages]);
   useEffect(() => { setAnchor(focusMessageId ? { around: focusMessageId } : null); setFollow(!focusMessageId); }, [focusMessageId]);
   useEffect(() => {
     if (!anchor || !history.data || !scrollRef.current) return;
@@ -54,7 +71,7 @@ export default function Conversation({ detail, loading, error, onRetry, streams,
   const newer = anchor ? history.data?.newerCursor : null;
   const hasConversation = Boolean(detail?.messages.length);
   return <div className="conversation-scroll" ref={scrollRef} onScroll={event => { const element = event.currentTarget; setFollow(element.scrollHeight - element.scrollTop - element.clientHeight < 100); setHistoryNavHidden(element.scrollTop > 140); }} aria-label="Conversation">
-    <div className={`conversation-content ${!hasConversation && !loading && error == null ? 'conversation-empty' : ''}`}>
+    <div ref={contentRef} className={`conversation-content ${!hasConversation && !loading && error == null ? 'conversation-empty' : ''}`}>
       {loading ? <ConversationSkeleton /> : error != null ? <ErrorNotice error={error} retry={onRetry} /> : !hasConversation ? <Welcome modelCount={models.length} onModels={onModels} onWorkspace={onWorkspace} onDraft={onDraft} /> : <>
         {(anchor || earlier) && <nav className="message-pagination" aria-label="Conversation pages"><div><span className="small muted">{anchor ? 'Reading saved history' : 'Latest messages'}</span>{anchor && <button className="text-button" onClick={latest}>Return to latest<ArrowDown size={14} /></button>}</div><div><button className="button" disabled={!earlier || history.isFetching} onClick={() => { if (earlier) navigate(anchor ? { before: earlier } : { beforeId: earlier }); }}><ArrowUp size={14} />Earlier messages</button>{anchor && <button className="button" disabled={!newer || history.isFetching} onClick={() => { if (newer) navigate({ after: newer }); }}>Newer messages<ArrowDown size={14} /></button>}</div></nav>}
         {anchor && history.isPending ? <Loading>Opening saved messages…</Loading> : anchor && history.isError ? <ErrorNotice error={history.error} retry={() => { void history.refetch(); }} /> : <>

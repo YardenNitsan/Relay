@@ -63,7 +63,23 @@ test('short landscape conversations follow results and can return from older con
   await expect(page.getByText('Completed', { exact: true }).first()).toBeVisible();
   const scroller = page.locator('.conversation-scroll');
   await expect.poll(() => scroller.evaluate(el => el.scrollHeight - el.scrollTop - el.clientHeight)).toBeLessThan(5);
+  // Simulate a late text-metric change without another stream/data event.
+  // The response must stay followed when larger text changes its layout.
+  await page.locator('.message-assistant .markdown p').evaluateAll(paragraphs => {
+    for (const paragraph of paragraphs) { (paragraph as HTMLElement).style.fontSize = '32px'; (paragraph as HTMLElement).style.lineHeight = '2'; }
+  });
+  await expect.poll(() => scroller.evaluate(el => el.scrollHeight - el.scrollTop - el.clientHeight)).toBeLessThan(5);
+  // A shorter visible viewport must keep the completed response in view too;
+  // no new message or stream event arrives to trigger the old data-only effect.
+  await page.setViewportSize({ width: 844, height: 360 });
+  await expect.poll(() => scroller.evaluate(el => el.scrollHeight - el.scrollTop - el.clientHeight)).toBeLessThan(5);
   await scroller.evaluate(el => { el.scrollTop = 0; });
+  await expect(page.getByRole('button', { name: 'Jump to latest' })).toBeVisible();
+  await page.locator('.message-assistant .markdown p').evaluateAll(paragraphs => {
+    for (const paragraph of paragraphs) (paragraph as HTMLElement).style.fontSize = '36px';
+  });
+  // A layout change while reading older content must not pull the reader away.
+  await expect.poll(() => scroller.evaluate(el => el.scrollTop)).toBe(0);
   await page.getByRole('button', { name: 'Jump to latest' }).click();
   await expect.poll(() => scroller.evaluate(el => el.scrollHeight - el.scrollTop - el.clientHeight)).toBeLessThan(5);
 });

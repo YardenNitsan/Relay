@@ -4,7 +4,7 @@
   "updatedAt": "2026-10-11",
   "baselineCommit": "9d563bc973dbcc177921ab918db88561c8280e48",
   "branch": "modernization/final-evolution",
-  "currentMilestone": "0.1.3: reviewed conversation/Auto-policy increment verified locally; ready-made pretrained router selection remains open",
+  "currentMilestone": "0.1.3 e619455: host/native CI pass; Ubuntu browser shard1 failed and is under diagnosis; eight pretrained comparisons retained",
   "requirementIds": [
     "A01",
     "A02",
@@ -369,7 +369,9 @@
     "D08 explicit Auto policies implemented; focused31router/evaluation tests and API persistence pass; final model-picker browser verification passes. No live cloud-quality or semantic-primary claim.",
     "Integrated check first failed replacement service-lock removal (1340pass,onefailure,oneskip). Exact identity/unlinked-handle guards repaired; full1341pass and2additional deterministic regressions green. Exact original intermittent cause unproven.",
     "5a0a5ff hosted38163056135: all3host gates pass; Windows/macOS browser shard2 failed on workspace/fork heading while POST stillpending. Exact-response synchronization added; local and new hosted acceptance tracked separately.",
-    "Owner rejects custom classifier/head training; SetFit proposal stopped. Additional existing pretrained routing tools under evaluation; no primary replacement accepted."
+    "Owner rejects custom classifier/head training; SetFit proposal stopped. Additional existing pretrained routing tools under evaluation; no primary replacement accepted.",
+    "Ready-made defaults on consumedv2: GLiClass mini15/64,p95362.34ms,RSS1.846GB; Vela2 ONNX30/64,p95289.65ms,RSS1.411GB,peak2.318GB. Neither qualifies under existing quality/latency gates; no product promotion.",
+    "GLiNER2.5-multi-Decide default15/64,EN11/HE4,zeroerrors,p95333.21ms,RSS1.895GB/peak3.178GB; source/results independently reviewed, no promotion."
   ],
   "outstandingSecurityReviews": [
     "Full threat-model review",
@@ -385,7 +387,7 @@
     "Owner has Android phone; current deployed0.1.2 mobile-data sign-in succeeded after tunnel restart. Modernization physical-device workflows remain untested.",
     "Second authorized Companion computer not established; cloud/email/calendar test accounts not configured (owner confirmed)."
   ],
-  "nextActionableWorkItem": "Push reviewed conversation/Auto-policy/lock increment and inspect hosted gates. Continue selecting existing ready-made pretrained routing technology; no custom router training. Review consumed comparison annotations separately.",
+  "nextActionableWorkItem": "Diagnose e619455 Ubuntu browser shard1. Continue supported Vela configuration experiments before freezing candidate/evaluator/gates and opening sealed v5. No custom classifier training.",
   "remainingDependencies": [
     "A native recovery/restore/retention",
     "B full redesign",
@@ -416,6 +418,16 @@
     "npm.cmd test -- tests/service-lock.test.ts tests/service-lock-identity.test.ts (7passed; two synthetic regressions failed against old code)",
     "npm.cmd run build (conversation/policy/lock final production build)",
     "npm.cmd run test:e2e -- tests/e2e/conversation-studio.spec.ts tests/e2e/model-picker.spec.ts tests/e2e/evolution.spec.ts tests/e2e/gateway-offline.spec.ts (30passed,3.7min)",
-    "npm.cmd run test:e2e -- tests/e2e/product.spec.ts tests/e2e/project-fork.spec.ts (20passed,2.6min; exact mutation-response synchronization)"
-  ]
+    "npm.cmd run test:e2e -- tests/e2e/product.spec.ts tests/e2e/project-fork.spec.ts (20passed,2.6min; exact mutation-response synchronization)",
+    "benchmark-ready-made.py --candidate mini and benchmark-vela.py: actual sequentialCPU64cases each, zeroerrors, independent source/score/hash review; quality gates unmet",
+    "benchmark-gliner.py: actualCPU64cases, zeroerrors; reference-v4 builder independently reproduces exact 200row artifact,141eligible/59excluded; class coverage insufficient"
+  ],
+  "latestProductCommit": "e619455",
+  "latestHostedStatus": {
+    "run": 38165687826,
+    "host": "all three OS checks pass",
+    "browser": "all three shard2 jobs pass; Ubuntu shard1 failed; Windows/macOS shard1 pending",
+    "nativeRun": 38165687812,
+    "native": "success"
+  }
 }

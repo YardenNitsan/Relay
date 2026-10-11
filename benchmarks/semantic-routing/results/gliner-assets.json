@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "candidate": "gliner2.5-multi-decide",
+  "model": "fastino/GLiNER2.5-multi-Decide",
+  "revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+  "path": "C:\\Users\\yarde\\Documents\\codexp\\Relay-modernization\\output\\semantic-models\\GLiNER2.5-multi-Decide",
+  "purpose": "Existing pretrained inference only; no Relay training or custom classifier",
+  "library": {
+    "name": "gliner2",
+    "version": "2.1.0",
+    "wheelSha256": "0c242c5de53f37020df835788fc4eb820e1673b5212c202cd90e9234a7e786bc"
+  },
+  "licenses": {
+    "model": "Apache-2.0",
+    "library": "Apache-2.0",
+    "encoder": "MIT",
+    "modelSource": "https://huggingface.co/fastino/GLiNER2.5-multi-Decide/blob/e173bca1f0c4217d7a55b3b0c705d5ece8a0218d/README.md",
+    "librarySource": "https://github.com/fastino-ai/GLiNER2/blob/b86d35c02f2c1a4d9840ea50197bd1b6d13b031e/LICENSE",
+    "encoderSource": "https://huggingface.co/microsoft/mdeberta-v3-base"
+  },
+  "assets": [
+    {
+      "name": "config.json",
+      "bytes": 4106,
+      "sha256": "aa29cd584316b61b0bfed94d03ee1cfdaf28b46a37686293742929c49b8bd2f7"
+    },
+    {
+      "name": "encoder_config/config.json",
+      "bytes": 858,
+      "sha256": "d0ebbcb8b458e285a39e12cc315cbaf3d1c6f631e7281e6b22dd5b4071183f83"
+    },
+    {
+      "name": "model.safetensors",
+      "bytes": 1149461028,
+      "sha256": "9efe0f88c99f2aa794452e9559dc60e98d60d9fa2bf1b60cf2710411b6da5b4e"
+    },
+    {
+      "name": "tokenizer.json",
+      "bytes": 16035853,
+      "sha256": "c62446df87ae18ec98b133f8f84fc449a07cc89bbf8ef192a4cb5f9c53777a7a"
+    },
+    {
+      "name": "tokenizer_config.json",
+      "bytes": 646,
+      "sha256": "fd4a31dc2f1f17e31638c5f0e783b81cdb2fbe6bddd116a8d9e5d50d78148cf1"
+    },
+    {
+      "name": "README.md",
+      "bytes": 17030,
+      "sha256": "55531b81804b6c8160d41de57ff9559ca20b2f3779ab6e36e471dcd51127d92b"
+    }
+  ]
+}

@@ -11,3 +11,6 @@
 *.ps1 text eol=crlf
 *.cmd text eol=crlf
 THIRD_PARTY_NOTICES.md -whitespace
+# Evaluation provenance binds raw bytes, including original annotation line endings.
+benchmarks/semantic-routing/*v4*.json -text whitespace=cr-at-eol
+benchmarks/semantic-routing/results/*assets.json -text whitespace=cr-at-eol

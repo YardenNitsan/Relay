@@ -1,0 +1,49 @@
+{
+  "candidate": "mini",
+  "model": "knowledgator/gliclass-multilang-mini",
+  "revision": "0bd888b6c3ef9fca5f0a9d407bddfbbc7623486b",
+  "path": "C:\\Users\\yarde\\Documents\\codexp\\Relay-modernization\\output\\semantic-models\\gliclass-multilang-mini",
+  "purpose": "existing pretrained inference only; no Relay training",
+  "assets": [
+    {
+      "name": "added_tokens.json",
+      "bytes": 92,
+      "sha256": "b867d6af444d3de86cc1db4b6cc8dfe02aa5cff45c51282604a4680972f76d40"
+    },
+    {
+      "name": "config.json",
+      "bytes": 2098,
+      "sha256": "3277f133289a26eb34f75f3b99c5739321827b6361c83974d2e4eca13b988aae"
+    },
+    {
+      "name": "model.safetensors",
+      "bytes": 567503348,
+      "sha256": "440d8f17603d3e6f7d13a4fe7ffa7e9ef2c5a2581cceccb2f643334b92c8aea8"
+    },
+    {
+      "name": "README.md",
+      "bytes": 18186,
+      "sha256": "461cba7b9f455550c100cc8106557be07434ba04d29bd246bf81d4344adb09e6"
+    },
+    {
+      "name": "special_tokens_map.json",
+      "bytes": 970,
+      "sha256": "b2f1b2f15f29a6b6d9d6ea4eca1675d2c231a71477f151d48f79cc83a625ba21"
+    },
+    {
+      "name": "spm.model",
+      "bytes": 4305025,
+      "sha256": "13c8d666d62a7bc4ac8f040aab68e942c861f93303156cc28f5c7e885d86d6e3"
+    },
+    {
+      "name": "tokenizer.json",
+      "bytes": 16336328,
+      "sha256": "77e1661635eafe733781f83318eececcdf1190bc4c3199b32e5abb9def39daf4"
+    },
+    {
+      "name": "tokenizer_config.json",
+      "bytes": 20444,
+      "sha256": "9e1c2981880005bda229880ee44131d94d50e3dc620347ac3896a87fdaef2698"
+    }
+  ]
+}

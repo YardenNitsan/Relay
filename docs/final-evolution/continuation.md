@@ -21,9 +21,9 @@ Preserve original `../Relay` production host PID20332, LM Studio, Harmonia and G
 
 ## Immediate sequence
 
-1. Commit/push reviewed B04/D08/lock increment, excluding unfinished router annotation work. Local checks and both final browser runs are joined and passing; no fixture/build overlap remains.
-2. Check new hosted Windows/Linux/macOS gates; previous845535a is green but latest5a0a5ff is not. Preserve actual failure traces and test assertions.
-3. Continue D07 selection among existing ready-made pretrained routers, per owner's explicit clarification. NO custom SetFit head or Relay classifier training. Annotations underway are comparison reference data only. Research vLLM Semantic Router/shipped models, Arch-Router license/English limitations, and other pretrained multilingual decision tools. Do not force a tier/domain router into unsupported arbitrary-label behavior.
+1. B04/D08/lock increment is committed and pushed as `e619455`. Hosted native38165687812 and all three host checks38165687826 pass; all three browser shard2 jobs pass, Ubuntu shard1 failed and is under diagnosis, Windows/macOS shard1 remain pending at this checkpoint. Preserve actual failure traces and test assertions. No application or gateway deployment occurred.
+2. D07 now includes real default-configuration CPU runs of GLiClass multilingual mini and published Vela2:15/64 and30/64 on consumed v2, versus baseline22/64. Both miss existing quality/latency gates; no promotion. Pinned downloads, all outcomes and independent source/result review are retained. See router-replacement.md.
+3. Continue selecting existing ready-made pretrained routers, per owner's explicit clarification. NO custom SetFit head or Relay classifier training. GLiNER2.5-multi-Decide default also measured15/64 (EN11,HE4), with resource gates unmet. Vela leads these new defaults but still requires improved supported configuration and fresh validation. Complete AI annotations/adjudication of200consumed inputs are evaluation references only. A fresh sealed v5 corpus is being authored; do not inspect it before freezing candidate/configuration/evaluator/gates. Do not force a tier/domain router into unsupported arbitrary-label behavior.
 4. Continue catalog provenance/live-quality evidence, actual agent acceptance, remaining redesign/physical mobile and full A-G matrix. Do not equate this increment with the final product.
 
 ## Router evidence and limitations

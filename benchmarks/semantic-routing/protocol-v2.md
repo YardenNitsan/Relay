@@ -1,0 +1,9 @@
+# Second pretrained experiment
+
+Version 1 failed its predeclared improvement gate. Its test is now consumed development data and is never called unseen again. The second experiment keeps pretrained weights, route exemplars and library adapter unchanged. It calibrates per-route similarity thresholds, a supported Semantic Router feature, on the 96 consumed v1 development/test cases. It trains no foundation model and adds no runtime keywords.
+
+`calibrate-v2.py` chooses thresholds using balanced missing/forbidden constraints per label. Unknown labels are not negatives. Fewer than two positive or negative constraints retains the original global threshold, explicitly recorded. Compare all three development candidates; select by satisfied constraints then fewer forbidden labels. MiniLM scored62/96, E5 39/96, NLI34/96; these are development scores only.
+
+An independent reviewer authors a new64case English/Hebrew corpus, unopened by the implementer until freeze. Bind adapter, calibration, evaluator, training, baseline and heldout hashes before execution. Required gates: improve over baseline by8cases, satisfy at least65% of specified cases, neither language regresses, at most two additional forbidden labels, CPU p95<250ms, RSS<1.5GiB, initialization<30seconds. These do not establish task completion or exact-match classification accuracy. Partial-label false-positive coverage is a limitation.
+
+If this gate passes, integrate the unchanged model/routes/thresholds as the primary advisory classifier when provisioned. Validate malformed/missing/crashed/slow workers, cancellation, bounded input/queue, CPU memory, offline behavior, and downstream hard permissions/admission separately. A passed experiment alone is not a complete production feature. If it fails, retain it without promoting or retuning against v2 as unseen.

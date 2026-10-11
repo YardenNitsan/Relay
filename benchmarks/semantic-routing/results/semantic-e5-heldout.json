@@ -1,0 +1,2293 @@
+{
+  "candidate": "e5",
+  "model": {
+    "model": "intfloat/multilingual-e5-small",
+    "revision": "614241f622f53c4eeff9890bdc4f31cfecc418b3"
+  },
+  "mode": "frozen-test",
+  "threshold": 0.85,
+  "hashes": {
+    "cases": "d6cf74823301bc9aafd5580461fe16aab42f686f710c662f9fb0d47afab7cbdb",
+    "training": "b51627c4f87421c1416507588ea898e6ef1bc49ee5f31804614429d9454528c8",
+    "adapter": "ce476aa965361a451912f9ce2bb36af6d662a32eab360623bb19a128f1d14555",
+    "evaluator": "77cafadc8079a36b595ae88ecd0d1f02e2051368108de3f2904ff4ff475455af"
+  },
+  "runtime": {
+    "os": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.12",
+    "packages": {
+      "semantic-router": "0.1.16",
+      "transformers": "4.57.6",
+      "torch": "2.14.1"
+    },
+    "threads": 2,
+    "device": "cpu",
+    "vramBytes": 0,
+    "initializationMs": 7646.100799902342,
+    "rssBytes": 932655104,
+    "rssIncreaseBytes": 906674176,
+    "peakWorkingSetBytes": 933195776,
+    "medianMs": 15.432049985975027,
+    "p95Ms": 18.161199986934662
+  },
+  "metrics": {
+    "satisfied": 17,
+    "total": 64,
+    "missingRequired": 44,
+    "forbiddenLabels": 28,
+    "uncertain": 25,
+    "languages": {
+      "en": {
+        "satisfied": 6,
+        "total": 32
+      },
+      "he": {
+        "satisfied": 11,
+        "total": 32
+      }
+    },
+    "outcomes": [
+      {
+        "id": "heldout-v1-en-01",
+        "language": "en",
+        "predicted": [],
+        "missing": [
+          "coding",
+          "debugging"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 16.81629999075085,
+        "scores": {
+          "review_verification": 0.8405162834267796,
+          "tool_driven": 0.8405162834267796,
+          "coding": 0.8380117308185215,
+          "debugging": 0.8380117308185215,
+          "multi_file_implementation": 0.8298582831823329,
+          "document_analysis": 0.8112808884062721,
+          "structured_extraction": 0.8112808884062721,
+          "planning_delegation": 0.8088368936740442,
+          "repository_architecture": 0.803402426528427,
+          "complex_reasoning": 0.8021100178828346,
+          "mathematics": 0.8021100178828346,
+          "security_review": 0.8017544643956483,
+          "research_synthesis": 0.7998000162349503,
+          "multimodal": 0.7912663794874566,
+          "factual_explanation": 0.7640896980487017,
+          "conversation": 0.7353018515037716
+        }
+      },
+      {
+        "id": "heldout-v1-en-02",
+        "language": "en",
+        "predicted": [],
+        "missing": [
+          "coding",
+          "debugging"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 17.181099974550307,
+        "scores": {
+          "review_verification": 0.8411024316422042,
+          "security_review": 0.8411024316422042,
+          "document_analysis": 0.83973998605532,
+          "structured_extraction": 0.83973998605532,
+          "coding": 0.8365358869168331,
+          "multi_file_implementation": 0.8365358869168331,
+          "tool_driven": 0.8365358788363065,
+          "planning_delegation": 0.828518086124846,
+          "repository_architecture": 0.828518086124846,
+          "debugging": 0.8272840766428441,
+          "multimodal": 0.8163898340946072,
+          "factual_explanation": 0.8014546441391746,
+          "research_synthesis": 0.78992348349131,
+          "complex_reasoning": 0.7887703347185464,
+          "mathematics": 0.7887703347185464,
+          "conversation": 0.7671248889849805
+        }
+      },
+      {
+        "id": "heldout-v1-en-03",
+        "language": "en",
+        "predicted": [],
+        "missing": [
+          "coding"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 16.929200035519898,
+        "scores": {
+          "planning_delegation": 0.8089701022155243,
+          "repository_architecture": 0.8089701022155243,
+          "coding": 0.8056315898029952,
+          "document_analysis": 0.8054263483865639,
+          "structured_extraction": 0.8054263483865639,
+          "review_verification": 0.8024372136696535,
+          "security_review": 0.8024372136696535,
+          "mathematics": 0.8002365600280101,
+          "complex_reasoning": 0.8002365600280101,
+          "tool_driven": 0.796315392991954,
+          "multimodal": 0.7900881419085255,
+          "multi_file_implementation": 0.7838065882924665,
+          "debugging": 0.7786140365233436,
+          "factual_explanation": 0.7722500141547546,
+          "research_synthesis": 0.7659098195665189,
+          "conversation": 0.7515521264431587
+        }
+      },
+      {
+        "id": "heldout-v1-en-04",
+        "language": "en",
+        "predicted": [
+          "coding",
+          "review_verification",
+          "tool_driven",
+          "multi_file_implementation",
+          "planning_delegation"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 11.849500006064773,
+        "scores": {
+          "coding": 0.8522751422775149,
+          "review_verification": 0.8522751422775149,
+          "tool_driven": 0.8522751422775149,
+          "multi_file_implementation": 0.8522751422775149,
+          "planning_delegation": 0.8507823790738447,
+          "repository_architecture": 0.8489514882382215,
+          "debugging": 0.8209222988067731,
+          "security_review": 0.8201429928835197,
+          "document_analysis": 0.8113160295717349,
+          "structured_extraction": 0.8113160295717349,
+          "multimodal": 0.7967866141839722,
+          "mathematics": 0.794195777674503,
+          "complex_reasoning": 0.794195777674503,
+          "research_synthesis": 0.7824845114873846,
+          "factual_explanation": 0.7415063222867775,
+          "conversation": 0.7311724353241531
+        }
+      },
+      {
+        "id": "heldout-v1-en-05",
+        "language": "en",
+        "predicted": [
+          "repository_architecture",
+          "tool_driven"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 15.250499942339957,
+        "scores": {
+          "repository_architecture": 0.8610485008798977,
+          "tool_driven": 0.8508831860909762,
+          "coding": 0.8497186038099954,
+          "review_verification": 0.8394955025703168,
+          "multi_file_implementation": 0.8394955025703168,
+          "planning_delegation": 0.8350408404428853,
+          "debugging": 0.830532995654942,
+          "document_analysis": 0.8241587058777837,
+          "structured_extraction": 0.8241587058777837,
+          "security_review": 0.8232831063609467,
+          "research_synthesis": 0.8098772675276994,
+          "multimodal": 0.7952192797682986,
+          "complex_reasoning": 0.7817277473152868,
+          "mathematics": 0.7817277473152868,
+          "factual_explanation": 0.7816755756578573,
+          "conversation": 0.7437317239390763
+        }
+      },
+      {
+        "id": "heldout-v1-en-06",
+        "language": "en",
+        "predicted": [
+          "repository_architecture"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 16.723999986425042,
+        "scores": {
+          "repository_architecture": 0.8585360807116387,
+          "planning_delegation": 0.8463350953559328,
+          "coding": 0.831002316799682,
+          "multi_file_implementation": 0.831002316799682,
+          "tool_driven": 0.8310022962922031,
+          "review_verification": 0.8310022962922027,
+          "structured_extraction": 0.8241441042437876,
+          "document_analysis": 0.8241441042437876,
+          "debugging": 0.8073273179037385,
+          "security_review": 0.8026464421230975,
+          "research_synthesis": 0.7944788451063045,
+          "multimodal": 0.7913525617854574,
+          "factual_explanation": 0.7906222876431244,
+          "complex_reasoning": 0.7857723099520248,
+          "mathematics": 0.7857723099520248,
+          "conversation": 0.7394976926254031
+        }
+      },
+      {
+        "id": "heldout-v1-en-07",
+        "language": "en",
+        "predicted": [
+          "coding",
+          "review_verification",
+          "tool_driven",
+          "multi_file_implementation"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 15.441700001247227,
+        "scores": {
+          "coding": 0.8642110086023314,
+          "review_verification": 0.8642110086023314,
+          "tool_driven": 0.8642110086023314,
+          "multi_file_implementation": 0.8642110086023314,
+          "debugging": 0.8339365502373798,
+          "repository_architecture": 0.8314397600473888,
+          "security_review": 0.8265153932054708,
+          "planning_delegation": 0.8262082723079675,
+          "document_analysis": 0.8106286504163963,
+          "structured_extraction": 0.8067792767108692,
+          "multimodal": 0.8053360137880783,
+          "research_synthesis": 0.7858329761962918,
+          "complex_reasoning": 0.7813130103785914,
+          "mathematics": 0.7813130103785914,
+          "factual_explanation": 0.7639203378576339,
+          "conversation": 0.7471699708127064
+        }
+      },
+      {
+        "id": "heldout-v1-en-08",
+        "language": "en",
+        "predicted": [],
+        "missing": [
+          "coding",
+          "multi_file_implementation"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 13.841499923728406,
+        "scores": {
+          "coding": 0.8499302016745978,
+          "review_verification": 0.8499302016745978,
+          "tool_driven": 0.8499302016745978,
+          "multi_file_implementation": 0.8499302016745978,
+          "debugging": 0.8383789300247646,
+          "repository_architecture": 0.8305287921785097,
+          "planning_delegation": 0.8244613075706437,
+          "security_review": 0.8163604951016631,
+          "document_analysis": 0.8087796329205487,
+          "structured_extraction": 0.8087796329205487,
+          "multimodal": 0.8074063934479824,
+          "complex_reasoning": 0.797530048515013,
+          "mathematics": 0.797530048515013,
+          "research_synthesis": 0.7965945778962579,
+          "conversation": 0.7503315285124692,
+          "factual_explanation": 0.745099909739745
+        }
+      },
+      {
+        "id": "heldout-v1-en-09",
+        "language": "en",
+        "predicted": [],
+        "missing": [
+          "structured_extraction"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 16.894200001843274,
+        "scores": {
+          "document_analysis": 0.8287557053935751,
+          "structured_extraction": 0.8287557053935751,
+          "multimodal": 0.8158395470235087,
+          "repository_architecture": 0.8097492828025525,
+          "tool_driven": 0.8097492828025524,
+          "coding": 0.8076391309426076,
+          "multi_file_implementation": 0.8076391309426076,
+          "review_verification": 0.8076391179097212,
+          "planning_delegation": 0.7923016727760074,
+          "security_review": 0.7894777770928006,
+          "debugging": 0.7893099049206725,
+          "research_synthesis": 0.7886483072284125,
+          "factual_explanation": 0.7822159955087169,
+          "mathematics": 0.7750417490115139,
+          "complex_reasoning": 0.7750417490115139,
+          "conversation": 0.7547734429822226
+        }
+      },
+      {
+        "id": "heldout-v1-en-10",
+        "language": "en",
+        "predicted": [],
+        "missing": [
+          "document_analysis",
+          "structured_extraction"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 15.619900077581406,
+        "scores": {
+          "document_analysis": 0.8416565543787503,
+          "structured_extraction": 0.8416565543787503,
+          "review_verification": 0.820126779200969,
+          "tool_driven": 0.820126779200969,
+          "coding": 0.815505378657796,
+          "debugging": 0.815505378657796,
+          "security_review": 0.8148961272711233,
+          "multi_file_implementation": 0.8144212466551007,
+          "repository_architecture": 0.8132687936550763,
+          "planning_delegation": 0.8132687936550763,
+          "multimodal": 0.7795273625859283,
+          "research_synthesis": 0.7770761016924824,
+          "factual_explanation": 0.7701979486484724,
+          "complex_reasoning": 0.7650190044342279,
+          "mathematics": 0.7650190044342279,
+          "conversation": 0.7420311825804045
+        }
+      },
+      {
+        "id": "heldout-v1-en-11",
+        "language": "en",
+        "predicted": [],
+        "missing": [
+          "document_analysis"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 14.269800041802227,
+        "scores": {
+          "document_analysis": 0.8327525531250268,
+          "structured_extraction": 0.8327525531250268,
+          "coding": 0.8205065354802793,
+          "multi_file_implementation": 0.8205065354802793,
+          "tool_driven": 0.8205065126446913,
+          "review_verification": 0.8205065126446913,
+          "security_review": 0.8201348327974527,
+          "research_synthesis": 0.8176304536471772,
+          "repository_architecture": 0.8156035810817303,
+          "planning_delegation": 0.8107460333287013,
+          "debugging": 0.8037143857431962,
+          "multimodal": 0.802537776922963,
+          "factual_explanation": 0.7983395301000081,
+          "complex_reasoning": 0.7891256791575685,
+          "mathematics": 0.7891256791575685,
+          "conversation": 0.7616330598693569
+        }
+      },
+      {
+        "id": "heldout-v1-en-12",
+        "language": "en",
+        "predicted": [],
+        "missing": [
+          "document_analysis",
+          "review_verification"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 15.745599986985326,
+        "scores": {
+          "structured_extraction": 0.8319904150331296,
+          "document_analysis": 0.8319904150331296,
+          "tool_driven": 0.8223649373985457,
+          "review_verification": 0.8223649373985457,
+          "coding": 0.8222663915048609,
+          "debugging": 0.8222663915048609,
+          "planning_delegation": 0.8148915364061184,
+          "security_review": 0.8128991526525772,
+          "multi_file_implementation": 0.8110812484644131,
+          "repository_architecture": 0.8008515343483211,
+          "multimodal": 0.7867263145904265,
+          "research_synthesis": 0.7836941012779335,
+          "factual_explanation": 0.7750433018697063,
+          "complex_reasoning": 0.7691529439134845,
+          "mathematics": 0.7691529439134845,
+          "conversation": 0.7274995961199567
+        }
+      },
+      {
+        "id": "heldout-v1-en-13",
+        "language": "en",
+        "predicted": [],
+        "missing": [
+          "research_synthesis"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 15.006299945525825,
+        "scores": {
+          "research_synthesis": 0.8337297201726812,
+          "coding": 0.8308924526143844,
+          "multi_file_implementation": 0.8308924526143844,
+          "tool_driven": 0.8308924344149096,
+          "review_verification": 0.8308924344149093,
+          "planning_delegation": 0.81375575452139,
+          "mathematics": 0.8117434809371311,
+          "complex_reasoning": 0.8117434809371311,
+          "repository_architecture": 0.8094365635670495,
+          "debugging": 0.8088590633312029,
+          "document_analysis": 0.8052947231829418,
+          "structured_extraction": 0.8052947231829418,
+          "security_review": 0.8008067744289294,
+          "factual_explanation": 0.7908666953129663,
+          "multimodal": 0.7767122351935551,
+          "conversation": 0.7562522804071832
+        }
+      },
+      {
+        "id": "heldout-v1-en-14",
+        "language": "en",
+        "predicted": [],
+        "missing": [
+          "document_analysis",
+          "research_synthesis"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 14.732000068761408,
+        "scores": {
+          "research_synthesis": 0.8336337171443495,
+          "repository_architecture": 0.823008775137511,
+          "planning_delegation": 0.823008775137511,
+          "document_analysis": 0.8144210842790294,
+          "structured_extraction": 0.8094965316843294,
+          "security_review": 0.8022399416853299,
+          "review_verification": 0.8022399416853299,
+          "factual_explanation": 0.801449043765838,
+          "coding": 0.800007811765675,
+          "multi_file_implementation": 0.800007811765675,
+          "tool_driven": 0.8000077820572747,
+          "debugging": 0.7957600449774352,
+          "mathematics": 0.7770396442856674,
+          "complex_reasoning": 0.7770396442856674,
+          "multimodal": 0.7740491840286187,
+          "conversation": 0.7447632336526532
+        }
+      },
+      {
+        "id": "heldout-v1-en-15",
+        "language": "en",
+        "predicted": [],
+        "missing": [
+          "tool_driven"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 13.770799967460334,
+        "scores": {
+          "coding": 0.8435282556538215,
+          "multi_file_implementation": 0.8435282556538215,
+          "review_verification": 0.8435282362287971,
+          "tool_driven": 0.8435282362287967,
+          "repository_architecture": 0.8369105817474662,
+          "planning_delegation": 0.8314364226249231,
+          "multimodal": 0.8269579568275135,
+          "security_review": 0.8245982679847671,
+          "debugging": 0.8243306826988607,
+          "document_analysis": 0.8179734598356652,
+          "structured_extraction": 0.8179734598356652,
+          "complex_reasoning": 0.8085426830920407,
+          "mathematics": 0.8085426830920407,
+          "research_synthesis": 0.8011301635151811,
+          "factual_explanation": 0.7760023940687888,
+          "conversation": 0.768298250255892
+        }
+      },
+      {
+        "id": "heldout-v1-en-16",
+        "language": "en",
+        "predicted": [
+          "coding",
+          "multi_file_implementation",
+          "review_verification",
+          "tool_driven"
+        ],
+        "missing": [],
+        "forbidden": [
+          "coding"
+        ],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 13.004499953240156,
+        "scores": {
+          "coding": 0.8556396745619579,
+          "multi_file_implementation": 0.8556396745619579,
+          "review_verification": 0.8556396550210015,
+          "tool_driven": 0.8556396550210015,
+          "debugging": 0.8399476006674109,
+          "security_review": 0.8365369187066849,
+          "repository_architecture": 0.8285458715400297,
+          "document_analysis": 0.8224363201526335,
+          "structured_extraction": 0.8224363201526335,
+          "planning_delegation": 0.8211014760166967,
+          "research_synthesis": 0.8142072033862656,
+          "multimodal": 0.8093972708906083,
+          "complex_reasoning": 0.7926616621752769,
+          "mathematics": 0.7926616621752769,
+          "factual_explanation": 0.7876883082687854,
+          "conversation": 0.7495552951051841
+        }
+      },
+      {
+        "id": "heldout-v1-en-17",
+        "language": "en",
+        "predicted": [],
+        "missing": [
+          "planning_delegation"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 15.298800077289343,
+        "scores": {
+          "planning_delegation": 0.8363654675615521,
+          "structured_extraction": 0.8094944114827262,
+          "document_analysis": 0.8094944114827262,
+          "repository_architecture": 0.8088320293929577,
+          "tool_driven": 0.7960213545938313,
+          "review_verification": 0.7960213545938313,
+          "security_review": 0.7943791711424316,
+          "coding": 0.7940422290041292,
+          "multi_file_implementation": 0.7940422290041292,
+          "debugging": 0.7894803308305137,
+          "multimodal": 0.7777395314298583,
+          "research_synthesis": 0.7638551380666183,
+          "factual_explanation": 0.7608408366628484,
+          "complex_reasoning": 0.7520471640618595,
+          "mathematics": 0.7520471640618595,
+          "conversation": 0.7351975878851399
+        }
+      },
+      {
+        "id": "heldout-v1-en-18",
+        "language": "en",
+        "predicted": [],
+        "missing": [
+          "planning_delegation"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 16.415600082837045,
+        "scores": {
+          "review_verification": 0.8368248377622632,
+          "security_review": 0.8368248377622632,
+          "coding": 0.833254831023498,
+          "debugging": 0.833254831023498,
+          "tool_driven": 0.8283203952359166,
+          "multi_file_implementation": 0.824900646296167,
+          "structured_extraction": 0.8228683502696417,
+          "document_analysis": 0.8228683502696417,
+          "planning_delegation": 0.8184907970453714,
+          "repository_architecture": 0.8149014273878283,
+          "multimodal": 0.7989435578700663,
+          "research_synthesis": 0.7852879587922063,
+          "factual_explanation": 0.771099637802977,
+          "complex_reasoning": 0.7701893492693452,
+          "mathematics": 0.7701893492693452,
+          "conversation": 0.7392403175962684
+        }
+      },
+      {
+        "id": "heldout-v1-en-19",
+        "language": "en",
+        "predicted": [
+          "review_verification",
+          "security_review"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 13.139199931174517,
+        "scores": {
+          "review_verification": 0.8717032390118236,
+          "security_review": 0.8717032390118236,
+          "coding": 0.8410626113888859,
+          "debugging": 0.8410626113888859,
+          "tool_driven": 0.8286690590648003,
+          "repository_architecture": 0.8242332975685887,
+          "planning_delegation": 0.8234437723426292,
+          "multi_file_implementation": 0.823348774016311,
+          "document_analysis": 0.8088937441763312,
+          "structured_extraction": 0.8088937441763312,
+          "complex_reasoning": 0.798897485583138,
+          "mathematics": 0.798897485583138,
+          "multimodal": 0.7937565861163961,
+          "research_synthesis": 0.7926397941359804,
+          "factual_explanation": 0.7683574306379554,
+          "conversation": 0.7563123202634757
+        }
+      },
+      {
+        "id": "heldout-v1-en-20",
+        "language": "en",
+        "predicted": [],
+        "missing": [
+          "document_analysis",
+          "mathematics",
+          "review_verification"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 13.889900059439242,
+        "scores": {
+          "review_verification": 0.8374639738999988,
+          "tool_driven": 0.8374639738999988,
+          "complex_reasoning": 0.8337129622587273,
+          "mathematics": 0.8337129622587273,
+          "security_review": 0.8270755540193953,
+          "debugging": 0.8266592350503279,
+          "coding": 0.8266592350503279,
+          "multi_file_implementation": 0.8232495767456378,
+          "repository_architecture": 0.8231369600191788,
+          "document_analysis": 0.8206949123063202,
+          "structured_extraction": 0.8206949123063202,
+          "research_synthesis": 0.8082292813796649,
+          "planning_delegation": 0.8032554795960258,
+          "multimodal": 0.798906839893375,
+          "factual_explanation": 0.7728033105521086,
+          "conversation": 0.7347862649794749
+        }
+      },
+      {
+        "id": "heldout-v1-en-21",
+        "language": "en",
+        "predicted": [],
+        "missing": [
+          "review_verification",
+          "security_review"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 15.24420001078397,
+        "scores": {
+          "review_verification": 0.8456405423628224,
+          "security_review": 0.8456405423628224,
+          "coding": 0.8409772604342002,
+          "multi_file_implementation": 0.8409772604342002,
+          "tool_driven": 0.8409772376237684,
+          "debugging": 0.8409043268666933,
+          "repository_architecture": 0.8288149862883387,
+          "document_analysis": 0.8254943267642417,
+          "structured_extraction": 0.8254943267642417,
+          "planning_delegation": 0.8166691758079633,
+          "research_synthesis": 0.7983385346335792,
+          "multimodal": 0.7925453969991202,
+          "complex_reasoning": 0.7881116481636917,
+          "mathematics": 0.7881116481636917,
+          "factual_explanation": 0.7787629307950047,
+          "conversation": 0.7384891274971437
+        }
+      },
+      {
+        "id": "heldout-v1-en-22",
+        "language": "en",
+        "predicted": [
+          "coding",
+          "tool_driven",
+          "review_verification",
+          "multi_file_implementation"
+        ],
+        "missing": [
+          "security_review"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 13.468299992382526,
+        "scores": {
+          "coding": 0.8508303702003829,
+          "tool_driven": 0.8508303702003829,
+          "review_verification": 0.8508303702003829,
+          "multi_file_implementation": 0.8508303702003829,
+          "security_review": 0.8464198202835629,
+          "repository_architecture": 0.8378337743497419,
+          "debugging": 0.8309144587962949,
+          "planning_delegation": 0.8165005815886855,
+          "document_analysis": 0.8133832053825232,
+          "structured_extraction": 0.8133832053825232,
+          "research_synthesis": 0.8131277699402886,
+          "multimodal": 0.8014244579972004,
+          "complex_reasoning": 0.7918563012406761,
+          "mathematics": 0.7918563012406761,
+          "factual_explanation": 0.7681432280970268,
+          "conversation": 0.75344078125046
+        }
+      },
+      {
+        "id": "heldout-v1-en-23",
+        "language": "en",
+        "predicted": [],
+        "missing": [
+          "mathematics"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 14.118800056166947,
+        "scores": {
+          "complex_reasoning": 0.8228175995538682,
+          "mathematics": 0.8228175995538682,
+          "review_verification": 0.8130117340492717,
+          "tool_driven": 0.8130117340492717,
+          "coding": 0.8078781532581591,
+          "debugging": 0.8078781532581591,
+          "document_analysis": 0.8077238839469899,
+          "structured_extraction": 0.8035550512142571,
+          "planning_delegation": 0.7988579695486883,
+          "factual_explanation": 0.7966420313190078,
+          "multi_file_implementation": 0.7962915796978441,
+          "repository_architecture": 0.7951323469494189,
+          "multimodal": 0.7937216742574127,
+          "research_synthesis": 0.7915949697659523,
+          "security_review": 0.7853561556702011,
+          "conversation": 0.7463436132745009
+        }
+      },
+      {
+        "id": "heldout-v1-en-24",
+        "language": "en",
+        "predicted": [
+          "mathematics",
+          "complex_reasoning"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 13.644099934026599,
+        "scores": {
+          "mathematics": 0.8523821581409528,
+          "complex_reasoning": 0.8523821581409528,
+          "review_verification": 0.8353671120849945,
+          "debugging": 0.8353670954667168,
+          "coding": 0.8353670954667168,
+          "tool_driven": 0.8281812627275401,
+          "multi_file_implementation": 0.8124210958768432,
+          "multimodal": 0.8099732598654522,
+          "repository_architecture": 0.8096890071485511,
+          "research_synthesis": 0.8094084093979256,
+          "structured_extraction": 0.8052385528182476,
+          "document_analysis": 0.8052385528182476,
+          "security_review": 0.8014449289732363,
+          "planning_delegation": 0.7972145502489083,
+          "factual_explanation": 0.7964184955173355,
+          "conversation": 0.7907023517845866
+        }
+      },
+      {
+        "id": "heldout-v1-en-25",
+        "language": "en",
+        "predicted": [],
+        "missing": [
+          "complex_reasoning"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 17.542900051921606,
+        "scores": {
+          "document_analysis": 0.8216375492063445,
+          "structured_extraction": 0.8216375492063445,
+          "planning_delegation": 0.8128917624873031,
+          "tool_driven": 0.8033105551440488,
+          "review_verification": 0.8033105551440488,
+          "security_review": 0.8024590040854983,
+          "coding": 0.7994599622880338,
+          "multi_file_implementation": 0.7994599622880338,
+          "repository_architecture": 0.7882188071520826,
+          "complex_reasoning": 0.7842939305316788,
+          "mathematics": 0.7842939305316788,
+          "debugging": 0.7810377052609322,
+          "factual_explanation": 0.7772042566650162,
+          "multimodal": 0.7753473579170211,
+          "research_synthesis": 0.7587674739194447,
+          "conversation": 0.7521094913871423
+        }
+      },
+      {
+        "id": "heldout-v1-en-26",
+        "language": "en",
+        "predicted": [],
+        "missing": [
+          "complex_reasoning"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 21.624999935738742,
+        "scores": {
+          "factual_explanation": 0.8062252301055536,
+          "document_analysis": 0.7977278722954039,
+          "structured_extraction": 0.7977278722954039,
+          "review_verification": 0.7952708541998181,
+          "coding": 0.7952708419337872,
+          "debugging": 0.7952708419337872,
+          "multi_file_implementation": 0.7937495927789424,
+          "tool_driven": 0.7937495690914709,
+          "complex_reasoning": 0.7931139498807864,
+          "mathematics": 0.7931139498807864,
+          "security_review": 0.7918966726445272,
+          "repository_architecture": 0.7903906743599256,
+          "research_synthesis": 0.7886231078827846,
+          "planning_delegation": 0.7851045258519366,
+          "multimodal": 0.7724380702691909,
+          "conversation": 0.7533788169141139
+        }
+      },
+      {
+        "id": "heldout-v1-en-27",
+        "language": "en",
+        "predicted": [],
+        "missing": [
+          "multimodal"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 14.137999969534576,
+        "scores": {
+          "document_analysis": 0.8262259369896459,
+          "structured_extraction": 0.8262259369896459,
+          "factual_explanation": 0.8229945430081402,
+          "repository_architecture": 0.8189900319219963,
+          "planning_delegation": 0.8189900319219963,
+          "review_verification": 0.8148943364190772,
+          "security_review": 0.8148943364190772,
+          "multimodal": 0.8145727086254981,
+          "tool_driven": 0.8079028232815875,
+          "mathematics": 0.8053045488002278,
+          "complex_reasoning": 0.8053045488002278,
+          "coding": 0.8005938151190608,
+          "debugging": 0.8005938151190608,
+          "multi_file_implementation": 0.7992905809078317,
+          "research_synthesis": 0.7988050408308013,
+          "conversation": 0.7820887972434044
+        }
+      },
+      {
+        "id": "heldout-v1-en-28",
+        "language": "en",
+        "predicted": [],
+        "missing": [
+          "multimodal",
+          "review_verification"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 13.28850002028048,
+        "scores": {
+          "review_verification": 0.8374282185885804,
+          "security_review": 0.8374282185885804,
+          "coding": 0.8338606369635811,
+          "debugging": 0.8338606369635811,
+          "repository_architecture": 0.8332319564389516,
+          "multi_file_implementation": 0.8294543806868303,
+          "tool_driven": 0.8294543660267011,
+          "planning_delegation": 0.8284147101139571,
+          "document_analysis": 0.8251457779812761,
+          "structured_extraction": 0.8251457779812761,
+          "research_synthesis": 0.8111883891820787,
+          "multimodal": 0.8076228993741993,
+          "complex_reasoning": 0.7838051886158667,
+          "mathematics": 0.7838051886158667,
+          "factual_explanation": 0.7819162673702739,
+          "conversation": 0.7503753251264373
+        }
+      },
+      {
+        "id": "heldout-v1-en-29",
+        "language": "en",
+        "predicted": [],
+        "missing": [
+          "factual_explanation"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 13.825800037011504,
+        "scores": {
+          "document_analysis": 0.8348140610812905,
+          "structured_extraction": 0.8348140610812905,
+          "factual_explanation": 0.8315596724583741,
+          "review_verification": 0.8249915715430417,
+          "security_review": 0.8249915715430417,
+          "coding": 0.8143965259707167,
+          "multi_file_implementation": 0.8143965259707167,
+          "tool_driven": 0.8143964981625735,
+          "debugging": 0.8112887339751346,
+          "repository_architecture": 0.8010735022101227,
+          "planning_delegation": 0.7965573167402684,
+          "research_synthesis": 0.7926593590410302,
+          "multimodal": 0.7919767206588273,
+          "mathematics": 0.7886819704116955,
+          "complex_reasoning": 0.7886819704116955,
+          "conversation": 0.7787381995563781
+        }
+      },
+      {
+        "id": "heldout-v1-en-30",
+        "language": "en",
+        "predicted": [],
+        "missing": [
+          "factual_explanation"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 13.071800000034273,
+        "scores": {
+          "factual_explanation": 0.8055639975758084,
+          "debugging": 0.8027284524972818,
+          "coding": 0.8027284524972818,
+          "review_verification": 0.8027284462324106,
+          "planning_delegation": 0.8025405676245622,
+          "repository_architecture": 0.8025405676245622,
+          "document_analysis": 0.8020914690852748,
+          "structured_extraction": 0.8020914690852748,
+          "multimodal": 0.789879223691132,
+          "tool_driven": 0.7877373426288289,
+          "multi_file_implementation": 0.7812504072501542,
+          "complex_reasoning": 0.779286026157172,
+          "mathematics": 0.779286026157172,
+          "security_review": 0.7724727586159121,
+          "research_synthesis": 0.7704664491835177,
+          "conversation": 0.7686333669987575
+        }
+      },
+      {
+        "id": "heldout-v1-en-31",
+        "language": "en",
+        "predicted": [],
+        "missing": [
+          "conversation"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 13.620999990962446,
+        "scores": {
+          "factual_explanation": 0.8432390536631167,
+          "conversation": 0.8237904710474374,
+          "review_verification": 0.8230184031434533,
+          "security_review": 0.8230184031434533,
+          "debugging": 0.8185408171003402,
+          "coding": 0.8185408171003402,
+          "multimodal": 0.8182290497179133,
+          "repository_architecture": 0.8151015644532509,
+          "planning_delegation": 0.8151015644532509,
+          "multi_file_implementation": 0.8135310562474767,
+          "tool_driven": 0.8135310429192555,
+          "document_analysis": 0.8061348238523731,
+          "structured_extraction": 0.8061348238523731,
+          "research_synthesis": 0.7983763900673927,
+          "mathematics": 0.7941184637305038,
+          "complex_reasoning": 0.7941184637305038
+        }
+      },
+      {
+        "id": "heldout-v1-en-32",
+        "language": "en",
+        "predicted": [],
+        "missing": [
+          "conversation"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 14.39380005467683,
+        "scores": {
+          "planning_delegation": 0.8091057707285597,
+          "multimodal": 0.8039762652134312,
+          "conversation": 0.803855189549396,
+          "structured_extraction": 0.8028284290580239,
+          "document_analysis": 0.8028284290580239,
+          "coding": 0.8019831874008496,
+          "debugging": 0.8019831874008496,
+          "factual_explanation": 0.7971245271671865,
+          "review_verification": 0.7917312424288888,
+          "security_review": 0.7917312424288888,
+          "tool_driven": 0.7901763677352616,
+          "multi_file_implementation": 0.7892975824892906,
+          "repository_architecture": 0.7873695350683337,
+          "mathematics": 0.7736975352629385,
+          "complex_reasoning": 0.7736975352629385,
+          "research_synthesis": 0.766032897648159
+        }
+      },
+      {
+        "id": "heldout-v1-he-01",
+        "language": "he",
+        "predicted": [
+          "review_verification",
+          "coding",
+          "debugging",
+          "tool_driven",
+          "multimodal",
+          "multi_file_implementation",
+          "document_analysis",
+          "structured_extraction",
+          "security_review",
+          "repository_architecture"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 17.373899929225445,
+        "scores": {
+          "review_verification": 0.9079478812848694,
+          "coding": 0.9079478762527232,
+          "debugging": 0.9079478762527232,
+          "tool_driven": 0.8654495602075521,
+          "multimodal": 0.865257892510794,
+          "multi_file_implementation": 0.8642611189032123,
+          "document_analysis": 0.8636980117465558,
+          "structured_extraction": 0.8636980117465558,
+          "security_review": 0.8572980995559878,
+          "repository_architecture": 0.8517885050373689,
+          "planning_delegation": 0.8475904912497174,
+          "mathematics": 0.8369825036500603,
+          "complex_reasoning": 0.8369825036500603,
+          "research_synthesis": 0.8265408431071212,
+          "factual_explanation": 0.7994525544658312,
+          "conversation": 0.7963695658375847
+        }
+      },
+      {
+        "id": "heldout-v1-he-02",
+        "language": "he",
+        "predicted": [
+          "repository_architecture",
+          "tool_driven",
+          "review_verification",
+          "security_review",
+          "coding",
+          "debugging",
+          "multi_file_implementation",
+          "document_analysis",
+          "planning_delegation"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 15.783400041982532,
+        "scores": {
+          "repository_architecture": 0.8773701638564432,
+          "tool_driven": 0.8773701638564432,
+          "review_verification": 0.8735721755617178,
+          "security_review": 0.8735721755617178,
+          "coding": 0.8672316435179809,
+          "debugging": 0.8672316435179809,
+          "multi_file_implementation": 0.8552880692147883,
+          "document_analysis": 0.8527203822774224,
+          "planning_delegation": 0.8519105782715084,
+          "research_synthesis": 0.8495708175380509,
+          "multimodal": 0.8491151869560367,
+          "complex_reasoning": 0.8485813814435156,
+          "mathematics": 0.8485813814435156,
+          "structured_extraction": 0.8428273819677286,
+          "factual_explanation": 0.8087080367957844,
+          "conversation": 0.7953549164257189
+        }
+      },
+      {
+        "id": "heldout-v1-he-03",
+        "language": "he",
+        "predicted": [
+          "tool_driven",
+          "review_verification",
+          "coding",
+          "multi_file_implementation",
+          "security_review",
+          "debugging"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 15.709099941886961,
+        "scores": {
+          "tool_driven": 0.8792814424903698,
+          "review_verification": 0.8792814424903698,
+          "coding": 0.8639290018425124,
+          "multi_file_implementation": 0.8548368795183274,
+          "security_review": 0.8533658914893779,
+          "debugging": 0.8528733851494918,
+          "mathematics": 0.8478860811327669,
+          "complex_reasoning": 0.8478860811327669,
+          "document_analysis": 0.8468723758457142,
+          "structured_extraction": 0.8468723758457142,
+          "planning_delegation": 0.8425981472584656,
+          "research_synthesis": 0.8418980360229621,
+          "repository_architecture": 0.8348217312309273,
+          "multimodal": 0.8347805774716291,
+          "factual_explanation": 0.8236905258983321,
+          "conversation": 0.7688840815935704
+        }
+      },
+      {
+        "id": "heldout-v1-he-04",
+        "language": "he",
+        "predicted": [
+          "coding",
+          "multi_file_implementation",
+          "review_verification",
+          "tool_driven",
+          "debugging",
+          "security_review",
+          "repository_architecture"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 16.60279999487102,
+        "scores": {
+          "coding": 0.8702375364762942,
+          "multi_file_implementation": 0.8702375364762942,
+          "review_verification": 0.8702375318451256,
+          "tool_driven": 0.8702375318451256,
+          "debugging": 0.862251955000601,
+          "security_review": 0.8619030688130844,
+          "repository_architecture": 0.8556021384096457,
+          "multimodal": 0.8463444588093482,
+          "planning_delegation": 0.8443416993850092,
+          "research_synthesis": 0.8377438708210133,
+          "document_analysis": 0.8370457082251396,
+          "structured_extraction": 0.8370457082251396,
+          "complex_reasoning": 0.8224731674794415,
+          "mathematics": 0.8224731674794415,
+          "factual_explanation": 0.7845691778504151,
+          "conversation": 0.764381528062112
+        }
+      },
+      {
+        "id": "heldout-v1-he-05",
+        "language": "he",
+        "predicted": [
+          "review_verification",
+          "coding",
+          "debugging",
+          "security_review",
+          "tool_driven",
+          "document_analysis",
+          "structured_extraction",
+          "multi_file_implementation",
+          "repository_architecture",
+          "planning_delegation",
+          "research_synthesis"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 15.508300042711198,
+        "scores": {
+          "review_verification": 0.8743561352666224,
+          "coding": 0.8743561263014294,
+          "debugging": 0.8743561263014294,
+          "security_review": 0.8720107510037272,
+          "tool_driven": 0.8716622040813482,
+          "document_analysis": 0.8698256735949296,
+          "structured_extraction": 0.8698256735949296,
+          "multi_file_implementation": 0.8693973209010964,
+          "repository_architecture": 0.8690363042889392,
+          "planning_delegation": 0.8607772872694759,
+          "research_synthesis": 0.8588351799093596,
+          "multimodal": 0.8473723326122344,
+          "complex_reasoning": 0.8388423810092699,
+          "mathematics": 0.8388423810092699,
+          "factual_explanation": 0.823601863993666,
+          "conversation": 0.782668786510601
+        }
+      },
+      {
+        "id": "heldout-v1-he-06",
+        "language": "he",
+        "predicted": [
+          "repository_architecture",
+          "coding",
+          "debugging",
+          "review_verification",
+          "security_review",
+          "multi_file_implementation",
+          "tool_driven",
+          "planning_delegation",
+          "document_analysis",
+          "structured_extraction",
+          "research_synthesis"
+        ],
+        "missing": [],
+        "forbidden": [
+          "multi_file_implementation"
+        ],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 16.014899942092597,
+        "scores": {
+          "repository_architecture": 0.8989468935886508,
+          "coding": 0.881808132159662,
+          "debugging": 0.881808132159662,
+          "review_verification": 0.8818081205962603,
+          "security_review": 0.8783742109049488,
+          "multi_file_implementation": 0.8736073983906995,
+          "tool_driven": 0.8736073923647194,
+          "planning_delegation": 0.8684014827452956,
+          "document_analysis": 0.8641468090186474,
+          "structured_extraction": 0.8641468090186474,
+          "research_synthesis": 0.8512692322679013,
+          "multimodal": 0.844396875657876,
+          "mathematics": 0.8378682108971199,
+          "complex_reasoning": 0.8378682108971199,
+          "factual_explanation": 0.8015782495330238,
+          "conversation": 0.7706373973592946
+        }
+      },
+      {
+        "id": "heldout-v1-he-07",
+        "language": "he",
+        "predicted": [
+          "review_verification",
+          "coding",
+          "debugging",
+          "repository_architecture",
+          "multi_file_implementation",
+          "tool_driven",
+          "planning_delegation",
+          "security_review",
+          "document_analysis",
+          "structured_extraction"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 17.783000017516315,
+        "scores": {
+          "review_verification": 0.8827806404937342,
+          "coding": 0.8827806348239451,
+          "debugging": 0.8827806348239451,
+          "repository_architecture": 0.8804463659040836,
+          "multi_file_implementation": 0.8762163979857271,
+          "tool_driven": 0.8762163958983502,
+          "planning_delegation": 0.859145801622983,
+          "security_review": 0.8539000376282022,
+          "document_analysis": 0.8505776935903041,
+          "structured_extraction": 0.8505776935903041,
+          "research_synthesis": 0.8444301913418437,
+          "multimodal": 0.8407450094959014,
+          "complex_reasoning": 0.8219804399247362,
+          "mathematics": 0.8219804399247362,
+          "factual_explanation": 0.8057140590605917,
+          "conversation": 0.7663812535575933
+        }
+      },
+      {
+        "id": "heldout-v1-he-08",
+        "language": "he",
+        "predicted": [
+          "tool_driven",
+          "review_verification",
+          "coding",
+          "multi_file_implementation",
+          "debugging",
+          "repository_architecture",
+          "security_review",
+          "planning_delegation",
+          "document_analysis",
+          "structured_extraction"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 17.520800000056624,
+        "scores": {
+          "tool_driven": 0.8947113252272886,
+          "review_verification": 0.8947113252272885,
+          "coding": 0.8947113236562488,
+          "multi_file_implementation": 0.8947113236562488,
+          "debugging": 0.8859997529300772,
+          "repository_architecture": 0.8748095132028263,
+          "security_review": 0.8698128991397073,
+          "planning_delegation": 0.8697407981331025,
+          "document_analysis": 0.8519868158549742,
+          "structured_extraction": 0.8519868158549742,
+          "multimodal": 0.8456280695927012,
+          "research_synthesis": 0.8390800110810023,
+          "complex_reasoning": 0.8244969910901536,
+          "mathematics": 0.8244969910901536,
+          "factual_explanation": 0.816587743492972,
+          "conversation": 0.8134899369650813
+        }
+      },
+      {
+        "id": "heldout-v1-he-09",
+        "language": "he",
+        "predicted": [
+          "document_analysis",
+          "structured_extraction",
+          "review_verification",
+          "security_review",
+          "coding",
+          "multi_file_implementation",
+          "tool_driven",
+          "repository_architecture",
+          "planning_delegation"
+        ],
+        "missing": [],
+        "forbidden": [
+          "coding",
+          "tool_driven"
+        ],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 16.98209997266531,
+        "scores": {
+          "document_analysis": 0.8860688138861217,
+          "structured_extraction": 0.8860688138861217,
+          "review_verification": 0.8717713375874728,
+          "security_review": 0.8717713375874728,
+          "coding": 0.8681201733502518,
+          "multi_file_implementation": 0.8681201733502518,
+          "tool_driven": 0.868120163741974,
+          "repository_architecture": 0.8528479710922832,
+          "planning_delegation": 0.8528479710922832,
+          "debugging": 0.8440217828076388,
+          "multimodal": 0.8247314390704464,
+          "mathematics": 0.8244049229233278,
+          "complex_reasoning": 0.8244049229233278,
+          "research_synthesis": 0.8120990662030242,
+          "factual_explanation": 0.7944426829280912,
+          "conversation": 0.7805938055772783
+        }
+      },
+      {
+        "id": "heldout-v1-he-10",
+        "language": "he",
+        "predicted": [
+          "document_analysis",
+          "structured_extraction",
+          "review_verification",
+          "coding",
+          "debugging",
+          "tool_driven",
+          "multi_file_implementation",
+          "security_review",
+          "repository_architecture",
+          "planning_delegation",
+          "multimodal",
+          "research_synthesis"
+        ],
+        "missing": [],
+        "forbidden": [
+          "coding"
+        ],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 17.043299973011017,
+        "scores": {
+          "document_analysis": 0.8830477190760178,
+          "structured_extraction": 0.8830477190760178,
+          "review_verification": 0.8784277152706711,
+          "coding": 0.8784277088783686,
+          "debugging": 0.8784277088783686,
+          "tool_driven": 0.874699729189039,
+          "multi_file_implementation": 0.8640907851181407,
+          "security_review": 0.864077072761388,
+          "repository_architecture": 0.8638905320552929,
+          "planning_delegation": 0.8530161496381454,
+          "multimodal": 0.8527199055752027,
+          "research_synthesis": 0.8520060076584492,
+          "complex_reasoning": 0.8401469031789616,
+          "mathematics": 0.8401469031789616,
+          "factual_explanation": 0.8092080127786997,
+          "conversation": 0.7794602784598125
+        }
+      },
+      {
+        "id": "heldout-v1-he-11",
+        "language": "he",
+        "predicted": [
+          "document_analysis",
+          "structured_extraction",
+          "planning_delegation",
+          "review_verification",
+          "security_review",
+          "tool_driven",
+          "repository_architecture",
+          "coding",
+          "debugging",
+          "multi_file_implementation",
+          "multimodal",
+          "complex_reasoning",
+          "mathematics"
+        ],
+        "missing": [],
+        "forbidden": [
+          "coding"
+        ],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 15.262300032190979,
+        "scores": {
+          "document_analysis": 0.8867608014454988,
+          "structured_extraction": 0.8867608014454988,
+          "planning_delegation": 0.885742235462759,
+          "review_verification": 0.8760026962749068,
+          "security_review": 0.8760026962749068,
+          "tool_driven": 0.8696943249444937,
+          "repository_architecture": 0.8658354332425071,
+          "coding": 0.863944105014562,
+          "debugging": 0.863944105014562,
+          "multi_file_implementation": 0.8599341144717279,
+          "multimodal": 0.8592469881385418,
+          "complex_reasoning": 0.8501143337782663,
+          "mathematics": 0.8501143337782663,
+          "research_synthesis": 0.8450933798140006,
+          "factual_explanation": 0.8138933261835024,
+          "conversation": 0.8084031898751253
+        }
+      },
+      {
+        "id": "heldout-v1-he-12",
+        "language": "he",
+        "predicted": [
+          "document_analysis",
+          "review_verification",
+          "security_review",
+          "tool_driven"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 18.161199986934662,
+        "scores": {
+          "document_analysis": 0.8712609673161419,
+          "review_verification": 0.8614274995099298,
+          "security_review": 0.8614274995099298,
+          "tool_driven": 0.85201412373121,
+          "planning_delegation": 0.8486400869864171,
+          "coding": 0.8459742403699745,
+          "debugging": 0.8459742403699745,
+          "structured_extraction": 0.8448994436480132,
+          "repository_architecture": 0.8375329975556298,
+          "multi_file_implementation": 0.8354919640663184,
+          "complex_reasoning": 0.8235907217406184,
+          "mathematics": 0.8235907217406184,
+          "multimodal": 0.8204310133411225,
+          "research_synthesis": 0.8164937445138476,
+          "factual_explanation": 0.794050529783735,
+          "conversation": 0.7891449992550713
+        }
+      },
+      {
+        "id": "heldout-v1-he-13",
+        "language": "he",
+        "predicted": [
+          "research_synthesis"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 15.012699994258583,
+        "scores": {
+          "research_synthesis": 0.8719773981211882,
+          "tool_driven": 0.8459079448017606,
+          "review_verification": 0.8459079448017606,
+          "security_review": 0.8427018726875343,
+          "coding": 0.8382444769068859,
+          "debugging": 0.8382444769068859,
+          "multi_file_implementation": 0.8356392415031112,
+          "complex_reasoning": 0.8342132782259487,
+          "mathematics": 0.8342132782259487,
+          "repository_architecture": 0.8330780681175427,
+          "document_analysis": 0.8268433088098336,
+          "structured_extraction": 0.8268433088098336,
+          "multimodal": 0.8235024381345145,
+          "planning_delegation": 0.8211669210878776,
+          "factual_explanation": 0.8062364706677422,
+          "conversation": 0.7581411826720524
+        }
+      },
+      {
+        "id": "heldout-v1-he-14",
+        "language": "he",
+        "predicted": [
+          "research_synthesis"
+        ],
+        "missing": [
+          "document_analysis"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 16.46220008842647,
+        "scores": {
+          "research_synthesis": 0.8523309622719677,
+          "coding": 0.8477227959386552,
+          "multi_file_implementation": 0.8477227959386552,
+          "review_verification": 0.8477227925327575,
+          "tool_driven": 0.8477227925327573,
+          "repository_architecture": 0.846654198010927,
+          "security_review": 0.8461259313431728,
+          "planning_delegation": 0.8419761450082233,
+          "document_analysis": 0.8391251825227378,
+          "structured_extraction": 0.8391251825227378,
+          "debugging": 0.8353841740696445,
+          "multimodal": 0.8224554280665368,
+          "complex_reasoning": 0.8153793523805862,
+          "mathematics": 0.8153793523805862,
+          "factual_explanation": 0.8050553628232942,
+          "conversation": 0.7903197615722523
+        }
+      },
+      {
+        "id": "heldout-v1-he-15",
+        "language": "he",
+        "predicted": [
+          "tool_driven",
+          "repository_architecture",
+          "coding",
+          "multi_file_implementation",
+          "review_verification",
+          "multimodal",
+          "debugging",
+          "security_review",
+          "planning_delegation",
+          "document_analysis",
+          "structured_extraction",
+          "research_synthesis"
+        ],
+        "missing": [],
+        "forbidden": [
+          "coding"
+        ],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 15.422399970702827,
+        "scores": {
+          "tool_driven": 0.8954093734995309,
+          "repository_architecture": 0.8954093734995308,
+          "coding": 0.8786185933736094,
+          "multi_file_implementation": 0.8786185933736094,
+          "review_verification": 0.8786185870493689,
+          "multimodal": 0.8781276430994611,
+          "debugging": 0.87589422731985,
+          "security_review": 0.8745905561539544,
+          "planning_delegation": 0.8675166498087796,
+          "document_analysis": 0.8647736713569794,
+          "structured_extraction": 0.8647736713569794,
+          "research_synthesis": 0.8632377382110926,
+          "mathematics": 0.8390029621897885,
+          "complex_reasoning": 0.8390029621897885,
+          "factual_explanation": 0.8155832854543292,
+          "conversation": 0.7914774519736355
+        }
+      },
+      {
+        "id": "heldout-v1-he-16",
+        "language": "he",
+        "predicted": [
+          "coding",
+          "debugging",
+          "review_verification",
+          "tool_driven",
+          "repository_architecture",
+          "multi_file_implementation",
+          "security_review",
+          "planning_delegation",
+          "document_analysis",
+          "structured_extraction",
+          "multimodal",
+          "complex_reasoning",
+          "mathematics"
+        ],
+        "missing": [],
+        "forbidden": [
+          "multi_file_implementation"
+        ],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 14.529399923048913,
+        "scores": {
+          "coding": 0.902888120633407,
+          "debugging": 0.902888120633407,
+          "review_verification": 0.9028881202791262,
+          "tool_driven": 0.9006776146414155,
+          "repository_architecture": 0.8997760733125567,
+          "multi_file_implementation": 0.8991483457276062,
+          "security_review": 0.8879203680435345,
+          "planning_delegation": 0.8828258265126329,
+          "document_analysis": 0.877745296162401,
+          "structured_extraction": 0.877745296162401,
+          "multimodal": 0.8592123166164672,
+          "complex_reasoning": 0.8557674593877792,
+          "mathematics": 0.8557674593877792,
+          "research_synthesis": 0.8493877818830547,
+          "factual_explanation": 0.8184708703760544,
+          "conversation": 0.804199022296844
+        }
+      },
+      {
+        "id": "heldout-v1-he-17",
+        "language": "he",
+        "predicted": [
+          "planning_delegation",
+          "document_analysis",
+          "structured_extraction",
+          "review_verification",
+          "security_review",
+          "coding",
+          "multi_file_implementation",
+          "tool_driven",
+          "repository_architecture"
+        ],
+        "missing": [],
+        "forbidden": [
+          "coding",
+          "tool_driven"
+        ],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 16.852300032041967,
+        "scores": {
+          "planning_delegation": 0.8646768985124393,
+          "document_analysis": 0.8563405584606331,
+          "structured_extraction": 0.8563405584606331,
+          "review_verification": 0.8552508710200699,
+          "security_review": 0.8552508710200699,
+          "coding": 0.8536865057163466,
+          "multi_file_implementation": 0.8536865057163466,
+          "tool_driven": 0.8536864993010969,
+          "repository_architecture": 0.8512716008029683,
+          "debugging": 0.839013758869967,
+          "multimodal": 0.8378534218425633,
+          "research_synthesis": 0.8183762599583267,
+          "complex_reasoning": 0.8162988989897911,
+          "mathematics": 0.8162988989897911,
+          "factual_explanation": 0.8076675249712267,
+          "conversation": 0.8058959941149197
+        }
+      },
+      {
+        "id": "heldout-v1-he-18",
+        "language": "he",
+        "predicted": [
+          "review_verification",
+          "coding",
+          "debugging",
+          "security_review",
+          "multi_file_implementation",
+          "tool_driven",
+          "document_analysis",
+          "structured_extraction",
+          "repository_architecture"
+        ],
+        "missing": [
+          "planning_delegation"
+        ],
+        "forbidden": [
+          "coding",
+          "tool_driven"
+        ],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 16.869000042788684,
+        "scores": {
+          "review_verification": 0.8852723651106171,
+          "coding": 0.8852723571404647,
+          "debugging": 0.8852723571404647,
+          "security_review": 0.8803034371814936,
+          "multi_file_implementation": 0.8793750378078018,
+          "tool_driven": 0.8793750286309243,
+          "document_analysis": 0.8557658732684472,
+          "structured_extraction": 0.8557658732684472,
+          "repository_architecture": 0.8505088091346978,
+          "research_synthesis": 0.8476817458644271,
+          "planning_delegation": 0.8463484975420161,
+          "multimodal": 0.827958101369841,
+          "mathematics": 0.8271982814178425,
+          "complex_reasoning": 0.8271982814178425,
+          "factual_explanation": 0.8056296482643928,
+          "conversation": 0.7804913091411986
+        }
+      },
+      {
+        "id": "heldout-v1-he-19",
+        "language": "he",
+        "predicted": [
+          "review_verification",
+          "security_review",
+          "coding",
+          "debugging",
+          "tool_driven",
+          "multi_file_implementation",
+          "repository_architecture",
+          "planning_delegation",
+          "document_analysis",
+          "structured_extraction"
+        ],
+        "missing": [],
+        "forbidden": [
+          "multi_file_implementation"
+        ],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 14.793000067584217,
+        "scores": {
+          "review_verification": 0.8939384935315632,
+          "security_review": 0.8939384935315632,
+          "coding": 0.8809116520971256,
+          "debugging": 0.8809116520971256,
+          "tool_driven": 0.8755113999332373,
+          "multi_file_implementation": 0.8755113962272305,
+          "repository_architecture": 0.8699339948607986,
+          "planning_delegation": 0.8645279355543632,
+          "document_analysis": 0.8643718432065888,
+          "structured_extraction": 0.8643718432065888,
+          "multimodal": 0.8433378097417548,
+          "research_synthesis": 0.8430388914813123,
+          "complex_reasoning": 0.8239455885601206,
+          "mathematics": 0.8239455885601206,
+          "factual_explanation": 0.800686723398125,
+          "conversation": 0.7952432873134715
+        }
+      },
+      {
+        "id": "heldout-v1-he-20",
+        "language": "he",
+        "predicted": [
+          "review_verification",
+          "security_review",
+          "tool_driven",
+          "document_analysis",
+          "structured_extraction",
+          "coding",
+          "multi_file_implementation",
+          "repository_architecture",
+          "mathematics",
+          "complex_reasoning",
+          "planning_delegation"
+        ],
+        "missing": [],
+        "forbidden": [
+          "coding"
+        ],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 14.904199982993305,
+        "scores": {
+          "review_verification": 0.875513273075256,
+          "security_review": 0.875513273075256,
+          "tool_driven": 0.8719989644887709,
+          "document_analysis": 0.8649284644982228,
+          "structured_extraction": 0.8649284644982228,
+          "coding": 0.8633007667446041,
+          "multi_file_implementation": 0.8633007667446041,
+          "repository_architecture": 0.8555596386012648,
+          "mathematics": 0.855079856465836,
+          "complex_reasoning": 0.855079856465836,
+          "planning_delegation": 0.8502611925180067,
+          "multimodal": 0.8481338774331711,
+          "debugging": 0.8463232640517033,
+          "research_synthesis": 0.8371215363029894,
+          "factual_explanation": 0.8088237630623802,
+          "conversation": 0.7880727948983786
+        }
+      },
+      {
+        "id": "heldout-v1-he-21",
+        "language": "he",
+        "predicted": [
+          "tool_driven",
+          "repository_architecture",
+          "review_verification",
+          "coding",
+          "debugging",
+          "security_review",
+          "multi_file_implementation",
+          "document_analysis",
+          "planning_delegation",
+          "structured_extraction"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 15.923599945381284,
+        "scores": {
+          "tool_driven": 0.8881100959185017,
+          "repository_architecture": 0.8881100959185013,
+          "review_verification": 0.8764797136545749,
+          "coding": 0.8764797092997999,
+          "debugging": 0.8764797092997999,
+          "security_review": 0.8759380770762005,
+          "multi_file_implementation": 0.867509282138876,
+          "document_analysis": 0.8597232394560639,
+          "planning_delegation": 0.8583088662503736,
+          "structured_extraction": 0.8555919214829577,
+          "multimodal": 0.8489323920974023,
+          "research_synthesis": 0.8398092572048154,
+          "complex_reasoning": 0.8319158623968144,
+          "mathematics": 0.8319158623968144,
+          "factual_explanation": 0.8232216923252388,
+          "conversation": 0.7845880616625852
+        }
+      },
+      {
+        "id": "heldout-v1-he-22",
+        "language": "he",
+        "predicted": [
+          "coding",
+          "debugging",
+          "review_verification",
+          "security_review",
+          "tool_driven",
+          "repository_architecture",
+          "multi_file_implementation",
+          "document_analysis",
+          "structured_extraction"
+        ],
+        "missing": [],
+        "forbidden": [
+          "multi_file_implementation"
+        ],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 16.8548000510782,
+        "scores": {
+          "coding": 0.8945161400807488,
+          "debugging": 0.8945161400807488,
+          "review_verification": 0.8945161393948619,
+          "security_review": 0.873871402157129,
+          "tool_driven": 0.8694929547455001,
+          "repository_architecture": 0.8694929547454997,
+          "multi_file_implementation": 0.8665869005350917,
+          "document_analysis": 0.858970393312743,
+          "structured_extraction": 0.858970393312743,
+          "research_synthesis": 0.8442003995469372,
+          "planning_delegation": 0.8383531412910722,
+          "multimodal": 0.8339112634685935,
+          "complex_reasoning": 0.8144434925512346,
+          "mathematics": 0.8144434925512346,
+          "factual_explanation": 0.8125950710294387,
+          "conversation": 0.787741846634358
+        }
+      },
+      {
+        "id": "heldout-v1-he-23",
+        "language": "he",
+        "predicted": [],
+        "missing": [
+          "mathematics"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 18.568099942058325,
+        "scores": {
+          "coding": 0.8445468707844981,
+          "multi_file_implementation": 0.8445468707844981,
+          "tool_driven": 0.8445468617035333,
+          "review_verification": 0.844546861703533,
+          "security_review": 0.843329234249616,
+          "document_analysis": 0.8421433200802403,
+          "structured_extraction": 0.8421433200802403,
+          "complex_reasoning": 0.8367660454389624,
+          "mathematics": 0.8367660454389624,
+          "debugging": 0.8365212093087679,
+          "multimodal": 0.8300569938186211,
+          "research_synthesis": 0.8264991722214731,
+          "planning_delegation": 0.825532376953757,
+          "repository_architecture": 0.822401292176455,
+          "factual_explanation": 0.8033700076921451,
+          "conversation": 0.7979902977181005
+        }
+      },
+      {
+        "id": "heldout-v1-he-24",
+        "language": "he",
+        "predicted": [
+          "review_verification",
+          "security_review",
+          "mathematics",
+          "complex_reasoning",
+          "tool_driven"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 16.2750999443233,
+        "scores": {
+          "review_verification": 0.8606029958775285,
+          "security_review": 0.8606029958775285,
+          "mathematics": 0.855318502268086,
+          "complex_reasoning": 0.855318502268086,
+          "tool_driven": 0.8508880607826915,
+          "document_analysis": 0.8471522623869144,
+          "structured_extraction": 0.8425673927964756,
+          "coding": 0.8351171158269854,
+          "repository_architecture": 0.8341908958932917,
+          "multi_file_implementation": 0.8302873612843946,
+          "multimodal": 0.8291582160482827,
+          "planning_delegation": 0.8253681290875565,
+          "debugging": 0.8251194393206739,
+          "factual_explanation": 0.815677492971599,
+          "research_synthesis": 0.8106726208002591,
+          "conversation": 0.7835074930445103
+        }
+      },
+      {
+        "id": "heldout-v1-he-25",
+        "language": "he",
+        "predicted": [
+          "review_verification",
+          "tool_driven"
+        ],
+        "missing": [
+          "complex_reasoning"
+        ],
+        "forbidden": [
+          "tool_driven"
+        ],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 19.116500043310225,
+        "scores": {
+          "review_verification": 0.8525969414334604,
+          "tool_driven": 0.8525969414334604,
+          "coding": 0.8488004942852,
+          "multi_file_implementation": 0.8488004942852,
+          "mathematics": 0.8463017702666088,
+          "complex_reasoning": 0.8463017702666088,
+          "security_review": 0.8461112223274394,
+          "debugging": 0.8445089527488027,
+          "research_synthesis": 0.8377653887247849,
+          "document_analysis": 0.837549926922979,
+          "structured_extraction": 0.837549926922979,
+          "multimodal": 0.8301563339169207,
+          "repository_architecture": 0.8301164401996931,
+          "planning_delegation": 0.8233714170785247,
+          "factual_explanation": 0.8088357029381501,
+          "conversation": 0.8026439236142419
+        }
+      },
+      {
+        "id": "heldout-v1-he-26",
+        "language": "he",
+        "predicted": [
+          "review_verification",
+          "coding",
+          "debugging"
+        ],
+        "missing": [
+          "complex_reasoning"
+        ],
+        "forbidden": [
+          "coding"
+        ],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 20.101799978874624,
+        "scores": {
+          "review_verification": 0.8520419479320301,
+          "coding": 0.8520419445849196,
+          "debugging": 0.8520419445849196,
+          "tool_driven": 0.8434190469175693,
+          "security_review": 0.8415884832625118,
+          "document_analysis": 0.8404288191928329,
+          "structured_extraction": 0.8404288191928329,
+          "multi_file_implementation": 0.8377754747820333,
+          "planning_delegation": 0.8368244312682651,
+          "repository_architecture": 0.8273763625028421,
+          "mathematics": 0.826114136195881,
+          "complex_reasoning": 0.826114136195881,
+          "multimodal": 0.8231022178786082,
+          "research_synthesis": 0.821435394095246,
+          "factual_explanation": 0.7976767332681076,
+          "conversation": 0.7897786669503163
+        }
+      },
+      {
+        "id": "heldout-v1-he-27",
+        "language": "he",
+        "predicted": [
+          "multimodal",
+          "planning_delegation",
+          "review_verification",
+          "tool_driven",
+          "security_review",
+          "coding",
+          "multi_file_implementation",
+          "repository_architecture",
+          "document_analysis",
+          "structured_extraction",
+          "research_synthesis"
+        ],
+        "missing": [],
+        "forbidden": [
+          "coding"
+        ],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 13.560699997469783,
+        "scores": {
+          "multimodal": 0.8757090987169127,
+          "planning_delegation": 0.8645409999611415,
+          "review_verification": 0.8643717758764607,
+          "tool_driven": 0.8643717758764607,
+          "security_review": 0.864226986463746,
+          "coding": 0.8625595935691196,
+          "multi_file_implementation": 0.8625595935691196,
+          "repository_architecture": 0.8611087620062321,
+          "document_analysis": 0.8601489032373804,
+          "structured_extraction": 0.8601489032373804,
+          "research_synthesis": 0.8539419538870142,
+          "debugging": 0.8480696469667992,
+          "mathematics": 0.8455545883941601,
+          "complex_reasoning": 0.8455545883941601,
+          "conversation": 0.8024880134661166,
+          "factual_explanation": 0.8004560607356203
+        }
+      },
+      {
+        "id": "heldout-v1-he-28",
+        "language": "he",
+        "predicted": [
+          "repository_architecture",
+          "tool_driven",
+          "multimodal",
+          "review_verification",
+          "debugging",
+          "coding",
+          "planning_delegation",
+          "multi_file_implementation",
+          "security_review"
+        ],
+        "missing": [],
+        "forbidden": [
+          "coding"
+        ],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 12.938000028952956,
+        "scores": {
+          "repository_architecture": 0.8870351967482895,
+          "tool_driven": 0.8870351967482895,
+          "multimodal": 0.8865443149074159,
+          "review_verification": 0.883177898049629,
+          "debugging": 0.8610420225369843,
+          "coding": 0.8610420225369843,
+          "planning_delegation": 0.8588457318535431,
+          "multi_file_implementation": 0.8585817060227671,
+          "security_review": 0.8563610953377392,
+          "structured_extraction": 0.8486309229921077,
+          "document_analysis": 0.8486309229921077,
+          "research_synthesis": 0.8428793282810447,
+          "complex_reasoning": 0.8423278029052298,
+          "mathematics": 0.8423278029052298,
+          "factual_explanation": 0.795024685911392,
+          "conversation": 0.7871105293527917
+        }
+      },
+      {
+        "id": "heldout-v1-he-29",
+        "language": "he",
+        "predicted": [
+          "coding",
+          "review_verification",
+          "security_review",
+          "debugging",
+          "multi_file_implementation",
+          "tool_driven"
+        ],
+        "missing": [
+          "factual_explanation"
+        ],
+        "forbidden": [
+          "coding",
+          "security_review",
+          "tool_driven"
+        ],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 14.263200107961893,
+        "scores": {
+          "coding": 0.8680350814687171,
+          "review_verification": 0.8650219203645872,
+          "security_review": 0.8650219203645872,
+          "debugging": 0.8573498581516252,
+          "multi_file_implementation": 0.8572278461533049,
+          "tool_driven": 0.857227845103063,
+          "document_analysis": 0.8467721640289806,
+          "structured_extraction": 0.8467721640289806,
+          "multimodal": 0.8448816548356454,
+          "complex_reasoning": 0.8362779789949379,
+          "mathematics": 0.8362779789949379,
+          "planning_delegation": 0.8360702951105868,
+          "repository_architecture": 0.8336092460761568,
+          "factual_explanation": 0.8318028328578803,
+          "research_synthesis": 0.8176672800957284,
+          "conversation": 0.7991988728511691
+        }
+      },
+      {
+        "id": "heldout-v1-he-30",
+        "language": "he",
+        "predicted": [
+          "review_verification",
+          "security_review",
+          "coding",
+          "debugging"
+        ],
+        "missing": [
+          "factual_explanation"
+        ],
+        "forbidden": [
+          "coding",
+          "debugging"
+        ],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 13.733400031924248,
+        "scores": {
+          "review_verification": 0.8727301538507747,
+          "security_review": 0.8727301538507747,
+          "coding": 0.857260738902318,
+          "debugging": 0.857260738902318,
+          "document_analysis": 0.8496253335572375,
+          "structured_extraction": 0.8496253335572375,
+          "tool_driven": 0.8494939949282148,
+          "factual_explanation": 0.8486782737538562,
+          "mathematics": 0.8460735729391822,
+          "complex_reasoning": 0.8460735729391822,
+          "multimodal": 0.8452504111044999,
+          "repository_architecture": 0.8374480504520377,
+          "multi_file_implementation": 0.8362361576670779,
+          "planning_delegation": 0.8360035677479591,
+          "research_synthesis": 0.8320657539874703,
+          "conversation": 0.7960695334124572
+        }
+      },
+      {
+        "id": "heldout-v1-he-31",
+        "language": "he",
+        "predicted": [
+          "repository_architecture",
+          "planning_delegation",
+          "tool_driven",
+          "review_verification",
+          "coding",
+          "multi_file_implementation",
+          "debugging",
+          "security_review",
+          "complex_reasoning",
+          "mathematics"
+        ],
+        "missing": [
+          "conversation"
+        ],
+        "forbidden": [
+          "coding",
+          "planning_delegation"
+        ],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 16.31229999475181,
+        "scores": {
+          "repository_architecture": 0.8605099001704336,
+          "planning_delegation": 0.8605099001704336,
+          "tool_driven": 0.8579402561879289,
+          "review_verification": 0.8579402561879289,
+          "coding": 0.8579402489965432,
+          "multi_file_implementation": 0.8579402489965432,
+          "debugging": 0.855381988928947,
+          "security_review": 0.8552406503415041,
+          "complex_reasoning": 0.8524358602343789,
+          "mathematics": 0.8524358602343789,
+          "document_analysis": 0.8365313868792288,
+          "structured_extraction": 0.8361059441136607,
+          "multimodal": 0.8290257240778881,
+          "research_synthesis": 0.8258489397752536,
+          "factual_explanation": 0.8053917888117882,
+          "conversation": 0.8024756937298488
+        }
+      },
+      {
+        "id": "heldout-v1-he-32",
+        "language": "he",
+        "predicted": [
+          "tool_driven",
+          "review_verification",
+          "security_review",
+          "planning_delegation",
+          "coding",
+          "multi_file_implementation",
+          "debugging",
+          "multimodal",
+          "repository_architecture",
+          "complex_reasoning",
+          "mathematics"
+        ],
+        "missing": [
+          "conversation"
+        ],
+        "forbidden": [
+          "coding",
+          "debugging"
+        ],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 13.521500048227608,
+        "scores": {
+          "tool_driven": 0.8735614549854022,
+          "review_verification": 0.8735614549854022,
+          "security_review": 0.870375641951601,
+          "planning_delegation": 0.8670611458964919,
+          "coding": 0.8591511446926433,
+          "multi_file_implementation": 0.8591511446926433,
+          "debugging": 0.8582632981992427,
+          "multimodal": 0.8582002668559127,
+          "repository_architecture": 0.857924460520212,
+          "complex_reasoning": 0.855849589369827,
+          "mathematics": 0.855849589369827,
+          "document_analysis": 0.8389233182574107,
+          "structured_extraction": 0.8378853396361013,
+          "research_synthesis": 0.8295921349223857,
+          "conversation": 0.8181717365429474,
+          "factual_explanation": 0.8061401716455469
+        }
+      }
+    ]
+  },
+  "developmentTrials": [],
+  "limits": "Synthetic intent labels only; partial labels do not establish precision. No downstream model task success measured."
+}

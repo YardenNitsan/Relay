@@ -1,0 +1,1307 @@
+{
+  "candidate": "e5",
+  "model": {
+    "model": "intfloat/multilingual-e5-small",
+    "revision": "614241f622f53c4eeff9890bdc4f31cfecc418b3"
+  },
+  "mode": "development",
+  "threshold": 0.85,
+  "hashes": {
+    "cases": "41a3a78df23ecbe01d8eacdd76ffef5e64ce2049597179ab7ca9ae657656a480",
+    "training": "b51627c4f87421c1416507588ea898e6ef1bc49ee5f31804614429d9454528c8",
+    "adapter": "ce476aa965361a451912f9ce2bb36af6d662a32eab360623bb19a128f1d14555",
+    "evaluator": "77cafadc8079a36b595ae88ecd0d1f02e2051368108de3f2904ff4ff475455af"
+  },
+  "runtime": {
+    "os": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.12",
+    "packages": {
+      "semantic-router": "0.1.16",
+      "transformers": "4.57.6",
+      "torch": "2.14.1"
+    },
+    "threads": 2,
+    "device": "cpu",
+    "vramBytes": 0,
+    "initializationMs": 8226.644700043835,
+    "rssBytes": 927428608,
+    "rssIncreaseBytes": 901664768,
+    "peakWorkingSetBytes": 927842304,
+    "medianMs": 10.507550032343715,
+    "p95Ms": 12.717700097709894
+  },
+  "metrics": {
+    "satisfied": 22,
+    "total": 32,
+    "missingRequired": 5,
+    "forbiddenLabels": 7,
+    "uncertain": 4,
+    "languages": {
+      "en": {
+        "satisfied": 12,
+        "total": 16
+      },
+      "he": {
+        "satisfied": 10,
+        "total": 16
+      }
+    },
+    "outcomes": [
+      {
+        "id": "d-en-01",
+        "language": "en",
+        "predicted": [
+          "review_verification",
+          "coding",
+          "debugging"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 10.719300014898181,
+        "scores": {
+          "review_verification": 0.8523454824816314,
+          "coding": 0.8523454655179463,
+          "debugging": 0.8523454655179463,
+          "multi_file_implementation": 0.8453503059439048,
+          "tool_driven": 0.8453502929778918,
+          "security_review": 0.8422901132994661,
+          "repository_architecture": 0.8386567993470718,
+          "document_analysis": 0.8235831710943067,
+          "structured_extraction": 0.8235831710943067,
+          "planning_delegation": 0.8127204795544375,
+          "multimodal": 0.8098022077591189,
+          "complex_reasoning": 0.7925948158118314,
+          "mathematics": 0.7925948158118314,
+          "factual_explanation": 0.7809745319200422,
+          "research_synthesis": 0.7785740212959696,
+          "conversation": 0.7465118200499051
+        }
+      },
+      {
+        "id": "d-he-01",
+        "language": "he",
+        "predicted": [
+          "coding",
+          "debugging",
+          "review_verification",
+          "tool_driven",
+          "multi_file_implementation",
+          "repository_architecture",
+          "security_review",
+          "document_analysis",
+          "structured_extraction",
+          "multimodal",
+          "complex_reasoning",
+          "mathematics",
+          "planning_delegation"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 11.185900075361133,
+        "scores": {
+          "coding": 0.9175761741207952,
+          "debugging": 0.9175761741207952,
+          "review_verification": 0.9175761688589343,
+          "tool_driven": 0.9077490225830619,
+          "multi_file_implementation": 0.9077490153144271,
+          "repository_architecture": 0.8865648088744997,
+          "security_review": 0.8863617965620063,
+          "document_analysis": 0.8763964404403118,
+          "structured_extraction": 0.8763964404403118,
+          "multimodal": 0.8751068204515202,
+          "complex_reasoning": 0.8600318635540664,
+          "mathematics": 0.8600318635540664,
+          "planning_delegation": 0.8590192698016528,
+          "research_synthesis": 0.8455774534619158,
+          "factual_explanation": 0.8266468293041453,
+          "conversation": 0.8021164700382457
+        }
+      },
+      {
+        "id": "d-en-02",
+        "language": "en",
+        "predicted": [],
+        "missing": [
+          "coding"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 9.92380001116544,
+        "scores": {
+          "complex_reasoning": 0.813449533626678,
+          "mathematics": 0.813449533626678,
+          "coding": 0.8119947332498512,
+          "review_verification": 0.811820023299599,
+          "security_review": 0.811820023299599,
+          "document_analysis": 0.8088048930654161,
+          "structured_extraction": 0.8088048930654161,
+          "tool_driven": 0.8067373656684866,
+          "planning_delegation": 0.8040691786136988,
+          "repository_architecture": 0.8009548195363196,
+          "multi_file_implementation": 0.7999518535709491,
+          "multimodal": 0.7958269694960375,
+          "debugging": 0.7845434990658644,
+          "factual_explanation": 0.776034262369891,
+          "research_synthesis": 0.7715363418766266,
+          "conversation": 0.761748982154329
+        }
+      },
+      {
+        "id": "d-he-02",
+        "language": "he",
+        "predicted": [
+          "coding",
+          "review_verification",
+          "tool_driven",
+          "multi_file_implementation",
+          "security_review",
+          "planning_delegation",
+          "repository_architecture"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 11.70340005774051,
+        "scores": {
+          "coding": 0.871090915201347,
+          "review_verification": 0.8698643434142912,
+          "tool_driven": 0.8698643434142912,
+          "multi_file_implementation": 0.8690132911867389,
+          "security_review": 0.8579148244837751,
+          "planning_delegation": 0.8567482316611695,
+          "repository_architecture": 0.8560672565807373,
+          "document_analysis": 0.8485277085444247,
+          "structured_extraction": 0.8485277085444247,
+          "complex_reasoning": 0.8483077751479482,
+          "mathematics": 0.8483077751479482,
+          "research_synthesis": 0.8438500820543551,
+          "multimodal": 0.8435539482253331,
+          "debugging": 0.8422636784501064,
+          "factual_explanation": 0.8035753693423048,
+          "conversation": 0.7857474087609531
+        }
+      },
+      {
+        "id": "d-en-03",
+        "language": "en",
+        "predicted": [
+          "repository_architecture",
+          "tool_driven"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 12.364799971692264,
+        "scores": {
+          "repository_architecture": 0.8899068861938761,
+          "tool_driven": 0.8569319241659791,
+          "review_verification": 0.8434621779183835,
+          "coding": 0.8434621779183835,
+          "multi_file_implementation": 0.8434621779183835,
+          "planning_delegation": 0.8326169745687361,
+          "debugging": 0.8180922461024855,
+          "security_review": 0.8104136502688459,
+          "multimodal": 0.8035249820741243,
+          "document_analysis": 0.8031504647536136,
+          "structured_extraction": 0.8020520630927831,
+          "complex_reasoning": 0.7969479167529295,
+          "mathematics": 0.7969479167529295,
+          "research_synthesis": 0.7923300727803986,
+          "factual_explanation": 0.789181953825989,
+          "conversation": 0.7447845237446798
+        }
+      },
+      {
+        "id": "d-he-03",
+        "language": "he",
+        "predicted": [
+          "coding",
+          "multi_file_implementation",
+          "review_verification",
+          "tool_driven",
+          "structured_extraction",
+          "document_analysis",
+          "security_review",
+          "debugging",
+          "repository_architecture",
+          "multimodal",
+          "complex_reasoning",
+          "mathematics",
+          "research_synthesis",
+          "planning_delegation"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 11.88110001385212,
+        "scores": {
+          "coding": 0.9001576428586778,
+          "multi_file_implementation": 0.9001576428586778,
+          "review_verification": 0.9001576416497242,
+          "tool_driven": 0.900157641649724,
+          "structured_extraction": 0.8840934503213048,
+          "document_analysis": 0.8840934503213048,
+          "security_review": 0.8731923068262057,
+          "debugging": 0.8718586454635395,
+          "repository_architecture": 0.869636213565647,
+          "multimodal": 0.8626777905000571,
+          "complex_reasoning": 0.8578661965721476,
+          "mathematics": 0.8578661965721476,
+          "research_synthesis": 0.8568409739730074,
+          "planning_delegation": 0.853844369053872,
+          "factual_explanation": 0.8262809580967128,
+          "conversation": 0.7968496433820426
+        }
+      },
+      {
+        "id": "d-en-04",
+        "language": "en",
+        "predicted": [
+          "review_verification",
+          "coding",
+          "tool_driven",
+          "multi_file_implementation"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 13.095399946905673,
+        "scores": {
+          "review_verification": 0.8758983522009118,
+          "coding": 0.8758983522009118,
+          "tool_driven": 0.8758983522009118,
+          "multi_file_implementation": 0.8758983522009118,
+          "repository_architecture": 0.8394167159369483,
+          "planning_delegation": 0.829189757579102,
+          "security_review": 0.812832118961314,
+          "document_analysis": 0.8115710947407007,
+          "structured_extraction": 0.8115710947407007,
+          "debugging": 0.811267625126613,
+          "complex_reasoning": 0.7967947272911181,
+          "mathematics": 0.7967947272911181,
+          "multimodal": 0.7941464338868824,
+          "research_synthesis": 0.7926924914887127,
+          "factual_explanation": 0.7605230354912362,
+          "conversation": 0.7305622964838081
+        }
+      },
+      {
+        "id": "d-he-04",
+        "language": "he",
+        "predicted": [
+          "review_verification",
+          "tool_driven",
+          "coding",
+          "multi_file_implementation",
+          "debugging",
+          "repository_architecture",
+          "security_review",
+          "document_analysis",
+          "structured_extraction",
+          "planning_delegation",
+          "multimodal",
+          "research_synthesis",
+          "mathematics",
+          "complex_reasoning"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 13.616399955935776,
+        "scores": {
+          "review_verification": 0.932242784520415,
+          "tool_driven": 0.9322427845204148,
+          "coding": 0.9322427808908168,
+          "multi_file_implementation": 0.9322427808908168,
+          "debugging": 0.9014113161462972,
+          "repository_architecture": 0.8952390103428152,
+          "security_review": 0.8892563965436806,
+          "document_analysis": 0.8767543259668323,
+          "structured_extraction": 0.8767543259668323,
+          "planning_delegation": 0.876603535955683,
+          "multimodal": 0.8756851339064666,
+          "research_synthesis": 0.8704578158702899,
+          "mathematics": 0.8681857014706283,
+          "complex_reasoning": 0.8681857014706283,
+          "factual_explanation": 0.8196225543471768,
+          "conversation": 0.7908756425482919
+        }
+      },
+      {
+        "id": "d-en-05",
+        "language": "en",
+        "predicted": [
+          "coding",
+          "document_analysis",
+          "structured_extraction",
+          "repository_architecture",
+          "tool_driven"
+        ],
+        "missing": [],
+        "forbidden": [
+          "coding"
+        ],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 11.44560007378459,
+        "scores": {
+          "coding": 0.875568682689684,
+          "document_analysis": 0.8666860400301433,
+          "structured_extraction": 0.8666860400301433,
+          "repository_architecture": 0.8591707465176255,
+          "tool_driven": 0.8591707465176255,
+          "review_verification": 0.831551384813886,
+          "multi_file_implementation": 0.831551384813886,
+          "planning_delegation": 0.8307752971416381,
+          "complex_reasoning": 0.8252845419528806,
+          "mathematics": 0.8252845419528806,
+          "security_review": 0.8250944002142618,
+          "multimodal": 0.8173620839131794,
+          "debugging": 0.811786853764467,
+          "research_synthesis": 0.782765772765283,
+          "factual_explanation": 0.7584518346000905,
+          "conversation": 0.7411805689085184
+        }
+      },
+      {
+        "id": "d-he-05",
+        "language": "he",
+        "predicted": [
+          "document_analysis",
+          "structured_extraction",
+          "repository_architecture",
+          "tool_driven",
+          "review_verification",
+          "coding",
+          "multi_file_implementation",
+          "research_synthesis",
+          "debugging",
+          "multimodal",
+          "complex_reasoning",
+          "mathematics",
+          "planning_delegation",
+          "security_review"
+        ],
+        "missing": [],
+        "forbidden": [
+          "coding"
+        ],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 11.90159993711859,
+        "scores": {
+          "document_analysis": 0.8915542433267581,
+          "structured_extraction": 0.8915542433267581,
+          "repository_architecture": 0.8889391273850645,
+          "tool_driven": 0.8889391273850645,
+          "review_verification": 0.8815950143408386,
+          "coding": 0.8735712610264058,
+          "multi_file_implementation": 0.8735712610264058,
+          "research_synthesis": 0.8705375432806278,
+          "debugging": 0.8692502925160331,
+          "multimodal": 0.8686768726193151,
+          "complex_reasoning": 0.8547803438117427,
+          "mathematics": 0.8547803438117427,
+          "planning_delegation": 0.8510468322185133,
+          "security_review": 0.8510452586929749,
+          "factual_explanation": 0.8160671901404556,
+          "conversation": 0.7789770498543543
+        }
+      },
+      {
+        "id": "d-en-06",
+        "language": "en",
+        "predicted": [
+          "document_analysis"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 9.91360004991293,
+        "scores": {
+          "document_analysis": 0.881703321152998,
+          "research_synthesis": 0.8307682918824072,
+          "review_verification": 0.8288291876981334,
+          "security_review": 0.8288291876981334,
+          "multimodal": 0.8280440079009034,
+          "structured_extraction": 0.8265568155311082,
+          "repository_architecture": 0.8201712298780512,
+          "planning_delegation": 0.819968864879709,
+          "coding": 0.8184935799315252,
+          "multi_file_implementation": 0.8184935799315252,
+          "tool_driven": 0.8184935586831462,
+          "debugging": 0.8133319425839305,
+          "complex_reasoning": 0.8118246227630178,
+          "mathematics": 0.8118246227630178,
+          "factual_explanation": 0.8069174828587652,
+          "conversation": 0.7647974497905002
+        }
+      },
+      {
+        "id": "d-he-06",
+        "language": "he",
+        "predicted": [
+          "document_analysis",
+          "tool_driven",
+          "review_verification",
+          "security_review"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 10.344199952669442,
+        "scores": {
+          "document_analysis": 0.9276304811329805,
+          "tool_driven": 0.8519938078904598,
+          "review_verification": 0.8519938078904598,
+          "security_review": 0.8501747626686138,
+          "planning_delegation": 0.849689481154704,
+          "structured_extraction": 0.8473717840550894,
+          "repository_architecture": 0.8425803882442513,
+          "multimodal": 0.8424273449810634,
+          "multi_file_implementation": 0.839719019560259,
+          "coding": 0.839719019560259,
+          "mathematics": 0.829217286114239,
+          "complex_reasoning": 0.829217286114239,
+          "debugging": 0.8278475425260068,
+          "research_synthesis": 0.8259955214846117,
+          "factual_explanation": 0.8010154601194354,
+          "conversation": 0.7752515842069918
+        }
+      },
+      {
+        "id": "d-en-07",
+        "language": "en",
+        "predicted": [
+          "research_synthesis"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 10.102699976414442,
+        "scores": {
+          "research_synthesis": 0.8813147647322828,
+          "repository_architecture": 0.8319386399107866,
+          "tool_driven": 0.8319386399107866,
+          "coding": 0.8252166110615023,
+          "multi_file_implementation": 0.8252166110615023,
+          "review_verification": 0.8252165907647144,
+          "debugging": 0.8248006578736676,
+          "security_review": 0.8157816614868921,
+          "planning_delegation": 0.8148235674128009,
+          "document_analysis": 0.8061444734514335,
+          "structured_extraction": 0.8061444734514335,
+          "multimodal": 0.8031156549510937,
+          "complex_reasoning": 0.79613313927335,
+          "mathematics": 0.79613313927335,
+          "factual_explanation": 0.7876397477321688,
+          "conversation": 0.723921290718477
+        }
+      },
+      {
+        "id": "d-he-07",
+        "language": "he",
+        "predicted": [
+          "research_synthesis",
+          "tool_driven",
+          "review_verification",
+          "repository_architecture",
+          "coding",
+          "multi_file_implementation",
+          "debugging",
+          "planning_delegation",
+          "document_analysis",
+          "mathematics",
+          "complex_reasoning",
+          "security_review",
+          "structured_extraction",
+          "multimodal"
+        ],
+        "missing": [],
+        "forbidden": [
+          "coding"
+        ],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 11.436700006015599,
+        "scores": {
+          "research_synthesis": 0.9177153448415891,
+          "tool_driven": 0.8816163199419284,
+          "review_verification": 0.8816163199419284,
+          "repository_architecture": 0.8761679305839194,
+          "coding": 0.8749915056181099,
+          "multi_file_implementation": 0.8749915056181099,
+          "debugging": 0.8747664284854203,
+          "planning_delegation": 0.8708195393221659,
+          "document_analysis": 0.8655572575207534,
+          "mathematics": 0.860993772811859,
+          "complex_reasoning": 0.860993772811859,
+          "security_review": 0.8569107908436291,
+          "structured_extraction": 0.8567376447032172,
+          "multimodal": 0.8533096831945258,
+          "factual_explanation": 0.8320742237208796,
+          "conversation": 0.7739106213019024
+        }
+      },
+      {
+        "id": "d-en-08",
+        "language": "en",
+        "predicted": [
+          "review_verification",
+          "coding",
+          "debugging",
+          "tool_driven",
+          "security_review",
+          "multi_file_implementation"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 9.925100021064281,
+        "scores": {
+          "review_verification": 0.9115775588544667,
+          "coding": 0.911577556851161,
+          "debugging": 0.911577556851161,
+          "tool_driven": 0.8931670838135543,
+          "security_review": 0.871630956309163,
+          "multi_file_implementation": 0.8507930754808506,
+          "repository_architecture": 0.8413425363665584,
+          "planning_delegation": 0.8364654160088555,
+          "complex_reasoning": 0.8169653692013847,
+          "mathematics": 0.8169653692013847,
+          "research_synthesis": 0.81314590018492,
+          "multimodal": 0.8122284658326818,
+          "document_analysis": 0.8114260264582513,
+          "structured_extraction": 0.8053878654249604,
+          "factual_explanation": 0.7859193170111248,
+          "conversation": 0.7524183154434525
+        }
+      },
+      {
+        "id": "d-he-08",
+        "language": "he",
+        "predicted": [
+          "review_verification",
+          "tool_driven",
+          "coding",
+          "multi_file_implementation",
+          "repository_architecture",
+          "debugging",
+          "planning_delegation",
+          "mathematics",
+          "complex_reasoning",
+          "security_review",
+          "research_synthesis",
+          "multimodal",
+          "document_analysis",
+          "structured_extraction"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 10.956699959933758,
+        "scores": {
+          "review_verification": 0.926767416788271,
+          "tool_driven": 0.926767416788271,
+          "coding": 0.9009716405745198,
+          "multi_file_implementation": 0.9009716405745198,
+          "repository_architecture": 0.8972916146289995,
+          "debugging": 0.8912458052427356,
+          "planning_delegation": 0.8829036914618927,
+          "mathematics": 0.8770042956878035,
+          "complex_reasoning": 0.8770042956878035,
+          "security_review": 0.8734101317999662,
+          "research_synthesis": 0.8729392455464849,
+          "multimodal": 0.8631094639269741,
+          "document_analysis": 0.8548945789025009,
+          "structured_extraction": 0.8548945789025009,
+          "factual_explanation": 0.8231828792056656,
+          "conversation": 0.7956079520660836
+        }
+      },
+      {
+        "id": "d-en-09",
+        "language": "en",
+        "predicted": [
+          "planning_delegation",
+          "repository_architecture"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 9.971800027415156,
+        "scores": {
+          "planning_delegation": 0.8948683276242592,
+          "repository_architecture": 0.8522594312871165,
+          "review_verification": 0.8462353909221342,
+          "coding": 0.8462353834566119,
+          "debugging": 0.8462353834566119,
+          "tool_driven": 0.8459838834685905,
+          "multi_file_implementation": 0.8390138331226428,
+          "security_review": 0.8319568324645885,
+          "document_analysis": 0.8183835115360619,
+          "multimodal": 0.816727095247598,
+          "structured_extraction": 0.8120714527737438,
+          "research_synthesis": 0.8118721180081222,
+          "complex_reasoning": 0.8071986019978015,
+          "mathematics": 0.8071986019978015,
+          "factual_explanation": 0.779974689874022,
+          "conversation": 0.7654321659806427
+        }
+      },
+      {
+        "id": "d-he-09",
+        "language": "he",
+        "predicted": [
+          "repository_architecture",
+          "planning_delegation",
+          "tool_driven",
+          "review_verification",
+          "security_review",
+          "coding",
+          "multi_file_implementation",
+          "structured_extraction",
+          "document_analysis"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 10.977900004945695,
+        "scores": {
+          "repository_architecture": 0.888264301585746,
+          "planning_delegation": 0.8740984069115726,
+          "tool_driven": 0.864526554128799,
+          "review_verification": 0.864526554128799,
+          "security_review": 0.8590939280701407,
+          "coding": 0.8575628758913283,
+          "multi_file_implementation": 0.8575628758913283,
+          "structured_extraction": 0.8522474031856294,
+          "document_analysis": 0.8522474031856294,
+          "multimodal": 0.8491722254578403,
+          "debugging": 0.847407004327352,
+          "research_synthesis": 0.8452151409879946,
+          "complex_reasoning": 0.8385819603919906,
+          "mathematics": 0.8385819603919906,
+          "factual_explanation": 0.8157969345350394,
+          "conversation": 0.8131091084994425
+        }
+      },
+      {
+        "id": "d-en-10",
+        "language": "en",
+        "predicted": [
+          "review_verification",
+          "security_review",
+          "coding",
+          "debugging"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 10.622200090438128,
+        "scores": {
+          "review_verification": 0.8735019004686321,
+          "security_review": 0.8735019004686321,
+          "coding": 0.8560400484222223,
+          "debugging": 0.8560400484222223,
+          "research_synthesis": 0.8400989853219357,
+          "multi_file_implementation": 0.8347893288309146,
+          "tool_driven": 0.8347893155861424,
+          "repository_architecture": 0.8340302062395667,
+          "planning_delegation": 0.8216925358631507,
+          "document_analysis": 0.8199570577114235,
+          "structured_extraction": 0.8199570577114235,
+          "multimodal": 0.8084237883456925,
+          "complex_reasoning": 0.7972021929994489,
+          "mathematics": 0.7972021929994489,
+          "factual_explanation": 0.7694898622154113,
+          "conversation": 0.7311474162250944
+        }
+      },
+      {
+        "id": "d-he-10",
+        "language": "he",
+        "predicted": [
+          "review_verification",
+          "tool_driven",
+          "repository_architecture",
+          "security_review",
+          "coding",
+          "debugging",
+          "multi_file_implementation",
+          "multimodal",
+          "document_analysis",
+          "structured_extraction",
+          "complex_reasoning",
+          "mathematics",
+          "planning_delegation",
+          "research_synthesis"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 12.717700097709894,
+        "scores": {
+          "review_verification": 0.9021307588585306,
+          "tool_driven": 0.9021307588585306,
+          "repository_architecture": 0.8930929299492755,
+          "security_review": 0.8905612171936562,
+          "coding": 0.8900037633196662,
+          "debugging": 0.8900037633196662,
+          "multi_file_implementation": 0.8863988221048045,
+          "multimodal": 0.8808817093933088,
+          "document_analysis": 0.8766862481359268,
+          "structured_extraction": 0.8766862481359268,
+          "complex_reasoning": 0.8682474707750394,
+          "mathematics": 0.8682474707750394,
+          "planning_delegation": 0.8668124341890789,
+          "research_synthesis": 0.86499035034821,
+          "factual_explanation": 0.8291365871258678,
+          "conversation": 0.7943547024791258
+        }
+      },
+      {
+        "id": "d-en-11",
+        "language": "en",
+        "predicted": [
+          "complex_reasoning",
+          "mathematics"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 10.019599925726652,
+        "scores": {
+          "complex_reasoning": 0.8550960959153017,
+          "mathematics": 0.8550960959153017,
+          "coding": 0.824889793410853,
+          "review_verification": 0.824889793410853,
+          "tool_driven": 0.824889793410853,
+          "multi_file_implementation": 0.824889793410853,
+          "research_synthesis": 0.8161308050216978,
+          "debugging": 0.8099856910990837,
+          "repository_architecture": 0.8093274959693781,
+          "multimodal": 0.8087991682088829,
+          "security_review": 0.804490213294655,
+          "document_analysis": 0.8007911940633116,
+          "structured_extraction": 0.8007911940633116,
+          "planning_delegation": 0.8004747964204828,
+          "factual_explanation": 0.7937671360026257,
+          "conversation": 0.7681129586136911
+        }
+      },
+      {
+        "id": "d-he-11",
+        "language": "he",
+        "predicted": [
+          "coding",
+          "review_verification",
+          "tool_driven",
+          "repository_architecture",
+          "complex_reasoning",
+          "mathematics",
+          "multi_file_implementation"
+        ],
+        "missing": [],
+        "forbidden": [
+          "coding"
+        ],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 10.392899974249303,
+        "scores": {
+          "coding": 0.8941964891638022,
+          "review_verification": 0.8558042304804301,
+          "tool_driven": 0.8558042304804301,
+          "repository_architecture": 0.8548718946083276,
+          "complex_reasoning": 0.852818310415226,
+          "mathematics": 0.852818310415226,
+          "multi_file_implementation": 0.8512272031867049,
+          "multimodal": 0.8466076250762505,
+          "security_review": 0.8445289624665746,
+          "document_analysis": 0.8429834839105455,
+          "structured_extraction": 0.8407398351544407,
+          "research_synthesis": 0.8405803877364602,
+          "planning_delegation": 0.8343205447424108,
+          "debugging": 0.8235669652766081,
+          "factual_explanation": 0.8142364364811453,
+          "conversation": 0.7536375883673377
+        }
+      },
+      {
+        "id": "d-en-12",
+        "language": "en",
+        "predicted": [
+          "multimodal"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 9.651000029407442,
+        "scores": {
+          "multimodal": 0.9050252271491146,
+          "factual_explanation": 0.8201264502330414,
+          "document_analysis": 0.819966134580429,
+          "structured_extraction": 0.819966134580429,
+          "planning_delegation": 0.8158796187650723,
+          "repository_architecture": 0.8157971104891412,
+          "tool_driven": 0.8157971104891408,
+          "mathematics": 0.8157745666129653,
+          "complex_reasoning": 0.8157745666129653,
+          "review_verification": 0.811721493295738,
+          "security_review": 0.8091349300877662,
+          "coding": 0.8086737623307301,
+          "multi_file_implementation": 0.8086737623307301,
+          "debugging": 0.8006056599319159,
+          "research_synthesis": 0.798803056503079,
+          "conversation": 0.7984246534847065
+        }
+      },
+      {
+        "id": "d-he-12",
+        "language": "he",
+        "predicted": [
+          "multimodal",
+          "repository_architecture",
+          "tool_driven",
+          "review_verification",
+          "mathematics",
+          "complex_reasoning",
+          "coding",
+          "multi_file_implementation",
+          "document_analysis",
+          "debugging",
+          "structured_extraction",
+          "security_review",
+          "research_synthesis",
+          "planning_delegation"
+        ],
+        "missing": [],
+        "forbidden": [
+          "coding"
+        ],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 9.931899956427515,
+        "scores": {
+          "multimodal": 0.9230787308882671,
+          "repository_architecture": 0.893460448047139,
+          "tool_driven": 0.893460448047139,
+          "review_verification": 0.8878841236322483,
+          "mathematics": 0.8798347757396409,
+          "complex_reasoning": 0.8798347757396409,
+          "coding": 0.8756227320842824,
+          "multi_file_implementation": 0.8756227320842824,
+          "document_analysis": 0.8743739921825227,
+          "debugging": 0.8735945713520801,
+          "structured_extraction": 0.8733414785809781,
+          "security_review": 0.8724696341447473,
+          "research_synthesis": 0.8660461631245316,
+          "planning_delegation": 0.8651154703582931,
+          "factual_explanation": 0.8224235612772202,
+          "conversation": 0.8181077455238966
+        }
+      },
+      {
+        "id": "d-en-13",
+        "language": "en",
+        "predicted": [],
+        "missing": [
+          "factual_explanation"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 9.608500055037439,
+        "scores": {
+          "factual_explanation": 0.8284885111271978,
+          "research_synthesis": 0.782939214356378,
+          "review_verification": 0.7626153049926506,
+          "coding": 0.7626152866928555,
+          "debugging": 0.7626152866928555,
+          "document_analysis": 0.7600845922329738,
+          "structured_extraction": 0.7600845922329738,
+          "multimodal": 0.7579230629452312,
+          "multi_file_implementation": 0.7537928220816458,
+          "tool_driven": 0.7537927884709275,
+          "conversation": 0.7518801592048474,
+          "mathematics": 0.7509585192551684,
+          "complex_reasoning": 0.7509585192551684,
+          "security_review": 0.7484325917032505,
+          "repository_architecture": 0.7437335486811668,
+          "planning_delegation": 0.7437335486811668
+        }
+      },
+      {
+        "id": "d-he-13",
+        "language": "he",
+        "predicted": [],
+        "missing": [
+          "factual_explanation"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 9.491999982856214,
+        "scores": {
+          "tool_driven": 0.8035477284332593,
+          "repository_architecture": 0.8035477284332593,
+          "review_verification": 0.8016216740683305,
+          "security_review": 0.8016216740683305,
+          "research_synthesis": 0.7972178111469919,
+          "planning_delegation": 0.7948811383226214,
+          "complex_reasoning": 0.789263487613655,
+          "mathematics": 0.789263487613655,
+          "coding": 0.7885283640064896,
+          "debugging": 0.7885283640064896,
+          "document_analysis": 0.7880109905252956,
+          "structured_extraction": 0.7880109905252956,
+          "factual_explanation": 0.7859714203378089,
+          "multimodal": 0.7788634548149667,
+          "multi_file_implementation": 0.7751620681329824,
+          "conversation": 0.765987553554119
+        }
+      },
+      {
+        "id": "d-en-14",
+        "language": "en",
+        "predicted": [
+          "conversation"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 8.327099960297346,
+        "scores": {
+          "conversation": 0.9712471510393901,
+          "multimodal": 0.8237420037449387,
+          "factual_explanation": 0.8190288909476451,
+          "review_verification": 0.8019491075574287,
+          "tool_driven": 0.8019491075574287,
+          "coding": 0.8011238746880387,
+          "multi_file_implementation": 0.8011238746880387,
+          "planning_delegation": 0.7965326830328915,
+          "complex_reasoning": 0.7959923251396462,
+          "mathematics": 0.7959923251396462,
+          "debugging": 0.7949975123384958,
+          "security_review": 0.7944700473589973,
+          "repository_architecture": 0.7837742431527889,
+          "document_analysis": 0.7824669344042972,
+          "structured_extraction": 0.7824669344042972,
+          "research_synthesis": 0.7736653334008731
+        }
+      },
+      {
+        "id": "d-he-14",
+        "language": "he",
+        "predicted": [
+          "conversation"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 9.9727000342682,
+        "scores": {
+          "conversation": 0.9867908475241872,
+          "complex_reasoning": 0.8121289196298663,
+          "mathematics": 0.8121289196298663,
+          "tool_driven": 0.8049964623121215,
+          "review_verification": 0.8049964623121215,
+          "security_review": 0.8006189481651212,
+          "coding": 0.7986201538852983,
+          "debugging": 0.7986201538852983,
+          "multimodal": 0.7923610924427658,
+          "multi_file_implementation": 0.7839470663120177,
+          "planning_delegation": 0.7833581682950456,
+          "document_analysis": 0.781219958260765,
+          "structured_extraction": 0.781219958260765,
+          "repository_architecture": 0.7798662277242236,
+          "research_synthesis": 0.7742413984057692,
+          "factual_explanation": 0.7700645245140723
+        }
+      },
+      {
+        "id": "d-en-15",
+        "language": "en",
+        "predicted": [],
+        "missing": [
+          "factual_explanation"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "uncertain": true,
+        "latencyMs": 9.141899994574487,
+        "scores": {
+          "multimodal": 0.834637852819762,
+          "factual_explanation": 0.8294154335545245,
+          "tool_driven": 0.8158558699604457,
+          "review_verification": 0.8158558699604457,
+          "document_analysis": 0.815553897375161,
+          "structured_extraction": 0.815553897375161,
+          "security_review": 0.8153789503648652,
+          "coding": 0.8142696711617398,
+          "repository_architecture": 0.8107185991999015,
+          "planning_delegation": 0.8107185991999015,
+          "conversation": 0.8092996795127181,
+          "complex_reasoning": 0.8071555441324767,
+          "mathematics": 0.8071555441324767,
+          "multi_file_implementation": 0.8061858965742916,
+          "debugging": 0.7992229785526054,
+          "research_synthesis": 0.7724030574081627
+        }
+      },
+      {
+        "id": "d-he-15",
+        "language": "he",
+        "predicted": [
+          "review_verification",
+          "coding",
+          "debugging",
+          "multimodal",
+          "document_analysis",
+          "structured_extraction"
+        ],
+        "missing": [
+          "factual_explanation"
+        ],
+        "forbidden": [
+          "coding",
+          "debugging"
+        ],
+        "satisfied": false,
+        "uncertain": false,
+        "latencyMs": 9.901299956254661,
+        "scores": {
+          "review_verification": 0.8558134203535962,
+          "coding": 0.8558134105691988,
+          "debugging": 0.8558134105691988,
+          "multimodal": 0.8540177396964749,
+          "document_analysis": 0.8535656382172481,
+          "structured_extraction": 0.8535656382172481,
+          "tool_driven": 0.8416049132967116,
+          "repository_architecture": 0.8403757503352625,
+          "security_review": 0.8392352549825818,
+          "planning_delegation": 0.8371122108129977,
+          "mathematics": 0.8349120840731798,
+          "complex_reasoning": 0.8349120840731798,
+          "multi_file_implementation": 0.8307561304869779,
+          "research_synthesis": 0.8259554464647922,
+          "factual_explanation": 0.8204758530936025,
+          "conversation": 0.809447685736877
+        }
+      },
+      {
+        "id": "d-en-16",
+        "language": "en",
+        "predicted": [
+          "coding",
+          "review_verification",
+          "tool_driven",
+          "multi_file_implementation",
+          "debugging",
+          "planning_delegation"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 11.359800002537668,
+        "scores": {
+          "coding": 0.9016352493187019,
+          "review_verification": 0.9016352493187019,
+          "tool_driven": 0.9016352493187019,
+          "multi_file_implementation": 0.9016352493187019,
+          "debugging": 0.88483729114712,
+          "planning_delegation": 0.8814589345375617,
+          "repository_architecture": 0.8482837840475114,
+          "security_review": 0.8476231506761547,
+          "mathematics": 0.8153573041005318,
+          "complex_reasoning": 0.8153573041005318,
+          "research_synthesis": 0.815102802432625,
+          "multimodal": 0.8063620801415086,
+          "document_analysis": 0.8007834490760876,
+          "structured_extraction": 0.8007834490760876,
+          "factual_explanation": 0.7662320659171373,
+          "conversation": 0.7447459898895156
+        }
+      },
+      {
+        "id": "d-he-16",
+        "language": "he",
+        "predicted": [
+          "review_verification",
+          "tool_driven",
+          "coding",
+          "multi_file_implementation",
+          "planning_delegation",
+          "debugging",
+          "repository_architecture",
+          "document_analysis",
+          "structured_extraction",
+          "security_review",
+          "mathematics",
+          "complex_reasoning",
+          "research_synthesis",
+          "multimodal"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "uncertain": false,
+        "latencyMs": 12.615399900823832,
+        "scores": {
+          "review_verification": 0.9380808005274925,
+          "tool_driven": 0.9380808005274924,
+          "coding": 0.938080798176412,
+          "multi_file_implementation": 0.938080798176412,
+          "planning_delegation": 0.9228985354089402,
+          "debugging": 0.9143964735220245,
+          "repository_architecture": 0.8994053412614569,
+          "document_analysis": 0.8894239483503665,
+          "structured_extraction": 0.8894239483503665,
+          "security_review": 0.8870566742115168,
+          "mathematics": 0.8776764488527541,
+          "complex_reasoning": 0.8776764488527541,
+          "research_synthesis": 0.8761822180621525,
+          "multimodal": 0.866084393411067,
+          "factual_explanation": 0.8269876973164162,
+          "conversation": 0.7966908896183159
+        }
+      }
+    ]
+  },
+  "developmentTrials": [
+    {
+      "satisfied": 2,
+      "missingRequired": 0,
+      "forbiddenLabels": 38,
+      "threshold": 0.1
+    },
+    {
+      "satisfied": 2,
+      "missingRequired": 0,
+      "forbiddenLabels": 38,
+      "threshold": 0.15
+    },
+    {
+      "satisfied": 2,
+      "missingRequired": 0,
+      "forbiddenLabels": 38,
+      "threshold": 0.2
+    },
+    {
+      "satisfied": 2,
+      "missingRequired": 0,
+      "forbiddenLabels": 38,
+      "threshold": 0.25
+    },
+    {
+      "satisfied": 2,
+      "missingRequired": 0,
+      "forbiddenLabels": 38,
+      "threshold": 0.3
+    },
+    {
+      "satisfied": 2,
+      "missingRequired": 0,
+      "forbiddenLabels": 38,
+      "threshold": 0.35
+    },
+    {
+      "satisfied": 2,
+      "missingRequired": 0,
+      "forbiddenLabels": 38,
+      "threshold": 0.4
+    },
+    {
+      "satisfied": 2,
+      "missingRequired": 0,
+      "forbiddenLabels": 38,
+      "threshold": 0.45
+    },
+    {
+      "satisfied": 2,
+      "missingRequired": 0,
+      "forbiddenLabels": 38,
+      "threshold": 0.5
+    },
+    {
+      "satisfied": 2,
+      "missingRequired": 0,
+      "forbiddenLabels": 38,
+      "threshold": 0.55
+    },
+    {
+      "satisfied": 2,
+      "missingRequired": 0,
+      "forbiddenLabels": 38,
+      "threshold": 0.6
+    },
+    {
+      "satisfied": 2,
+      "missingRequired": 0,
+      "forbiddenLabels": 38,
+      "threshold": 0.65
+    },
+    {
+      "satisfied": 2,
+      "missingRequired": 0,
+      "forbiddenLabels": 38,
+      "threshold": 0.7
+    },
+    {
+      "satisfied": 5,
+      "missingRequired": 0,
+      "forbiddenLabels": 35,
+      "threshold": 0.75
+    },
+    {
+      "satisfied": 12,
+      "missingRequired": 1,
+      "forbiddenLabels": 22,
+      "threshold": 0.8
+    },
+    {
+      "satisfied": 22,
+      "missingRequired": 5,
+      "forbiddenLabels": 7,
+      "threshold": 0.85
+    },
+    {
+      "satisfied": 10,
+      "missingRequired": 31,
+      "forbiddenLabels": 0,
+      "threshold": 0.9
+    },
+    {
+      "satisfied": 2,
+      "missingRequired": 54,
+      "forbiddenLabels": 0,
+      "threshold": 0.95
+    }
+  ],
+  "limits": "Synthetic intent labels only; partial labels do not establish precision. No downstream model task success measured."
+}

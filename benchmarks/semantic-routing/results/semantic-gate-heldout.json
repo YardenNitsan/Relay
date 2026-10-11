@@ -1,0 +1,18 @@
+{
+  "selectedOnDevelopment": "minilm",
+  "passed": false,
+  "checks": {
+    "satisfiedImprovement": false,
+    "noLanguageRegression": true,
+    "forbiddenBound": true,
+    "warmLatency": true,
+    "residentMemory": true,
+    "initialization": true
+  },
+  "baselineSatisfied": 25,
+  "selectedSatisfied": 26,
+  "baselineForbidden": 15,
+  "selectedForbidden": 11,
+  "total": 64,
+  "limits": "Intent experiment only; downstream/live acceptance remains separate."
+}

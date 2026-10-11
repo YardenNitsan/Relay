@@ -1,0 +1,64 @@
+{
+  "protocol": "relay-semantic-comparison-v1",
+  "frozenAt": "2026-10-11T17:28:04.644515+00:00",
+  "selectedOnDevelopment": "minilm",
+  "hashEncoding": "bytes with CRLF normalized to LF",
+  "hashes": {
+    "benchmarks/semantic-routing/candidates.py": "ce476aa965361a451912f9ce2bb36af6d662a32eab360623bb19a128f1d14555",
+    "benchmarks/semantic-routing/benchmark.py": "77cafadc8079a36b595ae88ecd0d1f02e2051368108de3f2904ff4ff475455af",
+    "benchmarks/semantic-routing/baseline.ts": "57773400f9cc65174277166cb8f3170487407dc994023b05398913ba3b46e240",
+    "benchmarks/semantic-routing/protocol.md": "b1a9f090a1949b01f2205cb9d048401f7f2c2d8d31f88c9c7c5f9595a184adda",
+    "benchmarks/semantic-routing/development-v1.json": "41a3a78df23ecbe01d8eacdd76ffef5e64ce2049597179ab7ca9ae657656a480",
+    "benchmarks/semantic-routing/heldout-v1.json": "d6cf74823301bc9aafd5580461fe16aab42f686f710c662f9fb0d47afab7cbdb",
+    "benchmarks/semantic-routing/freeze.py": "a99551d832a16cc83d1d8f72f9edff7141e0cf486cd3b26441df8c262eafe495",
+    "benchmarks/task-intent/development-v1.json": "b51627c4f87421c1416507588ea898e6ef1bc49ee5f31804614429d9454528c8",
+    "server/models/intent-phrases.ts": "9edf33ad969c3f21cc426810cf2f824d1bd2d3a5f7e0f93e5b7b42eb158a73aa"
+  },
+  "candidates": {
+    "minilm": {
+      "threshold": 0.4,
+      "model": {
+        "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+        "revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42"
+      },
+      "packages": {
+        "semantic-router": "0.1.16",
+        "transformers": "4.57.6",
+        "torch": "2.14.1"
+      }
+    },
+    "e5": {
+      "threshold": 0.85,
+      "model": {
+        "model": "intfloat/multilingual-e5-small",
+        "revision": "614241f622f53c4eeff9890bdc4f31cfecc418b3"
+      },
+      "packages": {
+        "semantic-router": "0.1.16",
+        "transformers": "4.57.6",
+        "torch": "2.14.1"
+      }
+    },
+    "nli": {
+      "threshold": 0.45,
+      "model": {
+        "model": "MoritzLaurer/multilingual-MiniLMv2-L6-mnli-xnli",
+        "revision": "0a71e92a985b6e1ad1828cf67ce9c459639c1dca"
+      },
+      "packages": {
+        "semantic-router": "0.1.16",
+        "transformers": "4.57.6",
+        "torch": "2.14.1"
+      }
+    }
+  },
+  "gate": {
+    "minimumSatisfiedImprovement": 8,
+    "noLanguageRegression": true,
+    "maximumExtraForbidden": 2,
+    "p95LimitMs": 250,
+    "rssLimitBytes": 1610612736,
+    "initializationLimitMs": 30000
+  },
+  "disclosure": "Synthetic test authored by independent reviewer without candidate/corpus/results access. Root froze candidates before reading or evaluating test objectives. No downstream task success inferred."
+}

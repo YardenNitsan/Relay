@@ -1,0 +1,32 @@
+{
+  "protocol": "relay-semantic-comparison-v2",
+  "frozenAt": "2026-10-11T17:39:50.477803+00:00",
+  "selectedOnConsumedDevelopment": "minilm",
+  "model": {
+    "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+    "revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42"
+  },
+  "hashEncoding": "bytes with CRLF normalized to LF",
+  "hashes": {
+    "benchmarks/semantic-routing/candidates.py": "ce476aa965361a451912f9ce2bb36af6d662a32eab360623bb19a128f1d14555",
+    "benchmarks/semantic-routing/baseline.ts": "57773400f9cc65174277166cb8f3170487407dc994023b05398913ba3b46e240",
+    "benchmarks/semantic-routing/calibrate-v2.py": "2e71d6b0ac3781a75f708451bfb11f6683d8d4077b580c7769ad9611170abe19",
+    "benchmarks/semantic-routing/calibration-v2.json": "31a56a7c80f8d88c00c42566c9e6df43d9efc2559eeb539de837a9fcf20f1ec8",
+    "benchmarks/semantic-routing/evaluate-v2.py": "2d904914ab67538a39c401b7de27566327831d3ea7fb9abb3c83b2ed6bec8a30",
+    "benchmarks/semantic-routing/protocol-v2.md": "39cf1dc37fedb2d2bec4069a0cc1d82467cb1aae1a7d41089167aaf0e818fb09",
+    "benchmarks/semantic-routing/heldout-v2.json": "968401462e78f60f08dff51823117ffd2032444b63fab29ffb43801a05be8fbf",
+    "benchmarks/semantic-routing/development-v1.json": "41a3a78df23ecbe01d8eacdd76ffef5e64ce2049597179ab7ca9ae657656a480",
+    "benchmarks/semantic-routing/heldout-v1.json": "d6cf74823301bc9aafd5580461fe16aab42f686f710c662f9fb0d47afab7cbdb",
+    "benchmarks/semantic-routing/freeze-v2.py": "85157e86e699a49869a32f0c789174cfb15d9352ab0109e2493ea7d59bd61125",
+    "benchmarks/task-intent/development-v1.json": "b51627c4f87421c1416507588ea898e6ef1bc49ee5f31804614429d9454528c8",
+    "server/models/intent-phrases.ts": "9edf33ad969c3f21cc426810cf2f824d1bd2d3a5f7e0f93e5b7b42eb158a73aa"
+  },
+  "gate": {
+    "minimumImprovement": 8,
+    "minimumSatisfiedFraction": 0.65,
+    "maximumExtraForbidden": 2,
+    "p95LimitMs": 250,
+    "rssLimitBytes": 1610612736,
+    "initializationLimitMs": 30000
+  }
+}

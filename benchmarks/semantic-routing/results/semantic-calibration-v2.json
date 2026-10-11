@@ -1,0 +1,2216 @@
+{
+  "mode": "consumed-v1-development-only",
+  "selected": "minilm",
+  "thresholds": {
+    "review_verification": 0.4,
+    "coding": 0.4,
+    "debugging": 0.3,
+    "repository_architecture": 0.4,
+    "tool_driven": 0.4,
+    "multi_file_implementation": 0.35,
+    "security_review": 0.35,
+    "multimodal": 0.3,
+    "structured_extraction": 0.4,
+    "document_analysis": 0.4,
+    "planning_delegation": 0.35,
+    "complex_reasoning": 0.4,
+    "mathematics": 0.4,
+    "research_synthesis": 0.45,
+    "factual_explanation": 0.2,
+    "conversation": 0.1
+  },
+  "reports": [
+    {
+      "candidate": "minilm",
+      "thresholds": {
+        "review_verification": 0.4,
+        "coding": 0.4,
+        "debugging": 0.3,
+        "repository_architecture": 0.4,
+        "tool_driven": 0.4,
+        "multi_file_implementation": 0.35,
+        "security_review": 0.35,
+        "multimodal": 0.3,
+        "structured_extraction": 0.4,
+        "document_analysis": 0.4,
+        "planning_delegation": 0.35,
+        "complex_reasoning": 0.4,
+        "mathematics": 0.4,
+        "research_synthesis": 0.45,
+        "factual_explanation": 0.2,
+        "conversation": 0.1
+      },
+      "uncalibrated": [
+        "review_verification",
+        "repository_architecture",
+        "structured_extraction",
+        "document_analysis",
+        "complex_reasoning",
+        "mathematics"
+      ],
+      "satisfied": 62,
+      "forbidden": 16,
+      "total": 96,
+      "outcomes": [
+        {
+          "id": "d-en-01",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-01",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-en-02",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-02",
+          "missing": [],
+          "forbidden": [
+            "debugging"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "d-en-03",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-03",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-en-04",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-04",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-en-05",
+          "missing": [
+            "document_analysis",
+            "structured_extraction"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "d-he-05",
+          "missing": [
+            "document_analysis",
+            "structured_extraction"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "d-en-06",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-06",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-en-07",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-07",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "d-en-08",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-08",
+          "missing": [],
+          "forbidden": [
+            "conversation"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "d-en-09",
+          "missing": [],
+          "forbidden": [
+            "debugging"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "d-he-09",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-en-10",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-10",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-en-11",
+          "missing": [
+            "complex_reasoning",
+            "mathematics"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "d-he-11",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "d-en-12",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-12",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-en-13",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-13",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-en-14",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-14",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-en-15",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-15",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-en-16",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-16",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-01",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-02",
+          "missing": [
+            "coding"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-03",
+          "missing": [
+            "coding"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-04",
+          "missing": [
+            "coding",
+            "multi_file_implementation"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-05",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-06",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-07",
+          "missing": [
+            "coding"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-08",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-09",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-10",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-11",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-12",
+          "missing": [
+            "review_verification"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-13",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-14",
+          "missing": [
+            "document_analysis"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-15",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-16",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-17",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-18",
+          "missing": [
+            "planning_delegation"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-19",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-20",
+          "missing": [
+            "document_analysis",
+            "review_verification"
+          ],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-21",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-22",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-23",
+          "missing": [
+            "mathematics"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-24",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-25",
+          "missing": [
+            "complex_reasoning"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-26",
+          "missing": [
+            "complex_reasoning"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-27",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-28",
+          "missing": [
+            "review_verification"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-29",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-30",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-31",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-32",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-01",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-02",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-03",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-04",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-05",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-06",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-07",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-08",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-09",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-10",
+          "missing": [
+            "structured_extraction"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-11",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-12",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-13",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-14",
+          "missing": [
+            "document_analysis"
+          ],
+          "forbidden": [
+            "coding",
+            "tool_driven"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-15",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-16",
+          "missing": [],
+          "forbidden": [
+            "multi_file_implementation"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-17",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-18",
+          "missing": [
+            "planning_delegation"
+          ],
+          "forbidden": [
+            "coding",
+            "tool_driven"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-19",
+          "missing": [],
+          "forbidden": [
+            "multi_file_implementation"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-20",
+          "missing": [
+            "review_verification"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-21",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-22",
+          "missing": [],
+          "forbidden": [
+            "multi_file_implementation"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-23",
+          "missing": [
+            "mathematics"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-24",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-25",
+          "missing": [
+            "complex_reasoning"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-26",
+          "missing": [
+            "complex_reasoning"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-27",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-28",
+          "missing": [
+            "review_verification"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-29",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-30",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-31",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-32",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        }
+      ]
+    },
+    {
+      "candidate": "e5",
+      "thresholds": {
+        "review_verification": 0.85,
+        "coding": 0.85,
+        "debugging": 0.85,
+        "repository_architecture": 0.85,
+        "tool_driven": 0.85,
+        "multi_file_implementation": 0.9,
+        "security_review": 0.85,
+        "multimodal": 0.85,
+        "structured_extraction": 0.85,
+        "document_analysis": 0.85,
+        "planning_delegation": 0.9,
+        "complex_reasoning": 0.85,
+        "mathematics": 0.85,
+        "research_synthesis": 0.85,
+        "factual_explanation": 0.8,
+        "conversation": 0.8
+      },
+      "uncalibrated": [
+        "review_verification",
+        "repository_architecture",
+        "structured_extraction",
+        "document_analysis",
+        "complex_reasoning",
+        "mathematics"
+      ],
+      "satisfied": 39,
+      "forbidden": 31,
+      "total": 96,
+      "outcomes": [
+        {
+          "id": "d-en-01",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-01",
+          "missing": [],
+          "forbidden": [
+            "conversation"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "d-en-02",
+          "missing": [
+            "coding"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "d-he-02",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-en-03",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-03",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-en-04",
+          "missing": [
+            "multi_file_implementation"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "d-he-04",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-en-05",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "d-he-05",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "d-en-06",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-06",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-en-07",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-07",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "d-en-08",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-08",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-en-09",
+          "missing": [
+            "planning_delegation"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "d-he-09",
+          "missing": [
+            "planning_delegation"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "d-en-10",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-10",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-en-11",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-11",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "d-en-12",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-12",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "d-en-13",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-13",
+          "missing": [
+            "factual_explanation"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "d-en-14",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-14",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-en-15",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-15",
+          "missing": [],
+          "forbidden": [
+            "coding",
+            "debugging"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "d-en-16",
+          "missing": [
+            "planning_delegation"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "d-he-16",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-01",
+          "missing": [
+            "coding",
+            "debugging"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-02",
+          "missing": [
+            "coding",
+            "debugging"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-03",
+          "missing": [
+            "coding"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-04",
+          "missing": [
+            "multi_file_implementation"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-05",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-06",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-07",
+          "missing": [
+            "multi_file_implementation"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-08",
+          "missing": [
+            "coding",
+            "multi_file_implementation"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-09",
+          "missing": [
+            "structured_extraction"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-10",
+          "missing": [
+            "document_analysis",
+            "structured_extraction"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-11",
+          "missing": [
+            "document_analysis"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-12",
+          "missing": [
+            "document_analysis",
+            "review_verification"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-13",
+          "missing": [
+            "research_synthesis"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-14",
+          "missing": [
+            "document_analysis",
+            "research_synthesis"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-15",
+          "missing": [
+            "tool_driven"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-16",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-17",
+          "missing": [
+            "planning_delegation"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-18",
+          "missing": [
+            "planning_delegation"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-19",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-20",
+          "missing": [
+            "document_analysis",
+            "mathematics",
+            "review_verification"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-21",
+          "missing": [
+            "review_verification",
+            "security_review"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-22",
+          "missing": [
+            "security_review"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-23",
+          "missing": [
+            "mathematics"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-24",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-25",
+          "missing": [
+            "complex_reasoning"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-26",
+          "missing": [
+            "complex_reasoning"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-27",
+          "missing": [
+            "multimodal"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-28",
+          "missing": [
+            "multimodal",
+            "review_verification"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-29",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-30",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-31",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-32",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-01",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-02",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-03",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-04",
+          "missing": [
+            "multi_file_implementation"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-05",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-06",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-07",
+          "missing": [
+            "multi_file_implementation"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-08",
+          "missing": [
+            "multi_file_implementation"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-09",
+          "missing": [],
+          "forbidden": [
+            "coding",
+            "tool_driven"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-10",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-11",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-12",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-13",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-14",
+          "missing": [
+            "document_analysis"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-15",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-16",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-17",
+          "missing": [
+            "planning_delegation"
+          ],
+          "forbidden": [
+            "coding",
+            "tool_driven"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-18",
+          "missing": [
+            "planning_delegation"
+          ],
+          "forbidden": [
+            "coding",
+            "tool_driven"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-19",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-20",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-21",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-22",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-23",
+          "missing": [
+            "mathematics"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-24",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-25",
+          "missing": [
+            "complex_reasoning"
+          ],
+          "forbidden": [
+            "tool_driven"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-26",
+          "missing": [
+            "complex_reasoning"
+          ],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-27",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-28",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-29",
+          "missing": [],
+          "forbidden": [
+            "coding",
+            "security_review",
+            "tool_driven"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-30",
+          "missing": [],
+          "forbidden": [
+            "coding",
+            "debugging"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-31",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-32",
+          "missing": [],
+          "forbidden": [
+            "coding",
+            "debugging"
+          ],
+          "satisfied": false
+        }
+      ]
+    },
+    {
+      "candidate": "nli",
+      "thresholds": {
+        "review_verification": 0.45,
+        "coding": 0.35,
+        "debugging": 0.75,
+        "repository_architecture": 0.45,
+        "tool_driven": 0.9,
+        "multi_file_implementation": 0.8,
+        "security_review": 0.55,
+        "multimodal": 0.25,
+        "structured_extraction": 0.45,
+        "document_analysis": 0.45,
+        "planning_delegation": 0.95,
+        "complex_reasoning": 0.45,
+        "mathematics": 0.45,
+        "research_synthesis": 0.95,
+        "factual_explanation": 0.4,
+        "conversation": 0.25
+      },
+      "uncalibrated": [
+        "review_verification",
+        "repository_architecture",
+        "structured_extraction",
+        "document_analysis",
+        "complex_reasoning",
+        "mathematics"
+      ],
+      "satisfied": 34,
+      "forbidden": 54,
+      "total": 96,
+      "outcomes": [
+        {
+          "id": "d-en-01",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-01",
+          "missing": [],
+          "forbidden": [
+            "conversation"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "d-en-02",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-02",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-en-03",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-03",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-en-04",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-04",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-en-05",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-05",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "d-en-06",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-06",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "d-en-07",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-07",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "d-en-08",
+          "missing": [
+            "tool_driven"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "d-he-08",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-en-09",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-09",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-en-10",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-10",
+          "missing": [],
+          "forbidden": [
+            "conversation"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "d-en-11",
+          "missing": [
+            "mathematics"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "d-he-11",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "d-en-12",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "d-he-12",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "d-en-13",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-he-13",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "d-en-14",
+          "missing": [
+            "conversation"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "d-he-14",
+          "missing": [
+            "conversation"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "d-en-15",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "d-he-15",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "d-en-16",
+          "missing": [
+            "planning_delegation",
+            "tool_driven"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "d-he-16",
+          "missing": [],
+          "forbidden": [
+            "conversation"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-01",
+          "missing": [
+            "coding"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-02",
+          "missing": [
+            "coding",
+            "debugging"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-03",
+          "missing": [],
+          "forbidden": [
+            "document_analysis"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-04",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-05",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-06",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-07",
+          "missing": [
+            "coding"
+          ],
+          "forbidden": [
+            "factual_explanation"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-08",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-09",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-10",
+          "missing": [
+            "structured_extraction"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-11",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-12",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-13",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-14",
+          "missing": [
+            "document_analysis",
+            "research_synthesis"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-15",
+          "missing": [
+            "tool_driven"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-16",
+          "missing": [
+            "tool_driven"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-17",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-18",
+          "missing": [
+            "planning_delegation"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-19",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-20",
+          "missing": [
+            "mathematics"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-21",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-22",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-23",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-24",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-25",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-26",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-27",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-28",
+          "missing": [
+            "multimodal",
+            "review_verification"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-29",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-30",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-en-31",
+          "missing": [
+            "conversation"
+          ],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-en-32",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-01",
+          "missing": [],
+          "forbidden": [
+            "research_synthesis"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-02",
+          "missing": [],
+          "forbidden": [
+            "multimodal"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-03",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-04",
+          "missing": [],
+          "forbidden": [
+            "factual_explanation"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-05",
+          "missing": [],
+          "forbidden": [
+            "multimodal"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-06",
+          "missing": [],
+          "forbidden": [
+            "multi_file_implementation"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-07",
+          "missing": [],
+          "forbidden": [
+            "conversation"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-08",
+          "missing": [],
+          "forbidden": [
+            "research_synthesis"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-09",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-10",
+          "missing": [
+            "structured_extraction"
+          ],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-11",
+          "missing": [],
+          "forbidden": [
+            "coding",
+            "research_synthesis"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-12",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-13",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-14",
+          "missing": [],
+          "forbidden": [
+            "tool_driven"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-15",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-16",
+          "missing": [],
+          "forbidden": [
+            "multi_file_implementation"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-17",
+          "missing": [],
+          "forbidden": [
+            "coding",
+            "tool_driven"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-18",
+          "missing": [
+            "planning_delegation"
+          ],
+          "forbidden": [],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-19",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-20",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-21",
+          "missing": [],
+          "forbidden": [
+            "multimodal"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-22",
+          "missing": [],
+          "forbidden": [
+            "multi_file_implementation"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-23",
+          "missing": [],
+          "forbidden": [
+            "coding",
+            "tool_driven"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-24",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-25",
+          "missing": [],
+          "forbidden": [
+            "coding",
+            "tool_driven"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-26",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-27",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-28",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-29",
+          "missing": [],
+          "forbidden": [
+            "coding",
+            "security_review",
+            "tool_driven"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-30",
+          "missing": [],
+          "forbidden": [],
+          "satisfied": true
+        },
+        {
+          "id": "heldout-v1-he-31",
+          "missing": [],
+          "forbidden": [
+            "coding"
+          ],
+          "satisfied": false
+        },
+        {
+          "id": "heldout-v1-he-32",
+          "missing": [],
+          "forbidden": [
+            "coding",
+            "debugging"
+          ],
+          "satisfied": false
+        }
+      ]
+    }
+  ]
+}

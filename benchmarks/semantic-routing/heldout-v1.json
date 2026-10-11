@@ -1,0 +1,767 @@
+{
+  "version": "semantic-routing-heldout-v1",
+  "provenance": {
+    "author": "independent acceptance-test review agent",
+    "createdAt": "2026-10-11",
+    "method": "Authored from the supplied label vocabulary and task requirements without inspecting candidate implementations, development corpora, previous held-out data, or candidate scores.",
+    "scope": "64 synthetic bilingual intent cases, balanced 32 English / 32 Hebrew, with partial defensible required and forbidden labels. Not evidence of real-world model task success.",
+    "sealed": true
+  },
+  "cases": [
+    {
+      "id": "heldout-v1-en-01",
+      "language": "en",
+      "objective": "The checkout service charges correctly on the first attempt but adds the delivery fee twice after a retry. Trace the existing implementation, repair the cause, and add a regression test.",
+      "required": [
+        "debugging",
+        "coding"
+      ],
+      "forbidden": [
+        "multimodal"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-02",
+      "language": "en",
+      "objective": "Here is a stack trace and a small function: TypeError at record.owner.name when owner is null. Explain the failure and supply a corrected function that preserves records without an owner.",
+      "required": [
+        "debugging",
+        "coding"
+      ],
+      "forbidden": [
+        "research_synthesis"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-03",
+      "language": "en",
+      "objective": "Write a Rust iterator adapter that emits adjacent pairs without collecting the entire input. Include examples for an empty iterator and a single item.",
+      "required": [
+        "coding"
+      ],
+      "forbidden": [
+        "document_analysis"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-04",
+      "language": "en",
+      "objective": "Implement editable delivery addresses across the database migration, API validation, and checkout form in this repository.",
+      "required": [
+        "coding",
+        "multi_file_implementation"
+      ],
+      "forbidden": [
+        "conversation"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-05",
+      "language": "en",
+      "objective": "Before changing anything, map how this repository's request handlers, domain services, and storage adapters depend on each other. Recommend where the invoice rules belong.",
+      "required": [
+        "repository_architecture"
+      ],
+      "forbidden": [
+        "multimodal"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-06",
+      "language": "en",
+      "objective": "Read the package manifests and module imports in this monorepo and identify dependency cycles. Propose boundaries that would let the command-line client ship independently.",
+      "required": [
+        "repository_architecture"
+      ],
+      "forbidden": [
+        "conversation"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-07",
+      "language": "en",
+      "objective": "Add a language preference that persists through the backend and is applied by the web settings screen. Update the shared contract and tests for both sides.",
+      "required": [
+        "coding",
+        "multi_file_implementation"
+      ],
+      "forbidden": [
+        "factual_explanation"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-08",
+      "language": "en",
+      "objective": "Replace the hard-coded currency rounding in the service and browser with one shared implementation, updating the callers and tests throughout the project.",
+      "required": [
+        "coding",
+        "multi_file_implementation"
+      ],
+      "forbidden": [
+        "multimodal"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-09",
+      "language": "en",
+      "objective": "Convert 'Mina: 4 crates; Joel: 7 crates; Mina: 2 sacks' into JSON records with person, quantity, and container fields. Keep the original order.",
+      "required": [
+        "structured_extraction"
+      ],
+      "forbidden": [
+        "coding",
+        "tool_driven"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-10",
+      "language": "en",
+      "objective": "From the pasted minutes, return a table containing only explicitly assigned actions, their named owners, and stated due dates. Mark missing dates as unspecified.",
+      "required": [
+        "structured_extraction",
+        "document_analysis"
+      ],
+      "forbidden": [
+        "coding"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-11",
+      "language": "en",
+      "objective": "Compare these two lease drafts and explain which obligations changed for the tenant. Use only the pasted text, not external legal rules.",
+      "required": [
+        "document_analysis"
+      ],
+      "forbidden": [
+        "coding",
+        "tool_driven"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-12",
+      "language": "en",
+      "objective": "This report says the pilot reduced queues, but its appendix lists waiting times that grew. Reconcile the claims using the supplied sections and flag what cannot be concluded.",
+      "required": [
+        "document_analysis",
+        "review_verification"
+      ],
+      "forbidden": [
+        "coding"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-13",
+      "language": "en",
+      "objective": "Find independent studies on four-day workweeks, compare their populations and measurement methods, and synthesize where the evidence agrees or conflicts.",
+      "required": [
+        "research_synthesis"
+      ],
+      "forbidden": [
+        "coding"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-14",
+      "language": "en",
+      "objective": "Using the three attached research abstracts about urban tree cover and heat, synthesize the shared conclusion and methodological disagreements. Do not search for extra material.",
+      "required": [
+        "research_synthesis",
+        "document_analysis"
+      ],
+      "forbidden": [
+        "coding",
+        "tool_driven"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-15",
+      "language": "en",
+      "objective": "Open the supplied spreadsheet file, sort its attendance sheet by surname, save a new copy, and report the output path.",
+      "required": [
+        "tool_driven"
+      ],
+      "forbidden": [
+        "research_synthesis"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-16",
+      "language": "en",
+      "objective": "Use the terminal to inspect disk usage in the current project and report the five largest generated directories. Do not delete anything.",
+      "required": [
+        "tool_driven"
+      ],
+      "forbidden": [
+        "coding",
+        "security_review"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-17",
+      "language": "en",
+      "objective": "Plan a museum move with separate teams for packing, transport, and cataloguing. Show dependencies, handoffs, and a fallback if the lift is unavailable; do not contact anyone.",
+      "required": [
+        "planning_delegation"
+      ],
+      "forbidden": [
+        "coding",
+        "tool_driven"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-18",
+      "language": "en",
+      "objective": "Break the software release into independent assignments for a documentation reviewer, a test owner, and a deployment coordinator. Provide acceptance criteria; do not execute the release.",
+      "required": [
+        "planning_delegation"
+      ],
+      "forbidden": [
+        "tool_driven",
+        "multi_file_implementation"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-19",
+      "language": "en",
+      "objective": "Review this proposed patch for behavior changes around empty input and overflow. Give findings with line numbers; do not alter the code.",
+      "required": [
+        "review_verification"
+      ],
+      "forbidden": [
+        "multi_file_implementation"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-20",
+      "language": "en",
+      "objective": "Check every subtotal in the attached expense statement against its line items and identify discrepancies, showing your arithmetic.",
+      "required": [
+        "review_verification",
+        "mathematics",
+        "document_analysis"
+      ],
+      "forbidden": [
+        "coding"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-21",
+      "language": "en",
+      "objective": "Inspect the password-reset endpoint for account enumeration and reusable tokens. Explain concrete exploit preconditions and recommend defensive changes without modifying files.",
+      "required": [
+        "security_review",
+        "review_verification"
+      ],
+      "forbidden": [
+        "multimodal"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-22",
+      "language": "en",
+      "objective": "Review this authorization middleware and its tests to determine whether a tenant can read another tenant's records by changing the URL identifier.",
+      "required": [
+        "security_review",
+        "review_verification"
+      ],
+      "forbidden": [
+        "research_synthesis"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-23",
+      "language": "en",
+      "objective": "A shop cuts a price by 15 percent and then raises the reduced price by 15 percent. Starting from 240, calculate the final price and explain the difference.",
+      "required": [
+        "mathematics"
+      ],
+      "forbidden": [
+        "coding",
+        "tool_driven"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-24",
+      "language": "en",
+      "objective": "Find all real values of x satisfying |2x - 3| = x + 4, and check each solution in the original equation.",
+      "required": [
+        "mathematics"
+      ],
+      "forbidden": [
+        "coding"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-25",
+      "language": "en",
+      "objective": "Four talks occupy four consecutive slots. Ada is before Ben, Cora is not first or last, and Drew is immediately after Ada. Enumerate the valid schedules and justify that none are missing.",
+      "required": [
+        "complex_reasoning"
+      ],
+      "forbidden": [
+        "coding",
+        "tool_driven"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-26",
+      "language": "en",
+      "objective": "A warehouse may open either an east or west depot. East is cheaper only if demand exceeds 900 units; demand could be 600 or 1,200 and no probability is known. Explain which conclusions are supported and what additional information would settle the choice.",
+      "required": [
+        "complex_reasoning"
+      ],
+      "forbidden": [
+        "coding"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-27",
+      "language": "en",
+      "objective": "Read the labels in this photograph of a fuse box and describe which labels are unreadable. Do not guess concealed text.",
+      "required": [
+        "multimodal"
+      ],
+      "forbidden": [
+        "coding"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-28",
+      "language": "en",
+      "objective": "Compare the two supplied dashboard screenshots and list visual differences in alignment and missing controls. Do not implement changes.",
+      "required": [
+        "multimodal",
+        "review_verification"
+      ],
+      "forbidden": [
+        "coding"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-29",
+      "language": "en",
+      "objective": "Explain in plain language why database indexes speed up some reads but make writes more expensive. I only want an explanation, not code or commands.",
+      "required": [
+        "factual_explanation"
+      ],
+      "forbidden": [
+        "coding",
+        "tool_driven"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-30",
+      "language": "en",
+      "objective": "What is the difference between a compiler and an interpreter? Answer for a beginner using a kitchen analogy and no sample program.",
+      "required": [
+        "factual_explanation"
+      ],
+      "forbidden": [
+        "coding",
+        "tool_driven"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-31",
+      "language": "en",
+      "objective": "My sourdough starter finally rose today! Give me a short cheerful reply; the word starter here means dough, not software.",
+      "required": [
+        "conversation"
+      ],
+      "forbidden": [
+        "coding",
+        "debugging"
+      ]
+    },
+    {
+      "id": "heldout-v1-en-32",
+      "language": "en",
+      "objective": "I had a rough day and keep replaying a disagreement. Can you listen and help me put my feelings into words without making an action plan?",
+      "required": [
+        "conversation"
+      ],
+      "forbidden": [
+        "coding",
+        "planning_delegation"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-01",
+      "language": "he",
+      "objective": "אחרי שמחליפים את אזור הזמן בהגדרות, מסך ההזמנות מציג את יום האתמול עד לרענון. מצא את מקור התקלה בקוד הקיים, תקן אותו והוסף בדיקת נסיגה.",
+      "required": [
+        "debugging",
+        "coding"
+      ],
+      "forbidden": [
+        "research_synthesis"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-02",
+      "language": "he",
+      "objective": "הפונקציה המצורפת מחזירה תמיד את הפריט הראשון גם כשמבקשים מפתח אחר. עקוב אחר הלולאה, הסבר את השגיאה והחזר גרסה מתוקנת.",
+      "required": [
+        "debugging",
+        "coding"
+      ],
+      "forbidden": [
+        "multimodal"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-03",
+      "language": "he",
+      "objective": "כתוב פונקציית Python שמקבלת רצף של טווחים סגורים ומחזירה את האיחוד שלהם בסדר עולה. כלול בדיקות לטווחים חופפים וריקים.",
+      "required": [
+        "coding"
+      ],
+      "forbidden": [
+        "conversation"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-04",
+      "language": "he",
+      "objective": "הוסף למוצר יצוא הזמנות ל־CSV: נתיב בשרת, הרשאת גישה, כפתור בממשק ובדיקות שמכסות את התהליך.",
+      "required": [
+        "coding",
+        "multi_file_implementation"
+      ],
+      "forbidden": [
+        "factual_explanation"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-05",
+      "language": "he",
+      "objective": "סקור את עץ החבילות ואת נקודות הכניסה במאגר הנוכחי. הסבר מי אחראי על אימות המשתמש ומי על אחסון הנתונים, והצע גבולות ברורים בין השכבות.",
+      "required": [
+        "repository_architecture"
+      ],
+      "forbidden": [
+        "multimodal"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-06",
+      "language": "he",
+      "objective": "אנחנו רוצים להפריד את מנוע החיפוש מתוך היישום הקיים. בדוק את התלויות בין המודולים במאגר והצע מבנה שימנע תלות מעגלית, בלי לבצע עדיין שינוי.",
+      "required": [
+        "repository_architecture"
+      ],
+      "forbidden": [
+        "multi_file_implementation"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-07",
+      "language": "he",
+      "objective": "החלף את מזהי הלקוחות ממספרים למחרוזות בכל שכבות הפרויקט: מסד הנתונים, הטיפוסים המשותפים, נקודות הקצה ומסכי הניהול. עדכן גם את הבדיקות.",
+      "required": [
+        "coding",
+        "multi_file_implementation"
+      ],
+      "forbidden": [
+        "conversation"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-08",
+      "language": "he",
+      "objective": "ממש שמירת טיוטה אוטומטית לעורך הקיים, כולל נתיב שמירה בשרת, חיווי בממשק ושחזור אחרי פתיחה מחדש. בצע את השינויים בקבצים המתאימים.",
+      "required": [
+        "coding",
+        "multi_file_implementation"
+      ],
+      "forbidden": [
+        "research_synthesis"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-09",
+      "language": "he",
+      "objective": "המר את הטקסט 'רוני הזמין 3 כיסאות ביום ראשון; דנה הזמינה שולחן ביום שני' למערך JSON עם שם, פריט, כמות ויום. אין צורך לכתוב תוכנה.",
+      "required": [
+        "structured_extraction"
+      ],
+      "forbidden": [
+        "coding",
+        "tool_driven"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-10",
+      "language": "he",
+      "objective": "מתוך הודעת ההזמנה המצורפת, חלץ לטבלה את מספר ההזמנה, סכום התשלום ותאריך האספקה. אם נתון אינו כתוב, השאר את התא ריק.",
+      "required": [
+        "structured_extraction",
+        "document_analysis"
+      ],
+      "forbidden": [
+        "coding"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-11",
+      "language": "he",
+      "objective": "קרא את שני המכתבים המצורפים וסכם היכן הם מסכימים לגבי לוח הזמנים והיכן הם סותרים זה את זה. אל תשלים פרטים מבחוץ.",
+      "required": [
+        "document_analysis"
+      ],
+      "forbidden": [
+        "coding",
+        "research_synthesis"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-12",
+      "language": "he",
+      "objective": "בדוק אם סיכום ישיבת הוועד המצורף מייחס לדוברים החלטות שלא נאמרו בתמליל המצורף. ציין לכל טענה את הקטע התומך בה או את היעדר התמיכה.",
+      "required": [
+        "document_analysis",
+        "review_verification"
+      ],
+      "forbidden": [
+        "coding"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-13",
+      "language": "he",
+      "objective": "מצא מחקרים על השפעת תאורה לילית על נדידת ציפורים, והשווה בין שיטות המדידה לפני שתנסח מסקנה משותפת.",
+      "required": [
+        "research_synthesis"
+      ],
+      "forbidden": [
+        "coding"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-14",
+      "language": "he",
+      "objective": "לפניך ארבעה תקצירים של מחקרים על לימוד מרווח. חבר סקירה שמשווה את אוכלוסיות המחקר ואת הממצאים, על בסיס התקצירים בלבד וללא גלישה.",
+      "required": [
+        "research_synthesis",
+        "document_analysis"
+      ],
+      "forbidden": [
+        "tool_driven",
+        "coding"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-15",
+      "language": "he",
+      "objective": "פתח את תיקיית התמונות המצורפת, צור בה תיקיות לפי שנת הצילום והעבר עותקים בהתאם למידע שבקבצים. השאר את המקור ללא שינוי.",
+      "required": [
+        "tool_driven"
+      ],
+      "forbidden": [
+        "coding"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-16",
+      "language": "he",
+      "objective": "הרץ את בדיקות היחידה הקיימות בפרויקט והחזר את שמות הבדיקות שנכשלו ואת הודעות השגיאה. אל תתקן דבר בשלב הזה.",
+      "required": [
+        "tool_driven",
+        "review_verification"
+      ],
+      "forbidden": [
+        "multi_file_implementation"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-17",
+      "language": "he",
+      "objective": "הכן תכנית עבודה ליום התרמה שבה צוות אחד אחראי למזון, אחר לרישום ואחר לציוד. פרט תלויות ואחריות, בלי לשלוח הודעות או לקבוע אירועים.",
+      "required": [
+        "planning_delegation"
+      ],
+      "forbidden": [
+        "coding",
+        "tool_driven"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-18",
+      "language": "he",
+      "objective": "חלק את בדיקת הגרסה בין שלושה סוקרים עצמאיים: נגישות, מסד נתונים ותיעוד. כתוב מה כל אחד צריך לבדוק ואילו ממצאים מחייבים תיאום. אין להריץ בדיקות כרגע.",
+      "required": [
+        "planning_delegation",
+        "review_verification"
+      ],
+      "forbidden": [
+        "tool_driven",
+        "coding"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-19",
+      "language": "he",
+      "objective": "עבור על שינוי הקוד המצורף ובדוק אם הוא שומר על ההתנהגות הקודמת כשאין תוצאות חיפוש. דווח על בעיות בלבד, ללא עריכת קבצים.",
+      "required": [
+        "review_verification"
+      ],
+      "forbidden": [
+        "multi_file_implementation"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-20",
+      "language": "he",
+      "objective": "בדוק את הטענה שבטבלה המצורפת כל אחוזי הקטגוריות מסתכמים למאה. חשב מחדש וציין באילו שורות יש טעות.",
+      "required": [
+        "review_verification",
+        "mathematics"
+      ],
+      "forbidden": [
+        "coding"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-21",
+      "language": "he",
+      "objective": "בחן את קוד העלאת הקבצים המצורף וחפש אפשרות לעקוף את תיקיית היעד דרך שם קובץ. הסבר את תנאי הניצול ואת ההגנה הדרושה.",
+      "required": [
+        "security_review",
+        "review_verification"
+      ],
+      "forbidden": [
+        "multimodal"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-22",
+      "language": "he",
+      "objective": "סקור את הגדרות העוגיות וה־CORS בקבצים המצורפים כדי לזהות חשיפה של הפעלה מאומתת לאתר זר. תן ממצאים ממוקדים, לא תיקון אוטומטי.",
+      "required": [
+        "security_review",
+        "review_verification"
+      ],
+      "forbidden": [
+        "multi_file_implementation"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-23",
+      "language": "he",
+      "objective": "בריכה מתמלאת מצינור אחד בתוך שש שעות ומתרוקנת ממשאבה בתוך תשע שעות. כשהשניים פועלים יחד, כמה זמן יידרש למלא בריכה ריקה? הראה את החישוב.",
+      "required": [
+        "mathematics"
+      ],
+      "forbidden": [
+        "coding",
+        "tool_driven"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-24",
+      "language": "he",
+      "objective": "חשב את ההסתברות לקבל בדיוק שני מספרים זוגיים בשלוש הטלות של קובייה הוגנת. הסבר מדוע הסדר משפיע על מספר האפשרויות.",
+      "required": [
+        "mathematics"
+      ],
+      "forbidden": [
+        "coding"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-25",
+      "language": "he",
+      "objective": "בארון שלוש מגירות: באחת רק גרביים, באחת רק צעיפים ובאחת שניהם. כל התוויות שגויות. מותר להוציא פריט אחד בלי להסתכל. מאיזו מגירה לבחור וכיצד לזהות את כולן?",
+      "required": [
+        "complex_reasoning"
+      ],
+      "forbidden": [
+        "coding",
+        "tool_driven"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-26",
+      "language": "he",
+      "objective": "חנות חייבת לבחור ספק אחד: הראשון זול אך לא מתחייב למועד, והשני יקר ומתחייב לשבוע. ידוע רק שהאירוע בעוד עשרה ימים, ולא ידועה הסתברות האיחור. נתח מה אפשר להכריע ומה נשאר תלוי בהעדפות הסיכון.",
+      "required": [
+        "complex_reasoning"
+      ],
+      "forbidden": [
+        "coding"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-27",
+      "language": "he",
+      "objective": "הקשב להקלטה המצורפת וכתוב את המשפטים שנאמרים בה. סמן קטעים שאי אפשר להבין במקום להמציא מילים.",
+      "required": [
+        "multimodal"
+      ],
+      "forbidden": [
+        "coding"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-28",
+      "language": "he",
+      "objective": "השווה את תצלום הקבלה לרשימת הפריטים שהוקלדה בצידה, וציין מחירים או כמויות שהועתקו אחרת.",
+      "required": [
+        "multimodal",
+        "review_verification"
+      ],
+      "forbidden": [
+        "coding"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-29",
+      "language": "he",
+      "objective": "מה ההבדל בין אימות זהות להרשאה במערכת מחשב? תן הסבר מילולי קצר עם דוגמה יומיומית, בלי לבדוק מערכת ובלי לכתוב קוד.",
+      "required": [
+        "factual_explanation"
+      ],
+      "forbidden": [
+        "coding",
+        "security_review",
+        "tool_driven"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-30",
+      "language": "he",
+      "objective": "הסבר למה שמרים גורמים לבצק לתפוח. המילה קוד לא רלוונטית כאן; זו שאלה על אפייה בלבד.",
+      "required": [
+        "factual_explanation"
+      ],
+      "forbidden": [
+        "coding",
+        "debugging"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-31",
+      "language": "he",
+      "objective": "היום הצלחתי לבנות מגדל מקוביות עם הבת שלי והוא לא נפל. הגב במשפט משמח, בלי הוראות בנייה ובלי תכנית עבודה.",
+      "required": [
+        "conversation"
+      ],
+      "forbidden": [
+        "coding",
+        "planning_delegation"
+      ]
+    },
+    {
+      "id": "heldout-v1-he-32",
+      "language": "he",
+      "objective": "הייתה לי שיחה מביכה עם חבר ואני רוצה לפרוק רגע. הגב באמפתיה ושאל איך הרגשתי, בלי לנסות לאבחן תקלה או לפתור פרויקט.",
+      "required": [
+        "conversation"
+      ],
+      "forbidden": [
+        "debugging",
+        "coding"
+      ]
+    }
+  ]
+}

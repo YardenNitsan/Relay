@@ -1,0 +1,429 @@
+{
+  "candidate": "bilingual-phrases-v2",
+  "casesHash": "41a3a78df23ecbe01d8eacdd76ffef5e64ce2049597179ab7ca9ae657656a480",
+  "metrics": {
+    "satisfied": 17,
+    "total": 32,
+    "missingRequired": 19,
+    "forbiddenLabels": 1,
+    "languages": {
+      "en": {
+        "satisfied": 9,
+        "total": 16
+      },
+      "he": {
+        "satisfied": 8,
+        "total": 16
+      }
+    },
+    "outcomes": [
+      {
+        "id": "d-en-01",
+        "language": "en",
+        "predicted": [
+          "conversation"
+        ],
+        "missing": [
+          "debugging",
+          "coding"
+        ],
+        "forbidden": [
+          "conversation"
+        ],
+        "satisfied": false,
+        "latencyMs": 26.476
+      },
+      {
+        "id": "d-he-01",
+        "language": "he",
+        "predicted": [
+          "debugging",
+          "coding"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "latencyMs": 17.464200000000005
+      },
+      {
+        "id": "d-en-02",
+        "language": "en",
+        "predicted": [
+          "conversation"
+        ],
+        "missing": [
+          "coding"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "latencyMs": 11.912499999999994
+      },
+      {
+        "id": "d-he-02",
+        "language": "he",
+        "predicted": [
+          "conversation"
+        ],
+        "missing": [
+          "coding"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "latencyMs": 7.520299999999992
+      },
+      {
+        "id": "d-en-03",
+        "language": "en",
+        "predicted": [
+          "repository_architecture"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "latencyMs": 1.8301000000000158
+      },
+      {
+        "id": "d-he-03",
+        "language": "he",
+        "predicted": [
+          "coding",
+          "review_verification"
+        ],
+        "missing": [
+          "repository_architecture"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "latencyMs": 0.16550000000000864
+      },
+      {
+        "id": "d-en-04",
+        "language": "en",
+        "predicted": [
+          "debugging",
+          "coding",
+          "tool_driven"
+        ],
+        "missing": [
+          "multi_file_implementation",
+          "review_verification"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "latencyMs": 0.04159999999998831
+      },
+      {
+        "id": "d-he-04",
+        "language": "he",
+        "predicted": [
+          "tool_driven",
+          "review_verification"
+        ],
+        "missing": [
+          "coding",
+          "multi_file_implementation"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "latencyMs": 1.9028999999999883
+      },
+      {
+        "id": "d-en-05",
+        "language": "en",
+        "predicted": [
+          "structured_extraction"
+        ],
+        "missing": [
+          "document_analysis"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "latencyMs": 0.07439999999999714
+      },
+      {
+        "id": "d-he-05",
+        "language": "he",
+        "predicted": [
+          "structured_extraction"
+        ],
+        "missing": [
+          "document_analysis"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "latencyMs": 0.18309999999999604
+      },
+      {
+        "id": "d-en-06",
+        "language": "en",
+        "predicted": [
+          "conversation"
+        ],
+        "missing": [
+          "document_analysis"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "latencyMs": 0.05819999999999936
+      },
+      {
+        "id": "d-he-06",
+        "language": "he",
+        "predicted": [
+          "conversation"
+        ],
+        "missing": [
+          "document_analysis"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "latencyMs": 0.12120000000001596
+      },
+      {
+        "id": "d-en-07",
+        "language": "en",
+        "predicted": [
+          "research_synthesis"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "latencyMs": 0.04369999999997276
+      },
+      {
+        "id": "d-he-07",
+        "language": "he",
+        "predicted": [
+          "research_synthesis"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "latencyMs": 0.13000000000002387
+      },
+      {
+        "id": "d-en-08",
+        "language": "en",
+        "predicted": [
+          "document_analysis",
+          "tool_driven"
+        ],
+        "missing": [
+          "review_verification"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "latencyMs": 0.033999999999991815
+      },
+      {
+        "id": "d-he-08",
+        "language": "he",
+        "predicted": [
+          "tool_driven",
+          "review_verification"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "latencyMs": 0.11510000000001241
+      },
+      {
+        "id": "d-en-09",
+        "language": "en",
+        "predicted": [
+          "planning_delegation"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "latencyMs": 0.04169999999999163
+      },
+      {
+        "id": "d-he-09",
+        "language": "he",
+        "predicted": [
+          "planning_delegation"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "latencyMs": 0.12590000000000146
+      },
+      {
+        "id": "d-en-10",
+        "language": "en",
+        "predicted": [
+          "research_synthesis",
+          "review_verification",
+          "security_review"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "latencyMs": 0.03829999999999245
+      },
+      {
+        "id": "d-he-10",
+        "language": "he",
+        "predicted": [
+          "coding",
+          "review_verification",
+          "security_review"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "latencyMs": 0.10529999999999973
+      },
+      {
+        "id": "d-en-11",
+        "language": "en",
+        "predicted": [
+          "mathematics",
+          "complex_reasoning"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "latencyMs": 0.03719999999998436
+      },
+      {
+        "id": "d-he-11",
+        "language": "he",
+        "predicted": [
+          "conversation"
+        ],
+        "missing": [
+          "mathematics",
+          "complex_reasoning"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "latencyMs": 0.11419999999998254
+      },
+      {
+        "id": "d-en-12",
+        "language": "en",
+        "predicted": [
+          "multimodal"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "latencyMs": 0.039500000000003865
+      },
+      {
+        "id": "d-he-12",
+        "language": "he",
+        "predicted": [
+          "document_analysis",
+          "multimodal"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "latencyMs": 0.11809999999999832
+      },
+      {
+        "id": "d-en-13",
+        "language": "en",
+        "predicted": [
+          "factual_explanation"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "latencyMs": 0.03910000000001901
+      },
+      {
+        "id": "d-he-13",
+        "language": "he",
+        "predicted": [
+          "conversation"
+        ],
+        "missing": [
+          "factual_explanation"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "latencyMs": 0.08740000000000236
+      },
+      {
+        "id": "d-en-14",
+        "language": "en",
+        "predicted": [
+          "conversation"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "latencyMs": 0.0478999999999985
+      },
+      {
+        "id": "d-he-14",
+        "language": "he",
+        "predicted": [
+          "conversation"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "latencyMs": 0.10209999999997876
+      },
+      {
+        "id": "d-en-15",
+        "language": "en",
+        "predicted": [
+          "factual_explanation"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "latencyMs": 0.03969999999998208
+      },
+      {
+        "id": "d-he-15",
+        "language": "he",
+        "predicted": [
+          "factual_explanation"
+        ],
+        "missing": [],
+        "forbidden": [],
+        "satisfied": true,
+        "latencyMs": 0.10550000000000637
+      },
+      {
+        "id": "d-en-16",
+        "language": "en",
+        "predicted": [
+          "coding",
+          "tool_driven",
+          "planning_delegation",
+          "review_verification"
+        ],
+        "missing": [
+          "multi_file_implementation"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "latencyMs": 0.03129999999998745
+      },
+      {
+        "id": "d-he-16",
+        "language": "he",
+        "predicted": [
+          "coding",
+          "tool_driven",
+          "planning_delegation",
+          "review_verification"
+        ],
+        "missing": [
+          "multi_file_implementation"
+        ],
+        "forbidden": [],
+        "satisfied": false,
+        "latencyMs": 0.11129999999999995
+      }
+    ]
+  }
+}

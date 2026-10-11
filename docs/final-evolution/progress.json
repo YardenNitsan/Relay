@@ -4,7 +4,7 @@
   "updatedAt": "2026-10-11",
   "baselineCommit": "9d563bc973dbcc177921ab918db88561c8280e48",
   "branch": "modernization/final-evolution",
-  "currentMilestone": "0.1.3: semantic router paused by owner; cloud catalog pagination verified; Agent Studio browser acceptance and remaining scroll-order fix underway",
+  "currentMilestone": "0.1.3: router paused; catalog pagination and Agent Studio locally verified; complete Memory/Scheduling redesign and remaining hosted project failure underway",
   "requirementIds": [
     "A01",
     "A02",
@@ -390,7 +390,7 @@
     "Owner has Android phone; current deployed0.1.2 mobile-data sign-in succeeded after tunnel restart. Modernization physical-device workflows remain untested.",
     "Second authorized Companion computer not established; cloud/email/calendar test accounts not configured (owner confirmed)."
   ],
-  "nextActionableWorkItem": "Finish Agent Studio browser/visual checks, fix hosted conversation scroll-order failure, then continue all non-router A-G requirements. Semantic routing is explicitly paused.",
+  "nextActionableWorkItem": "Commit reviewed Agent Studio/scroll fix, inspect hosted gates, finish Memory/Scheduling redesign, then continue all other non-router A-G requirements. Semantic routing is explicitly paused.",
   "remainingDependencies": [
     "A native recovery/restore/retention",
     "B full redesign",
@@ -427,11 +427,11 @@
     "npm.cmd run build; test:e2e -- document-attachments.spec.ts history.spec.ts evolution.spec.ts conversation-studio.spec.ts (22passed,2.9min; no activefixture)",
     "npm.cmd run check: 1356passed/one skip,128files,284.56s; npm.cmd run build passes with catalog and Agent Studio source; browser verification separate."
   ],
-  "latestProductCommit": "ff15737",
+  "latestProductCommit": "0d1765d",
   "latestHostedStatus": {
     "run": 38167591570,
     "host": "all three OS checks pass",
-    "browser": "Ubuntu shard1 122pass/1fail latefontfollow; Ubuntu/macOS shard2 pass; other final conclusions pending",
+    "browser": "Ubuntu shard1 122pass/1fail latefontfollow; Windows shard2 93pass/1fail project index; other four browser shards pass. New local scroll fix and Agent Studio build/30cases pass; hosted0d1765d38169198714 in progress.",
     "nativeRun": 38165687812,
     "native": "success on e619455; no newer native-affecting change in ff15737"
   },

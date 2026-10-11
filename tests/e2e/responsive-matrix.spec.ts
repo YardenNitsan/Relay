@@ -25,7 +25,8 @@ test('all provider connections, specialist details and Usage remain reachable ac
     await page.setViewportSize(viewport);
     await command(page, 'Choose an agent');
     const agents = page.getByRole('dialog', { name:'Agents',exact:true });
-    await expect(agents.getByRole('article')).toHaveCount(10);
+    await expect(agents.getByRole('button', {name: /^Inspect .+ agent$/})).toHaveCount(10);
+    await agents.getByRole('button', {name: 'Inspect Computer agent', exact: true}).click();
     const computer = agents.getByRole('article', { name:'Computer agent',exact:true });
     await computer.getByText(/Tools this role can request/).click();
     const select = computer.getByRole('button', { name:'Use Computer agent',exact:true });

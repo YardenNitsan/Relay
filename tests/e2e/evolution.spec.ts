@@ -62,12 +62,25 @@ test('short landscape conversations follow results and can return from older con
   await page.getByRole('button', { name: 'Send objective' }).click();
   await expect(page.getByText('Completed', { exact: true }).first()).toBeVisible();
   const scroller = page.locator('.conversation-scroll');
+  // The completed task receipt can arrive before its saved response body.
+  await expect(scroller.locator('.message-assistant .response-copy')).toBeVisible();
+  await expect(scroller.locator('.message-assistant .markdown p').first()).toBeVisible();
   await expect.poll(() => scroller.evaluate(el => el.scrollHeight - el.scrollTop - el.clientHeight)).toBeLessThan(5);
   // Simulate a late text-metric change without another stream/data event.
   // The response must stay followed when larger text changes its layout.
-  await page.locator('.message-assistant .markdown p').evaluateAll(paragraphs => {
-    for (const paragraph of paragraphs) { (paragraph as HTMLElement).style.fontSize = '32px'; (paragraph as HTMLElement).style.lineHeight = '2'; }
+  const layoutGap = await scroller.evaluate(el => {
+    const before = { height: el.scrollHeight, top: el.scrollTop, viewport: el.clientHeight };
+    for (const paragraph of el.querySelectorAll<HTMLElement>('.message-assistant .markdown p')) {
+      paragraph.style.fontSize = '32px'; paragraph.style.lineHeight = '2';
+    }
+    // A queued native scroll/anchoring event can arrive after text reflows but
+    // before ResizeObserver's deferred frame. Deliver that ordering explicitly.
+    const gap = el.scrollHeight - el.scrollTop - el.clientHeight;
+    el.dispatchEvent(new Event('scroll'));
+    return { gap, before, after: { height: el.scrollHeight, top: el.scrollTop, viewport: el.clientHeight },
+      paragraphs: el.querySelectorAll('.message-assistant .markdown p').length };
   });
+  expect(layoutGap.gap, JSON.stringify(layoutGap)).toBeGreaterThan(100);
   await expect.poll(() => scroller.evaluate(el => el.scrollHeight - el.scrollTop - el.clientHeight)).toBeLessThan(5);
   // A shorter visible viewport must keep the completed response in view too;
   // no new message or stream event arrives to trigger the old data-only effect.
@@ -79,7 +92,11 @@ test('short landscape conversations follow results and can return from older con
     for (const paragraph of paragraphs) (paragraph as HTMLElement).style.fontSize = '36px';
   });
   // A layout change while reading older content must not pull the reader away.
-  await expect.poll(() => scroller.evaluate(el => el.scrollTop)).toBe(0);
+  // Wait through the observer's deferred frame so this cannot pass before an
+  // accidental repin has had a chance to run.
+  expect(await scroller.evaluate(el => new Promise<number>(resolve => {
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve(el.scrollTop)));
+  }))).toBe(0);
   await page.getByRole('button', { name: 'Jump to latest' }).click();
   await expect.poll(() => scroller.evaluate(el => el.scrollHeight - el.scrollTop - el.clientHeight)).toBeLessThan(5);
 });

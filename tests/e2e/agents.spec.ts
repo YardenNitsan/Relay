@@ -6,11 +6,13 @@ test('specialists retain separate model and permission controls and persist on t
   await page.goto('/'); await pairBrowser(page);
   await page.getByRole('button', { name: 'Choose agent', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Agents', exact: true });
-  await expect(dialog.getByRole('article')).toHaveCount(10);
+  await expect(dialog.getByRole('button', {name: /^Inspect .+ agent$/})).toHaveCount(10);
+  await dialog.getByRole('button', {name: 'Inspect Email agent', exact: true}).click();
   const email = dialog.getByRole('article', { name: 'Email agent', exact: true });
   await expect(email).toContainText('Requires connection');
   await expect(email).toContainText(/mail|connect/i);
   await expect(email.getByRole('button', { name: 'Connect', exact: true })).toHaveCount(0);
+  await dialog.getByRole('button', {name: 'Inspect Learning agent', exact: true}).click();
   await dialog.getByRole('button', { name: 'Use Learning agent', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Choose agent', exact: true })).toContainText('Learning');
   await expect(page.getByRole('button', { name: 'Choose model', exact: true })).toContainText('Auto');
@@ -47,6 +49,7 @@ test('specialist capability details remain usable across phone, tablet and deskt
   await page.getByRole('button', { name: 'Open navigation', exact: true }).click();
   await page.getByRole('dialog', { name: 'Navigate Relay', exact: true }).getByRole('button', { name: 'Agents', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Agents', exact: true });
+  await dialog.getByRole('button', {name: 'Inspect Browser agent', exact: true}).click();
   const browser = dialog.getByRole('article', { name: 'Browser agent', exact: true });
   await browser.locator('summary').filter({ hasText: /Tools this role can request|Tools and setup/ }).click();
   await expect(browser).toContainText(/browser|public/i);
@@ -54,7 +57,11 @@ test('specialist capability details remain usable across phone, tablet and deskt
   expect((await new AxeBuilder({ page }).include('dialog').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([]);
   for (const viewport of [{ width: 320, height: 740 }, { width: 390, height: 844 }, { width: 768, height: 1024 }, { width: 1024, height: 768 }, { width: 1440, height: 1000 }, { width: 844, height: 390 }, { width: 390, height: 420 }]) {
     await page.setViewportSize(viewport);
+    const back = dialog.getByRole('button', {name: 'All specialists', exact: true});
+    if (await back.isVisible()) await back.click();
     await dialog.getByRole('button', { name: /General orchestration/ }).scrollIntoViewIfNeeded();
+    await dialog.getByRole('button', {name: 'Inspect Browser agent', exact: true}).click();
+    await browser.getByRole('button', {name: 'Use Browser agent', exact: true}).scrollIntoViewIfNeeded();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ path: `output/playwright/agents-${viewport.width}x${viewport.height}.png` });
   }
@@ -99,6 +106,7 @@ test('a read-only account activates Computer with private files without increasi
   await page.reload();
   await page.getByRole('button', { name: 'Choose agent', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Agents', exact: true });
+  await dialog.getByRole('button', {name: 'Inspect Computer agent', exact: true}).click();
   const computer = dialog.getByRole('article', { name: 'Computer agent', exact: true });
   await computer.getByRole('button', { name: 'Use Computer agent', exact: true }).click();
   await expect(dialog.getByRole('alert')).toContainText('Workspace preparation temporarily unavailable');

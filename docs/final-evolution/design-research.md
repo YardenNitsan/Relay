@@ -77,3 +77,15 @@ Read installed `frontend-design`, `accessibility`, `responsive-web-design` and `
 7. **Coherent stack.** Retain React/TypeScript/Vite, data contracts and local fonts. Split presentation responsibilities before adding libraries.
 
 Concept selection is in `design-system.md`; implementation and visual acceptance remain open.
+
+## 11 October implementation research refresh
+
+The owner reconfirmed a complete original redesign across all views, including dedicated phone workflows. Existing Studio screens are intermediate implementations, not final product acceptance. Research informs concrete behavior; it does not substitute for rendered inspection or real-device use.
+
+- [Apple layout guidance](https://developer.apple.com/design/human-interface-guidelines/layout), also inspected through its official documentation JSON: adapt to available width and height, preserve hierarchy and reading order, and allow content to grow with text settings. Relay uses focused compact panes and readable content rather than shrinking desktop controls. No Apple visual branding is copied.
+- [Fluent layout](https://fluent2.microsoft.design/layout): alignment and proximity communicate relationships. Relay's specialist, memory and schedule indexes use continuous lists with consistent spacing; separate actions and evidence receive intentional emphasis. Touch targets remain comfortable.
+- [Android adaptive layouts](https://developer.android.com/design/ui/mobile/guides/layout-and-content/adapt-layout): change composition with available space. List/detail views become separate destinations on narrow windows; search, selection and focus survive the transition.
+- [WCAG reflow](https://www.w3.org/WAI/WCAG22/Understanding/reflow.html), [ARIA modal pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/) and [React Aria Modal](https://react-aria.adobe.com/Modal): preserve readable flow, reachable controls, contained focus and meaningful focus restoration. Native dialog remains the tested primitive; dirty drafts and active mutations guard deliberate dismissal.
+- [Linear's redesign account](https://linear.app/now/how-we-redesigned-the-linear-ui) and [Figma UI3](https://www.figma.com/blog/behind-our-redesign-ui3/): judge hierarchy and control visibility in working contexts. Relay retains exact permissions, source evidence and errors while simplifying navigation. Neither product's appearance is a template for Relay.
+
+Applied review cases include 320px, short landscape, both themes, filtered-out selections during breakpoint changes, delayed operations and late response text reflow. Physical Android keyboard and remote modernization acceptance remain outstanding.

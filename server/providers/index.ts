@@ -4,6 +4,7 @@ import { SecretManager } from './secrets.js';
 import { anthropicStream, cloudBody, CLOUD_ENDPOINTS, geminiStream, openaiStream } from './cloud.js';
 import { compatibleStream, localBody, ollamaStream } from './local.js';
 import { cloudModels, lmstudioModels, ollamaModel } from './registry.js';
+import {cloudCatalog} from './catalog.js';
 import { array, object, ProviderError, requireSuccess, string, type JsonObject } from './transport.js';
 import { residentSnapshot, type ResidentModelsSnapshot } from './residency.js';
 import { deepseekStream } from './deepseek.js';
@@ -134,10 +135,10 @@ export class Providers implements ProviderGateway {
     else if (key) headers.authorization = `Bearer ${key}`;
     return headers;
   }
-  private async json(provider: ProviderId, path: string, body?: JsonObject): Promise<JsonObject> {
+  private async json(provider: ProviderId, path: string, body?: JsonObject, discoverySignal?:AbortSignal): Promise<JsonObject> {
     const revision=this.revisions.get(provider)??0;
     const controller=new AbortController();const active=this.active.get(provider)??new Set<AbortController>();active.add(controller);this.active.set(provider,active);
-    const signal=AbortSignal.any([controller.signal,AbortSignal.timeout(this.timeout)]);
+    const signal=AbortSignal.any([controller.signal,AbortSignal.timeout(this.timeout),...(discoverySignal?[discoverySignal]:[])]);
     try {
     const headers=await cancellable(this.headers(provider,!localIds.includes(provider)),signal);
     this.assertCurrent(provider,revision,signal);
@@ -171,12 +172,25 @@ export class Providers implements ProviderGateway {
             const model=ollamaModel(tag, metadata, array(object(running).models).map(object).find(item => item.name === name) ?? {});model.details.runtimeVersion=runtimeVersion;models.push(model);
           }
         } else if (provider === 'lmstudio') models = lmstudioModels(await this.json(provider, '/api/v1/models'));
-        else models = cloudModels(provider, await this.json(provider, '/models'),geminiTransport);
+        else {
+          const deadline=AbortSignal.timeout(this.timeout);
+          const catalog=await cloudCatalog(provider,async path=>{
+            this.assertCurrent(provider,revision,deadline);
+            return this.json(provider,path,undefined,deadline);
+          });
+          this.assertCurrent(provider,revision,deadline);
+          models=cloudModels(provider,catalog,geminiTransport);
+        }
         for (const model of models) { const measurement = this.measurements.get(model.id); if (measurement && measurement.digest === model.details.digest && measurement.runtimeVersion===model.details.runtimeVersion) { model.tokensPerSecond = measurement.generationTokensPerSecond; model.details.performance = { ...measurement }; } }
         if(revision!==(this.revisions.get(provider)??0))return;
         this.models.set(provider, models); Object.assign(status, { connected: true, reachable: true, authenticated: local ? null : true, state: 'ready' });
       } catch (error) {
         const http = error instanceof ProviderError ? error.status : undefined;
+        if(error instanceof ProviderError&&error.code.startsWith('catalog_')) {
+          Object.assign(status,{reachable:true,state:'error',error:error.message});
+          if(revision===(this.revisions.get(provider)??0))this.health.set(provider,status);
+          return;
+        }
         status.reachable = !!http; status.state = http === 401 || http === 403 ? 'unauthorized' : http === 429 ? 'rate_limited' : http ? 'error' : 'unreachable';
         status.error = http ? `Provider returned HTTP ${http}` : provider==='lmstudio'
           ? `LM Studio is not reachable at ${this.bases.lmstudio}, or returned an invalid catalog. On the host, open LM Studio → Developer → Start Server. Keep local-network access off, then refresh Models. Downloading a model alone does not start the API server.`

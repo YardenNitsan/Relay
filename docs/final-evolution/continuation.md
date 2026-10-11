@@ -4,6 +4,8 @@
 
 ## Workspace and operating boundaries
 
+**Latest owner instruction (2026-10-11): pause semantic router work and finish the other requirements.** Do not resume router research, benchmarks, configuration experiments or integration until the owner asks. Preserve the existing failures and sealed corpus. Horizon assets and an isolated vendor runtime are provisioned, but no Horizon inference ran. The production primary router remains unchanged and incomplete. Continue the rest of A-G; this is not a pause of the overall assignment.
+
 Use `C:/Users/yarde/Documents/codexp/Relay-modernization`, branch `modernization/final-evolution`. Read AGENTS.md, master-plan.md, requirements-matrix.md, progress.json and acceptance-0.1.3.md. Original baseline9d563bc; reviewed remote continuation739d003. Current working release0.1.3 because main already has0.1.2. No main merge, application deployment, new public endpoint, license or account-wide security change.
 
 Preserve original `../Relay` production host PID20332, LM Studio, Harmonia and GuitarScaleViewer. Browser fixtures own4319 and serve `dist`; join the runner before another fixture or build. Heavy model inference and checks run sequentially. Never weaken local admission reserves or container isolation. Do not print connector command lines or credentials.
@@ -20,6 +22,8 @@ Preserve original `../Relay` production host PID20332, LM Studio, Harmonia and G
 - Removed48 obsolete composer CSS selector rules after confirming no remaining callers, preserving mixed live selectors. Inspected actual updated phone/desktop/dark/tablet/policy captures; see design-review.md.
 
 ## Immediate sequence
+
+The owner pause above supersedes the router steps below. Immediate work: finish Agent Studio browser/visual verification, correct the remaining hosted conversation scroll-order failure, commit the verified cloud catalog pagination change, then continue source Git/publication, functional agents, Companion, integrations, memory, security/recovery and mobile acceptance.
 
 1. B04/D08/lock increment is committed and pushed as `e619455`. Hosted native38165687812 and all three host checks38165687826 pass; all three browser shard2 jobs pass; shard1 has five known failures on Windows/Ubuntu and four on macOS. A reviewed local fix plus build and22affectedbrowsercases now passes: project navigation helper, exact persisted-message counts, resize-aware conversation following (136px deterministic red before fix). Commit/push this frontend correction and inspect its new hosted gate. Preserve actual failure traces and test assertions. No application or gateway deployment occurred.
 2. Benchmark checkpoint`3d49eae` is pushed. D07 now includes real default-configuration CPU runs of GLiClass multilingual mini and published Vela2:15/64 and30/64 on consumed v2, versus baseline22/64. Both miss existing quality/latency gates; no promotion. Pinned downloads, all outcomes and independent source/result review are retained. See router-replacement.md.

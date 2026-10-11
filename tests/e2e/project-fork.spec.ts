@@ -1,16 +1,18 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { pairBrowser, projectIndex } from './helpers';
+import {openProjectChooser, pairBrowser, projectIndex } from './helpers';
 
 for (const [width,height] of [[320,740],[390,900],[844,390],[1440,900]]) for(const theme of ['light','dark']) test(`isolated Git branch creation and files at ${width} ${theme}`, async ({ page }) => {
   await page.setViewportSize({ width, height });
   await page.addInitScript(value => localStorage.setItem('relay:theme:v1', value),theme);
   await page.goto('/'); await pairBrowser(page);
-  await page.getByRole('button', { name: /^(Choose workspace|Workspace)$/ }).click();
+  await openProjectChooser(page);
   const dialog = await projectIndex(page);
   await dialog.getByRole('button', { name: 'New workspace', exact: true }).filter({ visible: true }).click();
   await dialog.getByRole('textbox', { name: 'Name', exact: true }).fill('Branch acceptance');
+  const creating=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/workspaces'&&response.request().method()==='POST');
   await dialog.getByRole('button', { name: 'Create workspace', exact: true }).click();
+  expect((await creating).ok()).toBe(true);
   await expect(dialog.getByRole('heading', { name: 'Branch acceptance', exact: true })).toBeVisible();
   const parentId=await page.evaluate(async()=>{
     const session=await(await fetch('/api/session')).json();const projects=await(await fetch('/api/workspaces')).json();
@@ -23,7 +25,9 @@ for (const [width,height] of [[320,740],[390,900],[844,390],[1440,900]]) for(con
   await dialog.getByRole('textbox', { name: 'Branch workspace name', exact: true }).fill('Independent repair');
   await page.screenshot({ path: `output/playwright/project-fork-${width}-${theme}.png`, animations: 'disabled' });
   expect((await new AxeBuilder({ page }).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze()).violations).toEqual([]);
+  const forking=page.waitForResponse(response=>new URL(response.url()).pathname===`/api/workspaces/${parentId}/fork`&&response.request().method()==='POST');
   await dialog.getByRole('button', { name: 'Create branch workspace', exact: true }).click();
+  expect((await forking).ok()).toBe(true);
   await expect(dialog.getByRole('heading', { name: 'Independent repair', exact: true })).toBeVisible();
   await expect(dialog.getByText(/Isolated Git branch/)).toBeVisible();
   await expect(dialog.getByRole('button', { name: 'Original source & review', exact: true })).toHaveCount(0);

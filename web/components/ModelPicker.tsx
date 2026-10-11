@@ -1,8 +1,8 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useId, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown, Cloud, Cpu, Workflow } from 'lucide-react';
 import type { ReasoningPreference } from '../../shared/model-controls';
-import type { ModelProfile, ProviderStatus, TaskOptions } from '../../shared/types';
+import type { AutoModelPolicy, ModelProfile, ProviderStatus, TaskOptions } from '../../shared/types';
 import { Loading, Modal } from './ui';
 import '../styles/model-picker.css';
 
@@ -25,19 +25,21 @@ export const reasoningLabels: Record<ReasoningPreference, string> = {
   auto: 'Auto', default: 'Provider default', none: 'Off', minimal: 'Minimal', low: 'Low',
   medium: 'Medium', high: 'High', xhigh: 'Extra high', max: 'Maximum',
 };
+export const autoPolicyLabels:Record<AutoModelPolicy,string>={balanced:'Balanced',quality:'Quality',economy:'Economy'};
 
 export default function ModelPicker(props: ModelPickerProps) {
+  const descriptionId=useId();
   const [ownOpen, setOwnOpen] = useState(false);
   const opened = props.open ?? ownOpen;
   const selected = props.models.find(model => model.id === props.options.modelId);
   const close = () => { setOwnOpen(false); props.onClose?.(); };
   return <>
-    {props.open === undefined && <button type="button" className="model-picker-trigger" aria-label="Choose model" aria-haspopup="dialog" aria-expanded={opened} onClick={() => setOwnOpen(true)}>
+    {props.open === undefined && <><span id={descriptionId} className="sr-only">Current selection: {selected?.name??(props.options.modelId?'Selected model unavailable':`Auto ${autoPolicyLabels[props.options.autoPolicy??'balanced']}`)}</span><button type="button" className="model-picker-trigger" aria-label="Choose model" aria-describedby={descriptionId} aria-haspopup="dialog" aria-expanded={opened} onClick={() => setOwnOpen(true)}>
       {selected ? selected.local ? <Cpu size={15} aria-hidden="true" /> : <Cloud size={15} aria-hidden="true" /> : <Workflow size={15} aria-hidden="true" />}
-      <span>{selected?.name ?? (props.options.modelId ? 'Selected model unavailable' : 'Auto')}</span>
+      <span>{selected?.name ?? (props.options.modelId ? 'Selected model unavailable' : props.options.autoPolicy&&props.options.autoPolicy!=='balanced'?`Auto · ${autoPolicyLabels[props.options.autoPolicy]}`:'Auto')}</span>
       {selected && <small>{reasoningLabels[props.options.reasoning ?? 'auto']}</small>}
       <ChevronDown size={13} aria-hidden="true" />
-    </button>}
+    </button></>}
     {opened && createPortal(<Modal title="Choose model" onClose={close} className="model-picker-panel"><Suspense fallback={<div className="model-picker-body"><Loading>Opening model choices...</Loading></div>}><PickerPanel {...props} onClose={close} /></Suspense></Modal>, document.body)}
   </>;
 }

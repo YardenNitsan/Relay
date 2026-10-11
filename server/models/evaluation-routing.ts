@@ -5,6 +5,7 @@ import {getHardware} from '../hardware/index.js';
 import {callBudget} from '../orchestration/token-policy.js';
 import {EvaluationStore} from './evaluation-store.js';
 import {compatibleEvaluationIdentity,localEvaluationIdentity,type EvaluationCategory} from './evaluation.js';
+import {qualityRankingScore} from './selection-policy.js';
 
 export interface RoutingEvidence {categories:Partial<Record<EvaluationCategory,{passed:number;total:number}>>;measuredAt:string;}
 export type EvaluationLookup=(model:ModelProfile,admission:Admission)=>Promise<RoutingEvidence|null>;
@@ -41,5 +42,5 @@ export function relevantEvaluation(evidence:RoutingEvidence|null,categories:stri
   if(!total)return null;
   // A symmetric four-case prior shrinks small samples toward unknown (zero).
   // This is a ranking contribution, never a probability of real task success.
-  return {score:(passed-total/2)/(total+4)*80,reason:`Versioned capability cases relevant to this task: ${passed}/${total} passed (${evidence.measuredAt}); exact artifact/runtime/hardware/context/output match. Small synthetic sample; uncertainty remains high.`};
+  return {score:qualityRankingScore(passed,total),reason:`Versioned capability cases relevant to this task: ${passed}/${total} passed (${evidence.measuredAt}); exact artifact/runtime/hardware/context/output match. Small synthetic sample; uncertainty remains high.`};
 }

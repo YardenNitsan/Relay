@@ -11,8 +11,10 @@ async function alive(pid:number){
   try{process.kill(pid,0);return true;}catch(error){if((error as NodeJS.ErrnoException).code==='ESRCH')return false;throw error;}
 }
 async function removeOwned(path:string,handle:FileHandle){
-  const [held,current]=await Promise.all([handle.stat(),lstat(path)]);
-  if(!current.isFile()||current.isSymbolicLink()||current.nlink!==1||current.dev!==held.dev||current.ino!==held.ino)throw new Error('Relay lock identity changed; refusing to remove it.');
+  // Windows file IDs can exceed Number.MAX_SAFE_INTEGER. Compare exact IDs,
+  // and reject an unlinked held handle even if a replacement reuses its ID.
+  const [held,current]=await Promise.all([handle.stat({bigint:true}),lstat(path,{bigint:true})]);
+  if(!held.isFile()||held.nlink!==1n||!current.isFile()||current.isSymbolicLink()||current.nlink!==1n||current.dev!==held.dev||current.ino!==held.ino)throw new Error('Relay lock identity changed; refusing to remove it.');
   await unlink(path);
 }
 

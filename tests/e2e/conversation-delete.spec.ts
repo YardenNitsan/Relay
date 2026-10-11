@@ -1,13 +1,13 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { pairBrowser } from './helpers';
+import {chooseExecutionOption, pairBrowser } from './helpers';
 
 test('phone history deletion requires confirmation and stays absent after reload and search', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
   await page.goto('/'); await pairBrowser(page);
   const title = 'Deletehistorysentinel completed conversation';
-  await page.getByRole('combobox', { name: 'Compute depth', exact: true }).selectOption('fast');
+  await chooseExecutionOption(page,'Compute depth','fast');
   await page.getByRole('textbox', { name: 'Objective' }).fill(title);
   await page.getByRole('button', { name: 'Send objective', exact: true }).click();
   await expect(page.getByText('Completed', { exact: true }).first()).toBeVisible({ timeout: 20_000 });
@@ -53,7 +53,7 @@ test('deleting unfinished work shows the host refusal and keeps the conversation
   await page.getByRole('button', { name: 'Create workspace', exact: true }).click();
   await expect(page.getByRole('region',{name:'Project inspector',exact:true}).getByRole('heading',{name:'Deletion approval workspace',exact:true})).toBeVisible();
   await page.keyboard.press('Escape');
-  await page.getByRole('combobox', { name: 'Computer access', exact: true }).selectOption('supervised');
+  await chooseExecutionOption(page,'Computer access','supervised');
   await page.getByRole('textbox', { name: 'Objective' }).fill('Create a file for unfinished history deletion');
   await page.getByRole('button', { name: 'Send objective', exact: true }).click();
   await page.getByRole('button', { name: 'Activity', exact: true }).click();

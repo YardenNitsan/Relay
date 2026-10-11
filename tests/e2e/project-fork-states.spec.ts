@@ -1,6 +1,6 @@
 import {expect,test} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import {pairBrowser,projectIndex} from './helpers';
+import {openProjectChooser,pairBrowser,projectIndex} from './helpers';
 
 for(const [width,height] of [[320,740],[844,390]])test(`branch creation preserves name and reports waiting/failure at ${width}`,async({page})=>{
   await page.setViewportSize({width,height});await page.goto('/');await pairBrowser(page);
@@ -11,7 +11,7 @@ for(const [width,height] of [[320,740],[844,390]])test(`branch creation preserve
   });
   // The fixture writes outside React Query; refresh the catalog before opening it.
   await page.reload();
-  await page.getByRole('button',{name:/^(Choose workspace|Workspace)$/}).click();const dialog=await projectIndex(page);
+  await openProjectChooser(page);const dialog=await projectIndex(page);
   await dialog.getByRole('button',{name:'Open Failure feedback fixture',exact:true}).click();
   await dialog.getByRole('button',{name:'Create isolated branch',exact:true}).click();
   await dialog.getByRole('textbox',{name:'Branch workspace name',exact:true}).fill('Retain this name');

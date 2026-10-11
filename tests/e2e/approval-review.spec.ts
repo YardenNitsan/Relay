@@ -1,10 +1,10 @@
 import {expect,test,type Page} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import {pairBrowser} from './helpers';
+import {chooseExecutionOption,pairBrowser} from './helpers';
 
 async function requestApproval(page:Page) {
   await page.goto('/');await pairBrowser(page);
-  await page.getByLabel('Computer access').selectOption('supervised');
+  await chooseExecutionOption(page,'Computer access','supervised');
   await page.getByRole('textbox',{name:'Objective'}).fill('Create a notes file and verify the content');
   await page.getByRole('button',{name:'Send objective',exact:true}).click();
   await page.getByRole('button',{name:'Activity',exact:true}).click();

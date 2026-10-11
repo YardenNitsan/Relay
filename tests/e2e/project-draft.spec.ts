@@ -1,6 +1,6 @@
 import {expect,test} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import {pairBrowser,projectIndex} from './helpers';
+import {openProjectChooser,pairBrowser,projectIndex} from './helpers';
 
 for(const dismissal of ['escape','close','backdrop'] as const)test(`project file draft survives outer ${dismissal} until explicit discard`,async({page})=>{
   await page.setViewportSize({width:dismissal==='escape'?320:1440,height:900});
@@ -15,7 +15,7 @@ for(const dismissal of ['escape','close','backdrop'] as const)test(`project file
     const workspace=await created.json() as {id:string};
     const file=await fetch(`/api/workspaces/${workspace.id}/files`,{method:'POST',headers,body:JSON.stringify({path:'draft.txt',content:'Saved source'})});if(!file.ok)throw new Error('File fixture failed');
   },name);
-  await page.reload();await page.getByRole('button',{name:/^(Choose workspace|Workspace)$/}).click();
+  await page.reload();await openProjectChooser(page);
   const projects=page.getByRole('dialog',{name:'Workspaces',exact:true});
   await projectIndex(page);
   await projects.getByRole('button',{name:'Open '+name,exact:true}).click();

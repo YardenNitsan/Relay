@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { pairBrowser } from './helpers';
+import {toggleExecutionOptions,chooseExecutionOption,openExecutionOptions,closeExecutionOptions, pairBrowser } from './helpers';
 
 test('specialists retain separate model and permission controls and persist on the objective', async ({ page }) => {
   await page.goto('/'); await pairBrowser(page);
@@ -14,13 +14,13 @@ test('specialists retain separate model and permission controls and persist on t
   await dialog.getByRole('button', { name: 'Use Learning agent', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Choose agent', exact: true })).toContainText('Learning');
   await expect(page.getByRole('button', { name: 'Choose model', exact: true })).toContainText('Auto');
+  await openExecutionOptions(page);
   await expect(page.getByRole('combobox', { name: 'Computer access', exact: true })).toHaveValue('read_only');
-  await page.getByRole('button', { name: 'Execution options', exact: true }).click();
   await expect(page.getByRole('combobox', { name: 'Token efficiency', exact: true })).toHaveValue('efficient');
   await page.getByRole('combobox', { name: 'Token efficiency', exact: true }).selectOption('standard');
   await page.getByRole('spinbutton', { name: 'Maximum output tokens per model call', exact: true }).fill('1024');
-  await page.getByRole('button', { name: 'Execution options', exact: true }).click();
-  await page.getByRole('combobox', { name: 'Compute depth', exact: true }).selectOption('fast');
+  await toggleExecutionOptions(page);
+  await chooseExecutionOption(page,'Compute depth','fast');
   await page.getByRole('textbox', { name: 'Your objective', exact: true }).fill('Explain recursion with a short example.');
   const response = page.waitForResponse(value => value.url().endsWith('/api/conversations/start') && value.request().method() === 'POST');
   await page.getByRole('button', { name: 'Send objective', exact: true }).click();
@@ -108,10 +108,12 @@ test('a read-only account activates Computer with private files without increasi
   await expect(dialog).toHaveCount(0);
   expect(creationBody).toEqual({ name: 'Computer files', personal: true });
   await expect(page.getByRole('button', { name: 'Choose agent', exact: true })).toContainText('Computer');
+  await openExecutionOptions(page);
   await expect(page.getByRole('combobox', { name: 'Computer access', exact: true })).toHaveValue('read_only');
   await expect(page.getByRole('combobox', { name: 'Computer access', exact: true }).locator('option[value="unrestricted"]')).toHaveAttribute('disabled', '');
+  await closeExecutionOptions(page);
   await expect(page.getByRole('button', { name: 'Computer files Your files', exact: true })).toBeVisible();
-  await page.getByRole('combobox', { name: 'Compute depth', exact: true }).selectOption('fast');
+  await chooseExecutionOption(page,'Compute depth','fast');
   await page.getByRole('textbox', { name: 'Your objective', exact: true }).fill('Explain what my selected file scope allows.');
   const response = page.waitForResponse(value => value.url().endsWith('/api/conversations/start') && value.request().method() === 'POST');
   await page.getByRole('button', { name: 'Send objective', exact: true }).click();

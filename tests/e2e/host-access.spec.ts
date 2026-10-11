@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { pairBrowser } from './helpers';
+import {chooseExecutionOption,openExecutionOptions,closeExecutionOptions, pairBrowser } from './helpers';
 
 test('local owner explicitly acknowledges real host file access before sending an objective', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 740 });
@@ -8,8 +8,9 @@ test('local owner explicitly acknowledges real host file access before sending a
   await page.goto('/'); await pairBrowser(page);
   const access = page.getByRole('combobox', { name: 'Computer access', exact: true });
   const send = page.getByRole('button', { name: 'Send objective', exact: true });
-  await page.getByRole('combobox', { name: 'Compute depth', exact: true }).selectOption('fast');
+  await chooseExecutionOption(page,'Compute depth','fast');
   await page.getByRole('textbox', { name: 'Your objective', exact: true }).fill('Explain host file permissions without using any tools.');
+  await openExecutionOptions(page);
   await access.selectOption('supervised');
   await expect(access).toHaveValue('supervised');
   await access.selectOption('unrestricted');
@@ -38,6 +39,7 @@ test('local owner explicitly acknowledges real host file access before sending a
   await expect(confirmation).toHaveCount(0);
   await expect(page.locator('.scope-note')).toContainText('real files');
   await expect(page.locator('.scope-note')).not.toContainText('Choose a workspace to enable file tools.');
+  await closeExecutionOptions(page);
   await send.click();
   await expect(page.getByText('Completed', { exact: true }).first()).toBeVisible({ timeout: 20_000 });
   const id = new URL(page.url()).searchParams.get('conversation');
@@ -45,7 +47,7 @@ test('local owner explicitly acknowledges real host file access before sending a
   expect(detail.tasks).toHaveLength(1);
   expect(detail.tasks[0].options).toMatchObject({ access: 'unrestricted', hostAccessConfirmed: true, workspaceId: null });
 
-  await access.selectOption('read_only');
+  await chooseExecutionOption(page,'Computer access','read_only');
   await page.getByRole('textbox', { name: 'Your objective', exact: true }).fill('Explain why file permissions remain separate from model selection.');
   await send.click();
   await expect(page.getByText('Completed', { exact: true })).toHaveCount(2, { timeout: 20_000 });
@@ -64,6 +66,7 @@ test('remote account presentation cannot enable the owner host file mode', async
     await route.fulfill({ response, json: { ...session, remote: true, user: { ...session.user, role: 'chat', permissions: { ...session.user.permissions, maxAccess: 'read_only' } } } });
   });
   await page.reload();
+  await openExecutionOptions(page);
   const access = page.getByRole('combobox', { name: 'Computer access', exact: true });
   await expect(access).toHaveValue('read_only');
   await expect(access.locator('option[value="unrestricted"]')).toHaveJSProperty('disabled', true);

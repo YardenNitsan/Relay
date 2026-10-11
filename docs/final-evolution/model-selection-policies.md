@@ -1,0 +1,13 @@
+# D08 individual-model selection policies
+
+Preserve account-scoped discovery, exact manual IDs, privacy consent, financial limits and deterministic admission. The current gateway already discovers individual models; replacing it with another provider gateway would not solve intent or quality selection.
+
+Add an optional `autoPolicy` (`balanced`, `quality`, `economy`) to task options. Omitted values retain current Balanced behavior, including historical tasks. The existing Local Only sharing restriction and required Manual model are stronger constraints; changing Auto policy never changes either authorization or spending limits. Expose the three preferences inside the existing Auto picker, alongside separate sharing consent.
+
+Balanced preserves existing scoring. Quality prioritizes compatible measured task evidence; unmeasured quality stays unknown and uses disclosed conservative ordering. Economy minimizes known conservative cloud-call estimates among candidates within the documented measured-quality band of the strongest eligible candidate. It excludes unknown cloud prices instead of presenting them as free. Local cost means no cloud model charge, not zero electricity or hardware cost. Legacy preferred/manual IDs preserve their existing semantics.
+
+All models pass availability, account, capabilities, context, reasoning, pricing/budget and hardware admission before preference ranking. Preferences cannot load a model or authorize fallback. Record selected policy and whether relevant quality evidence exists. The existing tiny probes remain explicitly weak evidence, never a claim of broad coding competence. Reviewer diversification must not override the chosen preference.
+
+Legacy two-case probes match model artifact/runtime only, unlike versioned evaluations that also require matching hardware/context/output/offload configuration. They remain weak ranking hints, with the same four-case shrinkage prior for new policies; their limitations must stay visible in routing reasons. Balanced retains its historical contribution. The ten-point Economy band is a deterministic preference threshold, not a validated task-success probability or a guarantee of equal competence.
+
+Acceptance: Quality versus faster/cheaper weak evidence; Economy cost among comparable evidence; unknown pricing; no compatible evidence; Local Only despite cloud quality; manual unavailable fails; hardware veto; schema persistence and picker controls preserving sharing/budgets. These deterministic policy checks are separate from the still-failed pretrained-primary gate and live cloud account acceptance.

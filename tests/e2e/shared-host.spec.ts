@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { pairBrowser } from './helpers';
+import {toggleExecutionOptions, pairBrowser } from './helpers';
 
 for (const [providerId, providerName] of [['openai', 'OpenAI'], ['xai', 'Grok (xAI)'], ['deepseek', 'DeepSeek']] as const) {
 test(`shared-host user manages only their permitted ${providerName} connection on a narrow phone`, async ({ page }) => {
@@ -72,7 +72,7 @@ test(`shared-host user manages only their permitted ${providerName} connection o
   }
   await page.keyboard.press('Escape');
   await page.getByRole('textbox', { name: 'Your objective', exact: true }).fill('A draft on a short phone viewport');
-  await page.getByRole('button', { name: 'Execution options', exact: true }).click();
+  await toggleExecutionOptions(page);
   await page.getByRole('combobox', { name: 'Cloud sharing', exact: true }).selectOption('allow');
   await page.getByRole('combobox', { name: 'Computer access', exact: true }).scrollIntoViewIfNeeded();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

@@ -1,4 +1,4 @@
-.app.studio-frame { display: grid; grid-template-columns: 176px minmax(0, 1fr); background: var(--color-canvas); }
+.app.studio-frame { display: grid; grid-template-columns: 176px minmax(0, 1fr); background: var(--color-canvas); height:var(--relay-viewport-height,100dvh); transform:translateY(var(--relay-viewport-offset,0px)); }
 .studio-document { display: flex; flex-direction: column; min-width: 0; min-height: 0; background: var(--color-surface); }
 .studio-navigation { display: flex; flex-direction: column; gap: var(--space-6); min-height: 0; overflow-y: auto; padding: var(--space-4) var(--space-3); border-inline-end: 1px solid var(--color-border); }
 .studio-brand { margin: 0 var(--space-2) var(--space-2); min-height: var(--target-touch); min-width: var(--target-touch); }

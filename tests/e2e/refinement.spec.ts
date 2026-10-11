@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { createHash } from 'node:crypto';
-import { issuePairingToken, pairBrowser } from './helpers';
+import {openExecutionOptions,closeExecutionOptions, issuePairingToken, pairBrowser } from './helpers';
 
 test('phone navigation exposes real destinations and every composer control remains reachable', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 740 });
@@ -16,13 +16,18 @@ test('phone navigation exposes real destinations and every composer control rema
   await expect(page.getByRole('dialog', { name: 'Models & connections' })).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(navigation).toBeFocused();
-  await expect(page.getByLabel('Compute depth')).toBeVisible();
-  await page.getByLabel('Compute depth').selectOption('deep');
-  await expect(page.getByLabel('Compute depth')).toHaveValue('deep');
-  for (const target of [navigation, page.getByRole('button', { name: 'Stop all', exact: true }), page.getByRole('button', { name: 'Attach files' }), page.getByRole('button', { name: 'Execution options' }), page.getByRole('button', { name: 'Send objective' }), page.getByLabel('Computer access'), page.getByRole('button', { name: 'Choose workspace', exact: true })]) {
+  for (const target of [navigation, page.getByRole('button', { name: 'Stop all', exact: true }), page.getByRole('button', { name: 'Attach files' }), page.getByRole('button', { name: 'Execution options' }), page.getByRole('button', { name: 'Send objective' })]) {
     const box = await target.boundingBox();
     expect(box?.height).toBeGreaterThanOrEqual(44);
   }
+  await openExecutionOptions(page);
+  await expect(page.getByLabel('Compute depth')).toBeVisible();
+  await page.getByLabel('Compute depth').selectOption('deep');
+  await expect(page.getByLabel('Compute depth')).toHaveValue('deep');
+  for(const target of [page.getByLabel('Computer access'),page.getByRole('button',{name:'Choose workspace',exact:true})]){
+    await target.scrollIntoViewIfNeeded();await expect(target).toBeVisible();expect((await target.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  }
+  await closeExecutionOptions(page);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await expect(page.getByRole('textbox', { name: 'Objective' })).toBeVisible();
   await page.screenshot({ path: 'output/playwright/refinement-phone-light.png' });

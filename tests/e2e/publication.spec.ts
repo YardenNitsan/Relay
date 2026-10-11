@@ -2,7 +2,7 @@ import {expect,test} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {mkdtemp,writeFile,readFile,rm,lstat} from 'node:fs/promises';
 import {join,resolve,dirname,basename} from 'node:path';
-import {pairBrowser} from './helpers';
+import {openProjectChooser,pairBrowser} from './helpers';
 
 // Real native source files in a newly created disposable sibling directory.
 // Relay's installation protection remains active; no actual repository is used.
@@ -13,7 +13,7 @@ for(const width of [320,390,1440])test(`reviewed original publication and rollba
   await writeFile(join(source,'example.ts'),original);await writeFile(join(source,'owner-notes.txt'),'Unrelated owner draft');
   try{
     await page.setViewportSize({width,height:900});await page.goto('/');await pairBrowser(page);
-    await page.getByRole('button',{name:/^(Choose workspace|Workspace)$/}).click();
+    await openProjectChooser(page);
     const dialog=page.getByRole('dialog',{name:'Workspaces',exact:true});
     await dialog.getByRole('button',{name:'New workspace',exact:true}).click();
     await dialog.getByRole('textbox',{name:'Name',exact:true}).fill(`Publication ${width}`);
@@ -78,7 +78,7 @@ for(const width of [320,1440])test(`presence-aware publication reviews and rolls
   try{
     await page.setViewportSize({width,height:900});await page.goto('/');await pairBrowser(page);
     if(width===1440)await page.getByRole('button',{name:'Switch to dark theme',exact:true}).click();
-    await page.getByRole('button',{name:/^(Choose workspace|Workspace)$/}).click();
+    await openProjectChooser(page);
     const dialog=page.getByRole('dialog',{name:'Workspaces',exact:true});
     await dialog.getByRole('button',{name:'New workspace',exact:true}).click();
     await dialog.getByRole('textbox',{name:'Name',exact:true}).fill(`Presence ${width}`);await dialog.getByLabel('Source directory',{exact:false}).fill(source);

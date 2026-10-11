@@ -1,13 +1,13 @@
 import {expect,test} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import {openCommands,pairBrowser} from './helpers';
+import {toggleExecutionOptions,openCommands,pairBrowser} from './helpers';
 
 // Consent controls only: connection metadata is mocked; no mailbox is queried.
 for(const width of [320,390,1440])test(`Workspace task consent is explicit and preserves local-only boundaries at ${width}px`,async({page})=>{
  await page.setViewportSize({width,height:844});await page.goto('/');await pairBrowser(page);
  let privateReads=0,submitted:Record<string,unknown>|undefined;
  await page.route('**/api/integrations/google-workspace**',route=>{if(route.request().method()!=='GET')privateReads++;return route.fulfill({json:{configured:true,connected:true,readOnly:true,storage:'os-keyring',scopes:[]}});});
- await page.getByRole('button',{name:'Execution options'}).click();
+ await toggleExecutionOptions(page);
  const mail=page.getByRole('checkbox',{name:'Allow Gmail search and message reads'}),calendar=page.getByRole('checkbox',{name:'Allow primary-calendar events and availability reads'});
  await expect(mail).toBeEnabled();await expect(mail).not.toBeChecked();await expect(calendar).not.toBeChecked();
  await page.getByRole('combobox',{name:'Cloud sharing',exact:true}).selectOption('allow');await expect(mail).toBeDisabled();await expect(calendar).toBeDisabled();await expect(page.getByRole('combobox',{name:'Cloud sharing',exact:true})).toHaveValue('allow');
@@ -16,7 +16,7 @@ for(const width of [320,390,1440])test(`Workspace task consent is explicit and p
  await page.getByRole('combobox',{name:'Public web requests',exact:true}).selectOption('ask');await expect(calendar).toBeDisabled();await expect(mail).toBeChecked();await page.getByRole('combobox',{name:'Public web requests',exact:true}).selectOption('deny');await calendar.check();
  expect(privateReads).toBe(0);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.route('**/api/conversations/start',route=>{submitted=route.request().postDataJSON();return route.fulfill({status:409,json:{error:'Fixture intercepted task; no inference started.'}});});
- await page.getByRole('button',{name:'Execution options'}).click();await page.getByRole('textbox',{name:'Objective'}).fill('Read my selected account items.');await page.getByRole('button',{name:'Send objective'}).click();
+ await toggleExecutionOptions(page);await page.getByRole('textbox',{name:'Objective'}).fill('Read my selected account items.');await page.getByRole('button',{name:'Send objective'}).click();
  await expect.poll(()=>submitted).toBeTruthy();expect(submitted?.options).toMatchObject({googleWorkspace:{mail:true,calendar:true},cloudPolicy:'local_only',access:'read_only',budget:{localOnly:true},network:{mode:'deny'}});expect(privateReads).toBe(0);
 });
 

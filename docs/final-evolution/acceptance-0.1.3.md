@@ -22,7 +22,7 @@ Inspected actual browser captures: [before, desktop](evidence/models-before-1440
 | 4 | Hebrew semantic routing | Same gate; language results retained separately. |
 | 5 | Resource-pressure selection | Existing deterministic refusal/lease tests and actual oversized-model refusals; new-router integration pending. |
 | 6 | Router failure fallback | Existing provider fallback; pretrained-worker failure gate pending. |
-| 7 | Routing policies and costs | Privacy/manual/budget guards exist; explicit Balanced/Quality/Economy incomplete. |
+| 7 | Routing policies and costs | Balanced/Quality/Economy implemented with31focused ranking/evaluation cases, API persistence and picker fixture acceptance. No live cloud-quality superiority established; primary pretrained replacement still pending. |
 | 8 | Architect repository analysis | Managed-source tools exist; independently graded live acceptance pending. |
 | 9 | Coder implementation/tests | Historical real local success followed by identical failed repeat; reliability gate remains open. |
 | 10 | Debugger repair | Same bounded two-fault corpus; diverse repeated tasks pending. |
@@ -40,7 +40,7 @@ Inspected actual browser captures: [before, desktop](evidence/models-before-1440
 | 22 | Companion | Not implemented; no second-device acceptance. |
 | 23 | Project memory | Scoped history/retrieval primitives; full incremental project intelligence incomplete. |
 | 24 | Scheduled task | Durable read-only scheduler tests; live configured notification acceptance pending. |
-| 25 | Phone conversation | Chromium viewport fixtures; physical Android/keyboard acceptance outstanding. |
+| 25 | Phone conversation | Touch320/360/390/412/768, separate authors/Hebrew, draft and simulated visible-viewport checks pass. Physical modernization Android/keyboard acceptance outstanding. |
 | 26 | Phone approval | Chromium approval fixtures; physical-device acceptance outstanding. |
 | 27 | Phone files/diffs | Actual browser project/publication fixtures; physical-device acceptance outstanding. |
 | 28 | Mobile-data remote connection | Owner physically confirmed mobile-data sign-in to deployed0.1.2 after restarting stopped existing tunnel. Modernization task/streaming/network-interruption checks remain open. |

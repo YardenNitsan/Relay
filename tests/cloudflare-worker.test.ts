@@ -29,6 +29,22 @@ function fixture(upstream = new Response('host-response', { headers: { 'Content-
 }
 
 describe('fixed Cloudflare VPC browser gateway', () => {
+  it('gives authenticated document navigation a private, actionable offline page while API failures stay JSON',async()=>{
+    const f=fixture();f.env.RELAY_HOST.fetch=async()=>{throw new Error('private endpoint sentinel');};
+    const token=await sign();
+    for(const path of ['/','/index.html']){
+      const response=await f.worker.fetch(incoming(token,path,{headers:{accept:'text/html'}}),f.env);
+      expect(response.status).toBe(502);expect(response.headers.get('content-type')).toContain('text/html');
+      expect(response.headers.get('cache-control')).toBe('no-store');
+      const html=await response.text();expect(html).toContain('Your Relay host is unavailable');expect(html).toContain('Try again');
+      expect(html).not.toContain('private endpoint');expect(html).not.toContain(token);expect(html).not.toContain('<script');
+      expect(response.headers.get('content-security-policy')).toContain("default-src 'none'");
+    }
+    const api=await f.worker.fetch(incoming(token,'/api/session',{headers:{accept:'text/html'}}),f.env);
+    expect(api.headers.get('content-type')).toContain('application/json');expect(api.status).toBe(502);
+    const anonymous=await f.worker.fetch(incoming(undefined,'/',{headers:{accept:'text/html'}}),f.env);
+    expect(anonymous.status).toBe(401);expect(anonymous.headers.get('content-type')).toContain('application/json');
+  });
   it('verifies browser identity and forwards the original assertion only to the fixed binding', async () => {
     const token = await sign(), f = fixture();
     const response = await f.worker.fetch(incoming(token, '/api/events?after=42', { headers: { origin, cookie: '__Host-relay_remote=opaque', 'x-relay-csrf': 'csrf' } }), f.env);

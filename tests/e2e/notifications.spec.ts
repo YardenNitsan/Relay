@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { openCommands, pairBrowser } from './helpers';
+import {chooseExecutionOption, openCommands, pairBrowser } from './helpers';
 
 test('completion alert is generic, opt-in for system delivery and not replayed after reload', async ({ page }) => {
   // Browser notification fixture; this does not claim native OS delivery.
@@ -24,7 +24,7 @@ test('completion alert is generic, opt-in for system delivery and not replayed a
   await dialog.getByRole('button', { name: 'Enable system notifications', exact: true }).click();
   await expect(dialog.getByRole('button', { name: 'Turn off system notifications', exact: true })).toBeVisible();
   await page.keyboard.press('Escape');
-  await page.getByRole('combobox', { name: 'Compute depth', exact: true }).selectOption('fast');
+  await chooseExecutionOption(page,'Compute depth','fast');
   await page.getByRole('textbox', { name: 'Your objective', exact: true }).fill('Private notification test content.');
   await page.getByRole('button', { name: 'Send objective', exact: true }).click();
   await expect(page.getByRole('status', { name: 'Task completion notification', exact: true })).toContainText('Task complete. Your result is ready.');

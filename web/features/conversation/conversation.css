@@ -1,0 +1,39 @@
+.composer-studio { border-radius: var(--radius-panel, 12px); box-shadow: 0 4px 20px #17233808; }
+.composer-context { display: flex; align-items: center; gap: 8px; padding: 4px 10px 0; min-width: 0; }
+.composer-context > * { min-width: 0; max-width: 50%; }
+.composer-context .composer-agent { min-height: 44px; font-size: 13px; color: var(--color-text-secondary); }
+.composer-context .model-picker-trigger { margin-inline-start: auto; min-height: 44px; max-width: 65%; flex: 0 1 auto; }
+.composer-studio textarea { min-height: 68px; max-height: min(160px,calc(var(--relay-viewport-height,100dvh) * .24)); padding: 8px 16px; font-size: 16px; line-height: 1.5; }
+.composer-actionbar { display: flex; align-items: center; gap: 8px; padding: 4px 10px 10px; }
+.composer-actionbar > .icon-button { width: 44px; height: 44px; }
+.composer-actionbar > .send-button { margin-inline-start: auto; width: 44px; height: 44px; }
+.composer-policy { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 4px 8px; border-radius: 6px; text-align: start; color: var(--color-text-secondary); }
+.composer-policy:hover { background: var(--color-surface-subtle); }
+.composer-policy > span { display: grid; font-size: 12px; line-height: 1.4; }
+.composer-policy strong { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+.composer-settings { width: min(680px,calc(100vw - 32px)); position:fixed; inset:auto; top:calc(var(--relay-viewport-offset,0px) + var(--relay-viewport-height,100dvh) / 2); left:50%; transform:translate(-50%,-50%); margin:0; max-height:calc(var(--relay-viewport-height,100dvh) - 32px); animation:none; }
+.composer-settings-body { display: grid; gap: 24px; }
+.composer-settings .execution-options { border: 0; padding: 0; margin: 0; max-height: none; overflow: visible; }
+.composer-settings-primary { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+.composer-settings-primary label { display: grid; gap: 6px; }
+.composer-settings select, .composer-settings input { min-height: 44px; }
+.composer-settings .composer-footer { display: flex; padding: 0; margin: 0; }
+.composer-settings .scope-details { margin: 0; }
+.composer-settings .workspace-button { min-height: 44px; }
+.composer-studio .workspace-tag { margin: 0 12px; padding: 0; }
+.composer-studio .workspace-tag button { max-width: 100%; min-height: 44px; }
+.message .user-message, .markdown { text-align: start; }
+.markdown pre, .markdown code { direction: ltr; unicode-bidi: isolate; text-align: left; }
+.message-assistant .task-receipt { margin-top: 0; margin-bottom: 12px; }
+.message-assistant .stream-response { padding-top: 6px; }
+@media(max-width:700px){
+  .composer-area { padding: 4px 12px max(8px,env(safe-area-inset-bottom)); }
+  .composer-settings { width: calc(100vw - 16px); max-height: calc(var(--relay-viewport-height,100dvh) - 16px); }
+  .composer-settings .modal-content { padding: 20px 16px; }
+  .composer-settings-primary { grid-template-columns: minmax(0,1fr); }
+}
+@media(max-height:540px){
+  .composer-context { padding-top: 0; }
+  .composer-studio textarea { min-height: 44px; max-height: 80px; padding-block: 4px; }
+  .composer-actionbar { padding-bottom: 4px; }
+}

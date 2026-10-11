@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { pairBrowser } from './helpers';
+import {chooseExecutionOption, pairBrowser } from './helpers';
 
 test('a rejected first objective retries into exactly one conversation', async ({ page }) => {
   await page.goto('/'); await pairBrowser(page);
@@ -25,7 +25,7 @@ test('a rejected first objective retries into exactly one conversation', async (
 test('a lost first-message response survives reload without duplicating the chat or objective', async ({ page }) => {
   await page.goto('/'); await pairBrowser(page);
   const title = `Recovered request ${Date.now()}`;
-  await page.getByRole('combobox', { name: 'Compute depth', exact: true }).selectOption('fast');
+  await chooseExecutionOption(page,'Compute depth','fast');
   let lost = false;
   await page.route('**/api/conversations/start', async route => {
     if (!lost) { lost = true; await route.fetch(); await route.abort('failed'); }

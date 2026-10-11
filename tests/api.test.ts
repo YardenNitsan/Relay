@@ -25,6 +25,17 @@ beforeEach(async()=>{
 });
 afterEach(async()=>{await engine.shutdown();await app.close();await store.close();await rm(dir,{recursive:true,force:true});});
 describe('local HTTP boundary',()=>{
+  it('persists Auto preference without changing privacy or budgets and rejects unknown preferences',async()=>{
+    const headers={host,cookie,'x-relay-csrf':csrf};
+    const options:TaskOptions={autoPolicy:'quality',depth:'fast',modelId:null,access:'read_only',workspaceId:null,contextTokens:8192,cloudPolicy:'local_only',budget:{maxCalls:4,maxSeconds:60,maxIterations:2,maxCostUsd:0,localOnly:true}};
+    const requestId='031ec2c5-c96c-4581-99a6-ad98f86ebf20';
+    const response=await app.inject({method:'POST',url:'/api/conversations/start',headers,payload:{requestId,content:'Policy persistence fixture',options}});
+    expect(response.statusCode,response.body).toBe(200);
+    const saved=await store.task(response.json().task.id);
+    expect(saved.options).toMatchObject({autoPolicy:'quality',modelId:null,cloudPolicy:'local_only',budget:{maxCostUsd:0,localOnly:true}});
+    const rejected=await app.inject({method:'POST',url:'/api/conversations/start',headers,payload:{requestId,content:'Invalid policy',options:{...options,autoPolicy:'unlimited'}}});
+    expect(rejected.statusCode).toBe(400);
+  });
   it('recognizes an available explicit development profile when the default sandbox is absent',async()=>{
     const status=vi.spyOn(engine.tools as ToolBroker,'sandboxStatus').mockImplementation(async(profile?:string)=>({available:profile==='python',reason:'Fixture profile status'}));
     try{

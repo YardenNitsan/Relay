@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { openCommands, pairBrowser } from './helpers';
+import {chooseExecutionOption, openCommands, pairBrowser } from './helpers';
 
 test.beforeEach(async({page})=>{
   await page.goto('/');
@@ -24,10 +24,12 @@ test('supervised file write waits for approval and displays an actual diff',asyn
   await page.getByRole('button',{name:/Bring a project/}).click();
   await page.getByRole('dialog',{name:'Workspaces',exact:true}).getByRole('button',{name:'New workspace',exact:true}).click();
   await page.getByRole('textbox',{name:'Name',exact:true}).fill('Browser acceptance');
+  const creating=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/workspaces'&&response.request().method()==='POST');
   await page.getByRole('button',{name:'Create workspace',exact:true}).click();
+  expect((await creating).ok()).toBe(true);
   await expect(page.getByRole('region',{name:'Project inspector',exact:true}).getByRole('heading',{name:'Browser acceptance',exact:true})).toBeVisible();
   await page.keyboard.press('Escape');
-  await page.getByLabel('Computer access').selectOption('supervised');
+  await chooseExecutionOption(page,'Computer access','supervised');
   await page.getByRole('textbox',{name:'Objective'}).fill('Create a notes file and verify the content');
   await page.getByRole('button',{name:'Send objective'}).click();
   await page.getByRole('button',{name:'Activity',exact:true}).click();

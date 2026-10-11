@@ -4,7 +4,7 @@
   "updatedAt": "2026-10-11",
   "baselineCommit": "9d563bc973dbcc177921ab918db88561c8280e48",
   "branch": "modernization/final-evolution",
-  "currentMilestone": "0.1.3: Model Studio, publication recovery, honest agent prerequisites, pretrained router comparison",
+  "currentMilestone": "0.1.3: reviewed conversation/Auto-policy increment verified locally; ready-made pretrained router selection remains open",
   "requirementIds": [
     "A01",
     "A02",
@@ -351,8 +351,8 @@
     "npm.cmd run check (final C02/restore:1305passed/one skip,123files,273.47s)",
     "npm.cmd run build (final C02/restore)"
   ],
-  "lastPassingCommit": "739d0034b4f7c5dad126d95dd9c962e4b4353475",
-  "lastPassingCommitScope": "739d003 C02: local1305tests/one skip/build/browser/native pass. Hosted native38085207781passed; verification38085207703 Windows browser164/165 failed (pending publication preview at320px), five other jobs passed.",
+  "lastPassingCommit": "845535a",
+  "lastPassingCommitScope": "845535a: local1332tests/one skip/build and targeted browser gates; hosted native38161361883 and all nine Windows/Linux/macOS host/browser jobs38161361779 pass.",
   "knownFailures": [
     "Real coding: larger9B RAM admission refusal; smaller9B initial missing-runtime-temp load error repaired;16K context paused;32K wrong activity repair/output-limit pause after7calls. Earlier trials had no publication; later coding-0O93wv succeeds.",
     "Gemma4 12B32K candidate also refused unchanged RAM admission; no inference occurred.",
@@ -364,7 +364,12 @@
     "Encrypted worktree restore initially failed actualGit because pointers referenced unavailable original. Corrected41focused integration cases pass; cross-platform restore and interrupted-registration reconciliation remain open.",
     "0.1.3 first browser14: three actual evaluation refresh/dismissal regressions repaired; rerun41:40passed, new publication loading assertion matched two status messages, narrowed without weakening publication checks.",
     "Pretrained v1 promotion failed: MiniLM26/64, baseline25/64, E5 17/64, NLI13/64. No production semantic replacement claimed.",
-    "Pretrainedv2 failed promotion:23/64vsbaseline22/64, English11vs12 and forbidden9vs4. Retained; no production promotion. Richer exemplars/larger NLI are development experiments only."
+    "Pretrainedv2 failed promotion:23/64vsbaseline22/64, English11vs12 and forbidden9vs4. Retained; no production promotion. Richer exemplars/larger NLI are development experiments only.",
+    "B04 first affected browser76/85passed: nine old navigation paths corrected without dropping assertions. Reviewed rebuilt72/73passed; tablet host-label ARIA defect repaired and final30browser cases pass.",
+    "D08 explicit Auto policies implemented; focused31router/evaluation tests and API persistence pass; final model-picker browser verification passes. No live cloud-quality or semantic-primary claim.",
+    "Integrated check first failed replacement service-lock removal (1340pass,onefailure,oneskip). Exact identity/unlinked-handle guards repaired; full1341pass and2additional deterministic regressions green. Exact original intermittent cause unproven.",
+    "5a0a5ff hosted38163056135: all3host gates pass; Windows/macOS browser shard2 failed on workspace/fork heading while POST stillpending. Exact-response synchronization added; local and new hosted acceptance tracked separately.",
+    "Owner rejects custom classifier/head training; SetFit proposal stopped. Additional existing pretrained routing tools under evaluation; no primary replacement accepted."
   ],
   "outstandingSecurityReviews": [
     "Full threat-model review",
@@ -380,7 +385,7 @@
     "Owner has Android phone; current deployed0.1.2 mobile-data sign-in succeeded after tunnel restart. Modernization physical-device workflows remain untested.",
     "Second authorized Companion computer not established; cloud/email/calendar test accounts not configured (owner confirmed)."
   ],
-  "nextActionableWorkItem": "Join frozen pretrained-v2 evaluation; no primary semantic claim before promotion/integration gates. Commit and push reviewed Model Studio/readiness increment with1332tests/build and40+9browser evidence. Then continue routing, catalog policies and full matrix.",
+  "nextActionableWorkItem": "Push reviewed conversation/Auto-policy/lock increment and inspect hosted gates. Continue selecting existing ready-made pretrained routing technology; no custom router training. Review consumed comparison annotations separately.",
   "remainingDependencies": [
     "A native recovery/restore/retention",
     "B full redesign",
@@ -392,10 +397,7 @@
   ],
   "activeExecution": {
     "privateModelHost": null,
-    "modelInference": {
-      "sessionId": 9176,
-      "scope": "CPU pretrained development-only comparison; no production dispatch"
-    },
+    "modelInference": null,
     "checks": null,
     "remoteConnector": {
       "wranglerPid": 27840,
@@ -404,11 +406,16 @@
       "scope": "Restarted existing named relay-host tunnel; no policy/deployment changes"
     }
   },
-  "lastBenchmarkCommit": "331416b",
+  "lastBenchmarkCommit": "5a0a5ff",
   "verifiedCommands": [
     "npm.cmd run check (0.1.3:1332passed/one skip,125files,277.92s)",
     "npm.cmd run build (0.1.3 Model Studio/agent prerequisites)",
     "npm.cmd run test:e2e -- tests/e2e/publication.spec.ts tests/e2e/agents.spec.ts (9passed,1.0min)",
-    "npm.cmd run test:e2e -- tests/e2e/measurement-reconciliation.spec.ts tests/e2e/calibration.spec.ts (6passed; paused/waiting calibration controls red2 then green)"
+    "npm.cmd run test:e2e -- tests/e2e/measurement-reconciliation.spec.ts tests/e2e/calibration.spec.ts (6passed; paused/waiting calibration controls red2 then green)",
+    "npm.cmd run check (conversation/policy/lock:1341passed,one skip,126files,285.94s)",
+    "npm.cmd test -- tests/service-lock.test.ts tests/service-lock-identity.test.ts (7passed; two synthetic regressions failed against old code)",
+    "npm.cmd run build (conversation/policy/lock final production build)",
+    "npm.cmd run test:e2e -- tests/e2e/conversation-studio.spec.ts tests/e2e/model-picker.spec.ts tests/e2e/evolution.spec.ts tests/e2e/gateway-offline.spec.ts (30passed,3.7min)",
+    "npm.cmd run test:e2e -- tests/e2e/product.spec.ts tests/e2e/project-fork.spec.ts (20passed,2.6min; exact mutation-response synchronization)"
   ]
 }

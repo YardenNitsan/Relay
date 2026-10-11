@@ -1,6 +1,6 @@
 import {expect,test} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import {pairBrowser,projectIndex} from './helpers';
+import {openProjectChooser,pairBrowser,projectIndex} from './helpers';
 
 const sizes=[[320,740],[360,800],[390,844],[768,1024],[1024,768],[1440,960],[1920,1080],[2560,1080],[844,390]] as const;
 for(const [width,height] of sizes)for(const theme of ['light','dark'] as const)test(`project inspector files and search at ${width}x${height} ${theme}`,async({page})=>{
@@ -17,7 +17,7 @@ for(const [width,height] of sizes)for(const theme of ['light','dark'] as const)t
     const files=[[path,"// Verified invoice examples\nexport const currencies = ['ILS', 'USD', 'EUR'];\nexport const reconciliation = (amount: number) => Math.round(amount * 100);\n"],...Array.from({length:16},(_,index)=>[`src/modules/account-${index}/index.ts`,`export const account = ${index};\n`])];
     for(const [path,content] of files){const response=await fetch(`/api/workspaces/${project.id}/files`,{method:'POST',headers,body:JSON.stringify({path,content})});if(!response.ok)throw new Error('Project file fixture failed');}
   },{name,path});
-  await page.reload();await page.getByRole('button',{name:/^(Choose workspace|Workspace)$/}).click();
+  await page.reload();await openProjectChooser(page);
   const dialog=await projectIndex(page);
   await dialog.getByRole('searchbox',{name:'Find a project',exact:true}).fill('Billing');
   await dialog.getByRole('button',{name:'Open '+name,exact:true}).click();
@@ -65,7 +65,7 @@ test('project index exposes loading, failed fetch and explicit empty recovery on
   });
   try{
     await page.goto('/');await pairBrowser(page);
-    await page.getByRole('button',{name:/^(Choose workspace|Workspace)$/}).click();
+    await openProjectChooser(page);
     const dialog=page.getByRole('dialog',{name:'Workspaces',exact:true});
     await expect(dialog.getByRole('status')).toContainText('Loading workspaces');
     await page.screenshot({path:'output/playwright/projects-loading-390.png',animations:'disabled'});

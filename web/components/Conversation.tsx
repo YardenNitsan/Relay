@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowDown, ArrowUp, ArrowUpRight, Check, Copy, GitBranch } from 'lucide-react';
 import type { ActivityEvent, ConversationDetail, ModelProfile, TaskRecord } from '../../shared/types';
@@ -47,6 +47,7 @@ export default function Conversation({ detail, loading, error, onRetry, streams,
     }
   }, [history.data, anchor]);
   const taskMap = new Map([...(detail?.tasks ?? []), ...(history.data?.tasks ?? [])].map(task => [task.id, task]));
+  const answeredTasks=new Set(messages.filter(message=>message.role==='assistant').map(message=>message.taskId));
   const navigate = (next: PageAnchor) => { setFollow(false); setAnchor(next); };
   const latest = () => { setAnchor(null); setFollow(true); onReturnLatest(); };
   const earlier = anchor ? history.data?.olderCursor : messages.length === 80 ? messages[0]?.id : null;
@@ -60,7 +61,7 @@ export default function Conversation({ detail, loading, error, onRetry, streams,
         {anchor && !messages.length && <p className="history-boundary" role="status">You have reached the beginning of this conversation.</p>}
         {messages.map(message => {
           const task = message.taskId ? taskMap.get(message.taskId) : undefined;
-          return <article id={`message-${message.id}`} tabIndex={-1} className={`message message-${message.role} ${anchor?.around === message.id ? 'message-found' : ''}`} key={message.id} aria-label={message.role === 'user' ? 'Your message' : 'Relay response'}><div className="message-label">{message.role === 'user' ? 'You' : <><span className="mini-mark" />Relay</>}</div>{message.role === 'user' ? <div className="user-message">{message.content}</div> : <><Markdown content={message.content} /><CopyResponse content={message.content} /></>}{message.role === 'user' && task && <TaskReceipt task={task} onInspect={id => onInspect(id, task)} stream={streams[task.id]?.text} events={events} />}</article>;
+          return <Fragment key={message.id}><article id={`message-${message.id}`} tabIndex={-1} className={`message message-${message.role} ${anchor?.around === message.id ? 'message-found' : ''}`} aria-label={message.role === 'user' ? 'Your message' : 'Relay response'}><div className="message-label">{message.role === 'user' ? 'You' : <><span className="mini-mark" />Relay</>}</div>{message.role === 'user' ? <div className="user-message" dir="auto">{message.content}</div> : <>{task&&<TaskReceipt task={task} onInspect={id=>onInspect(id,task)} events={events}/>}<Markdown content={message.content} /><CopyResponse content={message.content} /></>}</article>{message.role==='user'&&task&&!answeredTasks.has(task.id)&&<article className="message message-assistant" aria-label="Relay response"><div className="message-label"><span className="mini-mark"/>Relay</div><TaskReceipt task={task} onInspect={id=>onInspect(id,task)} stream={streams[task.id]?.text} events={events}/></article>}</Fragment>;
         })}
         </>}
       </>}

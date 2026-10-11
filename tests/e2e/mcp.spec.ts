@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { pairBrowser, openCommands } from './helpers';
+import {toggleExecutionOptions, pairBrowser, openCommands } from './helpers';
 import { catalogTool } from '../../server/mcp/schema';
 
 const endpoint = 'https://example.com/browser-test-mcp';
@@ -49,7 +49,7 @@ test('phone owner reviews an untrusted catalog, pins disabled tools, enables exp
   await expect(reopened.getByText('Enabled · 1 pinned tool', { exact: true })).toBeVisible();
   await page.screenshot({ path: 'output/playwright/mcp-saved-phone.png' });
   await page.keyboard.press('Escape');
-  await page.getByRole('button', { name: 'Execution options', exact: true }).click();
+  await toggleExecutionOptions(page);
   await page.getByRole('checkbox', { name: /Browser MCP fixture/ }).check();
   await expect(page.getByText("in this task's network policy before sending.", { exact: false })).toBeVisible();
   await page.getByRole('combobox', { name: 'Public web requests' }).selectOption('ask');
@@ -61,7 +61,7 @@ test('phone owner reviews an untrusted catalog, pins disabled tools, enables exp
   await access.scrollIntoViewIfNeeded();
   const accessBounds = await access.boundingBox();
   expect(accessBounds!.y).toBeGreaterThanOrEqual(0); expect(accessBounds!.y + accessBounds!.height).toBeLessThanOrEqual(844);
-  await page.getByRole('button', { name: 'Execution options', exact: true }).click();
+  await toggleExecutionOptions(page);
   await page.getByRole('textbox', { name: /objective/i }).fill('Explain this explicit browser fixture without invoking external tools');
   await page.getByRole('button', { name: 'Send objective', exact: true }).click();
   await expect(page.getByText('Completed', { exact: true }).first()).toBeVisible();

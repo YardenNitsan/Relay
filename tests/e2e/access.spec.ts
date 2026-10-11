@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { pairBrowser } from './helpers';
+import {chooseExecutionOption, pairBrowser } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -60,7 +60,7 @@ for (const width of [390, 320]) {
     await page.getByRole('button', { name: 'Create workspace', exact: true }).click();
     await expect(page.getByRole('region',{name:'Project inspector',exact:true}).getByRole('heading',{name,exact:true})).toBeVisible();
     await page.keyboard.press('Escape');
-    await page.getByLabel('Computer access').selectOption('supervised');
+    await chooseExecutionOption(page,'Computer access','supervised');
     await page.getByRole('textbox', { name: 'Objective' }).fill('Create a notes file and verify the content');
     await page.getByRole('button', { name: 'Send objective' }).click();
     await page.getByRole('button', { name: 'Activity', exact: true }).click();

@@ -39,10 +39,17 @@ it('preserves incomplete and live service locks and releases its temporary guard
 });
 
 it('never removes a replacement service lock on shutdown',async()=>{
-  const root=await directory(),lock=await acquireServiceLock(root);
-  await unlink(join(root,'service.lock'));await writeFile(join(root,'service.lock'),'12345');
-  await expect(lock.release()).rejects.toThrow(/changed/i);
-  expect(await readFile(join(root,'service.lock'),'utf8')).toBe('12345');
+  const root=await directory();
+  // Repeat the replacement sequence that intermittently failed in the full run.
+  // Separate Windows probes found IDs above the safe integer range; the exact
+  // cause of that intermittent failure was not established.
+  for(let attempt=0;attempt<20;attempt++){
+    const lock=await acquireServiceLock(root);
+    await unlink(join(root,'service.lock'));await writeFile(join(root,'service.lock'),'12345');
+    await expect(lock.release()).rejects.toThrow(/changed/i);
+    expect(await readFile(join(root,'service.lock'),'utf8')).toBe('12345');
+    await unlink(join(root,'service.lock'));
+  }
 });
 
 it('refuses offline backup both before stale inspection and after acquisition',async()=>{

@@ -35,6 +35,24 @@ async function setup(page: Page) {
   return submitted;
 }
 
+for(const policy of ['quality','economy'] as const)test(`Auto ${policy} keeps phone sharing and budget unchanged`,async({page})=>{
+  await page.setViewportSize({width:320,height:640});
+  const submitted=await setup(page);
+  await page.getByRole('button',{name:'Choose model',exact:true}).click();
+  const dialog=page.getByRole('dialog',{name:'Choose model',exact:true});
+  await dialog.getByRole('button',{name:'Auto',exact:true}).click();
+  await dialog.getByRole('radio',{name:policy==='quality'?'Quality':'Economy',exact:true}).check();
+  await expect(dialog.getByRole('radio',{name:'Keep it local',exact:true})).toBeChecked();
+  await page.screenshot({path:`output/playwright/model-policy-${policy}-320.png`});
+  await dialog.getByRole('button',{name:'Use Auto',exact:true}).click();
+  await expect(page.getByRole('button',{name:'Choose model',exact:true})).toContainText(policy==='quality'?'Quality':'Economy');
+  const label=page.getByRole('button',{name:'Choose model',exact:true}).locator('span');
+  expect(await label.evaluate(element=>element.clientWidth>=element.scrollWidth)).toBe(true);
+  await page.getByRole('button',{name:'Send objective',exact:true}).click();
+  await expect.poll(()=>submitted.length).toBe(1);
+  expect(submitted[0]).toMatchObject({autoPolicy:policy,modelId:null,cloudPolicy:'local_only',budget:{maxCostUsd:null,localOnly:true}});
+});
+
 for (const size of [{ width: 320, height: 640 }, { width: 390, height: 844 }, { width: 768, height: 1024 }, { width: 1440, height: 900 }, { width: 844, height: 390 }]) {
   test(`provider, model and reasoning selection at ${size.width}x${size.height}`, async ({ page }) => {
     await page.setViewportSize(size);
@@ -44,6 +62,8 @@ for (const size of [{ width: 320, height: 640 }, { width: 390, height: 844 }, { 
     const dialog = page.getByRole('dialog', { name: 'Choose model' });
     if ([320, 1440].includes(size.width)) await page.screenshot({ animations: 'disabled', path: `output/playwright/model-picker-providers-${size.width}.png` });
     await dialog.getByRole('button', { name: 'OpenAI · GPT', exact: true }).click();
+    await dialog.getByRole('searchbox', { name: 'Search models' }).fill('openai/catalog-test');
+    await expect(dialog.getByRole('button', { name: 'GPT catalog fixture', exact: true })).toBeVisible();
     await dialog.getByRole('searchbox', { name: 'Search models' }).fill('GPT catalog');
     await dialog.getByRole('button', { name: 'GPT catalog fixture', exact: true }).click();
     await dialog.getByRole('radio', { name: 'Low', exact: true }).check();

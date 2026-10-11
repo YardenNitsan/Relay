@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { pairBrowser, projectIndex } from './helpers';
+import {openExecutionOptions,closeExecutionOptions, pairBrowser, projectIndex } from './helpers';
 
 for (const width of [320, 1440]) {
   test(`personal files and agent autonomy are separate from shared host grants at ${width}px`, async ({ page }) => {
@@ -51,9 +51,12 @@ for (const width of [320, 1440]) {
     await page.reload();
     const access = page.getByRole('combobox', { name: 'Computer access', exact: true });
     await expect(page.getByRole('button', { name: 'Attach files', exact: true })).toBeEnabled();
+    await openExecutionOptions(page);
     await expect(access.locator('option[value="workspace"]')).not.toHaveAttribute('disabled');
+    await closeExecutionOptions(page);
     await page.getByLabel('File attachments', { exact: true }).setInputFiles({ name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('My private notes') });
     await expect(page.getByRole('textbox', { name: 'Your objective', exact: true })).toHaveValue(/Attached file:/);
+    await openExecutionOptions(page);
     await expect(access.locator('option[value="workspace"]')).not.toHaveAttribute('disabled');
     await access.selectOption('workspace');
     await expect(access).toHaveValue('workspace');
@@ -94,8 +97,10 @@ for (const width of [320, 1440]) {
     await dialog.getByRole('button', { name: 'Open Shared reference', exact: true }).click();
     await dialog.getByRole('button', { name: 'Use for conversation', exact: true }).click();
     await page.keyboard.press('Escape');
+    await openExecutionOptions(page);
     await expect(access).toHaveValue('read_only');
     await expect(access.locator('option[value="workspace"]')).toHaveAttribute('disabled', '');
+    await closeExecutionOptions(page);
     await expect(page.getByRole('button', { name: 'Attach files', exact: true })).toBeDisabled();
   });
 }

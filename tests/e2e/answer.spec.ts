@@ -1,9 +1,9 @@
 import {expect,test} from '@playwright/test';
-import {pairBrowser} from './helpers';
+import {chooseExecutionOption,pairBrowser} from './helpers';
 
 test('balanced auto greeting uses one worker and persists only the answer prose',async({page})=>{
   await page.goto('/');await pairBrowser(page);
-  await page.getByLabel('Compute depth').selectOption('balanced');
+  await chooseExecutionOption(page,'Compute depth','balanced');
   await expect(page.getByRole('button',{name:'Choose model',exact:true})).toContainText('Auto');
   await page.getByRole('textbox',{name:'Your objective',exact:true}).fill('hello how are you today?');
   const admission=page.waitForResponse(response=>response.url().endsWith('/api/conversations/start')&&response.request().method()==='POST');

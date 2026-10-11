@@ -1,7 +1,7 @@
 import {expect,test} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import type {TaskDetail,TaskStep} from '../../shared/types';
-import {pairBrowser} from './helpers';
+import {openProjectChooser,toggleExecutionOptions,chooseExecutionOption,pairBrowser} from './helpers';
 
 for(const width of [390,1440])for(const theme of ['light','dark'] as const) {
   test(`Workbench separates recorded output, checks and receipts at ${width}px in ${theme}`,async({page})=>{
@@ -81,17 +81,17 @@ test('long objective context leaves approval controls reachable in short landsca
   await page.getByRole('textbox',{name:'Objective'}).fill('Explain the execution model');
   await page.getByRole('button',{name:'Send objective'}).click();
   await expect(page.getByText('Completed',{exact:true}).first()).toBeVisible();
-  await page.getByRole('button',{name:'Choose workspace',exact:true}).click();
+  await openProjectChooser(page);
   await page.getByRole('dialog',{name:'Workspaces',exact:true}).getByRole('button',{name:'New workspace',exact:true}).click();
   await page.getByRole('textbox',{name:'Name',exact:true}).fill('Landscape approval');
   await page.getByRole('button',{name:'Create workspace',exact:true}).click();
   await expect(page.getByRole('region',{name:'Project inspector',exact:true}).getByRole('heading',{name:'Landscape approval',exact:true})).toBeVisible();
   await page.keyboard.press('Escape');
-  await page.getByLabel('Computer access').selectOption('supervised');
+  await chooseExecutionOption(page,'Computer access','supervised');
   // Long objectives still obey real context admission; provision enough context for this UI scenario.
-  await page.getByRole('button',{name:'Execution options',exact:true}).click();
+  await toggleExecutionOptions(page);
   await page.getByLabel('Context token budget',{exact:true}).fill('16384');
-  await page.getByRole('button',{name:'Execution options',exact:true}).click();
+  await toggleExecutionOptions(page);
   await page.getByRole('textbox',{name:'Objective'}).fill(`Create a notes file and verify the content. ${'Keep the existing project safe. '.repeat(60)}`);
   await page.getByRole('button',{name:'Send objective'}).click();
   await page.getByRole('button',{name:'Activity',exact:true}).click();

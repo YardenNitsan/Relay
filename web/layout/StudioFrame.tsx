@@ -2,6 +2,7 @@ import {useEffect,useRef,type ReactNode} from 'react';
 import {Activity,BarChart3,ChevronDown,Command,Cpu,FolderOpen,Layers,Menu,MessageSquare,Moon,Plus,ShieldCheck,Square,Sun} from 'lucide-react';
 import type {Destination} from '../components/Navigation';
 import {useRememberedFocus} from './useRememberedFocus';
+import {useVisualViewport} from './useVisualViewport';
 import './studio-frame.css';
 
 interface Props {
@@ -12,6 +13,7 @@ function Brand({onClick,mobile=false}:{onClick:()=>void;mobile?:boolean}) {
   return <button className={`brand studio-brand ${mobile?'studio-brand-mobile':''}`} onClick={onClick} aria-label="Relay home"><span className="brand-mark" aria-hidden="true"><i/><i/><i/></span><span className="studio-brand-name">relay</span></button>;
 }
 export default function StudioFrame({children,title,hostName,owner,theme,stopped,stopBusy,workbenchOpen,onDestination,onNew,onConversation,onWorkbench,onTheme,onStop}:Props) {
+  useVisualViewport();
   const navigation=useRef<HTMLElement>(null);
   const mobileMenu=useRef<HTMLButtonElement>(null);
   const lastFocused=useRememberedFocus();
@@ -43,7 +45,7 @@ export default function StudioFrame({children,title,hostName,owner,theme,stopped
         <button className="command-trigger" aria-label="Open command palette" onClick={()=>onDestination('commands')}><Command size={19}/><span>Commands</span></button>
         <button aria-label={`Switch to ${theme==='light'?'dark':'light'} theme`} onClick={onTheme}>{theme==='light'?<Moon size={19}/>:<Sun size={19}/>}<span>{theme==='light'?'Dark':'Light'} appearance</span></button>
       </div>
-      <div className="studio-host" aria-label={`Execution host: ${hostName??'not reported'}`}><span className="studio-host-symbol" aria-hidden="true"><Cpu size={18}/></span><div><span>Relay Host</span><strong title={hostName}>{hostName??'Not reported'}</strong></div></div>
+      <div className="studio-host" role="group" aria-label={`Execution host: ${hostName??'not reported'}`}><span className="studio-host-symbol" aria-hidden="true"><Cpu size={18}/></span><div><span>Relay Host</span><strong title={hostName}>{hostName??'Not reported'}</strong></div></div>
     </nav>
     <div className="studio-document">
       <header className="studio-header">

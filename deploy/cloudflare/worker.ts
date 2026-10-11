@@ -1,4 +1,5 @@
 import { createRemoteJWKSet, jwtVerify, type JWTVerifyGetKey } from 'jose';
+import {offlinePage} from './offline-page.js';
 
 export interface RelayWorkerEnv {
   RELAY_HOST: { fetch(request: Request): Promise<Response> };
@@ -130,7 +131,10 @@ export function createRelayWorker(keys?: JWTVerifyGetKey) {
       const target = `http://${config.host}${url.pathname}${url.search}`;
       const upstream = new Request(target, { method: request.method, headers, body, redirect: 'manual', signal: request.signal });
       try { return await env.RELAY_HOST.fetch(upstream); }
-      catch { return failure(502, 'The Relay host is unavailable. Local access is independent.'); }
+      catch {
+        if(request.method==='GET'&&['/','/index.html'].includes(url.pathname)&&request.headers.get('accept')?.includes('text/html'))return offlinePage();
+        return failure(502, 'The Relay host is unavailable. Local access is independent.');
+      }
     } catch (error) {
       return error instanceof Denied ? failure(error.status, error.message) : failure(503, 'The secure gateway is unavailable.');
     }

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { pairBrowser, projectIndex } from './helpers';
+import {openProjectChooser, pairBrowser, projectIndex } from './helpers';
 
 test('device folder copy uses explicit import, review and apply without leaving the workspace dialog', async ({ page }) => {
   // A browser API test fixture, not a claim of native OS folder-picker acceptance.
@@ -21,7 +21,7 @@ test('device folder copy uses explicit import, review and apply without leaving 
     Object.defineProperty(window, 'relayDeviceFixtureText', { get: () => files.get('notes.txt') });
   });
   await page.goto('/'); await pairBrowser(page);
-  await page.getByRole('button', { name: 'Choose workspace', exact: true }).click();
+  await openProjectChooser(page);
   const workspaces = page.getByRole('dialog', { name: 'Workspaces', exact: true });
   await projectIndex(page);
   await workspaces.getByRole('button', { name: 'Connect a device folder', exact: true }).click();
@@ -63,7 +63,7 @@ test('unsupported phone browsers receive a usable upload and download alternativ
   await page.addInitScript(() => Object.defineProperty(window, 'showDirectoryPicker', { configurable: true, value: undefined }));
   await page.setViewportSize({ width: 320, height: 740 });
   await page.goto('/'); await pairBrowser(page);
-  await page.getByRole('button', { name: 'Choose workspace', exact: true }).click();
+  await openProjectChooser(page);
   const workspaces = page.getByRole('dialog', { name: 'Workspaces', exact: true });
   await projectIndex(page);
   await workspaces.getByRole('button', { name: 'Connect a device folder', exact: true }).click();

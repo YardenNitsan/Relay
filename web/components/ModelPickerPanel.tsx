@@ -1,8 +1,8 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, BrainCircuit, Check, Cloud, Cpu, Search, ShieldCheck, SlidersHorizontal, Workflow } from 'lucide-react';
 import { providerLabels, type ReasoningPreference } from '../../shared/model-controls';
-import type { ModelProfile, ProviderId, TaskOptions } from '../../shared/types';
-import { reasoningLabels, type ModelPickerProps } from './ModelPicker';
+import type { AutoModelPolicy, ModelProfile, ProviderId, TaskOptions } from '../../shared/types';
+import { autoPolicyLabels, reasoningLabels, type ModelPickerProps } from './ModelPicker';
 
 type Sharing = NonNullable<TaskOptions['cloudPolicy']>;
 type Screen = 'providers' | 'auto' | 'models' | 'reasoning';
@@ -25,6 +25,7 @@ export default function PickerPanel({ models, providers, options, onOptions, onC
   const [search, setSearch] = useState('');
   const [reasoning, setReasoning] = useState<ReasoningPreference>(initial?.id === options.modelId ? options.reasoning ?? 'auto' : 'auto');
   const [sharing, setSharing] = useState<Sharing>(sharingFor(options));
+  const [autoPolicy,setAutoPolicy]=useState<AutoModelPolicy>(options.autoPolicy??'balanced');
   const heading = useRef<HTMLHeadingElement>(null);
   const id = useId();
   const model = models.find(item => item.id === modelId);
@@ -34,7 +35,7 @@ export default function PickerPanel({ models, providers, options, onOptions, onC
     return usable(item) && Boolean(status?.connected && status.enabled !== false) && (item.local || canUseCloud);
   };
   const knownProviders = providers.filter(item => localProvider(item.id) || item.configured || item.connected);
-  const matching = models.filter(item => item.provider === providerId && `${item.name} ${item.runtime}`.toLowerCase().includes(search.toLowerCase()));
+  const matching = models.filter(item => item.provider === providerId && `${item.id} ${item.name} ${item.runtime}`.toLowerCase().includes(search.toLowerCase()));
   const cloudCount = models.filter(item => !item.local && connected(item)).length;
   const localCount = models.filter(item => item.local && connected(item)).length;
   const levels: ReasoningPreference[] = ['auto', 'default', ...(model?.reasoning?.levels ?? [])];
@@ -48,7 +49,7 @@ export default function PickerPanel({ models, providers, options, onOptions, onC
   useEffect(() => { heading.current?.focus(); }, [screen]);
   const apply = () => {
     if (!canApply) return;
-    onOptions({ ...options, modelId: screen === 'auto' ? null : model!.id,
+    onOptions({ ...options, autoPolicy, modelId: screen === 'auto' ? null : model!.id,
       modelSelection: screen === 'auto' ? undefined : 'required', reasoning: screen === 'auto' ? 'auto' : reasoning,
       cloudPolicy: sharing, budget: { ...options.budget, localOnly: sharing === 'local_only' } });
     onClose();
@@ -107,6 +108,7 @@ export default function PickerPanel({ models, providers, options, onOptions, onC
 
       {screen === 'auto' && <>
         <div className="model-picker-route"><Workflow size={24} aria-hidden="true" /><div><strong>{localCount} local{sharing !== 'local_only' ? ` + ${cloudCount} cloud` : ''} models available</strong><p>Eligibility is checked first. Missing measurements remain uncertain; Auto uses a conservative fallback.</p></div></div>
+        <fieldset className="model-picker-sharing"><legend>Auto preference</legend>{(['balanced','quality','economy'] as const).map(policy=><label key={policy} className={`model-picker-sharing-choice ${autoPolicy===policy?'selected':''}`}><input type="radio" aria-label={autoPolicyLabels[policy]} name={`${id}-auto-policy`} value={policy} checked={autoPolicy===policy} onChange={()=>setAutoPolicy(policy)}/><span><strong>{autoPolicyLabels[policy]}</strong><small>{policy==='balanced'?'Balance measured suitability, speed and cost.':policy==='quality'?'Prioritize relevant measured task performance. Unmeasured quality remains uncertain.':'Favor lower known cloud cost among similarly suitable models. Unknown cloud prices are excluded.'}</small></span></label>)}</fieldset>
         <SharingChoices value={sharing} onChange={setSharing} allowLocal canUseCloud={canUseCloud} name={`${id}-sharing`} />
         <p className="model-picker-note">Auto selects a supported reasoning level. Auto never requests maximum effort; provider defaults can vary. A failed local model never grants cloud permission.</p>
       </>}

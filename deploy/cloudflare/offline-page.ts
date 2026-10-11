@@ -1,0 +1,12 @@
+/** Static recovery document: no request values, scripts, credentials or cache. */
+export function offlinePage():Response {
+  return new Response(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="light dark"><title>Reconnect to Relay</title><style>
+:root{color-scheme:light dark;--canvas:#f3f5f8;--surface:#fff;--text:#172338;--muted:#4b5d75;--line:#c7d0dd;--accent:#244bcb;--button:#fff}
+@media(prefers-color-scheme:dark){:root{--canvas:#10141d;--surface:#171d29;--text:#edf2fb;--muted:#afbdd2;--line:#465269;--accent:#a7bcff;--button:#172338}}
+*{box-sizing:border-box}body{margin:0;background:var(--canvas);color:var(--text);font:16px/1.6 system-ui,sans-serif;min-height:100svh;display:grid;place-items:center;padding:24px}main{width:min(100%,560px);padding:clamp(24px,5vw,48px);background:var(--surface);border:1px solid var(--line);border-radius:12px}header{display:flex;align-items:center;gap:10px;font-weight:650;font-size:24px;margin-bottom:40px}.mark{display:block;width:18px;height:28px;border-left:6px solid var(--accent);border-right:6px solid var(--accent);transform:skewY(-18deg)}h1{font-size:clamp(26px,5vw,34px);line-height:1.2;letter-spacing:-.025em;margin:0 0 20px}p{color:var(--muted);margin:0 0 20px}a{display:inline-flex;min-height:48px;align-items:center;padding:10px 22px;border-radius:6px;background:var(--accent);color:var(--button);font-weight:600;text-decoration:none;margin:8px 0 28px}a:focus-visible{outline:3px solid var(--accent);outline-offset:4px}footer{padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+</style></head><body><main><header><span class="mark" aria-hidden="true"></span>relay</header><h1>Your Relay host is unavailable</h1><p>The secure gateway cannot reach your computer. Check that the computer is awake, Relay is running and its remote connector is connected.</p><p>If someone else manages this host, ask them to check the connection.</p><a href="/">Try again</a><footer>Your files stay on the host. Remote access still requires sign-in.</footer></main></body></html>`,{status:502,headers:{
+    'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store',
+    'Content-Security-Policy':"default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
+    'X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Strict-Transport-Security':'max-age=31536000',
+  }});
+}

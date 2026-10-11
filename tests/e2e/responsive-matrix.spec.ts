@@ -35,6 +35,7 @@ test('all provider connections, specialist details and Usage remain reachable ac
     await page.keyboard.press('Escape');
     await command(page,'Choose a model');
     const models = page.getByRole('dialog',{name:'Models & connections',exact:true});
+    await models.getByRole('button',{name:'Connections',exact:true}).click();
     await expect(models.getByRole('article')).toHaveCount(7);
     for (const name of ['OpenAI','Anthropic','Gemini','Grok (xAI)','DeepSeek']) {
       const row = models.getByRole('article',{name:`${name} connection`,exact:true});

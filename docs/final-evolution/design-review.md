@@ -1,5 +1,11 @@
 # Studio visual and interaction review
 
+## 0.1.3 Model Studio review
+
+The inspector uses one reading column on phones and a persistent catalog on wide screens. Model identity, account availability, context, unknown weight/performance evidence and separate input/output costs remain readable without horizontal page scrolling. Inspected412px dark and1440px light captures are retained in evidence/models-after-*.png alongside the inherited before capture. Tested320–1920px and short landscape in both themes, including keyboard focus after resize, cached discovery failure, empty states and credential draft dismissal.
+
+Exact provider/model IDs are now visible and searchable. Inspection does not load a model; consequential measurements have explicit controls. Recovery tests cover reopening an active evaluation, queued admission before reports exist, lost mutation responses and slow reconciliation. Physical Android keyboards, Samsung Internet, large text/display zoom and remote mobile-data flows remain unverified. This review accepts the bounded Model Studio increment, not the complete22-view redesign.
+
 This is an evolving review record, not certification or completion of milestone B.
 
 ## Foundation reviewed

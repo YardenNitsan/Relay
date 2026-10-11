@@ -8,6 +8,7 @@ test('phone calibration records supplied counters truthfully and cancels through
   await page.getByRole('button', { name: 'Open navigation' }).click();
   await page.getByRole('button', { name: 'Models & providers', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Models & connections' });
+  await dialog.getByRole('button', { name: /^Inspect / }).first().click();
   await dialog.getByText('Measure local performance', { exact: true }).click();
   const sample = dialog.locator('.calibration');
   await sample.getByRole('button', { name: 'Run calibration', exact: true }).click();

@@ -294,7 +294,7 @@ export class ToolBroker {
       record.fileCount = (await listTextFiles(root)).length; await this.store.saveWorkspace(record);
     });
   }
-  async sandboxStatus(): Promise<{ available: boolean; reason: string }> { return this.sandbox.status(); }
+  async sandboxStatus(profile?:DevelopmentProfileId): Promise<{ available: boolean; reason: string }> { return this.sandbox.status(profile); }
   async stopAll(): Promise<void> {
     this.generation++;this.http.stopAll();this.git.stopAll();this.mcp.stopAll();
     const results=await Promise.allSettled([this.sandbox.stopAll(),this.worktrees.stopAll(),...this.forkOperations]);

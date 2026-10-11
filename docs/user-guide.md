@@ -2,6 +2,10 @@
 
 This guide describes **0.1.2**. For daily Windows use, double-click `setup.cmd` in the Relay folder; it starts or reuses the local host and opens the browser. See [setup](setup.md) for pairing and shutdown, and [release notes](release-0.1.2.md) for upgrade precautions and verified limits.
 
+On the unreleased modernization branch, **Models** opens the new Model Studio. Search the catalog or filter Local/Cloud, inspect a model, then choose **Use model** to enter the existing reasoning and sharing controls. Inspection does not start inference. On a phone, **All models** returns to the catalog. **Connections** contains personal cloud credentials and, for the local owner, host runtime and Google application settings. Unsaved keys stay only in memory and require confirmation before dismissal.
+
+The inspector distinguishes advertised capabilities and reported sizes from measured speed and recorded evaluation results. Unknown cloud input/output prices remain unknown. Local-owner measurement controls show their budgets and consent requirements. Reopening an unfinished capability/coding evaluation recovers its Stop control, including queued work that has no result yet. Leaving Model Studio does not itself cancel an admitted task. These controls do not establish general model quality; see the [final-evolution acceptance ledger](final-evolution/acceptance-results.md).
+
 ## Specialists, personal tasks and client devices
 
 Open **Agents** in navigation, or choose the agent beside the composer. Selecting a specialist changes its instructions and allowed tools; model, depth, computer access and cloud policy stay separate. **General orchestration** restores automatic general work. Missing integrations are stated directly in the agent details.

@@ -15,7 +15,7 @@ import cookie from '@fastify/cookie';
 import staticFiles from '@fastify/static';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { assistantIds, assistantDefinitions, assistantLimitations } from '../../shared/assistants.js';
+import { assistantIds, assistantDefinitions, assistantReadiness } from '../../shared/assistants.js';
 import { LanInvitations } from '../auth/lan.js';
 import type { LanConfig } from '../auth/lan-config.js';
 import { registerInferenceRoutes } from '../inference/routes.js';
@@ -163,7 +163,15 @@ export async function createApp(services:Services,options:AppOptions={}):Promise
     const personalWorkspace=(await store.db.query('SELECT id FROM workspaces WHERE owner_user_id=$1 LIMIT 1',[p.user.id])).length>0;
     const permitted=(name:string)=>isWorkspaceTool(name)?!!services.googleWorkspace:name.startsWith('host_')?localOwner:name==='personal_tasks'?true:name==='http_get'?localOwner||p.user.permissions.maxNetworkAccess&&p.user.permissions.maxNetworkAccess!=='deny':name==='mcp_call'?localOwner||!!p.user.permissions.mcpServerIds?.length:localOwner||personalWorkspace||p.user.permissions.workspaceIds.length>0;
     const workspaceStatus=services.googleWorkspace?await services.googleWorkspace.status({principal:p,live:()=>sessions.live(p)}).catch(()=>null):null;
-    return {assistants:assistantDefinitions.map(profile=>({id:profile.id,name:profile.name,description:profile.description,available:true,status:profile.integrationRequirements.length?'limited':'ready',tools:profile.allowedTools.filter(name=>permitted(name)&&broker.definitions().some(tool=>tool.name===name)),limitations:assistantLimitations(profile.id),requiredIntegration:profile.integrationRequirements[0],...(profile.integrationRequirements.length?{integrationState:profile.id==='email'||profile.id==='calendar'?(workspaceStatus?.connected?'connected':'not_configured'):'not_implemented'}:{})}))};
+    let sandboxAvailable=false;
+    for(const profile of ['default','node','python','dotnet'] as const){
+      if((await broker.sandboxStatus(profile).catch(()=>({available:false}))).available){sandboxAvailable=true;break;}
+    }
+    const defined=new Set(broker.definitions().map(tool=>tool.name));
+    return {assistants:assistantDefinitions.map(profile=>assistantReadiness(profile,{
+      tools:profile.allowedTools.filter(name=>permitted(name)&&defined.has(name)),
+      workspaceConnected:workspaceStatus?.connected===true,sandboxAvailable,
+    }))};
   });
   app.get('/api/inference/tokens',async request=>{const p=principal(request);return {enabled:!!services.inference&&(p.user.role==='owner'||p.user.permissions.externalModelAccess===true),tokens:services.inference?await services.inference.tokens.list(p.user.id):[],endpoints:{local:'http://127.0.0.1:4315/v1',...(services.lanControl?.listening?{lan:services.lanControl.origin+'/v1'}:{})}};});
   app.post('/api/inference/tokens',async request=>{const p=principal(request);if(!services.inference)throw new AppError('INFERENCE_UNAVAILABLE','The inference gateway is not configured.',503);return services.inference.tokens.issue(p.user.id,request.body,p.user.sessionVersion);});

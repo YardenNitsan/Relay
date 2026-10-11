@@ -168,3 +168,7 @@ Encrypted restore's new real Git regression first failed because restored pointe
 Hosted follow-up: all six jobs in f21317c run38083153810 also pass, as observed through the public GitHub jobs API. The managed-fork/restore increment still needs its own pushed-commit hosted gate.
 
 Final integrated C02/restore gate: **strict types,1305passed/one platform skip across123files in273.47s, and production build pass**. The final integration review found no additional actionable defect. Logs git-fork-final-check.log and git-fork-final-build.log. No production deployment or broad C02 completion is claimed.
+
+## 0.1.3 Model Studio / publication / agent prerequisites
+
+Fresh final strict check:1332passed/one skipped across125files,277.92s; production build passed. New Model Studio/recovery/Google/focus/publication run40/41passed; the new pending-status locator was ambiguous, corrected without relaxing behavior. Final publication/agent run9/9passed, including320px rename/empty-addition rollback. Independent review found an explicit-development-profile readiness defect; its API test failed before and passed after correction. All claimed acceptance remains scoped in [the30-scenario ledger](acceptance-0.1.3.md). Hosted checks are pending this increment?s push; no physical Android, live cloud/email/calendar or Companion result is claimed.

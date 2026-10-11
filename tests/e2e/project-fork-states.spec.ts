@@ -21,7 +21,7 @@ for(const [width,height] of [[320,740],[844,390]])test(`branch creation preserve
     await dialog.getByRole('button',{name:'Create branch workspace',exact:true}).click();
     await expect(dialog.getByRole('button',{name:'Creating isolated branch...',exact:true})).toBeDisabled();
     await dialog.getByRole('button',{name:'Close Workspaces',exact:true}).click();
-    await expect(dialog.getByRole('status')).toContainText('Wait for the file operation');
+    await expect(dialog.getByRole('status')).toContainText('Wait for the current operation');
     await page.screenshot({path:`output/playwright/project-fork-waiting-${width}.png`,animations:'disabled'});
     release();await expect(dialog.getByRole('alert')).toContainText('Storage temporarily unavailable');
     await expect(dialog.getByRole('textbox',{name:'Branch workspace name',exact:true})).toHaveValue('Retain this name');

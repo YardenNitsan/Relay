@@ -31,7 +31,16 @@ for(const width of [320,390,1440])test(`reviewed original publication and rollba
     await dialog.getByRole('button',{name:'Original source & review',exact:true}).click();
     const publication=dialog.getByRole('region',{name:'Original project publication',exact:true});
     await publication.getByRole('button',{name:'Review publication to original',exact:true}).click();
+    let releasePreview:()=>void=()=>{};
+    const previewHeld=new Promise<void>(resolve=>{releasePreview=resolve;});
+    if(width===320)await page.route('**/api/workspaces/*/publications/preview',async route=>{
+      const response=await route.fetch();await previewHeld;await route.fulfill({response});
+    });
+    const preparing=page.waitForResponse(response=>response.url().endsWith('/publications/preview')&&response.request().method()==='POST');
     await publication.getByRole('button',{name:'Prepare publication review',exact:true}).click();
+    try{if(width===320)await expect(publication.getByRole('status').filter({hasText:'Preparing publication review'})).toBeVisible();}
+    finally{releasePreview();}
+    expect((await preparing).ok()).toBe(true);
     await expect(publication.getByRole('heading',{name:'Review original project changes',exact:true})).toBeFocused();
     const approve=publication.getByRole('checkbox',{name:'I approve these exact changes to the original files',exact:true});
     await expect(publication.getByRole('button',{name:'Publish approved changes',exact:true})).toBeDisabled();
@@ -51,7 +60,8 @@ for(const width of [320,390,1440])test(`reviewed original publication and rollba
     await publication.getByRole('button',{name:'Publish approved changes',exact:true}).click();const applied=await applying;expect(applied.ok()).toBe(true);expect(applied.request().postDataJSON()).toMatchObject({confirmed:true});
     await expect(publication.getByRole('status')).toContainText('published');
     expect(await readFile(join(source,'example.ts'),'utf8')).toBe(replacement);expect(await readFile(join(source,'owner-notes.txt'),'utf8')).toBe('Unrelated owner edit after import');
-    await publication.getByRole('button',{name:'Prepare rollback review',exact:true}).click();
+    const rollbackPreview=page.waitForResponse(response=>response.url().endsWith('/rollback-preview')&&response.request().method()==='POST');
+    await publication.getByRole('button',{name:'Prepare rollback review',exact:true}).click();expect((await rollbackPreview).ok()).toBe(true);
     await expect(publication.getByRole('heading',{name:'Review rollback',exact:true})).toBeFocused();
     await expect(publication.getByRole('button',{name:'Apply approved rollback',exact:true})).toBeDisabled();await approve.check();
     const rollingBack=page.waitForResponse(response=>response.url().endsWith('/apply')&&response.request().method()==='POST');
@@ -85,7 +95,9 @@ for(const width of [320,1440])test(`presence-aware publication reviews and rolls
     },{id:workspace.id,original})).toEqual([200,200,200]);
     await dialog.getByRole('button',{name:'Original source & review',exact:true}).click();
     const publication=dialog.getByRole('region',{name:'Original project publication',exact:true});
-    await publication.getByRole('button',{name:'Review publication to original',exact:true}).click();await publication.getByRole('button',{name:'Prepare publication review',exact:true}).click();
+    await publication.getByRole('button',{name:'Review publication to original',exact:true}).click();
+    const preparing=page.waitForResponse(response=>response.url().endsWith('/publications/preview')&&response.request().method()==='POST');
+    await publication.getByRole('button',{name:'Prepare publication review',exact:true}).click();expect((await preparing).ok()).toBe(true);
     const select=publication.getByRole('combobox',{name:'Reviewed file',exact:true});
     await expect(select.locator('option')).toHaveText(['Add / empty.txt','Add / new-name.ts','Delete / old-name.ts']);
     await expect(publication.locator('.publication-operation')).toContainText('does not exist');
@@ -99,7 +111,8 @@ for(const width of [320,1440])test(`presence-aware publication reviews and rolls
     const approve=publication.getByRole('checkbox',{name:'I approve these exact changes to the original files',exact:true});await approve.check();
     await publication.getByRole('button',{name:'Publish approved changes',exact:true}).click();await expect(publication.getByRole('status')).toContainText('published');
     expect(await readFile(join(source,'new-name.ts'),'utf8')).toBe(original);expect(await readFile(join(source,'empty.txt'),'utf8')).toBe('');await expect(lstat(join(source,'old-name.ts'))).rejects.toMatchObject({code:'ENOENT'});
-    await publication.getByRole('button',{name:'Prepare rollback review',exact:true}).click();await expect(publication.getByRole('heading',{name:'Review rollback',exact:true})).toBeFocused();
+    const rollbackPreview=page.waitForResponse(response=>response.url().endsWith('/rollback-preview')&&response.request().method()==='POST');
+    await publication.getByRole('button',{name:'Prepare rollback review',exact:true}).click();expect((await rollbackPreview).ok()).toBe(true);await expect(publication.getByRole('heading',{name:'Review rollback',exact:true})).toBeFocused();
     await approve.check();await publication.getByRole('button',{name:'Apply approved rollback',exact:true}).click();await expect(publication.getByRole('status')).toContainText('rollback completed');
     expect(await readFile(join(source,'old-name.ts'),'utf8')).toBe(original);for(const path of ['new-name.ts','empty.txt'])await expect(lstat(join(source,path))).rejects.toMatchObject({code:'ENOENT'});
   }finally{await rm(source,{recursive:true,force:true});}

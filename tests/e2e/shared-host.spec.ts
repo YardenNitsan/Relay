@@ -37,6 +37,7 @@ test(`shared-host user manages only their permitted ${providerName} connection o
   await page.screenshot({ path: 'output/playwright/shared-host-navigation-phone.png' });
   await navigation.getByRole('button', { name: 'Models & providers', exact: true }).click();
   const models = page.getByRole('dialog', { name: 'Models & connections', exact: true });
+  await models.getByRole('button', { name: 'Connections', exact: true }).click();
   await expect(models.getByRole('heading', { name: 'Your cloud connections', exact: true })).toBeVisible();
   await expect(models.getByText(/Local models and tools run on Studio workstation/)).toBeVisible();
   await expect(models.getByRole('article', { name: 'Shared local runtime connection', exact: true })).toHaveCount(0);
@@ -63,6 +64,7 @@ test(`shared-host user manages only their permitted ${providerName} connection o
       await page.keyboard.press('Escape');
       await page.getByRole('button', { name: 'Switch to dark theme', exact: true }).click();
       await page.getByRole('button', { name: 'Models', exact: true }).click();
+      await models.getByRole('button', { name: 'Connections', exact: true }).click();
     }
     await expect(models.getByRole('heading', { name: 'Your cloud connections', exact: true })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

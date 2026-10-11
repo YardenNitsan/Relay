@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, mutation } from '../api';
 import { ErrorNotice, Loading } from './ui';
+import { useModalDraftGuard } from './modal-guard';
 
 export interface GoogleStatus { configured: boolean; connected: boolean; quotaProject: string | null; origins: string[]; storage: 'os-keyring' | 'none' }
 interface GoogleConfiguration { configured: boolean; clientId: string | null; quotaProject: string | null; origins: string[] }
@@ -16,12 +17,14 @@ function GoogleSetup() {
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<unknown>(null);
+  const [savedDraft, setSavedDraft] = useState({ clientId: '', project: '', accepted: false });
+  useModalDraftGuard({ dirty: secret.length > 0 || clientId !== savedDraft.clientId || project !== savedDraft.project || accepted !== savedDraft.accepted, busy, label: 'Google application settings' });
   const save = async (event: React.FormEvent) => {
     event.preventDefault(); setBusy(true); setError(null); setSaved(false);
     try {
       await api('/admin/google-oauth', { method: 'PUT', body: { clientId: clientId.trim(), clientSecret: secret, quotaProject: project.trim(), sharedQuotaAccepted: accepted } });
-      setSecret(''); setSaved(true);
-      await Promise.all([client.invalidateQueries({ queryKey: ['google-application'] }), client.invalidateQueries({ queryKey: ['google-connection'] }), client.invalidateQueries({ queryKey: ['models'] })]);
+      setSecret(''); setSavedDraft({ clientId, project, accepted }); setSaved(true);
+      void Promise.all([client.invalidateQueries({ queryKey: ['google-application'] }), client.invalidateQueries({ queryKey: ['google-connection'] }), client.invalidateQueries({ queryKey: ['models'] })]).catch(() => {});
     } catch (caught) { setError(caught); }
     finally { setBusy(false); }
   };
@@ -50,6 +53,20 @@ export default function GoogleConnection({ owner = false }: { owner?: boolean })
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const [message, setMessage] = useState('');
+  const [redirect, setRedirect] = useState<string | null>(null);
+  useModalDraftGuard({ dirty: false, busy: busy && redirect === null, label: 'Google connection' });
+  // The guard's effect cleanup runs before this effect, releasing its own
+  // beforeunload listener before the intentional OAuth navigation. Other drafts
+  // still retain their independent protections.
+  useEffect(() => {
+    if (!redirect) return;
+    try { window.location.assign(redirect); }
+    catch (caught) { setError(caught); }
+    finally {
+      // A different draft may cancel beforeunload; leave this action retryable.
+      setRedirect(null); setBusy(false);
+    }
+  }, [redirect]);
   const allowedOrigin = query.data?.origins.includes(window.location.origin) === true;
   const start = async () => {
     setBusy(true); setError(null); setMessage('');
@@ -57,7 +74,7 @@ export default function GoogleConnection({ owner = false }: { owner?: boolean })
       const response = await mutation<{ url: string }>('/providers/gemini/google/start', { origin: window.location.origin });
       const url = new URL(response.url);
       if (url.protocol !== 'https:' || url.hostname !== 'accounts.google.com' || url.pathname !== '/o/oauth2/v2/auth' || url.username || url.password || url.port) throw new Error('The host returned an invalid Google sign-in address.');
-      window.location.assign(url.href);
+      setRedirect(url.href);
     } catch (caught) { setError(caught); setBusy(false); }
   };
   const disconnect = async () => {
@@ -65,7 +82,7 @@ export default function GoogleConnection({ owner = false }: { owner?: boolean })
     try {
       const result = await api<{ revoked: boolean }>('/providers/gemini/google', { method: 'DELETE' });
       setMessage(result.revoked ? 'Google disconnected from your Relay account.' : 'Relay removed its Google credential. Google-side revocation could not be confirmed; review your Google account permissions.');
-      await Promise.all([client.invalidateQueries({ queryKey: ['google-connection'] }), client.invalidateQueries({ queryKey: ['models'] })]);
+      void Promise.all([client.invalidateQueries({ queryKey: ['google-connection'] }), client.invalidateQueries({ queryKey: ['models'] })]).catch(() => {});
     } catch (caught) { setError(caught); }
     finally { setBusy(false); }
   };

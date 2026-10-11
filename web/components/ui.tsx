@@ -32,8 +32,8 @@ export function Modal({ title, children, onClose, wide = false, className = '', 
     if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) requestClose();
   }}>
     <header className="modal-heading"><h2>{title}</h2><button className="icon-button" aria-label={`Close ${title}`} onClick={requestClose}><X size={19} /></button></header>
-    <div className="modal-content">{guard.blocked&&<p className="notice" role="status">Wait for the file operation to finish before leaving this view.</p>}{children}</div>
-  </dialog>{guard.pending&&<Modal title="Unsaved file changes" onClose={guard.keep} initialFocus="[data-keep-editing]"><p>Your edits to {guard.pending.labels.join(', ')} have not been saved.</p><p>Discard them and leave this view?</p><div className="workspace-file-actions"><button className="button primary" data-keep-editing onClick={guard.keep}>Keep editing</button><button className="button danger-button" onClick={guard.discard}>Discard edits</button></div></Modal>}</ModalGuardContext.Provider>;
+    <div className="modal-content">{guard.blocked&&<p className="notice" role="status">Wait for the current operation to finish before leaving this view.</p>}{children}</div>
+  </dialog>{guard.pending&&<Modal title="Unsaved changes" onClose={guard.keep} initialFocus="[data-keep-editing]"><p>Your edits to {guard.pending.labels.join(', ')} have not been saved.</p><p>Discard them and leave this view?</p><div className="workspace-file-actions"><button className="button primary" data-keep-editing onClick={guard.keep}>Keep editing</button><button className="button danger-button" onClick={guard.discard}>Discard edits</button></div></Modal>}</ModalGuardContext.Provider>;
 }
 
 export function Empty({ title, children, icon }: { title: string; children?: ReactNode; icon?: ReactNode }) {

@@ -1,6 +1,6 @@
 # B07 Model Studio implementation plan
 
-Status: source audit and design decision; implementation is next. Existing model management is functional but remains a long mixed list of model facts, evaluations and provider forms. This plan does not mark B07 complete.
+Status: implementation integrated; verification and recovery fixes in progress. Existing model management was a long mixed list of model facts, evaluations and provider forms. This plan does not mark B07 complete.
 
 ## Product decision
 
@@ -26,3 +26,10 @@ Start with failing browser tests for active-run recovery and new catalog/inspect
 Run strict types/full relevant tests and production build before one browser fixture. Inspect actual desktop/mobile light/dark captures with representative local/cloud/offline models; include loading/error/empty and active evaluation. Check no page overflow, readable facts, reachable actions, keyboard focus, axe and short landscape. A mocked browser evaluation proves presentation only; retain separate actual-model evidence and do not reinterpret it as provider acceptance.
 
 Update README/user guide, design review, acceptance results, requirements matrix, progress.json and continuation after the verified increment. Keep routing-quality, full performance and broader platform gates open. Never rebuild dist while a browser fixture serves it.
+
+## Review findings to close before this increment is accepted
+
+- Result history starts only when an evaluation executes. Recover queued/paused evaluations through a separate owner-authenticated, exact-model/protocol lookup over durable admission records; do not synthesize result scores or use a truncated report list as proof of inactivity.
+- Guard pending admission/cancellation across model-inspector changes, including discovery refresh that could remove the selected model. Completed admission may leave the dialog because its durable task remains recoverable.
+- Google save/disconnect acknowledgement must follow the mutation, independently of background discovery latency. Keep refresh errors visible in their query surfaces.
+- Actual screenshot inspection found the first theme fixture used the wrong local-storage key. Repeat the matrix using the product key and assert the rendered theme; the initial dark-labelled captures are not dark-mode evidence.

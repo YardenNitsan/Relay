@@ -23,7 +23,7 @@ for(const dismissal of ['escape','close','backdrop'] as const)test(`project file
   await projects.getByRole('textbox',{name:'File contents',exact:true}).fill('Unsaved important edit');
   if(dismissal==='close'){
     await projects.getByRole('button',{name:'draft.txt',exact:true}).click();
-    await expect(page.getByRole('dialog',{name:'Unsaved file changes',exact:true})).toHaveCount(0);
+    await expect(page.getByRole('dialog',{name:'Unsaved changes',exact:true})).toHaveCount(0);
     await expect(projects.getByRole('textbox',{name:'File contents',exact:true})).toHaveValue('Unsaved important edit');
   }
   if(dismissal==='backdrop'){
@@ -39,7 +39,7 @@ for(const dismissal of ['escape','close','backdrop'] as const)test(`project file
   if(dismissal==='escape')await page.keyboard.press('Escape');
   else if(dismissal==='backdrop')await page.mouse.click(2,2);
   else await projects.getByRole('button',{name:'Close Workspaces',exact:true}).click();
-  const warning=page.getByRole('dialog',{name:'Unsaved file changes',exact:true});
+  const warning=page.getByRole('dialog',{name:'Unsaved changes',exact:true});
   await expect(warning).toBeVisible();
   await expect(warning.getByRole('button',{name:'Keep editing',exact:true})).toBeFocused();
   await page.keyboard.press('ControlOrMeta+k');await expect(warning).toBeVisible();
@@ -70,11 +70,11 @@ for(const dismissal of ['escape','close','backdrop'] as const)test(`project file
       await expect(projects.getByRole('textbox',{name:'File contents',exact:true})).toBeDisabled();
       await page.keyboard.press('ControlOrMeta+k');await expect(projects).toBeVisible();
       await projects.getByRole('button',{name:'Close Workspaces',exact:true}).click();
-      await expect(projects.getByRole('status')).toContainText('Wait for the file operation');
+      await expect(projects.getByRole('status')).toContainText('Wait for the current operation');
       await expect(projects).toBeVisible();
     }finally{release();}
     await expect(projects.getByRole('textbox',{name:'File contents',exact:true})).toBeEnabled();
-    await expect(projects.getByText('Wait for the file operation',{exact:false})).toHaveCount(0);
+    await expect(projects.getByText('Wait for the current operation',{exact:false})).toHaveCount(0);
     await projects.getByRole('textbox',{name:'File contents',exact:true}).fill('Another unsaved edit');
   }
   await projects.getByRole('button',{name:'Close Workspaces',exact:true}).click();

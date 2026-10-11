@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "overallStatus": "incomplete",
-  "updatedAt": "2026-10-10",
+  "updatedAt": "2026-10-11",
   "baselineCommit": "9d563bc973dbcc177921ab918db88561c8280e48",
   "branch": "modernization/final-evolution",
-  "currentMilestone": "C02 managed forks and encrypted restore verified locally; ready to push, then B07 Model Studio",
+  "currentMilestone": "0.1.3: Model Studio, publication recovery, honest agent prerequisites, pretrained router comparison",
   "requirementIds": [
     "A01",
     "A02",
@@ -70,7 +70,10 @@
     "Coding acceptance terminal output bounded to summary; full receipts remain in report.",
     "C02 genuine Relay-owned linked worktrees with raw snapshot import, separate workspace UUIDs, immutable Git provenance, migration11, owner fork API/UI, fresh authorization and joined registration/stop journals; final acceptance pending.",
     "C02 compact landscape branch provenance regression reproduced127.625px, corrected to preserve>=160px editor; final10browser cases pass with waiting/error feedback and light/dark captures.",
-    "C02 encrypted restore repairs only authenticated staging Git pointers; actual two published branches plus prepared-only registration restore after original path becomes unavailable, preserving HEAD/index/raw/dirty files and stopped state.22helper adversarial cases pass."
+    "C02 encrypted restore repairs only authenticated staging Git pointers; actual two published branches plus prepared-only registration restore after original path becomes unavailable, preserving HEAD/index/raw/dirty files and stopped state.22helper adversarial cases pass.",
+    "0.1.3 version reserved; Model Studio inherited work completed with exact model-ID search, responsive inspector and independent evaluation reconciliation.",
+    "Publication/rollback show pending review; browser awaits actual POST response and preserves conflict/file/approval assertions.",
+    "Agent prerequisite reporting distinguishes unavailable isolated runtime and missing Workspace connection; no tool grants or live execution claims."
   ],
   "changedFiles": [
     ".github/workflows/native-integrations.yml",
@@ -348,8 +351,8 @@
     "npm.cmd run check (final C02/restore:1305passed/one skip,123files,273.47s)",
     "npm.cmd run build (final C02/restore)"
   ],
-  "lastPassingCommit": "f21317cee3234d198a2c91c5ff61b19ce5e58b58",
-  "lastPassingCommitScope": "Pushed f21317c actual coding success/failed repeat evidence and bounded reporting; all6host/browser38083153810 pass. C02 integrated gate running separately.",
+  "lastPassingCommit": "739d0034b4f7c5dad126d95dd9c962e4b4353475",
+  "lastPassingCommitScope": "739d003 C02: local1305tests/one skip/build/browser/native pass. Hosted native38085207781passed; verification38085207703 Windows browser164/165 failed (pending publication preview at320px), five other jobs passed.",
   "knownFailures": [
     "Real coding: larger9B RAM admission refusal; smaller9B initial missing-runtime-temp load error repaired;16K context paused;32K wrong activity repair/output-limit pause after7calls. Earlier trials had no publication; later coding-0O93wv succeeds.",
     "Gemma4 12B32K candidate also refused unchanged RAM admission; no inference occurred.",
@@ -358,7 +361,10 @@
     "Identical32K/8192 local9B repeat coding-IORGAe fails after9calls/293050ms, awaiting user after denied extra command; separate real-container diagnostic8/9 reveals unfiltered foreign AGENT_STARTED. No publication. No third cherry-picked retry.",
     "Historical B06 failures are fixed and6d154db complete hosted155browser/all3host gates pass.",
     "C02 compact initial2/6: stale fixture catalog and real landscape editor127.625px. Corrected10/10browser passes; no reduced height assertion.",
-    "Encrypted worktree restore initially failed actualGit because pointers referenced unavailable original. Corrected41focused integration cases pass; cross-platform restore and interrupted-registration reconciliation remain open."
+    "Encrypted worktree restore initially failed actualGit because pointers referenced unavailable original. Corrected41focused integration cases pass; cross-platform restore and interrupted-registration reconciliation remain open.",
+    "0.1.3 first browser14: three actual evaluation refresh/dismissal regressions repaired; rerun41:40passed, new publication loading assertion matched two status messages, narrowed without weakening publication checks.",
+    "Pretrained v1 promotion failed: MiniLM26/64, baseline25/64, E5 17/64, NLI13/64. No production semantic replacement claimed.",
+    "Pretrainedv2 failed promotion:23/64vsbaseline22/64, English11vs12 and forbidden9vs4. Retained; no production promotion. Richer exemplars/larger NLI are development experiments only."
   ],
   "outstandingSecurityReviews": [
     "Full threat-model review",
@@ -367,13 +373,14 @@
     "Focused C02 fork/registration and staged restore integration reviews found no additional actionable defect; broader source integration/reconciliation remain open."
   ],
   "externalBlockers": [
-    "Second physical Companion device not established",
     "Google OAuth application and owner consent unavailable",
     "Native macOS and physical Linux GPU unavailable locally",
     "License/admin protection authorization pending",
-    "Draft PR connector HTTP403; branch pushes work"
+    "Draft PR connector HTTP403; branch pushes work",
+    "Owner has Android phone; current deployed0.1.2 mobile-data sign-in succeeded after tunnel restart. Modernization physical-device workflows remain untested.",
+    "Second authorized Companion computer not established; cloud/email/calendar test accounts not configured (owner confirmed)."
   ],
-  "nextActionableWorkItem": "Commit/push verified C02 fork/restore increment; track its hosted checks. Execute model-studio-plan.md: first active evaluation recovery regression, then catalog/inspector/Connections redesign with browser/visual acceptance.",
+  "nextActionableWorkItem": "Join frozen pretrained-v2 evaluation; no primary semantic claim before promotion/integration gates. Commit and push reviewed Model Studio/readiness increment with1332tests/build and40+9browser evidence. Then continue routing, catalog policies and full matrix.",
   "remainingDependencies": [
     "A native recovery/restore/retention",
     "B full redesign",
@@ -385,8 +392,23 @@
   ],
   "activeExecution": {
     "privateModelHost": null,
-    "modelInference": null,
-    "checks": null
+    "modelInference": {
+      "sessionId": 9176,
+      "scope": "CPU pretrained development-only comparison; no production dispatch"
+    },
+    "checks": null,
+    "remoteConnector": {
+      "wranglerPid": 27840,
+      "cloudflaredPid": 18708,
+      "originalHostPid": 20332,
+      "scope": "Restarted existing named relay-host tunnel; no policy/deployment changes"
+    }
   },
-  "lastBenchmarkCommit": "331416b"
+  "lastBenchmarkCommit": "331416b",
+  "verifiedCommands": [
+    "npm.cmd run check (0.1.3:1332passed/one skip,125files,277.92s)",
+    "npm.cmd run build (0.1.3 Model Studio/agent prerequisites)",
+    "npm.cmd run test:e2e -- tests/e2e/publication.spec.ts tests/e2e/agents.spec.ts (9passed,1.0min)",
+    "npm.cmd run test:e2e -- tests/e2e/measurement-reconciliation.spec.ts tests/e2e/calibration.spec.ts (6passed; paused/waiting calibration controls red2 then green)"
+  ]
 }

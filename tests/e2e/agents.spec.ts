@@ -8,7 +8,7 @@ test('specialists retain separate model and permission controls and persist on t
   const dialog = page.getByRole('dialog', { name: 'Agents', exact: true });
   await expect(dialog.getByRole('article')).toHaveCount(10);
   const email = dialog.getByRole('article', { name: 'Email agent', exact: true });
-  await expect(email).toContainText('Available with limits');
+  await expect(email).toContainText('Requires connection');
   await expect(email).toContainText(/mail|connect/i);
   await expect(email.getByRole('button', { name: 'Connect', exact: true })).toHaveCount(0);
   await dialog.getByRole('button', { name: 'Use Learning agent', exact: true }).click();

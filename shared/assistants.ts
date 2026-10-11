@@ -88,6 +88,22 @@ export function getAssistantDefinition(id: string | undefined): AssistantDefinit
   return assistantDefinitions.find(assistant => assistant.id === id);
 }
 
+/** Presentation of observed prerequisites. It cannot grant task capabilities or
+ * certify model quality; dispatch rechecks actual authority and availability. */
+export function assistantReadiness(profile:AssistantDefinition,observed:{tools:string[];workspaceConnected:boolean;sandboxAvailable:boolean}):AssistantAvailability {
+  const connectedRole=profile.id==='email'||profile.id==='calendar';
+  const tools=observed.tools.filter(name=>profile.allowedTools.includes(name)
+    &&(name!=='terminal'||observed.sandboxAvailable)
+    &&(!name.startsWith('gmail_')&&!name.startsWith('calendar_')||observed.workspaceConnected));
+  const limitations=assistantLimitations(profile.id);
+  if(profile.allowedTools.includes('terminal')&&!observed.sandboxAvailable)limitations.push('Isolated test and command execution is unavailable. Configure and verify the sandbox before running commands.');
+  const needsConnection=connectedRole&&!observed.workspaceConnected;
+  return {id:profile.id,name:profile.name,description:profile.description,available:true,
+    status:needsConnection?'connection_required':profile.integrationRequirements.length||!tools.length||profile.allowedTools.includes('terminal')&&!observed.sandboxAvailable?'limited':'ready',
+    tools,limitations,requiredIntegration:profile.integrationRequirements[0],
+    ...(profile.integrationRequirements.length?{integrationState:connectedRole?(observed.workspaceConnected?'connected' as const:'not_configured' as const):'not_implemented' as const}:{})};
+}
+
 /** Describe the missing integration without hiding independently available tools. */
 export function assistantLimitations(id: AssistantId): string[] {
   switch (id) {

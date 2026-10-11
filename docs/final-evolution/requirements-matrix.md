@@ -18,7 +18,7 @@ Status vocabulary: **Complete and verified**, **Implemented but insufficiently v
 | B04 | Conversation/composer redesign (§15A) | Partially implemented | New pane-aware welcome and usable model trigger; confirmed delayed-send draft loss fixed with actual browser regression; full message/composer presentation redesign remains open, existing functional flows retained |
 | B05 | Execution Workbench (§15B) | Partially implemented | Dependency graph and modular output/log/check/diff/approval views integrated; visual/state acceptance in progress, full handoff/artifact inspection still open |
 | B06 | Project Workspace (§15C) | Partially implemented | Adaptive project index/inspector, searchable files, exact source review/rollback and browser folders;18viewport/theme cases and final8affected cases pass. Draft/busy/shortcut/refetch protections, focus, explicit phone onboarding and retained visual review. Full hosted run38081729034 passes all6jobs; Git-aware review, project test/checkpoint history and project memory remain open. |
-| B07 | Model Studio (§15D) | Not implemented | Measured vs estimated quality/resource/runtime/cost/reasoning |
+| B07 | Model Studio (§15D) | Partially implemented | Catalog/inspector/connections integrated;20viewport/theme cases and evaluation recovery/queue/focus/refresh regressions pass. Exact IDs, unknown metadata, advertised/measured distinctions. Explicit load/unload lifecycle controls and broad live model/provider acceptance remain open. |
 | B08 | Devices and Connections (§15E) | Not implemented | Host/browser/Companion separation and revocation |
 | B09 | First-class approvals (§15F) | Partially implemented | Focused consequence-first review, explicit host/scope/deadline/arguments, truthful one-request cloud consent and corrected fallback provenance implemented; five focused approval cases and 41 affected browser checks pass; real captures inspected in both themes on phone/desktop and rejection in short landscape. Full sensitive-action taxonomy and remaining states stay open |
 | B10 | Settings and onboarding (§15G–H) | Not implemented | Personal vs host administration; everyday and advanced flows |
@@ -48,5 +48,19 @@ Status vocabulary: **Complete and verified**, **Implemented but insufficiently v
 | G04 | Threat-model review and security regressions (§11) | Partially implemented | Full boundary inventory and actionable finding closure |
 | G05 | Branch protection and license (§22) | Blocked by unavailable external resources | main currently unprotected; owner approval required for license/admin policy |
 | G06 | Final evidence, screenshots, comparison and scorecard (§25,27) | Not implemented | Honest evidence-based evaluation; no invented scores or unfinished green rows |
+
+## Final owner directive additions (0.1.3)
+
+All earlier A–G rows remain in scope. The thirty-scenario [acceptance ledger](acceptance-0.1.3.md) supersedes the earlier fourteen-scenario count, without discarding its evidence.
+
+| ID | Requirement | Current status | Evidence / remaining gate |
+| --- | --- | --- | --- |
+| D07 | Proven pretrained primary intent routing | Partially implemented | Three real CPU pretrained candidates benchmarked against frozen baseline. First gate failed; calibrated second experiment sealed. No production replacement claimed yet. |
+| D08 | Unified individual-model catalog and policies | Partially implemented | Exact account-discovered model identities and existing privacy/manual/budget guards; normalized provenance, explicit Balanced/Quality/Economy and cloud quality evidence incomplete. |
+| D09 | Independently verified agent registry | Partially implemented | Readiness distinguishes connection/sandbox prerequisites and absent interactive browser/desktop control; every advertised action still requires independent live outcome evidence. |
+| B12 | Physical phone and remote-mobile experience | Blocked by unavailable external resources | Automated core browser flows continue; genuine Android keyboard/Samsung Internet/mobile-data gateway acceptance not established. |
+| B13 | Complete all22views and Agent Studio | Partially implemented | Studio/Projects/Workbench/Models increments exist; full integrated views and comprehensive visual review remain open. |
+| G07 | Cleanup and removal audit | Partially implemented | Model UI decomposed behind compatibility entry; caller/evidence review recorded. Primary router removal waits verified replacement; no security/recovery compatibility discarded. |
+| G08 | Thirty-scenario final scorecard | Partially implemented | Explicit fixture/live/outstanding distinctions in acceptance-0.1.3.md; no final product completion claim. |
 
 Only A04 (deadlines), A06 (native database acceptance), A07 (encrypted restore drill) and B01 (research/concepts) are complete within their documented verification scope. Local-only historical chat and the existing test suite do not imply the new coding, Companion or redesign criteria are met.

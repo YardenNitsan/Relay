@@ -41,6 +41,7 @@ test('Google application setup is explicit, responsive and rejects an unexpected
   await page.getByRole('button', { name: 'Open navigation', exact: true }).click();
   await page.getByRole('dialog', { name: 'Navigate Relay', exact: true }).getByRole('button', { name: 'Models & providers', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Models & connections', exact: true });
+  await dialog.getByRole('button', { name: 'Connections', exact: true }).click();
   const google = dialog.getByRole('region', { name: 'Google connection for Gemini', exact: true });
   await expect(google.getByText('The host owner needs to configure', { exact: false })).toBeVisible();
   await google.getByText('Host owner: configure Google sign-in', { exact: true }).click();

@@ -25,6 +25,26 @@ beforeEach(async()=>{
 });
 afterEach(async()=>{await engine.shutdown();await app.close();await store.close();await rm(dir,{recursive:true,force:true});});
 describe('local HTTP boundary',()=>{
+  it('recognizes an available explicit development profile when the default sandbox is absent',async()=>{
+    const status=vi.spyOn(engine.tools as ToolBroker,'sandboxStatus').mockImplementation(async(profile?:string)=>({available:profile==='python',reason:'Fixture profile status'}));
+    try{
+      const response=await app.inject({url:'/api/assistants',headers:{host,cookie}});expect(response.statusCode).toBe(200);
+      const coding=response.json().assistants.find((item:{id:string})=>item.id==='coding');
+      expect(coding.status).toBe('ready');expect(coding.tools).toContain('terminal');
+      expect(status).toHaveBeenCalledWith('python');
+    }finally{status.mockRestore();}
+  });
+  it('reports connection and sandbox prerequisites without inventing agent execution readiness',async()=>{
+    const status=vi.spyOn(engine.tools as ToolBroker,'sandboxStatus').mockResolvedValue({available:false,reason:'Fixture: no isolated runtime'});
+    try{
+      const response=await app.inject({url:'/api/assistants',headers:{host,cookie}});expect(response.statusCode).toBe(200);
+      const assistants=response.json().assistants as {id:string;status:string;tools:string[];integrationState?:string}[];
+      for(const id of ['email','calendar'])expect(assistants.find(item=>item.id===id)).toMatchObject({status:'connection_required',integrationState:'not_configured'});
+      expect(assistants.find(item=>item.id==='coding')).toMatchObject({status:'limited'});
+      expect(assistants.every(item=>!item.tools.includes('terminal'))).toBe(true);
+      expect(assistants.flatMap(item=>item.tools).some(name=>name.startsWith('gmail_')||name.startsWith('calendar_'))).toBe(false);
+    }finally{status.mockRestore();}
+  });
   it('forks an owner-reviewed workspace into an independent Git branch and persists its identity',async()=>{
     const headers={host,cookie,'x-relay-csrf':csrf};
     const parent=(await app.inject({method:'POST',url:'/api/workspaces',headers,payload:{name:'Original',personal:true}})).json();

@@ -85,3 +85,7 @@ After the first host inference trial finished, the complete native JVM suite was
 - Native file writes/publication, branch integration, owner administration, attachment upload, production signing, Play distribution, verified transitive dependencies and Navigation3 back-stack migration are not implemented. The current native UI provides bounded tab navigation and Back handling.
 
 The APK is a reviewable testing artifact with useful native code and bounded verification. It is not evidence that the full native product or connected acceptance is complete.
+
+## Latest native0.2 checkpoint
+
+See [Android0.2 milestone](android-0.2.md) for the current29-test/build/lint result, retained-signature APK, emulator upgrade/cold launch and exact checksum. This supersedes earlier attachment and in-memory-only draft limitations above; it does not close remote, notifications, installed authenticated connection or physical-device gates.

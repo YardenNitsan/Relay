@@ -46,7 +46,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val dark = isSystemInDarkTheme()
-            MaterialTheme(colorScheme = if (dark) darkColorScheme(primary = Color(0xFFF0B894), secondary = Color(0xFFA8C8CA), background = Color(0xFF121A22), surface = Color(0xFF19232D)) else lightColorScheme(primary = Color(0xFF8E4929), secondary = Color(0xFF365F66), background = Color(0xFFFAF8F4), surface = Color(0xFFFFFDF9))) {
+            MaterialTheme(colorScheme = if (dark) darkColorScheme(primary = Color(0xFFD7ACEC), secondary = Color(0xFFBDB1C9), background = Color(0xFF17141C), surface = Color(0xFF211C28)) else lightColorScheme(primary = Color(0xFF693A80), secondary = Color(0xFF645B70), background = Color(0xFFF5F3F7), surface = Color(0xFFFFFFFF))) {
                 LocalNetworkPermission { val vm: RelayViewModel = viewModel(); RelayApp(vm) }
             }
         }
@@ -113,6 +113,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+            state.notice?.let { Text(it, Modifier.padding(horizontal = 16.dp, vertical = 8.dp), style = MaterialTheme.typography.bodySmall) }
             if (state.session == null) ConnectScreen(state, vm)
             else when (state.tab) {
                 "Chat" -> {
@@ -156,6 +157,23 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable private fun ChatScreen(s: RelayUi, vm: RelayViewModel) {
     var history by remember { mutableStateOf(false) }
+    val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument(), vm::attachmentPicked)
+    s.attachment?.let { attachment ->
+        AlertDialog(onDismissRequest = vm::discardAttachment,
+            title = { Text("Review attachment") },
+            text = { Column(Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(attachment.name, style = MaterialTheme.typography.titleMedium)
+                Text("${java.text.NumberFormat.getIntegerInstance().format(attachment.bytes)} bytes")
+                Text("Destination: ${attachment.workspaceName}")
+                Text("Host: ${s.origin}")
+                Text("Workspace ID: ${attachment.workspaceId ?: "A new private workspace will be created"}")
+                Text(if (attachment.document) "Relay will extract a text copy on the host. The original document is not stored there." else "A text copy will be saved in this workspace on the host.")
+                Text("Uploading does not send a task or grant file tools. People with access to this workspace can read the copy.")
+            } },
+            confirmButton = { TextButton(onClick = vm::uploadAttachment, enabled = !s.busy) { Text("Upload copy") } },
+            dismissButton = { TextButton(onClick = vm::discardAttachment, enabled = !s.busy) { Text("Cancel") } })
+    }
+
     if (history) ModalBottomSheet(onDismissRequest = { history = false }) {
         LazyColumn(Modifier.fillMaxWidth().heightIn(max = 600.dp).padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             item { Text("Conversations", style = MaterialTheme.typography.headlineSmall) }
@@ -183,7 +201,13 @@ class MainActivity : ComponentActivity() {
             }
             if (s.uncertain) { Text("The last message may already have arrived. Refresh and inspect the conversation before sending it again.", color = MaterialTheme.colorScheme.error); TextButton(onClick = vm::acknowledgeUncertain) { Text("I reviewed it · allow another send") } }
             OutlinedTextField(value = s.draft, onValueChange = vm::draft, placeholder = { Text("Describe the task…") }, modifier = Modifier.fillMaxWidth().heightIn(max = 160.dp), minLines = 2, maxLines = 5)
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Text("Local AI · read-only", style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(top = 14.dp)); Button(onClick = vm::send, enabled = !s.busy && s.draft.isNotBlank() && !s.uncertain) { Text("Send task") } }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                TextButton(onClick = {
+                    if (vm.beginAttachmentPick()) picker.launch(arrayOf("*/*"))
+                }, enabled = !s.busy && s.attachment == null) { Text("Attach file") }
+                Button(onClick = vm::send, enabled = !s.busy && s.draft.isNotBlank() && !s.uncertain) { Text("Send task") }
+            }
+            Text("Local AI · read-only · ${s.draftStatus}", style = MaterialTheme.typography.labelSmall)
         } }
     }
 }
@@ -256,8 +280,8 @@ class MainActivity : ComponentActivity() {
         Text(s.session?.optJSONObject("user")?.label("name", "Connected account") ?: "", style = MaterialTheme.typography.titleLarge)
         Text(s.origin); Text("LAN HTTPS · ${s.stream}")
         Text("The host enforces your account permissions. Your phone cannot grant computer access, spend on cloud models or use local-owner controls.")
-        Text("This preview keeps drafts in memory and follows activity while open. It does not provide background push notifications or Cloudflare Access sign-in.")
+        Text("Drafts are encrypted on this device and deleted on sign-out. This preview follows activity while open. It does not provide background push notifications or Cloudflare Access sign-in.")
         OutlinedButton(onClick = { confirm = true }, enabled = !s.busy, modifier = Modifier.fillMaxWidth()) { Text("Sign out") }
-        Text("Native preview 0.1.0 · debug testing build", style = MaterialTheme.typography.labelSmall)
+        Text("Native preview 0.2.0 · debug testing build", style = MaterialTheme.typography.labelSmall)
     }
 }

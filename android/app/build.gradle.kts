@@ -2,7 +2,7 @@ plugins { id("com.android.application"); id("org.jetbrains.kotlin.plugin.compose
 android {
     namespace = "app.relay.nativeclient"
     compileSdk = 37
-    defaultConfig { applicationId = "app.relay.nativeclient"; minSdk = 26; targetSdk = 37; versionCode = 1; versionName = "0.1.0-lan-preview" }
+    defaultConfig { applicationId = "app.relay.nativeclient"; minSdk = 26; targetSdk = 37; versionCode = 2; versionName = "0.2.0-lan-preview" }
     buildFeatures { compose = true }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     buildTypes { release { isMinifyEnabled = true; isShrinkResources = true; proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro") } }

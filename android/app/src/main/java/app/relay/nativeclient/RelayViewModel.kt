@@ -1,6 +1,9 @@
 package app.relay.nativeclient
 
 import android.app.Application
+import android.net.Uri
+import android.provider.OpenableColumns
+import android.util.Base64
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.*
@@ -22,11 +25,15 @@ data class RelayUi(
     val files: List<JSONObject> = emptyList(), val file: JSONObject? = null, val filePath: String? = null,
     val models: List<JSONObject> = emptyList(), val selectedWorkspace: String? = null, val selectedAssistant: String? = null,
     val selectedModel: String? = null, val draft: String = "", val tab: String = "Chat", val stream: String = "Disconnected",
-    val events: List<JSONObject> = emptyList(), val liveText: String = "", val uncertain: Boolean = false
+    val events: List<JSONObject> = emptyList(), val liveText: String = "", val uncertain: Boolean = false,
+    val draftStatus: String = "", val attachment: AttachmentReview? = null, val notice: String? = null
 )
+data class AttachmentReview(val name: String, val bytes: Int, val document: Boolean, val workspaceId: String?, val workspaceName: String)
+data class AttachmentTarget(val epoch: Long, val conversation: String)
 
 class RelayViewModel(application: Application) : AndroidViewModel(application) {
     private val vault = SessionVault(application)
+    private val draftRepository = DraftVault(application).repository
     private val mutable = MutableStateFlow(RelayUi())
     val state = mutable.asStateFlow()
     private var client: RelayClient? = null
@@ -39,10 +46,35 @@ class RelayViewModel(application: Application) : AndroidViewModel(application) {
     private var scope: String? = null
     private var liveCallId: String? = null
     private var pendingStart: Pair<String, JSONObject>? = null
-    private val drafts = mutableMapOf<String, String>()
+    private val drafts = mutableMapOf<String, DraftRecord>()
+    private var draftEpoch = 0L
+    private var draftRevision = 0L
+    private var preparedAttachment: PreparedAttachment? = null
+    private var pendingAttachmentTarget: AttachmentTarget? = null
     private fun draftKey() = state.value.conversation?.optJSONObject("conversation")?.label("id") ?: "new"
     private fun update(change: (RelayUi) -> RelayUi) { mutable.value = change(mutable.value) }
     private fun valid(c: RelayClient, generation: Long) { if (c !== client || epoch != generation) throw CancellationException("Session changed") }
+    private fun record(s: RelayUi = state.value) = DraftRecord(s.draft, s.selectedWorkspace, s.selectedAssistant, s.selectedModel, s.uncertain)
+    private fun restored(s: RelayUi, value: DraftRecord) = s.copy(draft = value.text, selectedWorkspace = value.workspaceId,
+        selectedAssistant = value.assistantId, selectedModel = value.modelId, uncertain = value.uncertain, draftStatus = "Draft saved on this device")
+    private fun persistDraft() {
+        if (state.value.session == null) return
+        val id = draftKey(); val value = record(); drafts[id] = value
+        val localEpoch = draftEpoch; val generation = epoch; val revision = ++draftRevision
+        update { it.copy(draftStatus = "Saving draft…") }
+        viewModelScope.launch {
+            try {
+                withContext(Dispatchers.IO) { draftRepository.save(localEpoch, id, revision, value) }
+                if (generation == epoch && draftKey() == id && revision == draftRevision) update { it.copy(draftStatus = "Draft saved on this device") }
+            } catch (_: Exception) {
+                if (generation == epoch) update { it.copy(draftStatus = "Draft not saved", error = "The device could not save this draft securely. Keep the app open and try again before leaving.") }
+            }
+        }
+    }
+    private suspend fun loadDraft(id: String): DraftRecord {
+        val localEpoch = draftEpoch
+        return drafts[id] ?: withContext(Dispatchers.IO) { draftRepository.load(localEpoch, id) }
+    }
     init {
         viewModelScope.launch {
             update { it.copy(busy = true) }
@@ -55,7 +87,7 @@ class RelayViewModel(application: Application) : AndroidViewModel(application) {
         if (state.value.busy) return
         val origin = try { Protocol.origin(url) } catch (e: IllegalArgumentException) { update { it.copy(error = e.message) }; return }
         if (invitation != null && !Regex("^[A-Za-z0-9_-]{43}$").matches(invitation.trim())) { update { it.copy(error = "Enter the one-use invitation supplied by the host owner.") }; return }
-        epoch++; actionJob?.cancel(); stopRealtime(); client?.close()
+        epoch++; actionJob?.cancel(); stopRealtime(); client?.close(); preparedAttachment = null; pendingAttachmentTarget = null; drafts.clear()
         val c = RelayClient(origin, saved); client = c
         val generation = epoch
         update { RelayUi(busy = true, origin = origin) }
@@ -63,11 +95,25 @@ class RelayViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val session = c.session(invitation?.trim()); valid(c, generation)
                 withContext(Dispatchers.IO) { vault.save(origin, c.storedCookie()) }; valid(c, generation)
+                draftEpoch = draftRepository.activate(origin, session.getJSONObject("user").getString("id"))
+                val draft = loadDraft("new"); valid(c, generation)
                 update { it.copy(session = session, error = null) }
+                update { restored(it, draft) }
                 refreshLists(c, generation)
                 startRealtime()
             } catch (e: CancellationException) { throw e }
-            catch (e: Exception) { if (epoch == generation) { c.close(); client = null; vault.clear(); update { it.copy(session = null, error = friendly(e)) } } }
+            catch (e: Exception) {
+                if (epoch == generation) {
+                    if (e is RelayError && e.status == 401) {
+                        disconnect(false)
+                        val deletionWarning = state.value.error
+                        update { RelayUi(origin = origin, error = listOfNotNull(friendly(e), deletionWarning).joinToString(" ")) }
+                    } else {
+                        c.close(); client = null; vault.clear(); drafts.clear(); preparedAttachment = null; pendingAttachmentTarget = null
+                        update { RelayUi(origin = origin, error = friendly(e)) }
+                    }
+                }
+            }
             finally { if (epoch == generation) update { it.copy(busy = false) } }
         }
     }
@@ -119,16 +165,20 @@ class RelayViewModel(application: Application) : AndroidViewModel(application) {
     }
     fun selectConversation(id: String) = action { c, generation ->
         val detail = c.json("/api/conversations/$id") as JSONObject; valid(c, generation)
-        drafts[draftKey()] = state.value.draft
-        update { it.copy(conversation = detail, task = null, liveText = "", uncertain = false, tab = "Chat", draft = drafts[id] ?: "") }
+        drafts[draftKey()] = record()
+        val draft = loadDraft(id); valid(c, generation)
+        update { restored(it.copy(conversation = detail, task = null, liveText = "", tab = "Chat", notice = null), draft) }
         pendingStart = null; refreshSelection(c, generation)
     }
-    fun newConversation() { if (!state.value.busy) { drafts[draftKey()] = state.value.draft; pendingStart = null; update { it.copy(conversation = null, task = null, liveText = "", uncertain = false, tab = "Chat", draft = drafts["new"] ?: "") } } }
-    fun draft(value: String) { update { it.copy(draft = value.take(32000)) } }
-    fun tab(value: String) { update { it.copy(tab = value, file = null, filePath = null) } }
-    fun chooseAssistant(id: String?) { if (!state.value.busy) update { it.copy(selectedAssistant = id) } }
-    fun chooseModel(id: String?) { if (!state.value.busy) update { it.copy(selectedModel = id) } }
-    fun chooseWorkspace(id: String?) { if (!state.value.busy) update { it.copy(selectedWorkspace = id) } }
+    fun newConversation() = action { c, generation ->
+        drafts[draftKey()] = record(); val draft = loadDraft("new"); valid(c, generation)
+        pendingStart = null; update { restored(it.copy(conversation = null, task = null, liveText = "", tab = "Chat", notice = null), draft) }
+    }
+    fun draft(value: String) { update { it.copy(draft = value.take(32000)) }; persistDraft() }
+    fun tab(value: String) { if (!state.value.busy) update { it.copy(tab = value, file = null, filePath = null) } }
+    fun chooseAssistant(id: String?) { if (!state.value.busy) { update { it.copy(selectedAssistant = id) }; persistDraft() } }
+    fun chooseModel(id: String?) { if (!state.value.busy) { update { it.copy(selectedModel = id) }; persistDraft() } }
+    fun chooseWorkspace(id: String?) { if (!state.value.busy) { update { it.copy(selectedWorkspace = id) }; persistDraft() } }
     fun clearError() { update { it.copy(error = null) } }
     private fun options(): JSONObject {
         val s = state.value
@@ -148,6 +198,13 @@ class RelayViewModel(application: Application) : AndroidViewModel(application) {
         val text = s.draft.trim()
         val conversationId = s.conversation?.optJSONObject("conversation")?.label("id")
         action { c, generation ->
+            val submittedKey = conversationId ?: "new"
+            val localDraftEpoch = draftEpoch
+            update { it.copy(uncertain = true) }
+            drafts[submittedKey] = record()
+            val durable = record(); val revision = ++draftRevision
+            withContext(Dispatchers.IO) { draftRepository.save(localDraftEpoch, submittedKey, revision, durable) }
+            valid(c, generation)
             val body = JSONObject().put("content", text).put("options", options())
             if (conversationId == null) {
                 val serialized = body.toString()
@@ -156,23 +213,42 @@ class RelayViewModel(application: Application) : AndroidViewModel(application) {
                 pendingStart = requestId to JSONObject(serialized)
                 body.put("requestId", requestId)
             }
+            var admitted = false
             try {
                 val result = c.json(if (conversationId == null) "/api/conversations/start" else "/api/conversations/$conversationId/messages", "POST", body) as JSONObject
                 valid(c, generation)
+                admitted = true
                 val id = result.getJSONObject("task").getString("conversationId")
+                val acknowledged = acknowledgedDraft(record(), text)
+                drafts[submittedKey] = acknowledged
+                update { restored(it, acknowledged) }
+                val acknowledgedRevision = ++draftRevision
+                withContext(Dispatchers.IO) { draftRepository.save(localDraftEpoch, submittedKey, acknowledgedRevision, acknowledged) }
+                valid(c, generation)
                 val detail = c.json("/api/conversations/$id") as JSONObject; valid(c, generation)
                 pendingStart = null; drafts.remove(conversationId ?: "new")
-                update { it.copy(conversation = detail, task = null, draft = if (it.draft.trim() == text) "" else it.draft, liveText = "") }
+                update { it.copy(conversation = detail, task = null, liveText = "", uncertain = false) }
+                val destinationDraft = record(); val destinationRevision = ++draftRevision
+                withContext(Dispatchers.IO) { draftRepository.save(localDraftEpoch, id, destinationRevision, destinationDraft) }
+                valid(c, generation)
+                if (conversationId == null) {
+                    drafts["new"] = DraftRecord()
+                    val cleanupRevision = ++draftRevision
+                    withContext(Dispatchers.IO) { draftRepository.save(localDraftEpoch, "new", cleanupRevision, DraftRecord()) }
+                    valid(c, generation)
+                }
+                persistDraft()
                 refreshSelection(c, generation)
             } catch (e: CancellationException) { throw e }
             catch (e: Exception) {
                 valid(c, generation)
-                if (e !is RelayError) update { it.copy(uncertain = true, error = "Delivery is uncertain. Refresh the conversation before deciding whether to send again.") }
+                if (admitted || e is RelayError) { update { it.copy(uncertain = false, notice = if (admitted) "The host accepted the task. Refresh History to inspect it." else it.notice) }; persistDraft() }
+                else { update { it.copy(uncertain = true, error = "Delivery is uncertain. Refresh the conversation before deciding whether to send again.") }; persistDraft() }
                 throw e
             }
         }
     }
-    fun acknowledgeUncertain() { update { it.copy(uncertain = false, error = null) } }
+    fun acknowledgeUncertain() { update { it.copy(uncertain = false, error = null) }; persistDraft() }
     fun inspectTask(id: String) = action { c, generation -> val task = c.json("/api/tasks/$id") as JSONObject; valid(c, generation); liveCallId = null; update { it.copy(task = task, liveText = "") } }
     fun cancelTask(id: String) = action { c, generation -> c.json("/api/tasks/$id/cancel", "POST"); valid(c, generation); refreshSelection(c, generation) }
     fun approve(id: String, allow: Boolean) = action { c, generation ->
@@ -183,13 +259,98 @@ class RelayViewModel(application: Application) : AndroidViewModel(application) {
         val paths = data.getJSONArray("files")
         val files = (0 until paths.length()).map { JSONObject().put("path", paths.getString(it)) }
         update { it.copy(selectedWorkspace = id, files = files, file = null, filePath = null) }
+        persistDraft()
     }
     fun openFile(path: String) = action { c, generation ->
         val id = state.value.selectedWorkspace ?: return@action
         val file = c.json("/api/workspaces/$id/file?path=${URLEncoder.encode(path, "UTF-8")}") as JSONObject; valid(c, generation)
         update { it.copy(file = file, filePath = path) }
     }
-    fun closeFile() { update { it.copy(file = null, filePath = null) } }
+    fun closeFile() { if (!state.value.busy) update { it.copy(file = null, filePath = null) } }
+    fun beginAttachmentPick(): Boolean {
+        if (state.value.busy || state.value.session == null) return false
+        pendingAttachmentTarget = AttachmentTarget(epoch, draftKey())
+        return true
+    }
+    fun attachmentPicked(uri: Uri?) {
+        val target = pendingAttachmentTarget
+        pendingAttachmentTarget = null
+        if (uri == null) return
+        if (target == null) {
+            if (state.value.session != null) update { it.copy(error = "The file selection expired. Choose the attachment again.") }
+            return
+        }
+        prepareAttachment(uri, target)
+    }
+    fun prepareAttachment(uri: Uri, target: AttachmentTarget) {
+        if (target.epoch != epoch || target.conversation != draftKey() || state.value.busy) return
+        if (uri.scheme != "content") { update { it.copy(error = "Choose a file through the Android document picker.") }; return }
+        action { c, generation ->
+            val s = state.value
+            val user = s.session!!.getJSONObject("user")
+            val workspace = s.workspaces.firstOrNull { it.label("id") == s.selectedWorkspace }
+            if (s.selectedWorkspace != null && workspace == null) throw RelayError(0, "Refresh Projects and select an available workspace before attaching a file.")
+            if (workspace != null && workspace.label("ownerUserId") != user.label("id") && user.optJSONObject("permissions")?.label("maxAccess") == "read_only") throw RelayError(0, "This shared workspace is read-only. Select your own workspace or clear the task context to create a private one.")
+            val prepared = withContext(Dispatchers.IO) {
+                val resolver = getApplication<Application>().contentResolver
+                val name = resolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use {
+                    if (it.moveToFirst()) it.getString(0) else null
+                } ?: throw RelayError(0, "The selected document has no usable file name.")
+                resolver.openInputStream(uri)?.use {
+                    try { Attachments.prepare(name, it) } catch (error: IllegalArgumentException) { throw RelayError(0, error.message ?: "This attachment is unsupported.") }
+                } ?: throw RelayError(0, "The selected document could not be opened.")
+            }
+            valid(c, generation)
+            if (target.conversation != draftKey()) return@action
+            preparedAttachment = prepared
+            update { it.copy(attachment = AttachmentReview(prepared.name, prepared.bytes.size, prepared.document, s.selectedWorkspace, workspace?.label("name") ?: "New private attachment workspace"), error = null) }
+        }
+    }
+    fun discardAttachment() { if (!state.value.busy) { preparedAttachment = null; update { it.copy(attachment = null) } } }
+    fun uploadAttachment() {
+        val prepared = preparedAttachment ?: return
+        val review = state.value.attachment ?: return
+        action { c, generation ->
+            var uploadAcknowledged = false
+            try {
+            var workspaceId = review.workspaceId
+            if (workspaceId == null) {
+                val created = c.json("/api/workspaces", "POST", JSONObject().put("name", "Conversation attachments").put("personal", true)) as JSONObject
+                valid(c, generation); workspaceId = created.getString("id")
+                update { it.copy(selectedWorkspace = workspaceId, workspaces = (it.workspaces + created).distinctBy { value -> value.label("id") }, attachment = review.copy(workspaceId = workspaceId, workspaceName = created.label("name"))) }
+                persistDraft()
+            }
+            val path = if (prepared.document) {
+                val result = c.json("/api/workspaces/$workspaceId/documents", "POST", JSONObject().put("name", prepared.name).put("contentBase64", Base64.encodeToString(prepared.bytes, Base64.NO_WRAP))) as JSONObject
+                valid(c, generation)
+                if (!result.optBoolean("uploaded")) throw RelayError(0, "The host did not confirm the document import.")
+                result.getString("path")
+            } else {
+                val path = "attachments/${UUID.randomUUID()}/${prepared.name}"
+                val result = c.json("/api/workspaces/$workspaceId/files", "POST", JSONObject().put("path", path).put("content", prepared.text)) as JSONObject
+                valid(c, generation)
+                if (!result.optBoolean("uploaded")) throw RelayError(0, "The host did not confirm the file upload.")
+                path
+            }
+            uploadAcknowledged = true
+            preparedAttachment = null
+            update { it.copy(attachment = null, selectedWorkspace = workspaceId, notice = if (prepared.document) "Document imported as text. The original document is not stored on Relay." else "File uploaded to the selected workspace.") }
+            try { update { it.copy(draft = Attachments.appendReceipt(it.draft, path)) } }
+            catch (error: IllegalArgumentException) { throw RelayError(0, error.message ?: "Open Projects to inspect the uploaded file.") }
+            persistDraft()
+            } catch (error: CancellationException) { throw error }
+            catch (error: Exception) {
+                valid(c, generation)
+                // A response failure can follow a committed write. Never retain
+                // a retryable mutation after an unconfirmed result.
+                if (!uploadAcknowledged && (error !is RelayError || error.status !in 400..499)) {
+                    preparedAttachment = null
+                    update { it.copy(attachment = null, notice = "The upload result is uncertain. Inspect Projects before choosing this file again; the host may already have saved a copy.") }
+                }
+                throw error
+            }
+        }
+    }
     fun foreground(active: Boolean) { foreground = active; if (active) startRealtime() else stopRealtime() }
     private fun stopRealtime() { streamJob?.cancel(); streamJob = null; refreshJob?.cancel(); refreshJob = null }
     private fun startRealtime() {
@@ -243,8 +404,9 @@ class RelayViewModel(application: Application) : AndroidViewModel(application) {
     }
     fun disconnect(sendLogout: Boolean = true) {
         val old = client
-        epoch++; client = null; actionJob?.cancel(); stopRealtime(); cursor = 0; scope = null; pendingStart = null; drafts.clear()
-        vault.clear(); update { RelayUi() }
+        epoch++; client = null; actionJob?.cancel(); stopRealtime(); cursor = 0; scope = null; pendingStart = null; drafts.clear(); preparedAttachment = null; pendingAttachmentTarget = null
+        val cleared = runCatching { draftRepository.clear() }.isSuccess
+        vault.clear(); update { RelayUi(error = if (cleared) null else "Signed out. Android could not confirm deletion of protected drafts; clear the app's storage in Android settings if needed.") }
         if (old != null) viewModelScope.launch {
             try { if (sendLogout) old.json("/api/session/logout", "POST") }
             catch (_: Exception) { if (client == null) update { it.copy(error = "Signed out on this device. The host could not confirm session termination; ask the owner to revoke it if needed.") } }

@@ -3,6 +3,7 @@ import { pairBrowser } from './helpers';
 
 test('dropping text files prepares one private workspace and rejects unsupported content honestly', async ({ page }) => {
   await page.goto('/'); await pairBrowser(page);
+  const initialUrl = page.url();
   const before = await (await page.request.get('/api/workspaces')).json();
   const transfer = await page.evaluateHandle(() => {
     const data = new DataTransfer();
@@ -31,7 +32,7 @@ test('dropping text files prepares one private workspace and rejects unsupported
   await chat.dispatchEvent('drop', { dataTransfer: pdf });
   await expect(page.getByRole('alert')).toContainText('Legacy .doc files are not supported');
   await expect(page.getByLabel('File attachments', { exact: true })).not.toHaveAttribute('accept');
-  await expect(page).toHaveURL('http://127.0.0.1:4319/');
+  await expect(page).toHaveURL(initialUrl);
   const unchanged = await (await page.request.get(`/api/workspaces/${workspace.id}/files`)).json();
   expect(unchanged.files).toEqual(files.files);
 });

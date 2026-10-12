@@ -37,7 +37,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
-        shard: [1, 2]
+        shard: [1, 2, 3]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     env:
@@ -56,10 +56,10 @@ jobs:
       - name: Browser acceptance (Windows native account ownership)
         if: runner.os == 'Windows'
         shell: powershell
-        run: ./scripts/windows-test-token.ps1 -Command npm.cmd -CommandArguments @('run', 'test:e2e', '--', '--shard=${{ matrix.shard }}/2')
+        run: ./scripts/windows-test-token.ps1 -Command npm.cmd -CommandArguments @('run', 'test:e2e', '--', '--shard=${{ matrix.shard }}/3')
       - name: Browser acceptance
         if: runner.os != 'Windows'
-        run: npm run test:e2e -- --shard=${{ matrix.shard }}/2
+        run: npm run test:e2e -- --shard=${{ matrix.shard }}/3
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: failure()
         with:

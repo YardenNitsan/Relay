@@ -27,6 +27,7 @@ for (const denied of [false, true]) {
 test('Google application setup is explicit, responsive and rejects an unexpected sign-in destination', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 900 });
   await page.goto('/'); await pairBrowser(page);
+  const initialUrl = page.url();
   let configured = false; let saved: unknown;
   await page.route('**/api/models*', async route => {
     const response = await route.fetch(); const catalog = await response.json();
@@ -57,7 +58,7 @@ test('Google application setup is explicit, responsive and rejects an unexpected
   await expect(setup.getByLabel('Google OAuth client secret', { exact: true })).toHaveValue('');
   await google.getByRole('button', { name: 'Continue with Google', exact: true }).click();
   await expect(google.getByRole('alert')).toContainText('invalid Google sign-in address');
-  await expect(page).toHaveURL('http://127.0.0.1:4319/');
+  await expect(page).toHaveURL(initialUrl);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect((await new AxeBuilder({ page }).include('dialog').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([]);
   await page.screenshot({ path: 'output/playwright/google-setup-phone.png' });

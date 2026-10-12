@@ -216,6 +216,11 @@ test('revoking the active owner session clears private UI and stops polling unti
   await page.getByRole('textbox', { name: 'Objective' }).fill('Explain the execution model');
   await page.getByRole('button', { name: 'Send objective' }).click();
   await expect(page.getByText('Completed', { exact: true }).first()).toBeVisible();
+  // Open the polling view while this session is still authorized. Once revoked,
+  // any in-flight read may correctly remove private controls before another click.
+  await openCommands(page);await page.getByRole('option',{name:/^Inspect this machine/}).click();
+  await expect(page.getByRole('dialog',{name:'This machine',exact:true})).toBeVisible();
+  await page.clock.install();
   const cookie = (await page.context().cookies()).find(item => item.name === 'relay_local');
   expect(cookie).toBeDefined();
   const sessionId = createHash('sha256').update(cookie!.value).digest('hex');
@@ -225,8 +230,7 @@ test('revoking the active owner session clears private UI and stops polling unti
     return response.status;
   }, sessionId);
   expect(revoked).toBe(200);
-  await page.clock.install();
-  await openCommands(page);await page.getByRole('option',{name:/^Inspect this machine/}).click();
+  await page.clock.fastForward(10_000);
   await expect(page.getByRole('heading', { name: 'Connect this browser' })).toBeVisible();
   await expect(page.getByRole('textbox', { name: 'Objective' })).toHaveCount(0);
   await expect(page.getByText('A deterministic response for browser testing.', { exact: false })).toHaveCount(0);

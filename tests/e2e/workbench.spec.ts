@@ -40,11 +40,15 @@ test('Workbench shows branching dependencies and long model names without implyi
   // Presentation fixture only. This is not multi-agent execution acceptance.
   // Install before TaskModels primes the shared task-query cache. A late route
   // depends on stale-time/refetch timing and can leave the original graph cached.
+  const pendingRoutes=new Set<Promise<void>>();
   await page.route(/\/api\/tasks\/[^/]+$/,async route=>{
-    const response=await route.fetch();const data=await response.json() as TaskDetail;
-    const step=(id:string,title:string,dependencies:string[],status:TaskStep['status']):TaskStep=>({id,title,dependencies,status,taskId:data.task.id,role:'coder',modelId:'local/a-very-long-model-name-with-a-large-context-window-and-quantization-details',output:status==='completed'?'Reported work. Independent verification remains separate.':null});
-    data.steps=[step('review','Review both implementations',['backend','frontend'],'pending'),step('backend','Implement backend',['plan'],'completed'),step('frontend','Implement frontend',['plan'],'running'),step('plan','Inspect repository',[],'completed')];
-    await route.fulfill({response,json:data});
+    const work=(async()=>{
+      const response=await route.fetch();const data=await response.json() as TaskDetail;
+      const step=(id:string,title:string,dependencies:string[],status:TaskStep['status']):TaskStep=>({id,title,dependencies,status,taskId:data.task.id,role:'coder',modelId:'local/a-very-long-model-name-with-a-large-context-window-and-quantization-details',output:status==='completed'?'Reported work. Independent verification remains separate.':null});
+      data.steps=[step('review','Review both implementations',['backend','frontend'],'pending'),step('backend','Implement backend',['plan'],'completed'),step('frontend','Implement frontend',['plan'],'running'),step('plan','Inspect repository',[],'completed')];
+      await route.fulfill({response,json:data});
+    })();
+    pendingRoutes.add(work);try{await work;}finally{pendingRoutes.delete(work);}
   });
   try{
   await page.setViewportSize({width:1024,height:900});await page.goto('/');await pairBrowser(page);
@@ -58,7 +62,10 @@ test('Workbench shows branching dependencies and long model names without implyi
   for(const node of await page.locator('.workflow-agent').all())expect(await node.evaluate(element=>element.scrollWidth<=element.clientWidth)).toBe(true);
   await page.screenshot({path:'output/playwright/workbench-branching-1024.png'});
   }finally{
-    // Join in-flight polling handlers before Playwright disposes their responses.
+    // Keep interception registered while overlapping fetch/fulfill handlers finish.
+    // In Playwright 1.63, unrouteAll(wait) clears the client route list first;
+    // one completed handler can then auto-continue another still-fetching route.
+    while(pendingRoutes.size)await Promise.all([...pendingRoutes]);
     await page.unrouteAll({behavior:'wait'});
   }
 });

@@ -116,6 +116,7 @@ test('resource policy remains usable when hardware telemetry is unavailable', as
   await page.getByRole('button',{name:'Machine',exact:true}).click();
   const dialog=page.getByRole('dialog',{name:'This machine'});
   await expect(dialog.getByRole('alert')).toContainText('Telemetry is temporarily unavailable.');
+  await dialog.getByRole('button',{name:'Model safety',exact:true}).click();
   const profile=dialog.getByLabel('Resource profile');
   await expect(profile).toHaveValue('safe');
   await profile.selectOption('balanced');
@@ -138,6 +139,7 @@ test('resource policy distinguishes drafts, rejected changes and persisted host 
   await pairBrowser(page);
   await page.getByRole('button', { name: 'Machine', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'This machine' });
+  await dialog.getByRole('button',{name:'Model safety',exact:true}).click();
   const profile = dialog.getByLabel('Resource profile');
   const save = dialog.getByRole('button', { name: 'Save resource policy', exact: true });
   await expect(profile).toHaveValue('safe');
@@ -162,6 +164,7 @@ test('resource policy distinguishes drafts, rejected changes and persisted host 
   await expect(dialog.getByText('Applied: Balanced', { exact: true })).toBeVisible();
   await page.reload();
   await page.getByRole('button', { name: 'Machine', exact: true }).click();
+  await dialog.getByRole('button',{name:'Model safety',exact:true}).click();
   await expect(profile).toHaveValue('balanced');
   await expect(dialog.getByText('Applied: Balanced', { exact: true })).toBeVisible();
   await profile.selectOption('custom');

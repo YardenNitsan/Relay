@@ -62,6 +62,8 @@ export default function App() {
   const [stopBusy, setStopBusy] = useState(false);
   const [streamGeneration, setStreamGeneration] = useState(0);
   const [sessionFailure, setSessionFailure] = useState<ApiError | null>(null);
+  const [reconnecting,setReconnecting]=useState(false);
+  const reconnectRequest=useRef<Promise<void>|null>(null);
   const sending = useRef(false);
   const startRequest = useRef<PendingStart | null>(null);
   const navigationVersion = useRef(0);
@@ -210,13 +212,20 @@ export default function App() {
     setPanel(null);
   };
   const returnLatest = () => { setMessageId(null); const url = new URL(window.location.href); url.searchParams.delete('message'); window.history.replaceState({}, '', url); };
-  const reconnect = async () => {
-    try {
-      const renewed = await refreshSession(); client.setQueryData(['session'], renewed);
-      setSessionFailure(null);
-      setStreamGeneration(value => value + 1);
-      await Promise.all(['status', 'conversation', 'task', 'models'].map(key => client.invalidateQueries({ queryKey: [key] })));
-    } catch (error) { setNotice({ message: errorMessage(error), error: true }); await client.resetQueries({ queryKey: ['session'], exact: true }); }
+  const reconnect = ():Promise<void> => {
+    if(reconnectRequest.current)return reconnectRequest.current;
+    setReconnecting(true);
+    const request=(async()=>{
+      try {
+        const renewed = await refreshSession(); client.setQueryData(['session'], renewed);
+        setSessionFailure(null);
+        setStreamGeneration(value => value + 1);
+        await Promise.all(['status', 'conversation', 'task', 'models'].map(key => client.invalidateQueries({ queryKey: [key] })));
+      } catch (error) { setNotice({ message: errorMessage(error), error: true }); await client.resetQueries({ queryKey: ['session'], exact: true }); }
+      finally {reconnectRequest.current=null;setReconnecting(false);}
+    })();
+    reconnectRequest.current=request;
+    return request;
   };
   const commands: Command[] = [
     { id: 'notifications', label: 'Task notifications', description: 'Private completion alerts for this browser', action: () => setPanel('notifications') },
@@ -238,36 +247,36 @@ export default function App() {
     ...(owner && stopped ? [{ id: 'resume', label: 'Resume Relay service', description: 'Allow new work; existing tasks remain stopped', action: () => { void resumeService(); } }] : []),
   ];
 
-  if (!ready) return <Connection pending={!sessionFailure && session.isPending} error={sessionFailure ?? session.error} onPaired={data => { client.setQueryData(['session'], data); setSessionFailure(null); setNotice(null); }} onRetry={() => { void reconnect(); }} />;
+  if (!ready) return <Connection pending={!sessionFailure && session.isPending} error={sessionFailure ?? session.error} onPaired={data => { client.setQueryData(['session'], data); setSessionFailure(null); setNotice(null); }} onRetry={reconnect} />;
 
   return <StudioFrame workbenchOpen={activity} title={conversation.data?.conversation.title ?? 'New conversation'} hostName={session.data?.hostName} owner={owner} theme={theme} stopped={stopped} stopBusy={stopBusy} onDestination={setPanel} onNew={() => selectConversation(null)} onConversation={() => { setPanel(null); setActivity(false); }} onWorkbench={() => setActivity(true)} onTheme={() => setTheme(value => value === 'light' ? 'dark' : 'light')} onStop={() => { void emergencyStop(); }}>
-    {backendUnavailable && <div className="service-banner error" role="alert"><span>The service is unavailable or this session has expired. Your draft stays in this browser.</span><button onClick={() => { void reconnect(); }}>Reconnect</button></div>}
-    {!backendUnavailable && realtime.connection === 'reconnecting' && <div className="service-banner"><span>Live activity is reconnecting. Persisted work remains available.</span><button onClick={() => { void reconnect(); }}>Reconnect activity</button></div>}
+    {backendUnavailable && <div className="service-banner error" role="alert"><span>The service is unavailable or this session has expired. Your draft stays in this browser.</span><button disabled={reconnecting} onClick={() => { void reconnect(); }}>{reconnecting?'Reconnecting…':'Reconnect'}</button></div>}
+    {!backendUnavailable && realtime.connection === 'reconnecting' && <div className="service-banner"><span>Live activity is reconnecting. Persisted work remains available.</span><button disabled={reconnecting} onClick={() => { void reconnect(); }}>{reconnecting?'Reconnecting…':'Reconnect activity'}</button></div>}
     {stopped && <div className="service-banner warning" role="status"><span><strong>All work is stopped.</strong> {owner ? 'Resume the service to allow new objectives.' : 'The host owner can resume the service.'}</span>{owner && <button disabled={stopBusy} onClick={() => { void resumeService(); }}>Resume Relay</button>}</div>}
     {notice && <div className={`service-banner ${notice.error ? 'error' : ''}`} role={notice.error ? 'alert' : 'status'}><span>{notice.message}</span><button className="icon-button" aria-label="Dismiss notification" onClick={() => setNotice(null)}><X size={16} /></button></div>}
     {notifications.notice && <div className="service-banner" role="status" aria-label="Task completion notification"><span>{notifications.notice}</span><button className="icon-button" aria-label="Dismiss task notification" onClick={notifications.dismiss}><X size={16} /></button></div>}
-    <div className={`workspace-layout ${activity ? 'has-inspector' : ''}`}><main id="main" className="conversation-main"><div className="conversation-toolbar"><div className="connection-status"><span className={`connection-dot ${ready && realtime.connection === 'live' && !backendUnavailable ? 'connected' : ''}`} /><span>{backendUnavailable ? 'Service disconnected' : !ready ? 'Connecting to Relay' : realtime.connection === 'live' ? remote ? `Connected to ${session.data?.hostName ?? 'shared host'}` : 'Local service connected' : realtime.connection === 'reconnecting' ? 'Reconnecting to activity…' : 'Connecting activity…'}</span></div>{remote && <button className="account-indicator" aria-label="Account and host" onClick={() => setPanel('navigation')}>{session.data?.user?.name ?? 'Your account'}</button>}<button id="activity-toggle" className={`activity-toggle ${activity ? 'active' : ''}`} onClick={() => setActivity(value => !value)} aria-expanded={activity}>{activity ? <PanelRightClose size={16} /> : <ActivityIcon size={16} />}<span>Activity</span>{running && <span className="activity-dot" />}</button></div>
+    <div className={`workspace-layout ${activity ? 'has-inspector' : ''}`}><main id="main" className="conversation-main"><div className="conversation-toolbar"><div className="connection-status"><span className={`connection-dot ${ready && realtime.connection === 'live' && !backendUnavailable ? 'connected' : ''}`} /><span>{realtime.connection==='offline' ? 'Offline — your draft stays here' : backendUnavailable ? 'Service disconnected' : !ready ? 'Connecting to Relay' : realtime.connection === 'live' ? remote ? `Connected to ${session.data?.hostName ?? 'shared host'}` : 'Local service connected' : realtime.connection === 'reconnecting' ? 'Reconnecting to activity…' : 'Connecting activity…'}</span></div>{remote && <button className="account-indicator" aria-label="Account and host" onClick={() => setPanel('navigation')}>{session.data?.user?.name ?? 'Your account'}</button>}<button id="activity-toggle" className={`activity-toggle ${activity ? 'active' : ''}`} onClick={() => setActivity(value => !value)} aria-expanded={activity}>{activity ? <PanelRightClose size={16} /> : <ActivityIcon size={16} />}<span>Activity</span>{running && <span className="activity-dot" />}</button></div>
       <GoogleReturn onModels={() => setPanel('models')} />
       <GoogleWorkspaceReturn onOpen={() => setPanel('google-workspace')} />
       <Conversation onDraft={setDraftRequest} key={`${conversationId ?? 'new'}:${readerVersion}`} focusMessageId={messageId} onReturnLatest={returnLatest} detail={conversation.data} loading={Boolean(conversationId) && conversation.isPending} error={conversation.isError ? conversation.error : null} onRetry={() => { void conversation.refetch(); }} streams={realtime.text} events={realtime.events} models={modelList} onInspect={inspect} onModels={() => setPanel('models')} onWorkspace={() => setPanel('workspaces')} />
       <TaskModels task={latestTask} events={realtime.events} models={modelList} onInspect={id => inspect(id)} />
-      <Composer draftRequest={draftRequest} onDraftApplied={draftApplied} key={`${session.data?.user?.id ?? 'pending'}:${conversationId ?? 'new'}`} conversationId={conversationId} options={options} onOptions={setOptions} onAgents={() => setPanel('agents')} models={modelList} providers={models.data?.providers ?? []} onModels={() => setPanel('models')} workspaces={workspaces.data ?? []} onWorkspace={() => setPanel('workspaces')} onSend={send} disabled={!ready || backendUnavailable} stopped={stopped} running={running} status={status.data} owner={owner} permissions={permissions} userId={session.data?.user?.id ?? 'pending'} />
+      <Composer draftRequest={draftRequest} onDraftApplied={draftApplied} key={`${session.data?.user?.id ?? 'pending'}:${conversationId ?? 'new'}`} conversationId={conversationId} options={options} onOptions={setOptions} onAgents={() => setPanel('agents')} models={modelList} providers={models.data?.providers ?? []} onModels={() => setPanel('models')} workspaces={workspaces.data ?? []} onWorkspace={() => setPanel('workspaces')} onSend={send} disabled={!ready || backendUnavailable || realtime.connection==='offline'} stopped={stopped} running={running} status={status.data} owner={owner} permissions={permissions} userId={session.data?.user?.id ?? 'pending'} />
     </main>{activity && <Activity onAdmitted={notifications.track} taskId={selectedTaskId} tasks={tasks} events={realtime.events} workspaces={workspaces.data ?? []} hostName={session.data?.hostName} onSelect={setTaskId} onClose={() => { setActivity(false); requestAnimationFrame(() => document.getElementById('activity-toggle')?.focus()); }} stopped={stopped} />}</div>
     <footer className="app-footer"><span><Radio size={12} />Your work stays accountable.</span><span>{status.data ? `Relay ${status.data.version}` : 'Relay'}<span className="footer-separator" />{options.cloudPolicy === 'local_only' ? 'Local inference only' : 'Cloud access controlled'}</span></footer>
-    {panel === 'history' && <Modal title="Conversations" onClose={() => setPanel(null)}><History onDeleted={conversationDeleted} selected={conversationId} onSelect={selectConversation} onNew={() => selectConversation(null)} /></Modal>}
+    {panel === 'history' && <Modal title="Conversations" onClose={() => setPanel(null)} wide className="history-studio-modal" initialFocus="#history-search-input"><History onDeleted={conversationDeleted} selected={conversationId} onSelect={selectConversation} onNew={() => selectConversation(null)} /></Modal>}
     {panel === 'notifications' && <Modal title="Task notifications" onClose={() => setPanel(null)}><TaskNotifications controls={notifications} /></Modal>}
     {panel === 'usage' && <Modal title="Usage" className="usage-drawer" onClose={() => setPanel(null)}><Suspense fallback={<Loading>Opening usage…</Loading>}><Usage /></Suspense></Modal>}
-    {panel === 'clients' && <Modal title="External clients" onClose={() => setPanel(null)}><Suspense fallback={<Loading>Opening client access…</Loading>}><Clients permitted={owner || permissions?.externalModelAccess === true} /></Suspense></Modal>}
+    {panel === 'clients' && <Modal title="External clients" onClose={() => setPanel(null)} wide className="clients-studio-modal"><Suspense fallback={<Loading>Opening client access…</Loading>}><Clients permitted={owner || permissions?.externalModelAccess === true} /></Suspense></Modal>}
     {panel === 'agents' && <Modal title="Agents" onClose={() => setPanel(null)} wide className="agent-studio-modal"><Suspense fallback={<Loading>Opening agents…</Loading>}><Agents selected={options.assistantId} workspaceSelected={Boolean(options.workspaceId)} onWorkspace={() => setPanel('workspaces')} onSelect={selectAgent} /></Suspense></Modal>}
     {pickModel && <ModelPicker open initialModelId={pickModel} onClose={() => setPickModel(null)} models={modelList} providers={models.data?.providers ?? []} options={options} onOptions={setOptions} onConnections={() => setPanel('models')} canUseCloud={owner || Boolean((permissions?.dailyCloudBudgetUsd || permissions?.allowUnpricedCloud) && permissions.providers.some(provider => !['ollama', 'lmstudio'].includes(provider)))} />}
     {panel === 'models' && <Modal title="Models & connections" onClose={() => setPanel(null)} wide className="model-studio-modal"><Suspense fallback={<Loading>Opening models…</Loading>}><Models owner={owner} hostName={session.data?.hostName} accountName={session.data?.user?.name} contextTokens={options.contextTokens} onSelect={id => { setPickModel(id); setPanel(null); }} /></Suspense></Modal>}
     {panel === 'mcp' && owner && <Modal title="MCP tools" onClose={() => setPanel(null)}><Suspense fallback={<Loading>Opening tool connections…</Loading>}><Mcp /></Suspense></Modal>}
-    {panel === 'memory' && <Modal title="Your memory" onClose={() => setPanel(null)}><Suspense fallback={<Loading>Opening memory...</Loading>}><Memory workspaces={workspaces.data ?? []} /></Suspense></Modal>}
-    {panel === 'google-workspace' && <Modal title="Google Workspace" onClose={() => setPanel(null)}><Suspense fallback={<Loading>Opening Google Workspace...</Loading>}><GoogleWorkspace owner={owner} /></Suspense></Modal>}
-    {panel === 'schedules' && <Modal title="Scheduled tasks" onClose={() => setPanel(null)}><Suspense fallback={<Loading>Opening schedules...</Loading>}><Schedules workspaces={workspaces.data ?? []} onOpenTask={id => { void api<{task:TaskRecord}>(`/tasks/${encodeURIComponent(id)}`).then(({task}) => selectConversation(task.conversationId)).catch(error => setNotice({message:errorMessage(error),error:true})); }} /></Suspense></Modal>}
-    {panel === 'hardware' && owner && <Modal title="This machine" onClose={() => setPanel(null)}><Suspense fallback={<Loading>Opening resource view…</Loading>}><Hardware status={status.data} /></Suspense></Modal>}
+    {panel === 'memory' && <Modal title="Your memory" onClose={() => setPanel(null)} wide className="memory-studio-modal"><Suspense fallback={<Loading>Opening memory...</Loading>}><Memory workspaces={workspaces.data ?? []} /></Suspense></Modal>}
+    {panel === 'google-workspace' && <Modal title="Google Workspace" onClose={() => setPanel(null)} wide className="google-workspace-studio-modal"><Suspense fallback={<Loading>Opening Google Workspace...</Loading>}><GoogleWorkspace owner={owner} /></Suspense></Modal>}
+    {panel === 'schedules' && <Modal title="Scheduled tasks" onClose={() => setPanel(null)} wide className="schedule-studio-modal"><Suspense fallback={<Loading>Opening schedules...</Loading>}><Schedules workspaces={workspaces.data ?? []} onOpenTask={async id => { const {task}=await api<{task:TaskRecord}>(`/tasks/${encodeURIComponent(id)}`);selectConversation(task.conversationId); }} /></Suspense></Modal>}
+    {panel === 'hardware' && owner && <Modal title="This machine" onClose={() => setPanel(null)} wide className="host-studio-modal"><Suspense fallback={<Loading>Opening resource view…</Loading>}><Hardware status={status.data} /></Suspense></Modal>}
     {panel === 'workspaces' && <Modal title="Workspaces" onClose={() => setPanel(null)} wide className="projects-dialog"><Suspense fallback={<Loading>Opening workspaces…</Loading>}><Workspaces owner={owner} userId={session.data?.user?.id} canWriteShared={permissions?.maxAccess !== undefined && permissions.maxAccess !== 'read_only'} selected={options.workspaceId} onSelect={id => setOptions(value => ({ ...value, workspaceId: id }))} /></Suspense></Modal>}
-    {panel === 'access' && owner && <Modal title="Access & remote connections" onClose={() => setPanel(null)} wide><Suspense fallback={<Loading>Opening access controls…</Loading>}><Access /></Suspense></Modal>}
+    {panel === 'access' && owner && <Modal title="Access & remote connections" onClose={() => setPanel(null)} wide className="access-studio-modal"><Suspense fallback={<Loading>Opening access controls…</Loading>}><Access /></Suspense></Modal>}
     {panel === 'commands' && <CommandPalette commands={commands} onClose={() => setPanel(null)} />}
     {panel === 'navigation' && <Navigation owner={owner} theme={theme} hostName={session.data?.hostName} session={session.data} onDestination={setPanel} onNew={() => selectConversation(null)} onActivity={() => { setPanel(null); setActivity(true); }} onTheme={() => setTheme(value => value === 'light' ? 'dark' : 'light')} onClose={() => setPanel(null)} />}
   </StudioFrame>;

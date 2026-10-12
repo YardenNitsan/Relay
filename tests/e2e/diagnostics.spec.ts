@@ -18,6 +18,7 @@ test('owner can download a bounded diagnostic bundle from a phone',async({page})
   await page.setViewportSize({width:320,height:740});
   await page.goto('/');await pairBrowser(page);await openCommands(page);
   await page.getByRole('option',{name:/Inspect this machine/}).click();
+  await page.getByRole('button',{name:'Recovery',exact:true}).click();
   const pending=page.waitForEvent('download');
   await page.getByRole('button',{name:'Export diagnostic bundle',exact:true}).click();
   const download=await pending;

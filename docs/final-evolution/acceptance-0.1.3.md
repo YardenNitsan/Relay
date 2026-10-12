@@ -23,11 +23,11 @@ Inspected actual browser captures: [before, desktop](evidence/models-before-1440
 | 5 | Resource-pressure selection | Existing deterministic refusal/lease tests and actual oversized-model refusals; new-router integration pending. |
 | 6 | Router failure fallback | Existing provider fallback; pretrained-worker failure gate pending. |
 | 7 | Routing policies and costs | Balanced/Quality/Economy implemented with31focused ranking/evaluation cases, API persistence and picker fixture acceptance. No live cloud-quality superiority established; primary pretrained replacement still pending. |
-| 8 | Architect repository analysis | Managed-source tools exist; independently graded live acceptance pending. |
+| 8 | Architect repository analysis | Eight new Engine/broker integration cases jointly cover architect/security/research roles: actual managed-file reads, attributable receipts/handoffs, denied writes, cancellation and revocation. Scripted provider, not live model-quality acceptance. Independently graded live analysis remains pending. |
 | 9 | Coder implementation/tests | Historical real local success followed by identical failed repeat; reliability gate remains open. |
 | 10 | Debugger repair | Same bounded two-fault corpus; diverse repeated tasks pending. |
-| 11 | Research sources/citations | Permissioned HTTP tools tested; live model-driven source acceptance pending. |
-| 12 | Security Agent | Permissioned specialist exists; independently graded supported-findings acceptance pending. |
+| 11 | Research sources/citations | Permissioned HTTP tools tested; new analysis-role integration verifies actual managed-source read receipts and denies unauthorized writes. Live web research/citation quality remains pending. |
+| 12 | Security Agent | Actual broker read and denied-write/cancellation/revocation evidence from the eight-case analysis-role integration run; scripted provider. Independently graded supported-findings quality remains pending. |
 | 13 | Independent verification | Real container grader used on coding corpus; general specialist acceptance pending. |
 | 14 | Collaboration | Bounded graph/handoff primitives; parallel isolated integration and comparative utility pending. |
 | 15 | Worktree integration | Real managed forks and encrypted relocated restore pass; source history/merge/conflicts incomplete. |

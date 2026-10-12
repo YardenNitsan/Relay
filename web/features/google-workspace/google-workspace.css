@@ -1,0 +1,86 @@
+.modal.google-workspace-studio-modal { width: min(1120px,calc(100vw - 48px)); height: min(92dvh,940px); max-height: calc(100dvh - 24px); overflow: hidden; }
+.modal.google-workspace-studio-modal[open] { display: flex; flex-direction: column; }
+.google-workspace-studio-modal > .modal-heading { flex: none; padding: var(--space-4) var(--space-6); }
+.google-workspace-studio-modal > .modal-content { display: flex; flex: 1; flex-direction: column; min-height: 0; padding: 0; overflow: hidden; }
+.google-workspace-studio-modal > .modal-content > .notice { flex: none; margin: var(--space-2) var(--space-4); }
+.google-studio { display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; font-size: var(--text-ui); line-height: 1.6; }
+.google-studio :is(h3,h4,p,dt,dd,li,code) { overflow-wrap: anywhere; }
+.google-studio :is(button,input:not([type='checkbox'])) { min-height: var(--target-touch); }
+.google-studio button { white-space: normal; }
+.google-studio h3 { margin: 0; font-size: 20px; font-weight: 500; line-height: 1.4; }
+.google-studio .hint { font-size: var(--text-caption); line-height: 1.6; color: var(--color-text-secondary); }
+.google-studio-intro { flex: none; padding: var(--space-4) var(--space-6); }
+.google-studio-intro h3 { font-size: var(--text-body); }
+.google-studio-intro p { margin: var(--space-1) 0 0; color: var(--color-text-secondary); max-width: 80ch; font-size: var(--text-caption); }
+.google-studio-connection { display: flex; align-items: center; flex: none; flex-wrap: wrap; gap: var(--space-3); padding: var(--space-3) var(--space-6); border-block: 1px solid var(--color-border); background: var(--color-surface-subtle); }
+.google-studio-connection > p { flex: 1 1 220px; margin: 0; }
+.google-studio-connection > .button { flex: none; }
+.google-studio-connection > .icon-button { flex: none; width: var(--target-touch); }
+.google-studio-connection-error { flex-basis: 100%; }
+.google-studio-connection-error > p { margin: var(--space-1) 0 0; }
+.google-studio-nav { display: flex; flex: none; gap: var(--space-2); padding-inline: var(--space-6); border-bottom: 1px solid var(--color-border); }
+.google-studio-nav button { display: flex; align-items: center; justify-content: center; gap: var(--space-2); padding: var(--space-3); border-bottom: 2px solid transparent; color: var(--color-text-secondary); }
+.google-studio-nav button[aria-pressed='true'] { border-color: var(--color-action); color: var(--color-action); background: var(--color-action-surface); }
+.google-studio-nav button:last-child:not(:nth-child(2)) { margin-inline-start: auto; }
+.google-studio-feedback { flex: none; margin: 0; padding: var(--space-2) var(--space-6); }
+.google-studio-content { display: flex; flex: 1; min-width: 0; min-height: 0; }
+.google-studio-scroll { min-width: 0; min-height: 0; padding: var(--space-6); overflow: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
+.google-studio-scroll > header { margin-bottom: var(--space-4); }
+.google-studio-scroll > header > p { margin: var(--space-2) 0 0; color: var(--color-text-secondary); }
+.google-studio-form { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
+.google-studio-form label:not(.check-label),.google-studio-dates > label { display: grid; gap: var(--space-2); min-width: 0; font-size: var(--text-ui); }
+.google-studio-form input:not([type='checkbox']) { width: 100%; min-width: 0; max-width: 100%; font-size: var(--text-body); }
+.google-studio-form .check-label { display: flex; align-items: start; gap: var(--space-3); font-size: var(--text-ui); }
+.google-studio-form .check-label input { flex: none; margin-top: var(--space-1); }
+.google-studio-form .hint { margin: 0; }
+.google-studio-form > .button { align-self: start; }
+.google-studio-form .button-row { flex-wrap: wrap; }
+.google-studio-owner,.google-studio-calendar,.google-studio-empty { flex: 1; }
+.google-studio-owner > p,.google-studio-owner > a,.google-studio-owner > .google-studio-form,.google-studio-calendar > .google-studio-form { max-width: 74ch; }
+.google-studio-owner > a { display: inline-block; margin-bottom: var(--space-4); }
+.google-studio-redirects { padding-inline-start: var(--space-6); }
+.google-studio-warning { border-inline-start: 2px solid var(--color-warning); padding-inline-start: var(--space-3); color: var(--color-warning); }
+.google-studio-mail { flex: 1; display: grid; grid-template-columns: minmax(280px,36%) minmax(0,1fr); min-width: 0; min-height: 0; }
+.google-studio-mail-index { background: var(--color-surface-subtle); border-inline-end: 1px solid var(--color-border); }
+.google-studio-mail-results { margin-top: var(--space-6); }
+.google-studio-mail-results > [role='status'] { font-size: var(--text-caption); color: var(--color-text-secondary); }
+.google-studio-mail-row { padding-block: var(--space-4); border-top: 1px solid var(--color-border); }
+.google-studio-mail-row h4 { font-size: var(--text-body); margin: 0 0 var(--space-2); line-height: 1.5; font-weight: 500; }
+.google-studio-mail-row p { margin: var(--space-2) 0; }
+.google-studio-mail-row button[aria-current='true'] { color: var(--color-action); background: var(--color-action-surface); }
+.google-studio-message > h3 { margin-block: var(--space-4); }
+.google-studio-mail-meta { margin: 0 0 var(--space-6); font-size: var(--text-caption); }
+.google-studio-mail-meta > div { display: grid; grid-template-columns: 44px minmax(0,1fr); gap: var(--space-3); margin-top: var(--space-2); }
+.google-studio-mail-meta dt { color: var(--color-text-secondary); }
+.google-studio-mail-meta dd { margin: 0; }
+.google-studio-message pre { white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; font-family: var(--font-body); font-size: var(--text-body); line-height: 1.7; margin: 0; }
+.google-studio-reader-empty { padding-top: var(--space-8); color: var(--color-text-secondary); max-width: 42ch; }
+.google-studio-reader-empty h3 { margin-block: var(--space-4) var(--space-2); color: var(--color-text-primary); }
+.google-studio-dates { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--space-4); }
+.google-studio-events,.google-studio-availability { margin-top: var(--space-6); max-width: 78ch; }
+.google-studio-events article { border-top: 1px solid var(--color-border); padding-block: var(--space-4); }
+.google-studio-events h4 { margin-bottom: var(--space-2); font-size: var(--text-body); font-weight: 500; }
+.google-studio-events p { margin-bottom: var(--space-2); }
+.google-studio-description { white-space: pre-wrap; }
+.google-studio-boundary { margin: 0; flex: none; padding: var(--space-2) var(--space-6); border-top: 1px solid var(--color-border); font-size: var(--text-caption); color: var(--color-text-secondary); }
+@media(max-width: 899px) {
+  .google-studio-mail { display: flex; }
+  .google-studio-mail-index,.google-studio-message { flex: 1; border-inline-end: 0; }
+  .google-studio-mail:not(.has-message) .google-studio-message,.google-studio-mail.has-message .google-studio-mail-index { display: none; }
+}
+@media(max-width: 600px) {
+  .modal.google-workspace-studio-modal { width: 100vw; height: 100dvh; max-height: 100dvh; margin: 0; border: 0; border-radius: 0; }
+  .google-workspace-studio-modal > .modal-heading { padding: max(var(--space-3),env(safe-area-inset-top)) var(--space-4) var(--space-3); }
+  .google-studio-intro,.google-studio-scroll { padding: var(--space-4); }
+  .google-studio-connection,.google-studio-feedback { padding-inline: var(--space-4); }
+  .google-studio-nav { padding-inline: var(--space-2); gap: 0; }
+  .google-studio-nav button { flex: 1; padding-inline: var(--space-2); gap: var(--space-1); }
+  .google-studio-nav button > svg { display: none; }
+  .google-studio-boundary { padding-inline: var(--space-4); padding-bottom: max(var(--space-2),env(safe-area-inset-bottom)); }
+  .google-studio-dates { grid-template-columns: minmax(0,1fr); }
+}
+@media(max-height: 560px) {
+  .google-workspace-studio-modal > .modal-content { display: block; overflow: auto; }
+  .google-studio-content { min-height: 300px; }
+  .google-studio-scroll { overflow: visible; }
+}

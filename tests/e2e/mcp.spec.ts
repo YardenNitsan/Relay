@@ -86,11 +86,13 @@ test('remote-user MCP grants persist independently of network permission', async
   await page.getByRole('button', { name: 'Access', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Access & remote connections' });
   const email = `mcp-browser-${Date.now()}@example.test`;
+  await dialog.getByRole('button', { name: 'People', exact: true }).click();
+  await dialog.getByRole('button', { name: 'Add allowed user', exact: true }).click();
   await dialog.getByRole('textbox', { name: 'Name', exact: true }).fill('MCP grant fixture');
   await dialog.getByRole('textbox', { name: 'Identity-provider email' }).fill(email);
   await dialog.getByRole('button', { name: 'Add allowed user', exact: true }).click();
-  await dialog.getByText(email, { exact: true }).click();
-  const editor = dialog.locator('details.access-user').filter({ hasText: email });
+  const editor = dialog.getByRole('article', { name: 'MCP grant fixture account policy', exact: true });
+  await expect(editor.getByText(email, { exact: true })).toBeVisible();
   await editor.getByRole('checkbox', { name: /Browser MCP fixture/ }).check();
   await editor.getByRole('button', { name: 'Save user policy', exact: true }).click();
   await expect(dialog.getByText('User policy updated. Previous sessions and active work were revoked.')).toBeVisible();
@@ -100,7 +102,6 @@ test('remote-user MCP grants persist independently of network permission', async
   // authorizeOptions and the editor both interpret omission as deny/no origins.
   expect(permissions.maxNetworkAccess ?? 'deny').toBe('deny');
   expect(permissions.networkOrigins ?? []).toEqual([]);
-  await editor.locator('summary').click();
   await expect(editor.getByRole('combobox', { name: 'Public web requests' })).toHaveValue('deny');
   await expect(editor.getByRole('textbox', { name: 'Allowed HTTPS origins' })).toHaveCount(0);
 });

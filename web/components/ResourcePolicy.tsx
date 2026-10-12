@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check, ShieldCheck } from 'lucide-react';
 import { api, mutation } from '../api';
 import { ErrorNotice, Loading } from './ui';
+import {useModalDraftGuard} from './modal-guard';
 
 type Profile = 'safe' | 'balanced' | 'performance' | 'custom';
 type Reserves = { ramReserveGiB: number; ramReservePercent: number; vramReserveGiB: number; vramReservePercent: number };
@@ -17,13 +18,14 @@ export default function ResourcePolicy() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<unknown>(null);
+  const dirty = draft !== null && JSON.stringify(draft) !== JSON.stringify(query.data?.policy);
+  useModalDraftGuard({dirty,busy:saving,label:'Resource policy'});
   if (!query.data) return <section className="hardware-section"><h3><ShieldCheck size={18} />Resource policy</h3>{query.isError ? <ErrorNotice error={query.error} retry={() => { void query.refetch(); }} /> : <Loading>Reading resource policy…</Loading>}</section>;
   const data = query.data;
   const selected = draft ?? data.policy;
   const selectedProfile = data.profiles.find(profile => profile.profile === selected.profile);
   const applied = data.profiles.find(profile => profile.profile === data.policy.profile);
   const reserves = selected.profile === 'custom' ? selected : selectedProfile;
-  const dirty = draft !== null && JSON.stringify(draft) !== JSON.stringify(data.policy);
   const edit = (next: Policy) => { setDraft(next); setSaved(false); setError(null); };
   const save = async () => {
     if (!dirty || saving) return;

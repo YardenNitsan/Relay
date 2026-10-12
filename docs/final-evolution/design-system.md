@@ -84,6 +84,15 @@ Command palette provides navigation and contextual commands, with visible equiva
 
 Initial Studio implementation uses a 700px phone-menu boundary, a 72px compact rail through 1099px, and a 176px labeled rail above it. Workbench replaces the document below1000px; visual inspection at701px demonstrated that fitting both panes technically still produced an unusably narrow composer. Welcome adapts to its own pane using container queries. These tested content constraints refine the conceptual window classes above.
 
+### Completing the supporting workspaces
+
+- Memory uses a notebook index and a readable note/editor. Scope, enabled state and saved revision belong to the note; editing preserves the originally opened revision and resets consent on changes. Phone navigation replaces the index with the selected document.
+- Scheduling uses an agenda index, selected authorization/history view and a dedicated creation form. Saving creates a disabled schedule; enabling and archiving retain distinct reviews. Confirmed navigation must actually discard the reviewed authorization, and a delayed task lookup must not replace a newer draft.
+- Host resources separates Overview, Model safety and Recovery. Measured hardware remains distinct from deterministic reserve settings. Sections stay mounted so switching views preserves edits; modal guards protect dismissal. Pending restoration remains visible from every section. The overview's scroll region is keyboard focusable even when it has no interactive descendants.
+- History uses search beside a continuous date-grouped list on wide screens, stacked search/results on phones, and focused deletion review. Exact-message search, cursor paging, unfinished-task refusal and account ownership remain unchanged.
+
+These feature compositions use the existing Studio tokens and native modal boundary. The complete frontend is still in progress; no rendered preview alone establishes release readiness.
+
 ## Implementation boundaries and acceptance
 
 Separate `web/design/` tokens/primitives, `web/layout/` shell/navigation and feature presentation modules from query/mutation hooks. Retain existing domain types, auth/session behavior, streaming and API clients. Do not add a global state store for layout booleans. Prefer semantic native elements and existing tested primitives; a new dependency needs a demonstrated gap.

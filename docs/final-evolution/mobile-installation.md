@@ -1,0 +1,11 @@
+# Phone installation evaluation
+
+Evaluated 11 October 2026. The browser remains the supported client; no native-app or installable-PWA acceptance is claimed.
+
+An optional home-screen installation is suitable for Relay's frequent phone use, provided the authenticated gateway, foreground reconnection, logout and update paths pass physical-device acceptance. A manifest can describe a standalone browser experience without adding a service worker. Chromium installation metadata includes names, start URL, display mode and appropriate icons; HTTPS or a loopback development origin is required. See [MDN installability guidance](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Making_PWAs_installable).
+
+Current decision: retain the ordinary browser while the complete UI is being integrated. There is no manifest or service worker in this source checkpoint. Installing an icon alone would not establish reliable Samsung Internet authentication, keyboard or background behavior. Installation implementation remains optional, following the physical phone workflow gate.
+
+If added, use a same-origin, account-neutral start URL and existing Relay icon artwork; do not embed account IDs or session material. Prefer no service worker initially. A future offline shell must explicitly allowlist immutable public assets and exclude authenticated API responses, streamed events, attachments, OAuth exchanges and private documents. Service workers can intercept requests and require deliberate lifecycle/update management; see [MDN service-worker guidance](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers). Never reload over an unsaved draft to activate an update.
+
+The current open page can preserve its draft during a network interruption and renew its authenticated event stream on foreground return. A closed or reloaded offline page has no promised offline workspace. Local inference still requires the host; authorized cloud calls still require network connectivity. Automated checks exercise offline transitions and synthetic visibility events. Physical Android, Samsung Internet, protected-gateway install/relaunch, session expiry and mobile-data interruptions remain outstanding.

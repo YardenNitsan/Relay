@@ -1,0 +1,90 @@
+.modal.memory-studio-modal { width: min(1120px, calc(100vw - 48px)); height: min(88dvh, 940px); max-height: calc(100dvh - 32px); overflow: hidden; }
+.modal.memory-studio-modal[open] { display: flex; flex-direction: column; }
+.memory-studio-modal > .modal-heading { flex: none; padding: var(--space-4) var(--space-6); }
+.memory-studio-modal > .modal-content { display: flex; flex: 1; flex-direction: column; min-height: 0; padding: 0; overflow: hidden; }
+.memory-studio-modal > .modal-content > .notice { flex: none; margin: var(--space-2) var(--space-4); }
+.memory-studio { display: flex; flex: 1; flex-direction: column; min-height: 0; min-width: 0; font-size: var(--text-ui); }
+.memory-studio :is(button,input:not([type='checkbox']),select) { min-height: var(--target-touch); }
+.memory-studio :is(h3,h4,p,strong,small) { overflow-wrap: anywhere; }
+.memory-studio .hint { font-size: var(--text-caption); line-height: 1.6; }
+.memory-studio .text-button { white-space: normal; }
+.memory-studio-intro { flex: none; padding: var(--space-3) var(--space-6); border-bottom: 1px solid var(--color-border); }
+.memory-studio-intro p { margin: 0; }
+.memory-studio-intro .hint { margin-top: var(--space-1); }
+.memory-feedback { flex: none; margin: 0; padding: var(--space-2) var(--space-6); color: var(--color-action); background: var(--color-action-surface); font-size: var(--text-caption); }
+.memory-notebook { display: grid; grid-template-columns: minmax(270px, 31%) minmax(0, 1fr); flex: 1; min-height: 0; }
+.memory-index { display: flex; flex-direction: column; min-width: 0; min-height: 0; border-inline-end: 1px solid var(--color-border); background: var(--color-surface-subtle); }
+.memory-index-toolbar { padding: var(--space-4); }
+.memory-index-toolbar > div { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2); margin-bottom: var(--space-3); }
+.memory-index-toolbar h3 { font-size: var(--text-body); margin: 0; font-weight: 500; }
+.memory-index-toolbar > div > span { color: var(--color-text-secondary); }
+.memory-index-toolbar > button { width: 100%; justify-content: center; }
+.memory-index-search { padding: 0 var(--space-4) var(--space-3); }
+.memory-index-search label { display: block; margin-bottom: var(--space-2); }
+.memory-index-search > div { display: flex; align-items: center; gap: var(--space-2); }
+.memory-index-search svg { flex: none; color: var(--color-text-secondary); }
+.memory-index-search input { min-width: 0; width: 100%; font-size: var(--text-body); background: var(--color-surface); }
+.memory-index-scroll { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: var(--space-2); scrollbar-gutter: stable; }
+.memory-index-list { list-style: none; padding: 0; margin: 0; }
+.memory-index-list li + li { border-top: 1px solid var(--color-border); }
+.memory-index-list button { display: flex; align-items: center; gap: var(--space-3); width: 100%; padding: var(--space-3); border: 1px solid transparent; border-radius: var(--radius-control); text-align: start; }
+.memory-index-list button > span { flex: 1; min-width: 0; }
+.memory-index-list button > svg { flex: none; }
+.memory-index-list button:hover { border-color: var(--color-control-border); }
+.memory-index-list button[aria-current='true'] { color: var(--color-action); background: var(--color-action-surface); border-color: var(--color-border); }
+.memory-index-list strong { display: block; font-size: var(--text-ui); line-height: 1.45; font-weight: 500; }
+.memory-index-list :is(.memory-row-scope,small) { display: block; font-size: var(--text-caption); line-height: 1.5; color: var(--color-text-secondary); margin-top: var(--space-1); overflow-wrap: anywhere; }
+.memory-index-empty { padding: var(--space-4) var(--space-3); color: var(--color-text-secondary); }
+.memory-index-empty h4 { color: var(--color-text-primary); font-size: var(--text-body); font-weight: 500; }
+.memory-index-empty p { line-height: 1.6; }
+.memory-index-footer { display: flex; flex-wrap: wrap; flex: none; gap: var(--space-1); padding: var(--space-2) var(--space-3); border-top: 1px solid var(--color-border); }
+.memory-index-footer > button { flex: 1; justify-content: center; }
+.memory-index-footer .inline-error { width: 100%; }
+.memory-document { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.memory-detail-navigation { display: none; flex: none; padding: var(--space-1) var(--space-4); border-bottom: 1px solid var(--color-border); }
+.memory-editor { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+.memory-document-scroll { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: var(--space-6) var(--space-8); scrollbar-gutter: stable; }
+.memory-document-scroll h3 { margin: 0; font-size: var(--text-title); line-height: 1.3; font-weight: 500; }
+.memory-document-intro { margin: var(--space-2) 0 var(--space-6); color: var(--color-text-secondary); line-height: 1.6; }
+.memory-editor label:not(.memory-check) { display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-4); font-weight: 500; }
+.memory-editor :is(input:not([type='checkbox']),textarea,select) { width: 100%; min-width: 0; font-size: var(--text-body); font-weight: 400; background: var(--color-surface); }
+.memory-editor textarea { line-height: 1.65; resize: vertical; min-height: 180px; }
+.memory-studio .memory-check { align-items: center; min-height: var(--target-touch); line-height: 1.5; margin-block: var(--space-3); font-size: var(--text-ui); }
+.memory-check input { flex: none; }
+.memory-approval { padding-block: var(--space-3); border-block: 1px solid var(--color-border); }
+.memory-editor-actions,.memory-note-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); padding-top: var(--space-2); }
+.memory-scope { color: var(--color-text-secondary); margin: 0 0 var(--space-2); font-size: var(--text-ui); }
+.memory-document-meta { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); margin-top: var(--space-3); color: var(--color-text-secondary); font-size: var(--text-caption); }
+.memory-note-prose { white-space: pre-wrap; overflow-wrap: anywhere; max-width: 68ch; margin-block: var(--space-8); font-size: var(--text-body); line-height: 1.75; }
+.memory-note-controls { border-top: 1px solid var(--color-border); padding-top: var(--space-3); }
+.memory-delete-confirm { margin-top: var(--space-6); padding: var(--space-4); border: 1px solid var(--color-border); border-inline-start: 3px solid var(--color-danger); border-radius: var(--radius-inset); }
+.memory-delete-confirm h4 { margin: 0; font-size: var(--text-body); font-weight: 500; }
+.memory-delete-confirm p { line-height: 1.6; }
+.memory-document-empty { margin: auto; max-width: 440px; padding: var(--space-8); }
+.memory-document-empty > svg { color: var(--color-action); }
+.memory-document-empty h3 { font-size: 26px; line-height: 1.3; font-weight: 500; }
+.memory-document-empty p { line-height: 1.6; }
+@media (max-width: 899px) {
+  .memory-notebook { grid-template-columns: minmax(0, 1fr); }
+  .memory-index { border-inline-end: 0; }
+  .memory-document { display: none; }
+  .memory-show-detail .memory-index { display: none; }
+  .memory-show-detail .memory-document { display: flex; }
+  .memory-detail-navigation { display: block; }
+}
+@media (max-width: 600px) {
+  .modal.memory-studio-modal { width: 100vw; max-width: 100vw; height: 100dvh; max-height: 100dvh; border-radius: 0; }
+  .memory-studio-modal > .modal-heading,.memory-studio-intro { padding: var(--space-3) var(--space-4); }
+  .memory-document-scroll { padding: var(--space-4); }
+  .memory-feedback { padding-inline: var(--space-4); }
+  .memory-editor-actions > button { flex: 1 1 100%; }
+}
+@media (max-height: 500px) {
+  .modal.memory-studio-modal { height: 100dvh; max-height: 100dvh; }
+  .memory-studio-modal > .modal-heading,.memory-studio-intro { padding-block: var(--space-1); }
+  .memory-index-toolbar { display: flex; align-items: center; gap: var(--space-3); padding-block: var(--space-2); }
+  .memory-index-toolbar > div { flex: 1; margin: 0; }
+  .memory-index-toolbar > button { width: auto; }
+  .memory-index-search { padding-bottom: var(--space-2); }
+  .memory-document-scroll { padding-block: var(--space-3); }
+}

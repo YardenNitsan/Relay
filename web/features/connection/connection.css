@@ -1,0 +1,43 @@
+.connection-studio { min-height: 100dvh; padding: max(var(--space-6), env(safe-area-inset-top)) max(var(--space-6), env(safe-area-inset-right)) max(var(--space-6), env(safe-area-inset-bottom)) max(var(--space-6), env(safe-area-inset-left)); display: flex; flex-direction: column; }
+.connection-studio-brand { display: flex; align-items: center; gap: var(--space-3); font-size: 26px; font-weight: 600; letter-spacing: -1px; max-width: 1200px; width: 100%; margin: 0 auto; }
+.connection-studio-product { margin-inline-start: auto; font-size: var(--text-ui); font-weight: 400; letter-spacing: 0; color: var(--color-text-secondary); }
+.connection-studio-layout { width: min(100%, 1100px); flex: 1; margin: auto; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); align-items: center; gap: clamp(48px, 8vw, 112px); padding-block: var(--space-12); }
+.connection-studio-entry { min-width: 0; padding-block: var(--space-6); }
+.connection-studio-entry h1 { font-size: clamp(28px, 3vw, 40px); font-weight: 500; line-height: 1.15; letter-spacing: -.8px; margin-bottom: var(--space-6); overflow-wrap: anywhere; }
+.connection-studio-entry .connection-symbol { color: var(--color-action); margin-bottom: var(--space-6); }
+.connection-studio-entry .connection-intro { font-size: var(--text-body); color: var(--color-text-secondary); margin-bottom: var(--space-6); }
+.connection-studio .pairing-form { display: flex; flex-direction: column; gap: var(--space-2); }
+.connection-studio .pairing-form > label { font-size: var(--text-ui); font-weight: 500; }
+.connection-studio-code { display: flex; align-items: center; gap: var(--space-2); }
+.connection-studio-code input { flex: 1; width: 0; min-height: var(--target-primary); font-size: var(--text-body); }
+.connection-studio-code button { flex: none; width: var(--target-primary); min-height: var(--target-primary); }
+.connection-studio .pairing-form .hint { margin: 0 0 var(--space-4); font-size: var(--text-caption); line-height: 1.6; }
+.connection-studio-entry > .button,.connection-studio .pairing-form > .button { min-height: var(--target-primary); justify-content: center; font-size: var(--text-ui); }
+.connection-studio .pairing-instructions { margin-top: var(--space-6); padding-top: var(--space-4); border-top: 1px solid var(--color-border); font-size: var(--text-ui); color: var(--color-text-secondary); line-height: 1.6; }
+.connection-studio .pairing-instructions summary { min-height: var(--target-touch); color: var(--color-text-primary); padding-block: var(--space-3); }
+.connection-studio .pairing-instructions ol { padding-inline-start: var(--space-6); }
+.connection-studio .pairing-instructions li { padding-bottom: var(--space-3); }
+.connection-studio-boundary { min-width: 0; border-inline-start: 1px solid var(--color-border); padding-inline-start: var(--space-12); color: var(--color-text-secondary); }
+.connection-studio-path { display: flex; align-items: center; gap: var(--space-4); max-width: 200px; color: var(--color-action); margin-bottom: var(--space-8); }
+.connection-studio-path > span:not(.brand-mark) { flex: 1; border-block-start: 1px solid var(--color-control-border); }
+.connection-studio-boundary h2 { font-size: clamp(24px, 2.5vw, 32px); line-height: 1.3; color: var(--color-text-primary); }
+.connection-studio-boundary > p { font-size: var(--text-body); }
+.connection-studio-boundary dl { margin-block: var(--space-8); }
+.connection-studio-boundary dl > div + div { margin-top: var(--space-6); }
+.connection-studio-boundary dt { font-size: var(--text-ui); font-weight: 500; color: var(--color-text-primary); }
+.connection-studio-boundary dd { font-size: var(--text-ui); margin: var(--space-1) 0 0; line-height: 1.6; }
+.connection-studio .connection-origin { display: flex; align-items: center; gap: var(--space-2); margin: 0; padding-top: var(--space-4); border-top: 1px solid var(--color-border); font-size: var(--text-caption); }
+.connection-studio .connection-origin span { overflow-wrap: anywhere; min-width: 0; }
+@media (max-width: 760px) {
+  .connection-studio { padding-inline: max(var(--space-4), env(safe-area-inset-left)) max(var(--space-4), env(safe-area-inset-right)); }
+  .connection-studio-layout { display: flex; flex-direction: column; align-items: stretch; gap: var(--space-8); max-width: 480px; padding-block: var(--space-6); }
+  .connection-studio-entry { padding: var(--space-4) 0 0; }
+  .connection-studio-boundary { border-inline-start: 0; padding-inline-start: 0; padding-top: var(--space-6); border-top: 1px solid var(--color-border); }
+  .connection-studio-path { margin-bottom: var(--space-4); }
+  .connection-studio-boundary h2 { font-size: 24px; }
+  .connection-studio-boundary dl { margin-block: var(--space-6); }
+}
+@media (max-height: 500px) and (min-width: 761px) {
+  .connection-studio-layout { padding-block: var(--space-4); gap: var(--space-8); align-items: start; }
+  .connection-studio-boundary { padding-inline-start: var(--space-6); }
+}

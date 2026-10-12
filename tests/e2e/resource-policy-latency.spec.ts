@@ -12,6 +12,7 @@ test('a persisted policy is acknowledged while hardware refresh is still pending
     await page.goto('/');await pairBrowser(page);
     await page.getByRole('button',{name:'Machine',exact:true}).click();
     const dialog=page.getByRole('dialog',{name:'This machine'});
+    await dialog.getByRole('button',{name:'Model safety',exact:true}).click();
     const profile=dialog.getByLabel('Resource profile');
     const save=dialog.getByRole('button',{name:'Save resource policy',exact:true});
     await expect(profile).toHaveValue('safe');await profile.selectOption('balanced');await save.click();

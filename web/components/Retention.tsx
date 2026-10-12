@@ -2,6 +2,7 @@ import {useEffect,useRef,useState} from 'react';
 import {useMutation,useQuery,useQueryClient} from '@tanstack/react-query';
 import {api} from '../api';
 import {ErrorNotice} from './ui';
+import {useModalDraftGuard} from './modal-guard';
 
 type Counts=Record<'sessions'|'lanInvitations'|'inferenceTokens'|'stepContexts'|'callContexts'|'modelTextEvents',number>;
 interface Preview {token:string;expiresAt:string;counts:Counts;protectedTasks:number;limited:boolean;}
@@ -20,6 +21,7 @@ export default function Retention(){
   const inspect=useMutation({mutationFn:()=>api<Preview>('/admin/retention/preview',{method:'POST',body:{expiredCredentials,terminalPayloads,olderThanDays:days,batchSize:100}}),onSuccess:value=>{setPreview(value);setConfirmed(false);setResult(null);}});
   const apply=useMutation({mutationFn:(token:string)=>api<{counts:Counts}>('/admin/retention/apply',{method:'POST',body:{token,confirm:true}}),onSuccess:value=>{setResult(value.counts);setPreview(null);setConfirmed(false);},onError:()=>{setPreview(null);setConfirmed(false);}});
   const busy=inspect.isPending||apply.isPending;
+  useModalDraftGuard({dirty:false,busy:busy||acknowledge.isPending,label:'Data recovery'});
   return <>{restoration.data?.pending&&<section className="notice warning" aria-label="Restored data review"><h3>Review your restored data</h3><p>Tasks are stopped, old login sessions are invalid, and cloud providers are disabled. Check your conversations, workspace locations and recorded file changes before continuing. Reconnect providers separately.</p><p className="small">Remote, LAN and external-client listeners stay off until a restart after this review. Resume execution separately when ready.</p><label className="retention-choice"><input type="checkbox" checked={reviewed} onChange={event=>setReviewed(event.target.checked)}/><span>I have checked this restored copy and its workspace paths.</span></label><button className="secondary" disabled={!reviewed||acknowledge.isPending} onClick={()=>acknowledge.mutate()}>Record restoration review</button>{acknowledge.isError&&<ErrorNotice error={acknowledge.error}/>}</section>}
     {restoration.isError&&<ErrorNotice error={restoration.error}/>}
     <details className="retention-settings"><summary>Data retention</summary><div className="retention-body">

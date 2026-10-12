@@ -13,12 +13,13 @@ test('owner adds an allowed user, changes persisted grants, and revokes access',
   const dialog = page.getByRole('dialog', { name: 'Access & remote connections' });
   await expect(dialog.getByText('Remote access is disabled. Local access works independently.')).toBeVisible();
   const email = `browser-${Date.now()}@example.test`;
+  await dialog.getByRole('button', { name: 'People', exact: true }).click();
+  await dialog.getByRole('button', { name: 'Add allowed user', exact: true }).click();
   await dialog.getByRole('textbox', { name: 'Name', exact: true }).fill('Policy acceptance');
   await dialog.getByRole('textbox', { name: 'Identity-provider email' }).fill(email);
   await dialog.getByRole('button', { name: 'Add allowed user', exact: true }).click();
-  await expect(dialog.getByText(email, { exact: true })).toBeVisible();
-  await dialog.getByText(email, { exact: true }).click();
-  const editor = dialog.locator('details.access-user').filter({ hasText: email });
+  const editor = dialog.getByRole('article', { name: 'Policy acceptance account policy', exact: true });
+  await expect(editor.getByText(email, { exact: true })).toBeVisible();
   await editor.getByLabel('Maximum computer access').selectOption('supervised');
   await editor.getByLabel('Calls per task').fill('6');
   await editor.getByRole('button', { name: 'Save user policy' }).click();
@@ -29,19 +30,22 @@ test('owner adds an allowed user, changes persisted grants, and revokes access',
     return users.find(user => user.email === address);
   }, email);
   expect(stored?.permissions).toMatchObject({ maxAccess: 'supervised', maxCallsPerTask: 6 });
-  await editor.locator('summary').click();
   await editor.getByRole('button', { name: 'Revoke sessions & stop work' }).click();
   await expect(dialog.getByText('User sessions revoked and active work cancelled.')).toBeVisible();
   await editor.getByLabel('Account enabled').uncheck();
   await editor.getByRole('button', { name: 'Save user policy' }).click();
-  await expect(editor.locator('summary').getByText('Disabled', { exact: true })).toBeVisible();
+  await expect(editor.locator('.access-person-heading').getByText('Disabled', { exact: true })).toBeVisible();
 });
 
 test('access modal is keyboard accessible and passes automated checks', async ({ page }) => {
   const trigger = page.getByRole('button', { name: 'Access', exact: true });
   await trigger.focus(); await page.keyboard.press('Enter');
   const dialog = page.getByRole('dialog', { name: 'Access & remote connections' });
+  await dialog.getByRole('button', { name: 'People', exact: true }).click();
+  await dialog.getByRole('button', { name: 'Add allowed user', exact: true }).click();
   await expect(dialog.getByRole('heading', { name: 'Add an allowed user' })).toBeVisible();
+  await dialog.getByRole('button', { name: 'Cancel new user', exact: true }).click();
+  await dialog.getByRole('button', { name: 'Gateways', exact: true }).click();
   await dialog.getByText('How to enable remote access', { exact: true }).click();
   await expect(dialog.getByText('RELAY_REMOTE_ENABLED=1', { exact: false })).toBeVisible();
   expect(await dialog.locator('.gateway-url').count()).toBe(0);

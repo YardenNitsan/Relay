@@ -1,0 +1,9 @@
+import type {TaskOptions} from '../../../shared/types';
+export interface Schedule {id:string;name:string;objective:string;options:TaskOptions;intervalMinutes:number|null;missedPolicy:'skip'|'once';nextRunAt:string|null;enabled:boolean;archivedAt:string|null;lastError:string|null;/** Local cache receipt for the archive API's {ok:true}; not a fabricated server timestamp. */archiveAcknowledged?:boolean}
+export interface ScheduleRun {id:string;scheduledAt:string;taskId:string|null;status:string;reason:string|null;taskStatus:string|null}
+export const scheduleOptions=(workspaceId:string|null):TaskOptions=>({depth:'fast',modelId:null,reasoning:'auto',efficiency:'efficient',access:'read_only',workspaceId,contextTokens:4096,cloudPolicy:'local_only',network:{mode:'deny',allowedOrigins:[]},mcpServerIds:[],budget:{maxCalls:4,maxIterations:2,maxSeconds:120,maxOutputTokens:512,maxCostUsd:0,localOnly:true}});
+export const localInput=(date:Date)=>`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}T${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+export const displayTime=(value:string)=>new Date(value).toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'});
+export function isArchived(schedule:Schedule){return Boolean(schedule.archivedAt||schedule.archiveAcknowledged);}
+export function scheduleState(schedule:Schedule){return isArchived(schedule)?'Archived':schedule.enabled?'Enabled':'Disabled';}
+export function scheduleLimits(value:TaskOptions){return `${value.budget.maxCalls} model calls, ${value.budget.maxIterations} iterations, ${value.budget.maxSeconds} seconds of execution, ${value.budget.maxOutputTokens??512} output tokens per call, ${value.contextTokens.toLocaleString()} context tokens. Local only. Read-only files. No network or external tools. Cloud spending: $0.`;}

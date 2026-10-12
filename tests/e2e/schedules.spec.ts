@@ -9,6 +9,7 @@ for(const width of [320,390,1440])test(`future local schedule control at ${width
   await page.goto('/');await pairBrowser(page);await openCommands(page);
   await page.getByRole('option',{name:/Manage schedules/}).click();
   const dialog=page.getByRole('dialog',{name:'Scheduled tasks',exact:true});
+  await dialog.getByRole('button',{name:'New schedule',exact:true}).click();
   const name=`Future schedule ${width} ${Date.now()} ${'x'.repeat(40)}`;
   await dialog.getByRole('textbox',{name:'Schedule name',exact:true}).fill(name);
   await dialog.getByRole('textbox',{name:'Objective',exact:true}).fill('Summarize the explicitly selected project without modifying files.');

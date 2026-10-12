@@ -9,6 +9,7 @@ test('owner creates a client credential once, inspects metadata and revokes it o
   await page.getByRole('option', { name: /Connect an external client/ }).click();
   const dialog = page.getByRole('dialog', { name: 'External clients', exact: true });
   const label = `Browser client ${Date.now()}`;
+  await dialog.getByRole('button', { name: 'New client token', exact: true }).click();
   await dialog.getByLabel('Application label', { exact: true }).fill(label);
   await dialog.getByLabel('Expires in days', { exact: true }).fill('2');
   await dialog.getByRole('button', { name: 'Create token', exact: true }).click();

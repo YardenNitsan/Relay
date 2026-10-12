@@ -123,12 +123,13 @@ test('owner saves the remote gateway settings and reviews a pending account with
   expect(storedConfig.savedConfig).toMatchObject({ publicOrigin: 'https://relay.example.com', issuer: 'https://relay-team.cloudflareaccess.com', audience: 'a'.repeat(64), registration: 'approval' });
   expect(storedConfig.enabled).toBe(false);
   expect(storedConfig.restartRequired).toBe(true);
+  await dialog.getByRole('button', { name: 'People', exact: true }).click();
+  await dialog.getByRole('button', { name: 'Add allowed user', exact: true }).click();
   await dialog.getByRole('textbox', { name: 'Name', exact: true }).fill('Pending browser account');
   await dialog.getByRole('textbox', { name: 'Identity-provider email', exact: true }).fill(email);
   await dialog.getByRole('button', { name: 'Add allowed user', exact: true }).click();
-  const editor = dialog.locator('details.access-user').filter({ hasText: email });
-  await expect(editor.locator('summary').getByText('Pending', { exact: true })).toBeVisible();
-  await editor.locator('summary').click();
+  const editor = dialog.getByRole('article', { name: 'Pending browser account account policy', exact: true });
+  await expect(editor.getByText('Pending', { exact: true })).toBeVisible();
   await editor.getByLabel('OpenAI', { exact: true }).check();
   await expect(editor.getByLabel('Grok (xAI)', { exact: true })).not.toBeChecked();
   await expect(editor.getByLabel('DeepSeek', { exact: true })).not.toBeChecked();
@@ -138,7 +139,7 @@ test('owner saves the remote gateway settings and reviews a pending account with
   await editor.getByLabel('Allow external model clients', { exact: true }).check();
   pending = false;
   await editor.getByRole('button', { name: 'Approve account', exact: true }).click();
-  await expect(editor.locator('summary').getByText('Available', { exact: true })).toBeVisible();
+  await expect(editor.getByText('Available', { exact: true })).toBeVisible();
   const users = await (await page.request.get('/api/admin/users')).json();
   const user = users.find((record: { email: string }) => record.email === email);
   expect(user.enabled).toBe(true);
@@ -150,12 +151,13 @@ test('owner saves the remote gateway settings and reviews a pending account with
   // The TLS LAN listener is not running in this fixture host. Exercise its
   // one-time delivery UI contract without representing this as live pairing.
   await page.route(`**/api/admin/users/${user.id}/lan-invitation`, route => route.fulfill({ json: { token: 'explicit-browser-invitation-fixture', expiresAt: new Date(Date.now() + 300_000).toISOString() } }));
-  await editor.locator('summary').click();
   await editor.getByRole('button', { name: 'Create LAN invitation', exact: true }).click();
   await expect(editor.getByLabel('LAN invitation code', { exact: true })).toHaveValue('explicit-browser-invitation-fixture');
   await editor.getByRole('button', { name: 'Hide invitation', exact: true }).click();
   await expect(editor.getByLabel('LAN invitation code', { exact: true })).toHaveCount(0);
   await page.setViewportSize({ width: 390, height: 844 });
+  await dialog.getByRole('button', { name: 'Gateways', exact: true }).click();
+  await dialog.getByText('How to enable remote access', { exact: true }).click();
   await setup.scrollIntoViewIfNeeded();
   expect((await new AxeBuilder({ page }).include('dialog').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([]);
   await page.screenshot({ path: 'output/playwright/shared-host-setup-phone.png' });

@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Cpu, Database, HardDrive, RefreshCw } from 'lucide-react';
 import type { HardwareSnapshot, SystemStatus } from '../../shared/types';
@@ -7,17 +8,26 @@ import ResourcePolicy from './ResourcePolicy';
 import ResidentModels from './ResidentModels';
 import Retention from './Retention';
 import Diagnostics from './Diagnostics';
+import '../features/host/host.css';
 
 export default function Hardware({ status }: { status?: SystemStatus }) {
   const query = useQuery({ queryKey: ['hardware'], queryFn: ({ signal }) => api<HardwareSnapshot>('/hardware', { signal }), refetchInterval: 5000 });
   const data = query.data;
-  return <><div className="hardware-telemetry-summary">{data ? <><div className="split section-intro"><div><p>Your machine, measured.</p><p className="muted">{humanize(data.platform)} / {data.architecture}{data.memoryArchitecture ? ` / ${data.memoryArchitecture} memory` : ''}</p></div><button className="icon-button" aria-label="Refresh hardware" onClick={() => { void query.refetch(); }} disabled={query.isFetching}><RefreshCw size={17} className={query.isFetching ? 'spin' : ''} /></button></div><p className="sample-time">Sampled at {time(data.sampledAt)}. Refreshes every 5 seconds while open.</p></> : query.isError ? <ErrorNotice error={query.error} retry={() => { void query.refetch(); }} /> : <Loading>Reading host telemetry…</Loading>}</div>
-    <ResourcePolicy /><ResidentModels />
-    <Retention />
-    <Diagnostics />
-    {data && <HardwareMeasurements data={data} status={status} />}
-    {data && query.isError && <ErrorNotice error={query.error} />}
-  </>;
+  const restoration=useQuery({queryKey:['restoration'],queryFn:({signal})=>api<{pending:boolean}>('/admin/restoration',{signal})});
+  const [section,setSection]=useState<'overview'|'safety'|'recovery'>('overview');
+  const body=useRef<HTMLDivElement>(null);
+  return <div className="host-studio">
+    <header className="host-studio-intro"><div><p>Know what your host can do.</p><p className="hint">Measured resources, enforced reserves and recovery controls.</p></div><button className="icon-button" aria-label="Refresh hardware" onClick={() => { void query.refetch(); }} disabled={query.isFetching}><RefreshCw size={18} className={query.isFetching ? 'spin' : ''} /></button></header>
+    {restoration.data?.pending&&<div className="host-restoration-notice" role="status"><span>This restored copy needs review before execution can resume.</span><button className="text-button" onClick={()=>{setSection('recovery');body.current?.scrollTo({top:0});}}>Review recovery</button></div>}
+    <div className="host-studio-layout"><nav className="host-studio-nav" aria-label="Host sections">{([{id:'overview',label:'Overview',detail:'Current measurements'},{id:'safety',label:'Model safety',detail:'Reserves and residency'},{id:'recovery',label:'Recovery',detail:'Retention and diagnostics'}] as const).map(item=><button key={item.id} aria-label={item.label} aria-current={section===item.id?'page':undefined} aria-controls={`host-${item.id}`} onClick={()=>{setSection(item.id);body.current?.scrollTo({top:0});}}><span>{item.label}</span><small>{item.detail}</small></button>)}</nav>
+      <div className="host-studio-body" ref={body} tabIndex={0} role="region" aria-label="Host section content">
+        <div className="hardware-telemetry-summary">{data?<p className="sample-time">{humanize(data.platform)} / {data.architecture}{data.memoryArchitecture?` / ${data.memoryArchitecture} memory`:''}. Sampled at {time(data.sampledAt)}; refreshes every 5 seconds.</p>:!query.isError&&<Loading>Reading host telemetry…</Loading>}{query.isError&&<ErrorNotice error={query.error} retry={()=>{void query.refetch();}}/>}</div>
+        <section id="host-overview" hidden={section!=='overview'} aria-label="Host overview">{data&&<HardwareMeasurements data={data} status={status}/>}</section>
+        <section id="host-safety" hidden={section!=='safety'} aria-label="Model safety"><ResourcePolicy/><ResidentModels/></section>
+        <section id="host-recovery" hidden={section!=='recovery'} aria-label="Host recovery"><div className="host-recovery-intro"><h3>Keep control of your data</h3><p className="muted">Review retained records and export a diagnostic report. Cleanup requires a separate preview and confirmation.</p></div><Retention/><Diagnostics/></section>
+      </div>
+    </div>
+  </div>;
 }
 
 function HardwareMeasurements({data,status}:{data:HardwareSnapshot;status?:SystemStatus}) {

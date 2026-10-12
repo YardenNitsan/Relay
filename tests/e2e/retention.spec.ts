@@ -22,6 +22,7 @@ for(const width of [320,390,1440])test(`owner cleanup preview stays explicit at 
   await page.route('**/api/hardware',route=>route.fulfill({status:200,json:snapshot}));
   await page.setViewportSize({width,height:900});await page.goto('/');await pairBrowser(page);
   await openCommands(page);await page.getByRole('option',{name:/Inspect this machine/}).click();
+  await page.getByRole('button',{name:'Recovery',exact:true}).click();
   await page.getByText('Data retention',{exact:true}).click();
   const preview=page.getByRole('button',{name:'Preview cleanup',exact:true});await expect(preview).toBeDisabled();
   await page.getByLabel('Expired sessions, invitations and unused client tokens').check();

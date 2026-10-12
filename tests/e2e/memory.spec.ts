@@ -12,6 +12,7 @@ for(const size of [{width:320,height:740},{width:390,height:844},{width:1440,hei
     await page.getByRole('option',{name:/Manage memory/}).click();
     let dialog=page.getByRole('dialog',{name:'Your memory',exact:true});
     const title=`Memory ${size.width} ${Date.now()} ${'x'.repeat(75)}`;
+    await dialog.getByRole('button',{name:'New memory',exact:true}).click();
     await dialog.getByRole('textbox',{name:'Title',exact:true}).fill(title);
     await dialog.getByRole('textbox',{name:'What should Relay remember?',exact:true}).fill('Prefer concise explanations. This note was explicitly saved in a browser test.');
     const approval=dialog.getByRole('checkbox',{name:'I approve saving this memory for my future tasks',exact:true});
@@ -44,6 +45,7 @@ for(const size of [{width:320,height:740},{width:390,height:844},{width:1440,hei
     await expect(card).toContainText('Updated and explicitly approved preference.');
     await page.reload();await openCommands(page);await page.getByRole('option',{name:/Manage memory/}).click();
     dialog=page.getByRole('dialog',{name:'Your memory',exact:true});
+    await dialog.getByRole('button',{name:`Open ${title}`,exact:true}).click();
     card=dialog.getByRole('article').filter({has:page.getByRole('heading',{name:title,exact:true})});
     await expect(card).toContainText('Updated and explicitly approved preference.');
     expect(await dialog.evaluate(element=>element.scrollWidth<=element.clientWidth)).toBe(true);
@@ -51,10 +53,13 @@ for(const size of [{width:320,height:740},{width:390,height:844},{width:1440,hei
     await card.scrollIntoViewIfNeeded();
     await page.screenshot({path:`output/playwright/memory-${size.width}.png`,animations:'disabled'});
     if(size.width!==390)expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze()).violations).toEqual([]);
+    const allNotes=dialog.getByRole('button',{name:'All notes',exact:true});
+    if(await allNotes.isVisible())await allNotes.click();
     const downloading=page.waitForEvent('download');await dialog.getByRole('button',{name:'Export JSON',exact:true}).click();
     const downloaded=await downloading;expect(downloaded.suggestedFilename()).toBe('relay-memory.json');
     const exported=JSON.parse(await readFile((await downloaded.path())!,'utf8')) as {version:number;notes:Array<{id:string;revision:number;content:string}>};
     expect(exported.version).toBe(1);expect(exported.notes.find(item=>item.id===saved.id)).toMatchObject({revision:4,content:'Updated and explicitly approved preference.'});
+    await dialog.getByRole('button',{name:`Open ${title}`,exact:true}).click();
     await card.getByRole('button',{name:'Delete',exact:true}).click();await expect(card.getByRole('button',{name:'Delete permanently',exact:true})).toBeVisible();
     await card.getByRole('button',{name:'Keep memory',exact:true}).click();await expect(card).toBeVisible();
     await card.getByRole('button',{name:'Delete',exact:true}).click();

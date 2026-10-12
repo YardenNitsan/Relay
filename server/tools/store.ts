@@ -9,7 +9,7 @@ import { workspaceGitSchema } from '../../shared/git-worktrees';
 
 const workspaceSchema = z.object({ ownerUserId:z.string().min(1).max(160).nullable().optional(), id: z.uuid(), name: z.string().min(1).max(128), sourcePath: z.string().nullable(), createdAt: z.iso.datetime(), fileCount: z.number().int().min(0).max(2000), git:workspaceGitSchema.nullable().optional() }).strict();
 const entrySchema = z.object({ path: z.string(), before: z.string().nullable(), after: z.string().nullable() }).strict();
-const checkpointSchema = z.object({ id: z.uuid(), taskId: z.string().min(1).max(160), workspaceId: z.uuid(), createdAt: z.iso.datetime(), state: z.enum(['prepared', 'committed', 'reverted']), entries: z.array(entrySchema).max(2000) }).strict();
+const checkpointSchema = z.object({ id: z.uuid(), taskId: z.string().min(1).max(160), workspaceId: z.uuid(), createdAt: z.iso.datetime(), state: z.enum(['prepared', 'committed', 'reverted']), entries: z.array(entrySchema).max(2000), revertsCheckpointId:z.uuid().optional() }).strict();
 export type Checkpoint = z.infer<typeof checkpointSchema>;
 export type ChangeEntry = z.infer<typeof entrySchema>;
 
@@ -80,14 +80,14 @@ export class ToolStore {
     if (!/^relay-[0-9a-f-]{36}$/.test(name)) throw new Error('Invalid managed container identity');
     await unlink(await inspectPath(this.root, `containers/${name}.json`)).catch(error => { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; });
   }
-  async checkpoints(taskId: string): Promise<Checkpoint[]> {
+  async checkpoints(taskId: string|null,workspaceId?:string): Promise<Checkpoint[]> {
     await this.init(); const records: Checkpoint[] = [];
     const names = await readdir(await inspectPath(this.root, 'checkpoints'));
     if (names.length > 10_000) throw new Error('Checkpoint directory exceeds inspection limit');
     for (const name of names) {
       if (!/^[0-9a-f-]{36}\.json$/.test(name)) continue;
       const record = await this.checkpoint(name.slice(0, -5));
-      if (record.taskId === taskId) records.push(record);
+      if ((taskId===null||record.taskId===taskId)&&(workspaceId===undefined||record.workspaceId===workspaceId)) records.push(record);
     }
     return records.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
   }

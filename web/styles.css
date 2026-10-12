@@ -4,7 +4,9 @@
 body { margin: 0; color: var(--text); background: var(--canvas); }
 button, input, select, textarea { font: inherit; }
 button, select { -webkit-tap-highlight-color: transparent; }
-button { color: inherit; cursor: pointer; transition: background-color var(--motion-fast), border-color var(--motion-fast), color var(--motion-fast); }
+/* Text and its surface must switch theme together. Interpolating them while
+   the surrounding surface changes instantly produces unreadable mid-colors. */
+button { color: inherit; cursor: pointer; transition: border-color var(--motion-fast); }
 button:disabled { cursor: not-allowed; opacity: .48; }
 button, input, select, textarea { outline-offset: 4px; }
 :focus-visible { outline: 2px solid var(--accent); }

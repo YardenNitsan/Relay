@@ -1,5 +1,9 @@
 # Studio visual and interaction review
 
+12 October: [managed branch review at390px dark](evidence/branch-review-390-dark.png) and [approved action at320px light](evidence/branch-integration-320-light.png) keep parent identity, exact comparisons, consent and receipts in one scrollable document. The [desktop capture](evidence/branch-review-1440-light.png) retains the project index; its receipt check is visibly pending. Compact headings reserve working space, including844x390 landscape. Four viewport/theme workflows, busy/draft behavior, slow-refresh acknowledgement and interrupted-receipt verification pass within31affected browser cases. Actual source publication/rollback remains a separate reviewed destination.
+
+Theme-switch review reproduced unreadable intermediate button colors from independently animated foreground/backgrounds. Text and surfaces now update together while borders retain motion feedback. A frozen intermediate-frame accessibility test passes; no physical device or broad accessibility certification is implied.
+
 12 October: inspected [History in a reduced visible viewport](evidence/history-visible-viewport.png). Search and rows scroll as one document while the dialog heading stays reachable. The previous capture showed only the toolbar and no rows; the regression now reaches an actual conversation. Shared native modal geometry preserves drafts, close/focus behavior and pinch zoom;47affected browser cases pass. The grey area is the simulated unavailable viewport, not a physical keyboard screenshot.
 
 ## 0.1.3 Model Studio review

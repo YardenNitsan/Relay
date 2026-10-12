@@ -1,5 +1,11 @@
 # Security review
 
+## Reviewed managed-parent integration, 12 October
+
+Integration authority remains local-owner-only and separate from model tools. APIs derive the target from immutable branch provenance; callers cannot select an arbitrary parent. Both workspaces are reserved before asynchronous busy checks, broker dispatch is serialized, and each rename/unlink rechecks durable authority. A complete snapshot digest rejects stale reviews. A missing baseline never creates a fabricated ancestor. Selected paths preserve existing path/hash/capacity checks, including a preflight against actual case-insensitive targets.
+
+Prepared integration and rollback receipts precede effects. Mixed states refuse reconciliation; complete-state verification changes only metadata. Sibling integrations into an uncertain parent are blocked. Historical checkpoints remain compatible with the optional rollback reference field. The17broker cases include injected revocation and checkpoint failures, actual file mutations, partial rollback, stale reviews, wrong parent and cancellation. Full1399tests/one skip and31affected browser cases pass. No hostile-same-OS-account, atomic database/filesystem transaction, automatic conflict merge or original-source Git guarantee is claimed. Broader threat review remains open.
+
 Status: open, internal engineering review; no independent penetration-test claim.
 
 ## Managed-file final authorization, 12 October

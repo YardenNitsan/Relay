@@ -23,3 +23,13 @@ test('shared-account settings expose personal connections without owner manageme
   await expect(dialog.getByRole('button',{name:'Models & providers',exact:true})).toBeVisible();await expect(dialog.getByRole('button',{name:'Google Workspace',exact:true})).toBeVisible();
   await dialog.getByRole('button',{name:'Google Workspace',exact:true}).click();await expect(page.getByRole('dialog',{name:'Google Workspace',exact:true})).toBeVisible();
 });
+
+test('theme controls retain readable contrast throughout a theme change',async({page})=>{
+  await page.setViewportSize({width:320,height:740});await page.addInitScript(()=>localStorage.setItem('relay:theme:v1','light'));await page.goto('/');await pairBrowser(page);const dialog=await settings(page);
+  // Slow existing transitions without introducing a new transition property,
+  // then inspect an intermediate frame. Waiting for the end hides the finding.
+  await page.addStyleTag({content:'.settings-appearance button { transition-duration:10s !important; }'});
+  await dialog.getByRole('button',{name:'Dark appearance',exact:true}).click();await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
+  await dialog.locator('.settings-appearance').evaluate(element=>{for(const animation of element.getAnimations({subtree:true})){animation.pause();animation.currentTime=2500;}});
+  expect((await new AxeBuilder({page}).include('.settings-appearance').withTags(['wcag2a','wcag2aa']).analyze()).violations).toEqual([]);
+});

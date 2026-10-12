@@ -20,18 +20,20 @@ export async function captureGitBaseline(store:ToolStore,workspaceId:string,file
     guard();await rename(stage,await inspectPath(store.root,`baselines/${workspaceId}`));
   } finally {await rm(stage,{recursive:true,force:true,maxRetries:3,retryDelay:25});}
 }
-export async function readGitBaseline(store:ToolStore,workspaceId:string,current:Map<string,string>,guard:Guard):Promise<{metadata:BaselineMetadata;files:Map<string,string>}> {
+export async function readGitBaseline(store:ToolStore,workspaceId:string,current:Map<string,string>,guard:Guard,requireCreation=false):Promise<{metadata:BaselineMetadata;files:Map<string,string>}> {
   z.uuid().parse(workspaceId);await store.init();
   const root=await inspectPath(store.root,`baselines/${workspaceId}`);
   let handle;
   try {handle=await open(await inspectPath(root,'metadata.json'),readFlags());}
   catch(error) {
     if((error as NodeJS.ErrnoException).code!=='ENOENT')throw error;
+    if(requireCreation)throw new Error('The authentic fork baseline is missing; integration cannot infer an ancestor');
     // A legacy workspace has no authentic import snapshot. Record a truthful new baseline.
     await captureGitBaseline(store,workspaceId,current,'first_inspection',guard);
     handle=await open(await inspectPath(root,'metadata.json'),readFlags());
   }
   let metadata:BaselineMetadata;
   try {const stat=await handle.stat();if(!stat.isFile() || stat.nlink!==1 || stat.size>2048)throw new Error('Invalid baseline metadata');metadata=metadataSchema.parse(JSON.parse(await handle.readFile('utf8')));}finally{await handle.close();}
+  if(requireCreation&&metadata.kind!=='workspace_creation')throw new Error('Integration requires the original workspace creation baseline');
   const files=await snapshot(await inspectPath(root,'files'),true);guard();return {metadata,files};
 }

@@ -7,6 +7,7 @@ import { createApp } from '../server/api/app.js';
 import { openDatabase } from '../server/db/database.js';
 import { Store } from '../server/db/store.js';
 import { ToolBroker } from '../server/tools/index.js';
+import {ToolStore} from '../server/tools/store.js';
 import { Providers } from '../server/providers/index.js';
 import { SecretManager } from '../server/providers/secrets.js';
 import { Engine } from '../server/orchestration/engine.js';
@@ -25,6 +26,42 @@ beforeEach(async()=>{
 });
 afterEach(async()=>{await engine.shutdown();await app.close();await store.close();await rm(dir,{recursive:true,force:true});});
 describe('local HTTP boundary',()=>{
+  it('reconciles an interrupted managed branch receipt only with explicit owner consent',async()=>{
+    const headers={host,cookie,'x-relay-csrf':csrf},broker=engine.tools as ToolBroker;
+    const parent=await broker.createWorkspace('Parent');await store.saveWorkspace(parent);await broker.upload(parent.id,'a.txt','base');const child=await broker.forkWorkspace(parent.id,'Child',async()=>{},async record=>{await store.saveWorkspace(record);});await broker.changeFile(child.id,'a.txt','child',(await broker.readFile(child.id,'a.txt')).sha256);
+    const preview=await broker.reviewBranch(child.id,parent.id,async()=>{}),saved=ToolStore.prototype.saveCheckpoint;const failure=vi.spyOn(ToolStore.prototype,'saveCheckpoint').mockImplementation(async function(this:ToolStore,record){if(record.taskId===`branch-${child.id}`&&record.state==='committed')throw new Error('Lost final receipt');return saved.call(this,record);});
+    try{await expect(broker.integrateBranch(child.id,parent.id,preview.digest,['a.txt'],async()=>{})).rejects.toThrow();}finally{failure.mockRestore();}
+    const receipt=(await broker.branchIntegrations(child.id,parent.id,async()=>{}))[0],url=`/api/workspaces/${child.id}/integration/${receipt.id}/reconcile`;
+    expect((await app.inject({method:'POST',url,headers,payload:{confirmed:false}})).statusCode).toBe(400);
+    const response=await app.inject({method:'POST',url,headers,payload:{confirmed:true}});expect(response.statusCode,response.body).toBe(200);expect(response.json().state).toBe('committed');expect((await broker.readFile(parent.id,'a.txt')).content).toBe('child');
+  });
+  it('reviews, integrates and rolls back a managed branch through exact owner confirmation',async()=>{
+    const headers={host,cookie,'x-relay-csrf':csrf};const broker=engine.tools as ToolBroker;
+    const parent=await broker.createWorkspace('Integration parent');await store.saveWorkspace(parent);await broker.upload(parent.id,'a.txt','base');
+    const child=await broker.forkWorkspace(parent.id,'Integration child',async()=>{},async record=>{await store.saveWorkspace(record);});await broker.changeFile(child.id,'a.txt','child',(await broker.readFile(child.id,'a.txt')).sha256);
+    const url=`/api/workspaces/${child.id}/integration`;
+    const preview=await app.inject({url:`${url}/preview`,headers});expect(preview.statusCode,preview.body).toBe(200);
+    const body={digest:preview.json().digest,paths:['a.txt'],confirmed:true};
+    expect((await app.inject({method:'POST',url,headers:{host,cookie},payload:body})).statusCode).toBe(403);
+    expect((await app.inject({method:'POST',url,headers,payload:{...body,confirmed:false}})).statusCode).toBe(400);
+    const applied=await app.inject({method:'POST',url,headers,payload:body});expect(applied.statusCode,applied.body).toBe(200);expect((await broker.readFile(parent.id,'a.txt')).content).toBe('child');
+    expect((await app.inject({url,headers})).json()[0].id).toBe(applied.json().id);
+    expect((await app.inject({method:'POST',url,headers,payload:body})).statusCode).toBe(409);
+    const revert=await app.inject({method:'POST',url:`${url}/${applied.json().id}/rollback`,headers,payload:{confirmed:true}});expect(revert.statusCode,revert.body).toBe(200);expect((await broker.readFile(parent.id,'a.txt')).content).toBe('base');
+  });
+  it('denies managed branch integration to a non-owner even for their own workspace',async()=>{
+    const headers={host,cookie,'x-relay-csrf':csrf};const broker=engine.tools as ToolBroker;const parent=await broker.createWorkspace('Parent',undefined,'owner');await store.saveWorkspace(parent);
+    const child=await broker.forkWorkspace(parent.id,'Child',async()=>{},async record=>{await store.saveWorkspace(record);});await store.db.query("UPDATE users SET role='chat' WHERE id='owner'");
+    for(const suffix of ['', '/preview'])expect((await app.inject({url:`/api/workspaces/${child.id}/integration${suffix}`,headers})).statusCode).toBe(403);
+  });
+  it('refuses managed branch integration while either participant has unfinished work',async()=>{
+    const headers={host,cookie,'x-relay-csrf':csrf};const broker=engine.tools as ToolBroker;const parent=await broker.createWorkspace('Parent');await store.saveWorkspace(parent);await broker.upload(parent.id,'a.txt','base');
+    const child=await broker.forkWorkspace(parent.id,'Child',async()=>{},async record=>{await store.saveWorkspace(record);});await broker.changeFile(child.id,'a.txt','child',(await broker.readFile(child.id,'a.txt')).sha256);
+    const url=`/api/workspaces/${child.id}/integration`,preview=(await app.inject({url:`${url}/preview`,headers})).json();
+    const options:TaskOptions={depth:'fast',modelId:null,access:'workspace',workspaceId:parent.id,contextTokens:8192,budget:{maxCalls:4,maxSeconds:60,maxIterations:2,maxCostUsd:null,localOnly:true}};
+    const task=await store.createTask((await store.createConversation()).id,'Unfinished parent',options);
+    const result=await app.inject({method:'POST',url,headers,payload:{digest:preview.digest,paths:['a.txt'],confirmed:true}});expect(result.statusCode,result.body).toBe(409);expect(result.json().code).toBe('WORKSPACE_BUSY');expect((await broker.readFile(parent.id,'a.txt')).content).toBe('base');await store.transition(task.task.id,'cancelled');
+  });
   it('persists Auto preference without changing privacy or budgets and rejects unknown preferences',async()=>{
     const headers={host,cookie,'x-relay-csrf':csrf};
     const options:TaskOptions={autoPolicy:'quality',depth:'fast',modelId:null,access:'read_only',workspaceId:null,contextTokens:8192,cloudPolicy:'local_only',budget:{maxCalls:4,maxSeconds:60,maxIterations:2,maxCostUsd:0,localOnly:true}};

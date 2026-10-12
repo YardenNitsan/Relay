@@ -547,15 +547,24 @@ export class Engine {
     finally{this.hostMaintenance=false;void this.drain();}
   }
   async mutateWorkspace<T>(workspaceId:string,operation:()=>Promise<T>):Promise<T> {
+    return this.mutateWorkspaces([workspaceId],operation);
+  }
+  async mutateWorkspaces<T>(workspaceIds:readonly string[],operation:()=>Promise<T>):Promise<T> {
+    const ids=[...new Set(workspaceIds)];
+    if(!ids.length)throw new AppError('WORKSPACE_REQUIRED','Select a workspace before changing files',400);
     if(this.closed||this.stopping)throw new AppError('STOPPED','Resume scheduling before changing a workspace',409);
-    if(this.workspaceMaintenance.has(workspaceId)||[...this.running.values()].some(run=>run.workspaceId===workspaceId))throw new AppError('WORKSPACE_BUSY','Stop active workspace tasks before changing workspace files',409);
-    this.workspaceMaintenance.add(workspaceId);
+    if(ids.some(id=>this.workspaceMaintenance.has(id))||[...this.running.values()].some(run=>run.workspaceId!=null&&ids.includes(run.workspaceId)))throw new AppError('WORKSPACE_BUSY','Stop active workspace tasks before changing workspace files',409);
+    // Reserve every participant synchronously. Nested single reservations could
+    // admit a child task while awaiting the parent's durable busy check.
+    for(const id of ids)this.workspaceMaintenance.add(id);
     try {
-      const busy=await this.store.db.query("SELECT id FROM tasks WHERE options->>'workspaceId'=$1 AND status NOT IN ('completed','failed','cancelled','paused','waiting_for_user') LIMIT 1",[workspaceId]);
-      if(busy.length)throw new AppError('WORKSPACE_BUSY','Stop active workspace tasks before changing workspace files',409);
-      await invalidateWorkspaceCommandChecks(this.store,workspaceId,`maintenance-${randomUUID()}`);
+      for(const id of ids){
+        const busy=await this.store.db.query("SELECT id FROM tasks WHERE options->>'workspaceId'=$1 AND status NOT IN ('completed','failed','cancelled','paused','waiting_for_user') LIMIT 1",[id]);
+        if(busy.length)throw new AppError('WORKSPACE_BUSY','Stop active workspace tasks before changing workspace files',409);
+      }
+      for(const id of ids)await invalidateWorkspaceCommandChecks(this.store,id,`maintenance-${randomUUID()}`);
       return await operation();
-    } finally {this.workspaceMaintenance.delete(workspaceId);void this.drain();}
+    } finally {for(const id of ids)this.workspaceMaintenance.delete(id);void this.drain();}
   }
   async stopAll() {
     this.stopping=true;await this.store.setStopped(true);

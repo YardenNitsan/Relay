@@ -43,6 +43,7 @@ import {registerUsageRoutes} from './usage.js';
 import {registerGoogleOAuthRoutes} from './google-oauth.js';
 import type {GoogleOAuth} from '../providers/google-oauth.js';
 import {documentRoutes} from './documents.js';
+import {branchIntegrationRoutes} from './branch-integration.js';
 import { calibrationRoutes } from './calibration.js';
 import { mcpRoutes } from './mcp.js';
 import { verificationContractSchema } from '../orchestration/required-reads.js';
@@ -283,6 +284,7 @@ export async function createApp(services:Services,options:AppOptions={}):Promise
     return workspace;
   };
   documentRoutes(app,store,engine,broker,principal,workspaceAccess);
+  branchIntegrationRoutes(app,store,engine,broker,owner,workspaceAccess);
   app.get('/api/workspaces',async request=>{
     const p=principal(request),records=(await store.db.query('SELECT * FROM workspaces ORDER BY created_at')).map(record=>row<import('../../shared/types.js').Workspace>(record));
     const visible=new Set(records.filter(workspace=>{try{authorizeWorkspace(p,workspace.id,workspace);return true;}catch{return false;}}).map(workspace=>workspace.id));

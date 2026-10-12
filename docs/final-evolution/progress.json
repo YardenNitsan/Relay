@@ -4,7 +4,7 @@
   "updatedAt": "2026-10-12",
   "baselineCommit": "9d563bc973dbcc177921ab918db88561c8280e48",
   "branch": "modernization/final-evolution",
-  "currentMilestone": "0.1.3: router paused; managed authorization d30fb7b verified1375+1skip; shared visible-viewport dialog fix passes47browser cases and strict build; reviewed parent integration in progress",
+  "currentMilestone": "0.1.3: router paused; reviewed managed-parent integration, rollback and interrupted receipt verification pass full1399tests/one skip, strict build and31affected browser cases; History paging and theme-transition CI regressions reproduced and fixed",
   "requirementIds": [
     "A01",
     "A02",
@@ -78,7 +78,8 @@
     "Memory notebook, Scheduling agenda and Host Overview/Model safety/Recovery rebuilt with dirty/busy guards and acknowledged-state recovery; affected new cases pass locally.",
     "History timeline retains exact-message search and opaque paging; four initial-focus failures corrected through post-showModal focus, fresh rerun pending.",
     "Phone offline drafts and authenticated foreground SSE renewal pass3browser simulations, including blocked cursor storage. Physical Android remains outstanding.",
-    "Eight real Engine/broker/file analysis-role regressions pass; scripted provider proposals are not live agent intelligence evidence."
+    "Eight real Engine/broker/file analysis-role regressions pass; scripted provider proposals are not live agent intelligence evidence.",
+    "Reviewed managed child-to-parent file integration with immutable baseline, dual reservations, exact stale-review digest, per-effect authority, conservative conflicts, selected files, durable rollback and complete-state reconciliation;17broker tests plus API/reservation and8real-browser cases."
   ],
   "changedFiles": [
     ".github/workflows/native-integrations.yml",
@@ -280,7 +281,7 @@
     "docs/final-evolution/model-studio-plan.md",
     "docs/validation.md"
   ],
-  "testStatus": "Final strict typecheck/full1305passed/one skip across123files273.47s and production build pass.31affected browser+10final branch cases pass; native PostgreSQL17.11 migration11/32-table restore/sandbox pass; actual encrypted worktree roundtrip and22adversarial helper cases pass.",
+  "testStatus": "Fresh strict check1399passed/one platform skip across131files299.73s; production build passes; final31affected browser cases pass4.1min. Earlier viewport increment47browser cases passed6.2min. Native run38200429677 passes d30fb7b; new hosted gates pending.",
   "lastPassingCommands": [
     "npm.cmd ci",
     "npm.cmd run check (baseline)",
@@ -394,7 +395,7 @@
     "Owner has Android phone; current deployed0.1.2 mobile-data sign-in succeeded after tunnel restart. Modernization physical-device workflows remain untested.",
     "Second authorized Companion computer not established; cloud/email/calendar test accounts not configured (owner confirmed)."
   ],
-  "nextActionableWorkItem": "Commit reviewed Agent Studio/scroll fix, inspect hosted gates, finish Memory/Scheduling redesign, then continue all other non-router A-G requirements. Semantic routing is explicitly paused.",
+  "nextActionableWorkItem": "Commit/push reviewed branch integration and CI repairs; inspect new hosted gates. Continue source publication/new directories, publication acknowledgement/recovery, source Git history/merge workflows, agent/coding acceptance, Companion and other non-router A-G requirements.",
   "remainingDependencies": [
     "A native recovery/restore/retention",
     "B full redesign",
@@ -435,13 +436,16 @@
     "MCP/Settings/notifications: six old-build behavior reds and missing Settings entry; fresh strict build and39/39browser cases pass4.9min; initial20run18pass/two corrected failures retained.",
     "Managed authorization:10negative red/1positive control;72focused pass; npm.cmd run check1375passed/one skip130files286.43s; production build passes."
   ],
-  "latestProductCommit": "d39347f",
+  "latestProductCommit": "9707a3c",
   "latestHostedStatus": {
-    "run": 38198881075,
-    "host": "All three OS host checks pass on deaaec9",
-    "browser": "Six browser shards still in progress; no green claim.",
-    "nativeRun": 38165687812,
-    "native": "success on e619455; no newer native-affecting change in ff15737"
+    "runs": [
+      38198881075,
+      38199910850
+    ],
+    "host": "All three OS host checks pass for both checkpoints",
+    "browser": "Both Windows and both Linux shards pass on both; deaaec9 macOS1 History paging and d39347f macOS2 theme-transition contrast failures reproduced locally and fixed in current increment. No new hosted green claim.",
+    "nativeRun": 38200429677,
+    "native": "success on d30fb7b"
   },
   "semanticRouterWork": {
     "status": "paused_by_owner",

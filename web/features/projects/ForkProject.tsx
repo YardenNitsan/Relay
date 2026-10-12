@@ -17,7 +17,7 @@ export default function ForkProject({parent,onCreated}:{parent:Workspace;onCreat
     <p className="project-eyebrow">Separate space. Same starting point.</p><h3>Work in an isolated branch</h3>
     <p className="muted">Create a Git branch from the current managed files in <strong>{parent.name}</strong>. Edits stay in a separate workspace on Relay Host.</p>
     <label>Branch workspace name<input required maxLength={120} value={name} onChange={event=>setName(event.target.value)} disabled={busy}/></label>
-    <p className="hint">The new workspace keeps the same owner. Shared access grants are assigned separately. Merging into the parent and publishing to the original source are not available for these branches yet.</p>
+    <p className="hint">The new workspace keeps the same owner. Shared access grants are assigned separately. Review selected changes before integrating them into the managed parent. Publication to original source is a separate review from that parent workspace.</p>
     <button type="submit" className="button primary" disabled={busy||!name.trim()}>{busy?'Creating isolated branch...':'Create branch workspace'}</button>
     {error!=null&&<ErrorNotice error={error}/>}
   </form>;

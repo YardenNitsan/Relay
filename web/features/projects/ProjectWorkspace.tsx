@@ -11,10 +11,11 @@ import Publication from '../../components/Publication';
 import ProjectFiles from './ProjectFiles';
 import CreateProject from './CreateProject';
 import ForkProject from './ForkProject';
+import IntegrateBranch from './IntegrateBranch';
 import './projects.css';
 
 interface Props {selected:string|null;onSelect:(id:string|null)=>void;owner?:boolean;userId?:string;canWriteShared?:boolean}
-type View='index'|'files'|'publication'|'create'|'device'|'fork';
+type View='index'|'files'|'publication'|'create'|'device'|'fork'|'integration';
 
 export default function ProjectWorkspace({selected,onSelect,owner=true,userId,canWriteShared=false}:Props){
   const client=useQueryClient(),request=useGuardedModalAction();
@@ -71,11 +72,11 @@ export default function ProjectWorkspace({selected,onSelect,owner=true,userId,ca
       {view==='create'&&<div className="project-scroll"><CreateProject owner={owner} onCreated={created}/></div>}
       {view==='fork'&&workspace&&<div className="project-scroll"><ForkProject parent={workspace} onCreated={created}/></div>}
       <div className="project-scroll" hidden={view!=='device'}><DeviceFolder key={userId??'anonymous'} userId={userId} onImported={remember}/></div>
-      {(view==='files'||view==='publication')&&(workspace?<>
+      {(view==='files'||view==='publication'||view==='integration')&&(workspace?<>
         <header className="project-title"><div><p className="project-eyebrow">{workspace.ownerUserId===userId?'Personal workspace':'Shared workspace'} / Relay Host</p><h3>{workspace.name}</h3><p className="muted">{workspace.fileCount} files / created {shortDate(workspace.createdAt)}</p>{workspace.git&&<p className="project-branch-label">Isolated Git branch / baseline <code>{workspace.git.baseCommit.slice(0,12)}</code></p>}</div><button className={`button ${selected===workspace.id?'':'primary'}`} disabled={selected===workspace.id} onClick={()=>onSelect(workspace.id)}>{selected===workspace.id?<><Check size={16}/>In this conversation</>:'Use for conversation'}</button></header>
-        <nav className="project-sections" aria-label="Project views"><button aria-current={view==='files'?'page':undefined} onClick={()=>navigate('files')}>Files</button>{owner&&workspace.sourcePath&&<button aria-current={view==='publication'?'page':undefined} onClick={()=>navigate('publication')}>Original source & review</button>}{owner&&<button onClick={()=>navigate('fork')}>Create isolated branch</button>}</nav>
+        <nav className="project-sections" aria-label="Project views"><button aria-current={view==='files'?'page':undefined} onClick={()=>navigate('files')}>Files</button>{owner&&workspace.sourcePath&&<button aria-current={view==='publication'?'page':undefined} onClick={()=>navigate('publication')}>Original source & review</button>}{owner&&workspace.git&&<button aria-current={view==='integration'?'page':undefined} onClick={()=>navigate('integration')}>Review integration</button>}{owner&&<button onClick={()=>navigate('fork')}>Create isolated branch</button>}</nav>
         <div className="project-scroll" key={`${workspace.id}-${view}`}>
-          {view==='files'?<ProjectFiles id={workspace.id} writable={workspace.ownerUserId===userId||owner||canWriteShared}/>:<><div className="project-source"><p className="project-eyebrow">Original on Relay Host</p><code>{workspace.sourcePath}</code><p className="hint">This workspace is a managed copy. Review exact changes before publishing to the original.</p></div><Publication workspaceId={workspace.id}/></>}
+          {view==='files'?<ProjectFiles id={workspace.id} writable={workspace.ownerUserId===userId||owner||canWriteShared}/>:view==='integration'?<IntegrateBranch workspace={workspace}/>:<><div className="project-source"><p className="project-eyebrow">Original on Relay Host</p><code>{workspace.sourcePath}</code><p className="hint">This workspace is a managed copy. Review exact changes before publishing to the original.</p></div><Publication workspaceId={workspace.id}/></>}
         </div>
       </>:query.isPending?<Loading>Opening project...</Loading>:<Empty title="Choose a project" icon={<FolderOpen size={24}/>}><p>Select a workspace from your project index.</p></Empty>)}
     </section>

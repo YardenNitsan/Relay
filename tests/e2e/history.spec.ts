@@ -7,6 +7,13 @@ test('all conversations and messages remain reachable beyond recent API limits',
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
   await page.goto('/'); await pairBrowser(page);
+  // Force the final page to arrive after its page number. This preserves the
+  // real response and reproduces the macOS CI race in the test's paging loop.
+  await page.route('**/api/history/conversations?*',async route=>{
+    const response=await route.fetch(),body=await response.json();
+    if(body.items?.some((item:{id:string})=>item.id===historyConversationId))await page.waitForTimeout(150);
+    await route.fulfill({response});
+  });
   await page.getByRole('button', { name: 'Open conversation history' }).click();
   const dialog = page.getByRole('dialog', { name: 'Conversations', exact: true });
   await expect(dialog.locator('.history-item')).toHaveCount(40);
@@ -14,8 +21,10 @@ test('all conversations and messages remain reachable beyond recent API limits',
   expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([]);
   await dialog.getByRole('button', { name: 'Next', exact: true }).click();
   await expect(dialog.getByText('Page 2', { exact: true })).toBeVisible();
+  await expect(dialog.locator('.history-item').first()).toBeVisible();
   await dialog.getByRole('button', { name: 'Next', exact: true }).click();
   await expect(dialog.getByText('Page 3', { exact: true })).toBeVisible();
+  await expect(dialog.locator('.history-item').first()).toBeVisible();
   // Earlier suite cases create real conversations. Keep verifying pagination
   // without assuming the archived fixture always remains on the third page.
   const archived=dialog.getByRole('button', { name: /Long history browser fixture/ });
@@ -23,6 +32,7 @@ test('all conversations and messages remain reachable beyond recent API limits',
     await expect(dialog.getByRole('button',{name:'Next',exact:true})).toBeEnabled();
     await dialog.getByRole('button',{name:'Next',exact:true}).click();
     await expect(dialog.getByText(`Page ${number}`,{exact:true})).toBeVisible();
+    await expect(dialog.locator('.history-item').first()).toBeVisible();
   }
   await archived.click();
   const savedMessages = page.locator('.message[id^="message-"]');

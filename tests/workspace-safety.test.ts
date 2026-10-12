@@ -60,6 +60,32 @@ describe('shared workspace execution ownership',()=>{
     await engine.mutateWorkspace(workspaceId,async()=>{invalidatedBeforeWrite=(await store.unresolvedChecks(previous.id)).some(check=>check.kind==='command_stale');});
     expect(invalidatedBeforeWrite).toBe(true);
   });
+  it('reserves both integration workspaces before waiting and releases both after failure',async()=>{
+    await init(async function*(){yield {type:'text',text:'Done'};yield done;});
+    const child='22222222-2222-4222-8222-222222222222';
+    let release=()=>{};const gate=new Promise<void>(resolve=>{release=resolve;});let entered=false;
+    const maintenance=engine.mutateWorkspaces([workspaceId,child],async()=>{entered=true;await gate;throw new Error('Integration failed');});
+    const rejected=expect(maintenance).rejects.toThrow('Integration failed');
+    await expect(engine.mutateWorkspace(child,async()=>{})).rejects.toThrow(/Stop active workspace tasks/);
+    await until(async()=>entered);
+    const parentTask=await task('Parent queued'),childTask=await task('Child queued',child);
+    engine.enqueue(parentTask.id);engine.enqueue(childTask.id);
+    const chat=await task('Independent',null);engine.enqueue(chat.id);await until(async()=>(await store.task(chat.id)).status==='completed');
+    expect((await store.task(parentTask.id)).status).toBe('created');expect((await store.task(childTask.id)).status).toBe('created');
+    release();await rejected;await until(async()=>(await store.task(parentTask.id)).status==='completed'&&(await store.task(childTask.id)).status==='completed');
+  });
+  it('refuses a busy integration participant without leaving the other reserved',async()=>{
+    await init(async function*(){yield done;});
+    const child='22222222-2222-4222-8222-222222222222';const busy=await task('Busy child',child);
+    let invoked=false;await expect(engine.mutateWorkspaces([workspaceId,child],async()=>{invoked=true;})).rejects.toThrow(/Stop active workspace tasks/);expect(invoked).toBe(false);
+    await store.transition(busy.id,'paused');await expect(engine.mutateWorkspaces([workspaceId,child,child],async()=>42)).resolves.toBe(42);
+  });
+  it('invalidates prior command evidence in both integration workspaces',async()=>{
+    await init(async function*(){yield done;});const child='22222222-2222-4222-8222-222222222222';
+    const checked:string[]=[];
+    for(const id of [workspaceId,child]){const prior=await task('Prior test',id);await store.transition(prior.id,'paused');await store.verify(prior.id,'tool_outcome','Passed',true,{tool:'terminal'},actionCheckKey(id,{id:'test',name:'terminal',arguments:{argv:['npm','test']}}));checked.push(prior.id);}
+    await engine.mutateWorkspaces([workspaceId,child],async()=>{for(const id of checked)expect((await store.unresolvedChecks(id)).some(check=>check.kind==='command_stale')).toBe(true);});
+  });
   it('makes a real post-write checkpoint failure uncertain and blocks automatic replay',async()=>{
     directory=await mkdtemp(join(tmpdir(),'relay-uncertain-'));const broker=new ToolBroker(directory,()=>false);const workspace=await broker.createWorkspace('Partial commit');let modelCalls=0;
     const save=ToolStore.prototype.saveCheckpoint;vi.spyOn(ToolStore.prototype,'saveCheckpoint').mockImplementation(async function(this:ToolStore,record){if(record.state==='committed')throw new Error('Simulated metadata disk failure after file rename');return save.call(this,record);});

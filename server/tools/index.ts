@@ -28,6 +28,7 @@ import { AppError } from '../core/errors';
 import type { TaskOptions } from '../../shared/types';
 import { PersonalTasks } from './personal';
 import type { DevelopmentProfileId } from './development-profiles';
+import {assertBranchDigest,assertBranchParent,integrationReceipt,prepareBranchReview} from './branch-integration';
 
 export class ToolBroker {
   private readonly store: ToolStore;
@@ -114,6 +115,73 @@ export class ToolBroker {
   }
   async listFiles(workspaceId: string): Promise<string[]> {
     return this.serial(async () => listTextFiles((await this.workspace(workspaceId)).root));
+  }
+  private async branchPair(childId:string,parentId:string){
+    const child=await this.workspace(childId),parent=await this.workspace(parentId);assertBranchParent(child.record,parent.record);return {child,parent};
+  }
+  async reviewBranch(childId:string,parentId:string,authorize:()=>Promise<void>){
+    const guard=this.guard();return this.serial(async()=>{guard();await authorize();guard();const {child,parent}=await this.branchPair(childId,parentId);return (await prepareBranchReview(this.store,child.record,parent.record,guard)).review;});
+  }
+  async branchFile(childId:string,parentId:string,path:string,digest:string,authorize:()=>Promise<void>){
+    safePath(path);const guard=this.guard();return this.serial(async()=>{
+      guard();await authorize();guard();const {child,parent}=await this.branchPair(childId,parentId);const state=await prepareBranchReview(this.store,child.record,parent.record,guard);assertBranchDigest(state.review.digest,digest);
+      if(!state.review.entries.some(entry=>entry.path===path))throw new AppError('BRANCH_PATH','Select a changed file from this review',400);
+      return {path,base:state.baseFiles.get(path)??null,parent:state.parentFiles.get(path)??null,child:state.childFiles.get(path)??null};
+    });
+  }
+  async branchIntegrations(childId:string,parentId:string,authorize:()=>Promise<void>){
+    const guard=this.guard();return this.serial(async()=>{guard();await authorize();guard();await this.branchPair(childId,parentId);const records=(await this.store.checkpoints(`branch-${childId}`)).filter(record=>record.workspaceId===parentId);const reversed=new Set(records.filter(record=>record.state==='committed').map(record=>record.revertsCheckpointId));return records.reverse().map(record=>integrationReceipt(reversed.has(record.id)?{...record,state:'reverted'}:record));});
+  }
+  async branchIntegration(childId:string,parentId:string,checkpointId:string,authorize:()=>Promise<void>){
+    const guard=this.guard();return this.serial(async()=>{guard();await authorize();guard();await this.branchPair(childId,parentId);const checkpoint=await this.store.checkpoint(checkpointId);if(checkpoint.taskId!==`branch-${childId}`||checkpoint.workspaceId!==parentId)throw new AppError('BRANCH_RECEIPT','Checkpoint belongs to another integration',409);return {...integrationReceipt(checkpoint),entries:checkpoint.entries};});
+  }
+  async integrateBranch(childId:string,parentId:string,digest:string,paths:string[],authorize:()=>Promise<void>,signal?:AbortSignal){
+    const guard=this.guard(signal);return this.serial(async()=>{
+      guard();await authorize();guard();const {child,parent}=await this.branchPair(childId,parentId);
+      if(!paths.length||paths.length>20||new Set(paths).size!==paths.length)throw new AppError('BRANCH_SELECTION','Select between one and twenty distinct reviewed files',400);
+      paths.forEach(path=>safePath(path));
+      if((await this.store.checkpoints(null,parentId)).some(checkpoint=>checkpoint.state==='prepared'))throw new AppError('BRANCH_UNCERTAIN','An interrupted parent mutation needs inspection before another integration attempt',409);
+      const state=await prepareBranchReview(this.store,child.record,parent.record,guard);assertBranchDigest(state.review.digest,digest);
+      const entries:ChangeEntry[]=paths.map(path=>{
+        const entry=state.review.entries.find(item=>item.path===path);
+        if(!entry||entry.status!=='ready')throw new AppError('BRANCH_CONFLICT','Selected files include a conflict, an already-applied change or a path outside this review',409);
+        return {path,before:state.parentFiles.get(path)??null,after:state.childFiles.get(path)??null};
+      });
+      // The filesystem may be case-insensitive. Validate actual targets before
+      // preparing any batch, rather than relying only on map key equality.
+      for(const entry of entries)if(hashOrNull(await readText(parent.root,entry.path,true))!==hashOrNull(entry.before))throw new AppError('BRANCH_CONFLICT',`Content conflict: ${entry.path} resolves to a different parent file`,409);
+      const checkpoint=await this.commit({taskId:`branch-${childId}`,workspaceId:parentId},parent.root,entries,guard,authorize);
+      if(this.durableStore)await this.durableStore.saveWorkspace((await this.workspace(parentId)).record);
+      return integrationReceipt(checkpoint);
+    });
+  }
+  async revertBranch(childId:string,parentId:string,checkpointId:string,authorize:()=>Promise<void>,signal?:AbortSignal){
+    const guard=this.guard(signal);return this.serial(async()=>{
+      guard();await authorize();guard();const {parent}=await this.branchPair(childId,parentId);const checkpoint=await this.store.checkpoint(checkpointId);
+      if(checkpoint.taskId!==`branch-${childId}`||checkpoint.workspaceId!==parentId)throw new AppError('BRANCH_RECEIPT','Checkpoint belongs to another integration',409);
+      const history=await this.store.checkpoints(null,parentId);
+      if(history.some(record=>record.state==='prepared'))throw new AppError('BRANCH_UNCERTAIN','Inspect the interrupted integration before rollback',409);
+      if(checkpoint.state!=='committed'||checkpoint.revertsCheckpointId||history.some(record=>record.state==='committed'&&record.revertsCheckpointId===checkpointId))throw new AppError('BRANCH_REVERTED','Only a completed integration that has not been rolled back can be restored',409);
+      for(const entry of checkpoint.entries)if(hashOrNull(await readText(parent.root,entry.path,true))!==hashOrNull(entry.after))throw new AppError('BRANCH_CONFLICT',`Content conflict: ${entry.path} changed after integration`,409);
+      // Rollback gets its own prepared receipt before any effect. A partial
+      // rollback must not remain labelled a safely retryable forward commit.
+      const rollback=await this.commit({taskId:`branch-${childId}`,workspaceId:parentId},parent.root,[...checkpoint.entries].reverse().map(entry=>({path:entry.path,before:entry.after,after:entry.before})),guard,authorize,checkpointId);
+      if(this.durableStore)await this.durableStore.saveWorkspace((await this.workspace(parentId)).record);
+      return integrationReceipt(rollback);
+    });
+  }
+  async reconcileBranch(childId:string,parentId:string,checkpointId:string,authorize:()=>Promise<void>){
+    const guard=this.guard();return this.serial(async()=>{
+      guard();await authorize();guard();const {parent}=await this.branchPair(childId,parentId),record=await this.store.checkpoint(checkpointId);
+      if(record.taskId!==`branch-${childId}`||record.workspaceId!==parentId)throw new AppError('BRANCH_RECEIPT','Checkpoint belongs to another integration',409);
+      if(record.state!=='prepared')throw new AppError('BRANCH_RECEIPT','Only interrupted receipts need state verification',409);
+      let before=true,after=true;
+      for(const entry of record.entries){const current=hashOrNull(await readText(parent.root,entry.path,true));before&&=current===hashOrNull(entry.before);after&&=current===hashOrNull(entry.after);guard();}
+      if(!before&&!after)throw new AppError('BRANCH_MIXED','Parent files match neither the complete before state nor the complete after state. Inspect the mixed or later edits before closing this receipt.',409);
+      await authorize();guard();record.state=after?'committed':'reverted';await this.store.saveCheckpoint(record);
+      parent.record.fileCount=(await listTextFiles(parent.root)).length;await this.store.saveWorkspace(parent.record);if(this.durableStore)await this.durableStore.saveWorkspace(parent.record);
+      return integrationReceipt(record);
+    });
   }
   async readFile(workspaceId:string,path:string):Promise<{path:string;content:string;sha256:string}> {
     safePath(path);
@@ -235,9 +303,9 @@ export class ToolBroker {
     for (const entry of entries) { if (entry.after === null) contents.delete(entry.path); else contents.set(entry.path, entry.after); }
     if (contents.size > FILE_COUNT_LIMIT || [...contents.values()].reduce((sum, value) => sum + Buffer.byteLength(value), 0) > WORKSPACE_LIMIT) throw new Error('Workspace capacity limit exceeded');
   }
-  private async commit(context: Pick<ToolContext, 'taskId' | 'workspaceId'>, root: string, entries: ChangeEntry[], guard: Guard, authorize?:()=>Promise<void>): Promise<Checkpoint> {
+  private async commit(context: Pick<ToolContext, 'taskId' | 'workspaceId'>, root: string, entries: ChangeEntry[], guard: Guard, authorize?:()=>Promise<void>,revertsCheckpointId?:string): Promise<Checkpoint> {
     await this.capacity(root, entries); guard();
-    const checkpoint: Checkpoint = { id: randomUUID(), taskId: context.taskId, workspaceId: context.workspaceId!, createdAt: new Date().toISOString(), state: 'prepared', entries };
+    const checkpoint: Checkpoint = { id: randomUUID(), taskId: context.taskId, workspaceId: context.workspaceId!, createdAt: new Date().toISOString(), state: 'prepared', entries,...(revertsCheckpointId?{revertsCheckpointId}:{}) };
     await new StorageBudget(this.store.root).assertCapacity(2*Buffer.byteLength(JSON.stringify(checkpoint))+entries.reduce((sum,entry)=>sum+Buffer.byteLength(entry.after??''),2*1024*1024));guard();
     await this.store.saveCheckpoint(checkpoint);
     try {

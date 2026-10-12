@@ -1,0 +1,14 @@
+/* Native dialogs live in the top layer. Constrain that layer to the visible
+   viewport while the keyboard or browser chrome reduces the available space.
+   The shared observer releases this rule during pinch zoom. */
+:root[data-relay-viewport-constrained] dialog.modal[open] {
+  position: fixed;
+  top: var(--relay-viewport-offset, 0px);
+  bottom: auto;
+  left: 50%;
+  right: auto;
+  margin: 0;
+  max-height: var(--relay-viewport-height, 100dvh);
+  transform: translateX(-50%);
+  animation: none;
+}

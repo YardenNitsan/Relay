@@ -1,5 +1,7 @@
 # Studio visual and interaction review
 
+12 October: inspected [History in a reduced visible viewport](evidence/history-visible-viewport.png). Search and rows scroll as one document while the dialog heading stays reachable. The previous capture showed only the toolbar and no rows; the regression now reaches an actual conversation. Shared native modal geometry preserves drafts, close/focus behavior and pinch zoom;47affected browser cases pass. The grey area is the simulated unavailable viewport, not a physical keyboard screenshot.
+
 ## 0.1.3 Model Studio review
 
 The inspector uses one reading column on phones and a persistent catalog on wide screens. Model identity, account availability, context, unknown weight/performance evidence and separate input/output costs remain readable without horizontal page scrolling. Inspected412px dark and1440px light captures are retained in evidence/models-after-*.png alongside the inherited before capture. Tested320–1920px and short landscape in both themes, including keyboard focus after resize, cached discovery failure, empty states and credential draft dismissal.

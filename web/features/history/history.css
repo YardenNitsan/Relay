@@ -97,3 +97,8 @@
   .history-results-pane,.history-results-scroll { flex: none; overflow: visible; }
   .history-results-pane { min-height: 240px; }
 }
+@media (max-width: 699px) {
+  :root[data-relay-viewport-constrained] .history-studio-workspace { overflow: auto; overscroll-behavior: contain; }
+  :root[data-relay-viewport-constrained] :is(.history-results-pane,.history-results-scroll) { flex: none; overflow: visible; }
+  :root[data-relay-viewport-constrained] .history-results-pane { min-height: 240px; }
+}

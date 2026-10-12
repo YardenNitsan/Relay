@@ -2,6 +2,7 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { Check, Circle, CircleAlert, LoaderCircle, X } from 'lucide-react';
 import type { TaskStatus } from '../../shared/types';
 import {ModalGuardContext,useModalGuardController} from './modal-guard';
+import '../layout/dialog-viewport.css';
 
 export function Modal({ title, children, onClose, wide = false, className = '', fallbackFocusId, initialFocus }: { title: string; children: ReactNode; onClose: () => void; wide?: boolean; className?: string; fallbackFocusId?: string; initialFocus?:string }) {
   const ref = useRef<HTMLDialogElement>(null);

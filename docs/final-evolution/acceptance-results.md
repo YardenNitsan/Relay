@@ -1,5 +1,13 @@
 # Acceptance results
 
+## 12 October: visible-viewport dialog acceptance
+
+Four real-browser regressions failed against the prior UI: History, MCP draft, nested unsaved review/Usage drawer and Settings pinch-zoom release. The shared visual viewport observer now constrains native dialogs to the reported visible height and offset only at scale1. Restoring the viewport or zoom releases the constraint. Initial geometry checks passed, but rendered inspection exposed History's results collapsing to zero height; a content visibility regression reproduced it, and compact History now scrolls its complete search/results document.
+
+Fresh strict build passes. Final affected browser run **47/47 passes in6.2min**: dialog viewport, conversation/composer, approvals, History, MCP and adaptive shell. `dialog-viewport-red.log`, `dialog-viewport-content-red.log`, `dialog-viewport-build.log`, `dialog-viewport-acceptance.log` retain outcomes under output/final-evolution. These use synthetic VisualViewport events in actual Chromium; they do not establish physical Android keyboard acceptance. The [rendered History capture](evidence/history-visible-viewport.png) was inspected.
+
+Hosted native database/container run38200429677 passes security commitd30fb7b. Other host/browser runs were pending at this checkpoint; no blanket green claim.
+
 ## Fresh baseline, 2026-10-10
 
 - Origin/main and local clean checkout: `9d563bc973dbcc177921ab918db88561c8280e48`.

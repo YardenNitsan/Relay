@@ -1,9 +1,9 @@
 name: Verify native Android
 on:
   push:
-    paths: ['android/**', '.github/workflows/android.yml']
+    paths: ['android/**', 'scripts/native-lan-fixture.ts', 'server/**', 'shared/**', 'package*.json', '.github/workflows/android.yml']
   pull_request:
-    paths: ['android/**', '.github/workflows/android.yml']
+    paths: ['android/**', 'scripts/native-lan-fixture.ts', 'server/**', 'shared/**', 'package*.json', '.github/workflows/android.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -21,7 +21,15 @@ jobs:
           echo "JAVA_HOME=$JAVA_HOME_21_X64" >> "$GITHUB_ENV"
           echo "$JAVA_HOME_21_X64/bin" >> "$GITHUB_PATH"
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platforms;android-37.0' 'build-tools;36.0.0'
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install isolated host test dependencies
+        run: npm ci
       - name: Verify wrapper and build testing application
+        env:
+          RELAY_NATIVE_INTEGRATION: '1'
         working-directory: android
         shell: bash
         run: |

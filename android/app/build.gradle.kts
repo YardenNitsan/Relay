@@ -24,3 +24,14 @@ dependencies {
     testImplementation("com.squareup.okhttp3:mockwebserver3:5.5.0")
     testImplementation("com.squareup.okhttp3:okhttp-tls:5.5.0")
 }
+
+// Optional real-host integration must rerun when opted in or host source changes.
+tasks.withType<Test>().configureEach {
+    val integration = providers.environmentVariable("RELAY_NATIVE_INTEGRATION").orElse("0")
+    inputs.property("relayNativeIntegration", integration)
+    environment("RELAY_NATIVE_INTEGRATION", integration.get())
+    if (integration.get() == "1") {
+        inputs.files(rootProject.file("../scripts/native-lan-fixture.ts"), rootProject.file("../server"),
+            rootProject.file("../shared"), rootProject.file("../package-lock.json"))
+    }
+}

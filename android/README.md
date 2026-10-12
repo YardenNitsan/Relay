@@ -16,6 +16,8 @@ Output: `android/app/build/outputs/apk/debug/app-debug.apk`. The locally deliver
 
 The separate [Android CI workflow](../.github/workflows/android.yml) builds and checks this module on Ubuntu, verifies the wrapper and publishes verification reports. Its ephemeral runner debug key is not the delivered update identity; CI does not distribute its APK as an upgrade. A configured workflow is not a claim that a hosted run has passed.
 
+For the opt-in real Relay backend test, install repository npm dependencies with the lockfile, make Node24+ available, set `RELAY_NATIVE_INTEGRATION=1`, then run `./android/gradlew.bat -p android :app:testDebugUnitTest --console=plain`. This passes20 tests including a real isolated HTTPS LAN API lifecycle. The test creates only a loopback fixture and deletes its temporary workspace; it does not connect the installed APK or configure your host. See [integration boundaries and evidence](../docs/ui-agents-revolution/android-integration.md).
+
 Only exact HTTPS origins are accepted. There is no HTTP fallback, custom CA bypass, Access service secret, browser-cookie scraping or owner API access. App sessions are protected with Android Keystore; activity screens are secure and ordinary screen capture is disabled. The app keeps drafts/transcripts in memory and does not provide background push or offline task submission.
 
 ## Install this testing APK

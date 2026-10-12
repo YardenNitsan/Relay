@@ -1,6 +1,6 @@
 # Native Android preview validation
 
-Date: 12 October 2026. Source worktree: `Relay-revolution`, branch `modernization/ui-agents-revolution`, derived from `fda18f4`. This is a real native Kotlin/Compose **LAN-only debug testing APK**. No authenticated host connection, remote Access login, physical device or production release acceptance is claimed.
+Date: 12 October 2026. Source worktree: `Relay-revolution`, branch `modernization/ui-agents-revolution`, derived from `fda18f4`. This is a real native Kotlin/Compose **LAN-only debug testing APK**. A later [isolated real-host JVM integration](android-integration.md) verifies the unchanged native transport against actual LAN APIs. Authenticated installed-app/device connectivity, remote Access login, physical device and production release acceptance remain unverified.
 
 ## Delivered artifact
 
@@ -70,11 +70,13 @@ Observed coverage:
 - Coroutine cancellation after HTTPS response headers cancels the pending body/socket call and preserves the existing cookie.
 - Client closure after HTTPS response headers cancels the pending call, clears the cookie, rejects future requests and does not adopt the delayed response cookie.
 
-These are actual local socket/TLS tests of the production transport, using explicitly synthetic API responses. They do not authenticate to Relay, exercise Android's real trust store, test ViewModel logout/account-switch reduction or establish an Android instrumented result. No runtime defect was found and no runtime behavior changed. The focused7-test run is additional to the earlier12-test build, not a claim that all19 were rerun together at this point.
+These are actual local socket/TLS tests of the production transport, using explicitly synthetic API responses. They do not authenticate to Relay, exercise Android's real trust store, test ViewModel logout/account-switch reduction or establish an Android instrumented result. No runtime defect was found and no runtime behavior changed. Independent source review found no blocking issue in the harness or test-only dependencies; it inspected the focused XML without performing an independent build.
+
+After the first host inference trial finished, the complete native JVM suite was rerun together with `./android/gradlew.bat -p android :app:testDebugUnitTest --console=plain`: **19 tests passed across5 classes,0 failures,0 errors**, exit0, `BUILD SUCCESSFUL in 7s` (7.70s command wall time). Only the test task executed; assembly/lint were not requested. The delivered APK hash remains unchanged. Local builds were stopped before the next inference trial.
 
 ## Open acceptance and feature limits
 
-- Configure a trusted LAN TLS listener separately through existing owner procedures, issue an authorized account invitation, and verify actual native login, restoration, history, send/stream, profile selection, cancellation, approval scope and file reads. No such fixture was available/used for this native increment.
+- The isolated JVM real-host integration now verifies invitation/session/history/send/cancel/scoped-files/SSE/logout/revocation/expiry with real API policy; all20 native JVM tests pass together. Configure a trusted LAN TLS listener separately through existing owner procedures and repeat the workflows in the installed app, including profile selection and approval UI. The fixture is not actual Android system-trust or configured-LAN acceptance.
 - Test Android37 `ACCESS_LOCAL_NETWORK` request, deny/regrant, background/foreground and OS revocation on Android37. The app gates ViewModel/session restoration behind permission; the API36.1 emulator cannot verify the new permission. [Official local-network requirements](https://developer.android.com/privacy-and-security/local-network-permission)
 - Repeat TLS/redirect/limit/cancellation tests on Android's instrumented transport; test same-origin redirect refusal, expired/revoked host sessions, and deliberately delayed responses across actual ViewModel logout/host/account switches. The JVM loopback TLS coverage above is not equivalent to those device/session-state checks.
 - Verify Keystore key loss/restore and OEM transfer exclusions, physical Recents/screenshots/dialog privacy, TalkBack, large fonts, IME, landscape and Hebrew/RTL on actual phones. No biometric app lock is implemented.

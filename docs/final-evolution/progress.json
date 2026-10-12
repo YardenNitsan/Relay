@@ -4,7 +4,7 @@
   "updatedAt": "2026-10-12",
   "baselineCommit": "9d563bc973dbcc177921ab918db88561c8280e48",
   "branch": "modernization/final-evolution",
-  "currentMilestone": "0.1.3: router paused; safe context receipt shortening and authenticated session/host replay recovery verified; live coding repeat next",
+  "currentMilestone": "0.1.3: router paused; authenticated replay/context fixes pushed; unchanged coding repeat passes independent/publication/rollback; UI performance and hosted fixture regression in progress",
   "requirementIds": [
     "A01",
     "A02",
@@ -83,7 +83,8 @@
     "Reviewed version3 source-folder creation, ordered native-identity receipts, all-ancestor checks including rollback, retained-folder recovery scope and real phone/desktop file publication/rollback.",
     "Direct exact-path nested/empty file creation and collision-safe drafts; saved/deleted editors acknowledge before background refresh;31affected browser cases plus short-landscape pending-write verification.",
     "Older superseded structured read/test receipt text can shorten under existing context budget; exact actions, latest receipts and complete durable records preserved.",
-    "Authenticated per-session/host activity replay namespace resets obsolete cursors without changing authorization; native HTTP and browser recovery pass."
+    "Authenticated per-session/host activity replay namespace resets obsolete cursors without changing authorization; native HTTP and browser recovery pass.",
+    "coding-vwOFL5 unchanged live repeat6calls/218119ms passes fresh independent9/9, published9/9 and exact rollback; no compaction event; zero sessions after shutdown."
   ],
   "changedFiles": [
     ".github/workflows/native-integrations.yml",
@@ -400,7 +401,7 @@
     "Owner has Android phone; current deployed0.1.2 mobile-data sign-in succeeded after tunnel restart. Modernization physical-device workflows remain untested.",
     "Second authorized Companion computer not established; cloud/email/calendar test accounts not configured (owner confirmed)."
   ],
-  "nextActionableWorkItem": "Repeat actual fixed-corpus model coding acceptance without changing grader/reserves, retain outcomes and continue remaining non-router A-G.",
+  "nextActionableWorkItem": "Fix reproduced hosted personal-files empty-state assertion, retain UI baseline/profile measurements and continue remaining non-router A-G.",
   "remainingDependencies": [
     "A native recovery/restore/retention",
     "B full redesign",
@@ -441,13 +442,13 @@
     "MCP/Settings/notifications: six old-build behavior reds and missing Settings entry; fresh strict build and39/39browser cases pass4.9min; initial20run18pass/two corrected failures retained.",
     "Managed authorization:10negative red/1positive control;72focused pass; npm.cmd run check1375passed/one skip130files286.43s; production build passes."
   ],
-  "latestProductCommit": "a905070",
+  "latestProductCommit": "a8bded9",
   "latestHostedStatus": {
-    "run": 38204501666,
-    "host": "success on71fa29c",
-    "browser": "success on71fa29c; f631c1a38204951845 in progress",
-    "nativeRun": 38204501646,
-    "native": "success on71fa29c"
+    "run": 38206913456,
+    "host": "in progress on a8bded9",
+    "browser": "in progress on a8bded9; f631c1a fails two obsolete personal-files empty-text assertions on all3OS, reproduced locally",
+    "nativeRun": 38206913450,
+    "native": "success on a8bded9"
   },
   "semanticRouterWork": {
     "status": "paused_by_owner",

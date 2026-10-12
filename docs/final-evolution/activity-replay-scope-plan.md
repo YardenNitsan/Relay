@@ -12,7 +12,7 @@ Server admission still reauthorizes the exact session and filters events per acc
 - [x] Test matching-scope continuation, different session/account separation, Store restart, cancellation/cleanup and unchanged auth/stream limits.
 - [x] Implement small server scope helper, control event and browser cursor parser/state without new dependencies.
 - [x] Fresh full check/build, existing mobile network/storage tests plus new replay tests; record fixture/live/physical-device distinctions.
-- [ ] Review, commit/push and continue the remaining non-router backlog.
+- [x] Review, commit/push and continue the remaining non-router backlog.
 
 References reviewed12October: [MDN SSE](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events) for named events, reconnect and close behavior; [WHATWG EventSource](https://html.spec.whatwg.org/multipage/server-sent-events.html#the-eventsource-interface) for Last-Event-ID and event ordering. Application-specific namespace and reset rules are Relay's deterministic transport policy, not semantic AI routing.
 

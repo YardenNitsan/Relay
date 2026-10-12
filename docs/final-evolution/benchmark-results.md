@@ -63,3 +63,11 @@ Two additional ready-made default configurations now have actual sequential two-
 ## Supporting Studio build observation, 11 October
 
 The fresh supporting-view build emits a505.57kB minified entry JavaScript chunk (153.89kB gzip) and96.64kB entry CSS (17.34kB gzip). Lazy feature JavaScript: Usage5.60kB, Clients10.09kB, Memory13.13kB, Google Workspace17.43kB, Scheduling19.65kB and Access36.38kB. These are Vite artifact sizes from `output/final-evolution/supporting-studio-build.log`, not network transfer measurements or input/startup latency. Vite still emits its500kB chunk warning; no arbitrary warning-limit increase was used. No new frontend dependency was added for these views. Real startup, long-conversation rendering, input latency and physical-phone performance remain acceptance work.
+
+## 0.1.3 unchanged coding repeat and context failure, 12 October
+
+[coding-9HTadP](evidence/coding-context-pause-windows.json) uses the same frozen514-file corpus, requested local9B model,32Kcontext/8192output and unchanged reserves/approval limits. Sandbox preflight passes. After9calls/378543ms, the live task pauses at CONTEXT_BUDGET before another request; no final answer or publication is accepted. The retained receipts show two target files edited, repeated reads and three approved visible test runs.
+
+A separate fresh native diagnostic grades the final tree9/9, confirms unrelated files unchanged, preserves the diagnostic stage and finds zero stored browser sessions after cleanup. This is a repaired tree from an incomplete task, not a third successful end-to-end trial. The prior success and8/9failed repeat remain unchanged.
+
+[Offline admission replay](evidence/coding-context-fit.json) on this exact saved context observes26157serialized input bytes including unchanged tool schemas against24192available bytes. Shortening3superseded structured receipt texts gives22701bytes, with0messages removed and all exact actions and original input unchanged. It preserves all metadata and the complete durable tool records. This is a deterministic context-admission result, not a measured inference speedup or proof of future live task success. Fresh live acceptance is pending.

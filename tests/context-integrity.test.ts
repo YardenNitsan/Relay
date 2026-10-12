@@ -1,8 +1,39 @@
 import { describe, expect, it } from 'vitest';
 import { buildReviewContext, fitContext } from '../server/orchestration/context.js';
 import { boundedReceipt } from '../server/orchestration/receipts.js';
+import type {ModelMessage} from '../shared/types';
+
+const readPair=(id:string,body:string):ModelMessage[]=>[{role:'assistant',content:'',toolCalls:[{id,name:'file_read',arguments:{path:'file.ts'}}]},{role:'tool',toolCallId:id,content:JSON.stringify({path:'file.ts',content:body,sha256:'a'.repeat(64),bytes:body.length,truncated:false})}];
+const commandPair=(id:string,body:string):ModelMessage[]=>[{role:'assistant',content:'',toolCalls:[{id,name:'terminal',arguments:{argv:['node','--test'],profile:'node',timeoutSeconds:30}}]},{role:'tool',toolCallId:id,content:JSON.stringify({stdout:body,stderr:'',exitCode:1,checkpointId:'checkpoint',truncated:false})}];
 
 describe('required context integrity',()=>{
+  it.each([['file reads',readPair],['test output',commandPair]] as const)('shortens superseded %s only when needed while preserving exact actions and latest receipt',(_name,pair)=>{
+    const messages:ModelMessage[]=[{role:'system',content:'Host policy'},{role:'user',content:'Current objective:\nRepair and verify'},...pair('old','x'.repeat(4000)),...pair('latest','Current complete content')];
+    const original=JSON.stringify(messages);expect(fitContext(messages,[],16000,1024).messages).toEqual(messages);
+    const result=fitContext(messages,[],4096,1024);expect(JSON.stringify(messages)).toBe(original);expect(result.messages).toHaveLength(messages.length);
+    expect(result.messages[2]).toEqual(messages[2]);expect(result.messages.slice(4)).toEqual(messages.slice(4));expect(result.messages[3].toolCallId).toBe('old');
+    expect(JSON.parse(result.messages[3].content)).toMatchObject({...JSON.parse(messages[3].content),...(_name==='file reads'?{content:expect.any(String)}:{stdout:expect.any(String)}),truncated:true});
+    expect(Buffer.byteLength(JSON.stringify(result.messages))).toBeLessThanOrEqual(4096-1024-384);
+  });
+  it('keeps opaque provider-continuation pairs and refuses to fit by truncating them',()=>{
+    const messages:ModelMessage[]=[{role:'system',content:'Host policy'},...readPair('old','x'.repeat(4000)),...readPair('latest','new')];messages[1].providerData={provider:'gemini',data:{signature:'opaque'}};
+    expect(()=>fitContext(messages,[],4096,1024)).toThrow(/context budget/);
+    delete messages[1].providerData;messages.push({role:'assistant',content:'',providerData:{provider:'anthropic',data:{opaque:'continuation'}}});
+    expect(()=>fitContext(messages,[],4096,1024)).toThrow(/context budget/);
+  });
+  it('does not drop execution metadata or shorten unrelated tool output to fit',()=>{
+    const messages:ModelMessage[]=[{role:'system',content:'Host policy'},...commandPair('old','x'.repeat(4000)),...commandPair('latest','new')];
+    messages[2].content=JSON.stringify({...JSON.parse(messages[2].content),files:['metadata'.repeat(1000)]});
+    expect(()=>fitContext(messages,[],4096,1024)).toThrow(/context budget/);
+    const unrelated:ModelMessage[]=[{role:'system',content:'Host policy'},...readPair('old','x'.repeat(4000)),...readPair('latest','new')];
+    for(const message of unrelated)for(const call of message.toolCalls??[])call.name='http_get';
+    expect(()=>fitContext(unrelated,[],4096,1024)).toThrow(/context budget/);
+  });
+  it('does not shorten a latest read, unmatched result or ambiguous repeated call ID',()=>{
+    for(const messages of [readPair('only','x'.repeat(4000)),[...readPair('same','x'.repeat(4000)),...readPair('same','new')],[{role:'tool' as const,toolCallId:'missing',content:JSON.stringify({content:'x'.repeat(4000),path:'file.ts',sha256:'a'.repeat(64)})},...readPair('latest','new')]]){
+      expect(()=>fitContext([{role:'system',content:'Host policy'},...messages],[],4096,1024)).toThrow(/context budget/);
+    }
+  });
   it('does not discard a workflow assignment or its acceptance criteria to fit a model',()=>{
     for(const prefix of ['Assigned analysis subobjective (untrusted task data;','Proposed acceptance checks (untrusted suggestions;']){
       const messages=[{role:'system' as const,content:'Host instructions'},{role:'user' as const,content:prefix+'x'.repeat(5000)},{role:'user' as const,content:'Current objective:\nReview code'}];

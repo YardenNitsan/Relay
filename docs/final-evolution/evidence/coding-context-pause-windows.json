@@ -1,0 +1,225 @@
+{
+  "schemaVersion": 1,
+  "testedAt": "2026-10-12T04:43:40.356Z",
+  "implementationCommit": "f631c1a",
+  "sourceTrial": "coding-9HTadP",
+  "rawReportSha256": "1280b13c71d43314769ffb7f7e1ecfdd5a1b796f779ed037fcd723319fba6a88",
+  "scope": "Versioned substantial-source two-fault repair; not full application build",
+  "corpus": {
+    "commit": "d1e19fef2f60a6fbfddf920ef8efd8ae6b4e4988",
+    "files": 514,
+    "bytes": 3980270
+  },
+  "sandboxPreflight": "passed",
+  "state": "task_paused",
+  "selectedModel": {
+    "id": "lmstudio/qwen3.5-9b-uncensored-hauhaucs-aggressive.gguf",
+    "provider": "lmstudio",
+    "name": "Qwen3.5 9B Uncensored HauhauCS Aggressive"
+  },
+  "contextTokens": 32768,
+  "maxOutputTokens": 8192,
+  "resourcePolicy": {
+    "profile": "safe"
+  },
+  "admission": {
+    "allowed": true,
+    "decision": "run",
+    "reasons": [
+      "Safe resource policy reserves the greater of 4 GiB or 20% of physical RAM, and 1 GiB or 15% of discrete VRAM.",
+      "LM Studio native estimate includes model and context memory. RAM adds at least 1.5 GiB staging/buffers; VRAM adds 15% plus 512 MiB. GPU offload: 75%. One private instance, one prediction, exact 32768-token context. Estimates are not a crash guarantee."
+    ],
+    "estimatedRamBytes": 3691136433,
+    "estimatedVramBytes": 8223797072,
+    "contextTokens": 32768,
+    "confidence": "estimated",
+    "execution": {
+      "numGpu": -1,
+      "lmstudio": {
+        "gpuOffload": 0.75
+      }
+    }
+  },
+  "durationMs": 378543,
+  "callsUsed": 9,
+  "error": "The objective, required review inputs, or preserved tool receipts exceed the model context budget. No request was sent. Start a new task with more context or a narrower objective.",
+  "approvals": [
+    {
+      "tool": "terminal",
+      "decision": "allow_once",
+      "path": null,
+      "argv": [
+        "node",
+        "--test",
+        "--test-reporter=tap",
+        "tests/relay-acceptance.test.mjs"
+      ]
+    },
+    {
+      "tool": "file_write",
+      "decision": "allow_once",
+      "path": "shared/task-deadline.ts",
+      "argv": null
+    },
+    {
+      "tool": "file_write",
+      "decision": "allow_once",
+      "path": "web/task-progress.ts",
+      "argv": null
+    },
+    {
+      "tool": "terminal",
+      "decision": "allow_once",
+      "path": null,
+      "argv": [
+        "node",
+        "--test",
+        "--test-reporter=tap",
+        "tests/relay-acceptance.test.mjs"
+      ]
+    },
+    {
+      "tool": "terminal",
+      "decision": "allow_once",
+      "path": null,
+      "argv": [
+        "node",
+        "--test",
+        "--test-reporter=tap",
+        "tests/relay-acceptance.test.mjs"
+      ]
+    },
+    {
+      "tool": "file_write",
+      "decision": "allow_once",
+      "path": "web/task-progress.ts",
+      "argv": null
+    }
+  ],
+  "tools": [
+    {
+      "name": "file_read",
+      "status": "completed"
+    },
+    {
+      "name": "file_read",
+      "status": "completed"
+    },
+    {
+      "name": "file_read",
+      "status": "completed"
+    },
+    {
+      "name": "terminal",
+      "status": "completed"
+    },
+    {
+      "name": "file_write",
+      "status": "completed"
+    },
+    {
+      "name": "file_read",
+      "status": "completed"
+    },
+    {
+      "name": "file_write",
+      "status": "completed"
+    },
+    {
+      "name": "terminal",
+      "status": "completed"
+    },
+    {
+      "name": "file_read",
+      "status": "completed"
+    },
+    {
+      "name": "terminal",
+      "status": "completed"
+    },
+    {
+      "name": "file_write",
+      "status": "completed"
+    }
+  ],
+  "visibleTestReceipts": [
+    {
+      "stdout": "TAP version 13\n# Subtest: overall deadline is expressed in host clock milliseconds\nnot ok 1 - overall deadline is expressed in host clock milliseconds\n  ---\n  duration_ms: 2.009893\n  type: 'test'\n  location: '/workspace/tests/relay-acceptance.test.mjs:5:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    + actual - expected\n    \n    + 1791633600060\n    - 1791633660000\n              ^\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 1791633660000\n  actual: 1791633600060\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (file:///workspace/tests/relay-acceptance.test.mjs:6:10)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1402:25)\n    Test.start (node:internal/test_runner/test:1262:17)\n    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)\n  ...\n# Subtest: activity belongs to the selected task\nnot ok 2 - activity belongs to the selected task\n  ---\n  duration_ms: 0.259421\n  type: 'test'\n  location: '/workspace/tests/relay-acceptance.test.mjs:8:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    + actual - expected\n    \n    + 'Deleting an authorized host file.'\n    - 'Reading authorized files.'\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 'Reading authorized files.'\n  actual: 'Deleting an authorized host file.'\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (file:///workspace/tests/relay-acceptance.test.mjs:10:10)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1402:25)\n    Test.processPendingSubtests (node:internal/test_runner/test:974:18)\n    Test.postRun (node:internal/test_runner/test:1542:19)\n    Test.run (node:internal/test_runner/test:1467:12)\n    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n  ...\n1..2\n# tests 2\n# suites 0\n# pass 0\n# fail 2\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 93.838595\n",
+      "stderr": "",
+      "exitCode": 1,
+      "truncated": false,
+      "durationMs": 311,
+      "toolchain": {
+        "profile": "node",
+        "version": "24.21.0"
+      },
+      "imageId": "sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1",
+      "checkpointId": null,
+      "filesChanged": 0
+    },
+    {
+      "stdout": "TAP version 13\n# Subtest: overall deadline is expressed in host clock milliseconds\nok 1 - overall deadline is expressed in host clock milliseconds\n  ---\n  duration_ms: 0.565849\n  type: 'test'\n  ...\n# Subtest: activity belongs to the selected task\nnot ok 2 - activity belongs to the selected task\n  ---\n  duration_ms: 0.750386\n  type: 'test'\n  location: '/workspace/tests/relay-acceptance.test.mjs:8:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    + actual - expected\n    \n    + 'Working on your request.'\n    - 'Reading authorized files.'\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 'Reading authorized files.'\n  actual: 'Working on your request.'\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (file:///workspace/tests/relay-acceptance.test.mjs:10:10)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1402:25)\n    Test.processPendingSubtests (node:internal/test_runner/test:974:18)\n    Test.postRun (node:internal/test_runner/test:1542:19)\n    Test.run (node:internal/test_runner/test:1467:12)\n    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n  ...\n1..2\n# tests 2\n# suites 0\n# pass 1\n# fail 1\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 84.847552\n",
+      "stderr": "",
+      "exitCode": 1,
+      "truncated": false,
+      "durationMs": 288,
+      "toolchain": {
+        "profile": "node",
+        "version": "24.21.0"
+      },
+      "imageId": "sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1",
+      "checkpointId": null,
+      "filesChanged": 0
+    },
+    {
+      "stdout": "TAP version 13\n# Subtest: overall deadline is expressed in host clock milliseconds\nok 1 - overall deadline is expressed in host clock milliseconds\n  ---\n  duration_ms: 0.818722\n  type: 'test'\n  ...\n# Subtest: activity belongs to the selected task\nnot ok 2 - activity belongs to the selected task\n  ---\n  duration_ms: 0.845439\n  type: 'test'\n  location: '/workspace/tests/relay-acceptance.test.mjs:8:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    + actual - expected\n    \n    + 'Working on your request.'\n    - 'Reading authorized files.'\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 'Reading authorized files.'\n  actual: 'Working on your request.'\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (file:///workspace/tests/relay-acceptance.test.mjs:10:10)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1402:25)\n    Test.processPendingSubtests (node:internal/test_runner/test:974:18)\n    Test.postRun (node:internal/test_runner/test:1542:19)\n    Test.run (node:internal/test_runner/test:1467:12)\n    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n  ...\n1..2\n# tests 2\n# suites 0\n# pass 1\n# fail 1\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 91.213474\n",
+      "stderr": "",
+      "exitCode": 1,
+      "truncated": false,
+      "durationMs": 296,
+      "toolchain": {
+        "profile": "node",
+        "version": "24.21.0"
+      },
+      "imageId": "sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1",
+      "checkpointId": null,
+      "filesChanged": 0
+    }
+  ],
+  "independentDiagnostic": {
+    "scope": "Post-run diagnostic only; original failed task remains failed and no publication occurred",
+    "sourceTrial": "coding-9HTadP",
+    "scopeCheck": "passed",
+    "stageUnchanged": true,
+    "remainingSessions": [
+      {
+        "count": 0
+      }
+    ],
+    "stdout": "TAP version 13\n# Subtest: deadline 30\nok 1 - deadline 30\n  ---\n  duration_ms: 0.642954\n  type: 'test'\n  ...\n# Subtest: deadline 31\nok 2 - deadline 31\n  ---\n  duration_ms: 0.081508\n  type: 'test'\n  ...\n# Subtest: deadline 3600\nok 3 - deadline 3600\n  ---\n  duration_ms: 0.063023\n  type: 'test'\n  ...\n# Subtest: deadline 86400\nok 4 - deadline 86400\n  ---\n  duration_ms: 0.059534\n  type: 'test'\n  ...\n# Subtest: deadline 604800\nok 5 - deadline 604800\n  ---\n  duration_ms: 0.093208\n  type: 'test'\n  ...\n# Subtest: invalid and legacy deadlines\nok 6 - invalid and legacy deadlines\n  ---\n  duration_ms: 0.13741\n  type: 'test'\n  ...\n# Subtest: unrelated activity cannot change fallback or earlier selected activity\nok 7 - unrelated activity cannot change fallback or earlier selected activity\n  ---\n  duration_ms: 0.137641\n  type: 'test'\n  ...\n# Subtest: overall deadline is expressed in host clock milliseconds\nok 8 - overall deadline is expressed in host clock milliseconds\n  ---\n  duration_ms: 0.607752\n  type: 'test'\n  ...\n# Subtest: activity belongs to the selected task\nok 9 - activity belongs to the selected task\n  ---\n  duration_ms: 0.150244\n  type: 'test'\n  ...\n1..9\n# tests 9\n# suites 0\n# pass 9\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 189.048626\n",
+    "stderr": "",
+    "exitCode": 0,
+    "truncated": false,
+    "durationMs": 400,
+    "toolchain": {
+      "profile": "node",
+      "version": "24.21.0"
+    },
+    "imageId": "sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1"
+  },
+  "publication": null,
+  "cleanup": {
+    "privateHostExited": true,
+    "remainingSessions": [
+      {
+        "count": 0
+      }
+    ]
+  },
+  "limitations": [
+    "Live task paused before final answer and publication; independent9/9 is post-run diagnostic only.",
+    "One fixed two-fault corpus, not broad coding reliability.",
+    "Unchanged resource reserves and explicit approval limits.",
+    "Requested model ID retained; exact weight digest and sampling seed are not established."
+  ]
+}

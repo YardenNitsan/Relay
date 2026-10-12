@@ -1,0 +1,12 @@
+{
+  "sourceTrial": "coding-9HTadP",
+  "scope": "Offline context admission diagnostic; no model request or original task resumption",
+  "beforeBytes": 26157,
+  "afterBytes": 22701,
+  "budgetBytes": 24192,
+  "shortenedReceipts": 3,
+  "receiptBytesSaved": 3379,
+  "removedMessages": 0,
+  "originalUnchanged": true,
+  "exactActionsPreserved": true
+}

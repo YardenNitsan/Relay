@@ -310,7 +310,7 @@ export class Engine {
       let model=selected.model;
       const policy=callBudget(task.options,model),maxOutputTokens=policy.maxOutputTokens;
       const fitted=fitContext(context,defs,task.options.contextTokens,maxOutputTokens);
-      if(fitted.removed)await this.store.append(task.id,'CONTEXT_COMPACTED',{stepId:step.id,removedMessages:fitted.removed,toolReceiptsPreserved:true});
+      if(fitted.removed||fitted.shortenedReceipts)await this.store.append(task.id,'CONTEXT_COMPACTED',{stepId:step.id,removedMessages:fitted.removed,shortenedReceiptText:fitted.shortenedReceipts,receiptBytesSaved:fitted.receiptBytesSaved,toolCallPairsPreserved:true,completeDurableReceiptsPreserved:true});
       context=fitted.messages;
       let reasoning=selected.reasoning;
       try{preflightReasoning(model,reasoning,context,defs);}catch(error){

@@ -1,5 +1,6 @@
 import type { AgentRole, ModelMessage, ToolDefinition, Verification } from '../../shared/types.js';
 import { AppError } from '../core/errors.js';
+import {shortenSupersededReceipt,supersededReceiptIndexes} from './context-receipts.js';
 
 const roles: Record<AgentRole,string> = {
   supervisor:'Own the objective and report grounded outcomes.',
@@ -46,7 +47,7 @@ export function buildContext(role:AgentRole,objective:string,history:Pick<ModelM
 }
 
 /** Conservative tokenizer-independent admission. Keep action/receipt pairs intact. */
-export function fitContext(messages:ModelMessage[],tools:ToolDefinition[],contextTokens:number,maxOutputTokens:number):{messages:ModelMessage[];removed:number} {
+export function fitContext(messages:ModelMessage[],tools:ToolDefinition[],contextTokens:number,maxOutputTokens:number):{messages:ModelMessage[];removed:number;shortenedReceipts:number;receiptBytesSaved:number} {
   const budget=contextTokens-maxOutputTokens-384;
   const size=(items:ModelMessage[])=>Buffer.byteLength(JSON.stringify(items))+Buffer.byteLength(JSON.stringify(tools));
   const latestUser=messages.findLastIndex(message=>message.role==='user');
@@ -57,7 +58,12 @@ export function fitContext(messages:ModelMessage[],tools:ToolDefinition[],contex
     if(size(retained.map(entry=>entry.message))<=budget)break;
     retained.splice(retained.indexOf(item),1);removed++;
   }
-  const result=retained.map(entry=>entry.message);
+  const result=retained.map(entry=>entry.message);let shortenedReceipts=0,receiptBytesSaved=0;
+  if(size(result)>budget)for(const index of supersededReceiptIndexes(result)){
+    const shortened=shortenSupersededReceipt(result[index]);
+    if(shortened!==result[index]){receiptBytesSaved+=Buffer.byteLength(result[index].content)-Buffer.byteLength(shortened.content);shortenedReceipts++;result[index]=shortened;}
+    if(size(result)<=budget)break;
+  }
   if(size(result)>budget)throw new AppError('CONTEXT_BUDGET','The objective, required review inputs, or preserved tool receipts exceed the model context budget. No request was sent. Start a new task with more context or a narrower objective.');
-  return {messages:result,removed};
+  return {messages:result,removed,shortenedReceipts,receiptBytesSaved};
 }

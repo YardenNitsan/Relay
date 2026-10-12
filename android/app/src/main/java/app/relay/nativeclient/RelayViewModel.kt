@@ -1,0 +1,255 @@
+package app.relay.nativeclient
+
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import org.json.JSONArray
+import org.json.JSONObject
+import java.net.URLEncoder
+import java.util.UUID
+import javax.net.ssl.SSLException
+
+fun JSONArray.objects(): List<JSONObject> = (0 until length()).mapNotNull { optJSONObject(it) }
+fun JSONObject.objects(key: String): List<JSONObject> = optJSONArray(key)?.objects() ?: emptyList()
+fun JSONObject.label(key: String, fallback: String = ""): String = optString(key).takeUnless { it == "null" || it.isBlank() } ?: fallback
+data class RelayUi(
+    val busy: Boolean = false, val session: JSONObject? = null, val origin: String = "", val error: String? = null,
+    val conversations: List<JSONObject> = emptyList(), val conversation: JSONObject? = null,
+    val task: JSONObject? = null, val assistants: List<JSONObject> = emptyList(), val workspaces: List<JSONObject> = emptyList(),
+    val files: List<JSONObject> = emptyList(), val file: JSONObject? = null, val filePath: String? = null,
+    val models: List<JSONObject> = emptyList(), val selectedWorkspace: String? = null, val selectedAssistant: String? = null,
+    val selectedModel: String? = null, val draft: String = "", val tab: String = "Chat", val stream: String = "Disconnected",
+    val events: List<JSONObject> = emptyList(), val liveText: String = "", val uncertain: Boolean = false
+)
+
+class RelayViewModel(application: Application) : AndroidViewModel(application) {
+    private val vault = SessionVault(application)
+    private val mutable = MutableStateFlow(RelayUi())
+    val state = mutable.asStateFlow()
+    private var client: RelayClient? = null
+    private var epoch = 0L
+    private var actionJob: Job? = null
+    private var streamJob: Job? = null
+    private var refreshJob: Job? = null
+    private var foreground = false
+    private var cursor = 0L
+    private var scope: String? = null
+    private var liveCallId: String? = null
+    private var pendingStart: Pair<String, JSONObject>? = null
+    private val drafts = mutableMapOf<String, String>()
+    private fun draftKey() = state.value.conversation?.optJSONObject("conversation")?.label("id") ?: "new"
+    private fun update(change: (RelayUi) -> RelayUi) { mutable.value = change(mutable.value) }
+    private fun valid(c: RelayClient, generation: Long) { if (c !== client || epoch != generation) throw CancellationException("Session changed") }
+    init {
+        viewModelScope.launch {
+            update { it.copy(busy = true) }
+            val saved = withContext(Dispatchers.IO) { vault.load() }
+            update { it.copy(busy = false) }
+            if (saved != null) connect(saved.first, null, saved.second)
+        }
+    }
+    fun connect(url: String, invitation: String?, saved: String? = null) {
+        if (state.value.busy) return
+        val origin = try { Protocol.origin(url) } catch (e: IllegalArgumentException) { update { it.copy(error = e.message) }; return }
+        if (invitation != null && !Regex("^[A-Za-z0-9_-]{43}$").matches(invitation.trim())) { update { it.copy(error = "Enter the one-use invitation supplied by the host owner.") }; return }
+        epoch++; actionJob?.cancel(); stopRealtime(); client?.close()
+        val c = RelayClient(origin, saved); client = c
+        val generation = epoch
+        update { RelayUi(busy = true, origin = origin) }
+        actionJob = viewModelScope.launch {
+            try {
+                val session = c.session(invitation?.trim()); valid(c, generation)
+                withContext(Dispatchers.IO) { vault.save(origin, c.storedCookie()) }; valid(c, generation)
+                update { it.copy(session = session, error = null) }
+                refreshLists(c, generation)
+                startRealtime()
+            } catch (e: CancellationException) { throw e }
+            catch (e: Exception) { if (epoch == generation) { c.close(); client = null; vault.clear(); update { it.copy(session = null, error = friendly(e)) } } }
+            finally { if (epoch == generation) update { it.copy(busy = false) } }
+        }
+    }
+    private fun friendly(e: Exception): String = when (e) {
+        is RelayError -> e.message ?: "The host refused this request."
+        is SSLException -> "The HTTPS certificate is not trusted or does not match this host. Ask the owner to configure a valid LAN certificate."
+        is java.net.SocketTimeoutException -> "The host did not respond in time. Check your LAN connection and refresh."
+        is java.net.UnknownHostException, is java.net.ConnectException -> "The LAN host is unreachable. Check the address, Wi-Fi and host service."
+        else -> "The connection or response could not be verified. Check the LAN host and refresh."
+    }
+    private fun handleFailure(e: Exception, c: RelayClient, generation: Long) {
+        if (client !== c || epoch != generation) return
+        if (e is RelayError && e.status == 401) {
+            disconnect(false)
+            update { it.copy(error = e.message) }
+        } else update { it.copy(error = friendly(e)) }
+    }
+    private fun action(block: suspend (RelayClient, Long) -> Unit) {
+        val c = client ?: return
+        if (state.value.busy) return
+        val generation = epoch
+        update { it.copy(busy = true, error = null) }
+        actionJob = viewModelScope.launch {
+            try { block(c, generation) }
+            catch (e: CancellationException) { throw e }
+            catch (e: Exception) { handleFailure(e, c, generation) }
+            finally { if (epoch == generation) update { it.copy(busy = false) } }
+        }
+    }
+    private suspend fun refreshLists(c: RelayClient, generation: Long) {
+        val conversations = (c.json("/api/conversations") as JSONArray).objects(); valid(c, generation)
+        update { it.copy(conversations = conversations) }
+        val assistants = (c.json("/api/assistants") as JSONObject).objects("assistants"); valid(c, generation)
+        val workspaces = (c.json("/api/workspaces") as JSONArray).objects(); valid(c, generation)
+        val models = (c.json("/api/models") as JSONObject).objects("models"); valid(c, generation)
+        update { it.copy(assistants = assistants, workspaces = workspaces, models = models) }
+    }
+    fun refresh() = action { c, generation -> refreshLists(c, generation); refreshSelection(c, generation) }
+    private suspend fun refreshSelection(c: RelayClient, generation: Long) {
+        val id = state.value.conversation?.optJSONObject("conversation")?.label("id") ?: return
+        val detail = c.json("/api/conversations/$id") as JSONObject; valid(c, generation)
+        if (state.value.conversation?.optJSONObject("conversation")?.label("id") != id) return
+        update { it.copy(conversation = detail) }
+        val taskId = state.value.task?.optJSONObject("task")?.label("id") ?: detail.objects("tasks").firstOrNull()?.label("id")
+        if (!taskId.isNullOrBlank()) {
+            val task = c.json("/api/tasks/$taskId") as JSONObject; valid(c, generation)
+            if (state.value.conversation?.optJSONObject("conversation")?.label("id") == id && (state.value.task == null || state.value.task?.optJSONObject("task")?.label("id") == taskId)) update { it.copy(task = task) }
+        }
+    }
+    fun selectConversation(id: String) = action { c, generation ->
+        val detail = c.json("/api/conversations/$id") as JSONObject; valid(c, generation)
+        drafts[draftKey()] = state.value.draft
+        update { it.copy(conversation = detail, task = null, liveText = "", uncertain = false, tab = "Chat", draft = drafts[id] ?: "") }
+        pendingStart = null; refreshSelection(c, generation)
+    }
+    fun newConversation() { if (!state.value.busy) { drafts[draftKey()] = state.value.draft; pendingStart = null; update { it.copy(conversation = null, task = null, liveText = "", uncertain = false, tab = "Chat", draft = drafts["new"] ?: "") } } }
+    fun draft(value: String) { update { it.copy(draft = value.take(32000)) } }
+    fun tab(value: String) { update { it.copy(tab = value, file = null, filePath = null) } }
+    fun chooseAssistant(id: String?) { if (!state.value.busy) update { it.copy(selectedAssistant = id) } }
+    fun chooseModel(id: String?) { if (!state.value.busy) update { it.copy(selectedModel = id) } }
+    fun chooseWorkspace(id: String?) { if (!state.value.busy) update { it.copy(selectedWorkspace = id) } }
+    fun clearError() { update { it.copy(error = null) } }
+    private fun options(): JSONObject {
+        val s = state.value
+        val permissions = s.session?.optJSONObject("user")?.optJSONObject("permissions") ?: JSONObject()
+        return JSONObject().put("depth", "balanced").put("modelId", s.selectedModel ?: JSONObject.NULL)
+            .put("modelSelection", if (s.selectedModel != null) "required" else "preferred")
+            .put("access", "read_only").put("workspaceId", s.selectedWorkspace ?: JSONObject.NULL)
+            .put("contextTokens", 8192).put("cloudPolicy", "local_only")
+            .put("budget", JSONObject().put("maxCalls", minOf(8, permissions.optInt("maxCallsPerTask", 1)))
+                .put("maxSeconds", minOf(300, permissions.optInt("maxSecondsPerTask", 30))).put("maxIterations", 8)
+                .put("maxCostUsd", 0).put("localOnly", true))
+            .also { s.selectedAssistant?.let { id -> it.put("assistantId", id) } }
+    }
+    fun send() {
+        val s = state.value
+        if (s.draft.isBlank() || s.uncertain) return
+        val text = s.draft.trim()
+        val conversationId = s.conversation?.optJSONObject("conversation")?.label("id")
+        action { c, generation ->
+            val body = JSONObject().put("content", text).put("options", options())
+            if (conversationId == null) {
+                val serialized = body.toString()
+                val pending = pendingStart
+                val requestId = if (pending != null && pending.second.toString() == serialized) pending.first else UUID.randomUUID().toString()
+                pendingStart = requestId to JSONObject(serialized)
+                body.put("requestId", requestId)
+            }
+            try {
+                val result = c.json(if (conversationId == null) "/api/conversations/start" else "/api/conversations/$conversationId/messages", "POST", body) as JSONObject
+                valid(c, generation)
+                val id = result.getJSONObject("task").getString("conversationId")
+                val detail = c.json("/api/conversations/$id") as JSONObject; valid(c, generation)
+                pendingStart = null; drafts.remove(conversationId ?: "new")
+                update { it.copy(conversation = detail, task = null, draft = if (it.draft.trim() == text) "" else it.draft, liveText = "") }
+                refreshSelection(c, generation)
+            } catch (e: CancellationException) { throw e }
+            catch (e: Exception) {
+                valid(c, generation)
+                if (e !is RelayError) update { it.copy(uncertain = true, error = "Delivery is uncertain. Refresh the conversation before deciding whether to send again.") }
+                throw e
+            }
+        }
+    }
+    fun acknowledgeUncertain() { update { it.copy(uncertain = false, error = null) } }
+    fun inspectTask(id: String) = action { c, generation -> val task = c.json("/api/tasks/$id") as JSONObject; valid(c, generation); liveCallId = null; update { it.copy(task = task, liveText = "") } }
+    fun cancelTask(id: String) = action { c, generation -> c.json("/api/tasks/$id/cancel", "POST"); valid(c, generation); refreshSelection(c, generation) }
+    fun approve(id: String, allow: Boolean) = action { c, generation ->
+        c.json("/api/approvals/$id", "POST", JSONObject().put("decision", if (allow) "allow_once" else "denied")); valid(c, generation); refreshSelection(c, generation)
+    }
+    fun openWorkspace(id: String) = action { c, generation ->
+        val data = c.json("/api/workspaces/$id/files") as JSONObject; valid(c, generation)
+        val paths = data.getJSONArray("files")
+        val files = (0 until paths.length()).map { JSONObject().put("path", paths.getString(it)) }
+        update { it.copy(selectedWorkspace = id, files = files, file = null, filePath = null) }
+    }
+    fun openFile(path: String) = action { c, generation ->
+        val id = state.value.selectedWorkspace ?: return@action
+        val file = c.json("/api/workspaces/$id/file?path=${URLEncoder.encode(path, "UTF-8")}") as JSONObject; valid(c, generation)
+        update { it.copy(file = file, filePath = path) }
+    }
+    fun closeFile() { update { it.copy(file = null, filePath = null) } }
+    fun foreground(active: Boolean) { foreground = active; if (active) startRealtime() else stopRealtime() }
+    private fun stopRealtime() { streamJob?.cancel(); streamJob = null; refreshJob?.cancel(); refreshJob = null }
+    private fun startRealtime() {
+        val c = client ?: return
+        if (!foreground || state.value.session == null || streamJob?.isActive == true) return
+        val generation = epoch
+        streamJob = viewModelScope.launch {
+            var failures = 0
+            while (isActive && client === c) {
+                update { it.copy(stream = if (failures == 0) "Connecting" else "Reconnecting") }
+                try {
+                    c.events(cursor, scope).collect { frame ->
+                        valid(c, generation)
+                        val data = JSONObject(frame.data)
+                        if (frame.type == "replay") {
+                            val nextScope = data.getString("scope")
+                            require(Regex("^[a-f0-9]{64}$").matches(nextScope))
+                            if (scope != nextScope) update { it.copy(events = emptyList(), liveText = "") }
+                            scope = nextScope; cursor = data.getLong("after"); require(cursor in 0..9007199254740991L)
+                        } else if (frame.type == "activity") {
+                            val id = data.getLong("id")
+                            require(id in 1..9007199254740991L)
+                            if (id > cursor) {
+                                update { old ->
+                                    val selected = old.task?.optJSONObject("task")?.label("id")
+                                    val payload = data.optJSONObject("data")
+                                    val text = if (data.label("taskId") == selected && data.label("type") == "MODEL_TEXT" && payload?.label("role") in listOf("worker", "supervisor")) {
+                                        val callId = payload?.label("callId", payload.label("stepId", selected ?: ""))
+                                        val previous = if (callId == liveCallId) old.liveText else ""
+                                        liveCallId = callId
+                                        (previous + payload?.label("text")).takeLast(64000)
+                                    } else old.liveText
+                                    old.copy(events = (old.events + data).takeLast(100), liveText = text)
+                                }
+                                cursor = id
+                            }
+                        }
+                        failures = 0; update { it.copy(stream = "Live") }
+                    }
+                } catch (e: CancellationException) { throw e }
+                catch (e: Exception) { if (e is RelayError && e.status == 401) { handleFailure(e, c, generation); break } }
+                failures++; update { it.copy(stream = "Reconnecting") }; delay(minOf(20000L, 1500L * failures))
+            }
+        }
+        refreshJob = viewModelScope.launch {
+            while (isActive) {
+                delay(3000)
+                if (!state.value.busy) try { refreshSelection(c, generation) } catch (e: CancellationException) { throw e } catch (e: Exception) { handleFailure(e, c, generation) }
+            }
+        }
+    }
+    fun disconnect(sendLogout: Boolean = true) {
+        val old = client
+        epoch++; client = null; actionJob?.cancel(); stopRealtime(); cursor = 0; scope = null; pendingStart = null; drafts.clear()
+        vault.clear(); update { RelayUi() }
+        if (old != null) viewModelScope.launch {
+            try { if (sendLogout) old.json("/api/session/logout", "POST") }
+            catch (_: Exception) { if (client == null) update { it.copy(error = "Signed out on this device. The host could not confirm session termination; ask the owner to revoke it if needed.") } }
+            finally { old.close() }
+        }
+    }
+    override fun onCleared() { stopRealtime(); client?.close(); super.onCleared() }
+}

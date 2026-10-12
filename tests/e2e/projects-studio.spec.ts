@@ -27,7 +27,7 @@ for(const [width,height] of sizes)for(const theme of ['light','dark'] as const)t
   const search=dialog.getByRole('searchbox',{name:'Search files',exact:true});await search.fill('international');
   await expect(dialog.locator('.project-file-list button')).toHaveCount(1);
   await dialog.getByRole('button',{name:path,exact:true}).click();
-  const contents=dialog.getByRole('textbox',{name:'File contents',exact:true});await expect(contents).toHaveValue(/Verified invoice examples/);
+  const contents=dialog.getByRole('textbox',{name:'File contents',exact:true});await expect(contents).toContainText('Verified invoice examples');
   await expect(dialog.getByRole('heading',{name:path,exact:true})).toBeFocused();
   await expect(dialog.getByRole('button',{name:'Download saved file',exact:true})).toBeVisible();
   await expect(dialog.getByRole('button',{name:'Save changes',exact:true})).toBeInViewport({ratio:1});

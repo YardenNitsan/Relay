@@ -32,7 +32,7 @@ for(const width of [320,1440])test(`creates a nested empty file, edits and delet
     const creating=page.waitForResponse(response=>response.url().endsWith('/file')&&response.request().method()==='PUT');
     await editor.getByRole('button',{name:'Create file',exact:true}).click();expect((await creating).ok()).toBe(true);
     await expect(dialog.getByRole('heading',{name:'src/new-feature/empty.ts',exact:true})).toBeFocused();
-    const contents=dialog.getByRole('textbox',{name:'File contents',exact:true});await expect(contents).toBeEnabled();await expect(contents).toHaveValue('');
+    const contents=dialog.getByRole('textbox',{name:'File contents',exact:true});await expect(contents).toHaveAttribute('contenteditable','true');await expect(contents).toHaveText('');
     await contents.fill('export const ready = true;');
     await dialog.getByRole('button',{name:'Save changes',exact:true}).click();
     await expect(dialog.getByRole('button',{name:'Close file',exact:true})).toBeEnabled();

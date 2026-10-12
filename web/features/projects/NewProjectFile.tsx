@@ -3,6 +3,7 @@ import {FilePlus2} from 'lucide-react';
 import {api} from '../../api';
 import {ErrorNotice} from '../../components/ui';
 import {useGuardedModalAction,useModalDraftGuard} from '../../components/modal-guard';
+import SourceContents from './SourceContents';
 
 interface CreatedFile {path:string;content:string;sha256:string}
 export default function NewProjectFile({id,prepare,onCreated,onCancel}:{id:string;prepare:()=>Promise<void>;onCreated:(file:CreatedFile)=>void;onCancel:()=>void}){
@@ -25,7 +26,7 @@ export default function NewProjectFile({id,prepare,onCreated,onCancel}:{id:strin
       <h4><FilePlus2 size={18}/>New file</h4>
       <p className="hint">Create a text file in this managed workspace. Use a relative path to include new folders. Existing files are never overwritten.</p>
       <label className="project-new-path">Relative file path<input ref={input} value={path} disabled={busy} maxLength={512} spellCheck={false} autoCapitalize="none" autoCorrect="off" placeholder="src/feature.ts" onChange={event=>setPath(event.target.value)}/></label>
-      <label>New file contents<textarea value={content} disabled={busy} maxLength={256000} spellCheck={false} rows={10} onChange={event=>setContent(event.target.value)}/></label>
+      <SourceContents path={path} label="New file contents" content={content} readOnly={false} busy={busy} onChange={setContent}/>
       {error!=null&&<ErrorNotice error={error}/>}
     </div>
     <footer className="project-editor-actions"><button className="button primary" disabled={busy||!path.trim()} onClick={()=>{void create();}}>{busy?'Creating file...':'Create file'}</button><button className="button" disabled={busy} onClick={()=>request(onCancel)}>Cancel new file</button></footer>

@@ -4,7 +4,7 @@
   "updatedAt": "2026-10-12",
   "baselineCommit": "9d563bc973dbcc177921ab918db88561c8280e48",
   "branch": "modernization/final-evolution",
-  "currentMilestone": "0.1.3: router paused; recovery fixes/live coding repeat pushed; measured conversation rendering improves warm phone-layout median22.1percent with verified focus/history",
+  "currentMilestone": "0.1.3: router paused; measured UI performance pushed; professional source editor verified; original Git publication binding next",
   "requirementIds": [
     "A01",
     "A02",
@@ -86,7 +86,8 @@
     "Authenticated per-session/host activity replay namespace resets obsolete cursors without changing authorization; native HTTP and browser recovery pass.",
     "coding-vwOFL5 unchanged live repeat6calls/218119ms passes fresh independent9/9, published9/9 and exact rollback; no compaction event; zero sessions after shutdown.",
     "Reproducible UI lab with cold/warm desktop and4xCPU phone-layout; native older-message layout lowers warm-phone median1452.3to1131.8ms, latest content/focus/drafts preserved.",
-    "Hosted personal-files retired-copy assertion reproduced then replaced with exact empty count/list/document state and retained permission checks;7affected cases pass."
+    "Hosted personal-files retired-copy assertion reproduced then replaced with exact empty count/list/document state and retained permission checks;7affected cases pass.",
+    "Pinned lazy CodeMirror source editing with exact newline/paste/refresh fidelity, literal search, undo, wrapping and read-only/busy filtering;52unique affected browser cases verified locally"
   ],
   "changedFiles": [
     ".github/workflows/native-integrations.yml",
@@ -444,7 +445,7 @@
     "MCP/Settings/notifications: six old-build behavior reds and missing Settings entry; fresh strict build and39/39browser cases pass4.9min; initial20run18pass/two corrected failures retained.",
     "Managed authorization:10negative red/1positive control;72focused pass; npm.cmd run check1375passed/one skip130files286.43s; production build passes."
   ],
-  "latestProductCommit": "582db6b",
+  "latestProductCommit": "8431c4383dc0235bb1ef22a715a3bc9fac24d406",
   "latestHostedStatus": {
     "run": 38206913456,
     "host": "in progress on a8bded9",

@@ -114,3 +114,7 @@ Inspected [320px file creation](evidence/project-new-file-320-light.png), deskto
 ## Long-conversation rendering and focus
 
 Inspected actual [phone-layout](evidence/performance-phone-layout.png) and [desktop](evidence/performance-desktop.png) final captures with20long responses. Latest text/code, copy control and draft/composer remain visible. Offscreen layout preserves all DOM content; an initial keyboard-focus failure was corrected before acceptance. Existing Hebrew/theme/short-height/history checks remain passing. This is rendering verification of the existing Studio design, not a new visual concept or physical-phone sign-off.
+
+## Professional source editing
+
+Inspected actual desktop light, phone dark and320px search captures. Source controls use semantic colors,44px touch targets, a persistent save footer and focused single-document phone layout. Syntax highlighting, line numbers, cursor status, literal search, undo/redo and wrapping are functional. Tab leaves the editor. Existing pre-editor captures remain in evidence; new code-editor screenshots show the resulting surface. Automated viewport/theme/axe checks pass; physical Android and assistive-technology testing remain separate.

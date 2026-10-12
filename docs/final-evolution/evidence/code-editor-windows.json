@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "scope": "Authenticated disposable Windows Chromium fixture; source editing, not model execution or physical phone acceptance",
+  "verification": {
+    "documentTests": 8,
+    "projectBrowserCases": 38,
+    "finalEditorAndPublicationCases": 15,
+    "finalForkAndLargeSourceCases": 9,
+    "types": "pass",
+    "productionBuild": "pass"
+  },
+  "retainedFailures": [
+    "Three initial browser cases lacked editor features before implementation.",
+    "Review reproduced cross-platform paste, external newline refresh and empty F3 search issues; corrected and verified.",
+    "Eight fork cases used textarea-only toHaveValue; now verify rendered source and exact saved API bytes; all eight pass."
+  ],
+  "dependencies": "Pinned CodeMirror 6 MIT modules; 22 transitive packages added; npm audit reports zero vulnerabilities at installation; notices regenerated.",
+  "bundle": {
+    "sourceEditorJavaScriptKb": 457.47,
+    "sourceEditorGzipKb": 160.34,
+    "sourceEditorCssKb": 2.86,
+    "entryJavaScriptKb": 515.39,
+    "entryGzipKb": 156.77,
+    "loading": "Code editor dynamically imported only for supported source files; ordinary text remains native."
+  },
+  "largeSource": {
+    "scope": "Single synthetic browser lab. Browser readiness is actual file click to editor DOM plus two animation frames; driver elapsed additionally includes pairing/API setup. Neither is field INP, exact paint or physical-phone acceptance.",
+    "bytes": 95780,
+    "lines": 2001,
+    "driverElapsedMs": 1997,
+    "browserReadyMs": 338.30000019073486,
+    "renderedLines": 36
+  },
+  "limitations": [
+    "No LSP/compiler diagnostics or model-quality claim.",
+    "Actual Android IME, screen reader and modernization remote acceptance remain outstanding.",
+    "Git history/source merge and broader professional coding remain unfinished."
+  ]
+}

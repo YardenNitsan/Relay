@@ -75,3 +75,18 @@ A separate fresh native diagnostic grades the final tree9/9, confirms unrelated 
 ## Successful unchanged repeat after context fix
 
 [coding-vwOFL5](evidence/coding-context-repeat-windows.json), source a8bded9:6calls/218119ms, actual reads/writes, approved visible tests and git_diff. The unchanged fresh independent grader passes9/9, published source passes9/9 and exact rollback succeeds. No CONTEXT_COMPACTED event occurred: this run needed fewer calls, so no causal speedup or compaction-success claim is justified. The prior failure context separately fits under the new deterministic helper. All four32K/8192trials remain retained (two end-to-end successes, an8/9failed repeat and a context-paused task with a9/9diagnostic). This small consumed task set is not a reliability rate.
+
+## Studio long-conversation laboratory, 12 October
+
+The new `npm.cmd run benchmark:ui` serves the production frontend against a disposable authenticated host with40saved messages and20long code-rich responses. Three cold and three warm navigations per profile; CPU profiles are collected separately. [Raw-sample summary and hashes](evidence/ui-performance-windows.json) retain the exploratory baseline, corrected measurement baseline, first candidate and final verified result.
+
+| Profile / cache | Baseline median (range), ms | Final median (range), ms |
+| --- | --- | --- |
+| Desktop cold |223.3 (217.0-223.6)|134.4 (133.0-195.0)|
+| Desktop warm |185.1 (180.1-193.0)|119.3 (111.7-127.8)|
+| Phone-layout cold |1940.3 (1871.2-2002.3)|1657.5 (1634.0-1711.2)|
+| Phone-layout warm |1452.3 (1424.0-1468.7)|1131.8 (1120.9-1220.2)|
+
+Phone-layout is390x844 desktop Chromium at4xCPU,80ms synthetic latency,10Mbpsdown/2Mbpsup on the recorded20-thread Core Ultra host. It is not physical Android. Median keyboard-to-two-frame observations across repetitions are20.65ms before/12.25ms after; desktop4.80/4.85ms. These are lab proxies, not field INP or exact screen-paint measurements. The candidate meets the predeclared15percent warm-phone improvement gate (22.1percent), with final behavior checks.
+
+Native content visibility skips layout of older offscreen message articles; latest two messages render normally and full content remains accessible. Actual profile identified scrollHeight-triggered layout. Keyboard focus now pauses following only when it reveals earlier/offscreen content. Initial candidate failures are retained: older-code focus was repinned; the landscape fixture needed native anchoring disabled to force its existing adverse condition. No assertions/timeouts were relaxed. Full22affected browser cases pass2.9min, then final3focus/landscape cases pass21.2s; fresh strict build/final types pass. The broader performance matrix, field observations, physical phone and model/runtime measurements remain open.

@@ -77,7 +77,14 @@ export default function Conversation({ detail, loading, error, onRetry, streams,
   const earlier = anchor ? history.data?.olderCursor : messages.length === 80 ? messages[0]?.id : null;
   const newer = anchor ? history.data?.newerCursor : null;
   const hasConversation = Boolean(detail?.messages.length);
-  return <div className="conversation-scroll" ref={scrollRef} onScroll={event => {
+  return <div className="conversation-scroll" ref={scrollRef} onFocusCapture={event=>{
+    // Keyboard readers own their position. Revealing an offscreen code region
+    // can resize its message before the native scroll event arrives.
+    const target=event.target as HTMLElement,scroller=event.currentTarget;
+    if(!target.closest('.message'))return;
+    const view=scroller.getBoundingClientRect(),box=target.getBoundingClientRect();
+    if(box.top<view.top||box.bottom>view.bottom||scroller.scrollTop<previousScrollTop.current)setFollow(false);
+  }} onScroll={event => {
     const element = event.currentTarget;
     const nearBottom = element.scrollHeight - element.scrollTop - element.clientHeight < 100;
     // A queued scroll event after reflow can report a larger bottom gap without

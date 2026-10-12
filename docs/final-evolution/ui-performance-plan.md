@@ -1,0 +1,18 @@
+# Studio performance measurement
+
+Scope G03/B11. Establish a reproducible laboratory baseline before optimizing. Use the production frontend build, real authenticated disposable host/database and deterministic stored conversation data. No live model, owner data, external accounts or deployment. Router work remains paused.
+
+Measure three equivalent cold and warm authenticated navigations on desktop1440x1000/unthrottled and phone390x844/4xCPU with explicit80ms/10Mbps down/2Mbps up synthetic network. A fixed CPU multiplier is not a calibrated Galaxy or physical Android claim. Record browser/build/commit, fixture size, cache/network/CPU, readiness-to-two-animation-frame timing, paint entries, long tasks, resource bytes and actual keyboard interaction observations. Separate browser work from inference latency. No analytics or private API caching is added.
+
+Use a forty-message durable fixture with twenty long Markdown/code responses and existing paginated history. Measure typing, history opening and returning with draft preservation. Keep raw repetitions, median and range, including failures. DOM-ready/two-frame timings and Event Timing samples are lab proxies, not field INP or exact display-paint timestamps. No field data is available for the private modernization app. Capture a CPU profile to locate avoidable rendering work; optimize only measured bottlenecks. Retest equivalent conditions and ordinary functionality after changes.
+
+- [x] Add isolated fixture, explicit benchmark command and bounded report output.
+- [x] Measure baseline and inspect browser profile.
+- [x] Make evidence-supported small rendering changes; preserve content, reading position, draft, accessibility and controls.
+- [x] Repeat identical measurements, validate functional regressions and retain honest results.
+
+Reviewed official sources12October: [Chrome CPU calibration](https://developer.chrome.com/blog/devtools-grounded-real-world), [INP definition and measurement](https://web.dev/articles/inp), [interaction diagnosis](https://web.dev/articles/optimize-inp). Three-run medians/ranges are laboratory observations; real-user and physical-phone acceptance remains separate.
+
+Bounded candidate: the phone diagnostic profile attributes about210ms to scrollHeight-triggered layout while typing remains responsive. Test native content-visibility:auto for message articles, with remembered intrinsic height and ordinary visible fallback in unsupported browsers. Keep all content in the DOM, no virtual-list library or hidden text. Adopt only if the three-run phone warm-readiness median improves by at least15percent, typing does not materially regress and existing scrolling/history/focus/accessibility checks pass. Otherwise remove the candidate and retain the measurements. Revised baseline-v2 additionally measures history from its actual browser click and asserts the latest copy control is in view; the earlier exploratory baseline remains retained. [MDN behavior/accessibility](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/content-visibility), [Chrome rendering guidance](https://web.dev/articles/content-visibility).
+
+Final verified build meets the declared improvement gate: warm phone-layout1452.3to1131.8ms (22.1percent). Final22affected browser cases, three subsequent focus/landscape refinement cases, strict build/final types and repeated12navigation samples pass. Retain the initial focus failure and native-anchoring test setup failure. Only older articles use containment; latest two remain ordinary layout. This completes this bounded measurement/optimization, not all G03 or physical-device acceptance.

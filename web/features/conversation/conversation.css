@@ -23,6 +23,9 @@
 .composer-studio .workspace-tag { margin: 0 12px; padding: 0; }
 .composer-studio .workspace-tag button { max-width: 100%; min-height: 44px; }
 .message .user-message, .markdown { text-align: start; }
+@supports(content-visibility:auto){
+  .conversation-content > .message:nth-last-child(n+3) { content-visibility:auto; contain-intrinsic-size:auto 600px; }
+}
 .markdown pre, .markdown code { direction: ltr; unicode-bidi: isolate; text-align: left; }
 .message-assistant .task-receipt { margin-top: 0; margin-bottom: 12px; }
 .message-assistant .stream-response { padding-top: 6px; }

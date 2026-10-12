@@ -36,6 +36,7 @@ class TestProviders extends Providers {
   }
 }
 const dir=await mkdtemp(join(tmpdir(),'relay-e2e-'));const store=new Store(await openDatabase());await store.init();await seedHistoryFixture(store);const providers=new TestProviders();
+if(process.env.RELAY_E2E_PERFORMANCE==='1')await (await import('./performance-fixture.js')).seedPerformanceFixture(store);
 let engine:Engine;const broker=new ToolBroker(dir,()=>engine?.isStopped()??false,undefined,store);
 const lease=new LocalLease();const inference=new InferenceService(store,providers,lease,()=>engine?.isStopped()??false);
 engine=new Engine(store,providers,broker,{lease,admit:async()=>({allowed:true,decision:'run',reasons:['Explicit automated test fixture'],estimatedRamBytes:null,estimatedVramBytes:null,contextTokens:8192,confidence:'unknown'})});

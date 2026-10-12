@@ -110,3 +110,7 @@ Inspected the actual320px light and1440px dark publication views. Exact planned 
 ## Direct project authoring
 
 Inspected [320px file creation](evidence/project-new-file-320-light.png), desktop1440px and [844x390 dark editor](evidence/project-new-file-844-dark.png). Phone uses a single document and separate reachable action footer; desktop retains the searchable file index. The short view scrolls path and content without moving Create/Cancel out of reach. Actual draft, collision, pending mutation, saved acknowledgement and accessibility checks pass within31affected cases plus the focused landscape case. Native keyboard and full professional code-editor capabilities remain separate work.
+
+## Long-conversation rendering and focus
+
+Inspected actual [phone-layout](evidence/performance-phone-layout.png) and [desktop](evidence/performance-desktop.png) final captures with20long responses. Latest text/code, copy control and draft/composer remain visible. Offscreen layout preserves all DOM content; an initial keyboard-focus failure was corrected before acceptance. Existing Hebrew/theme/short-height/history checks remain passing. This is rendering verification of the existing Studio design, not a new visual concept or physical-phone sign-off.

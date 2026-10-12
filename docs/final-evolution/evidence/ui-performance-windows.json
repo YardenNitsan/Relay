@@ -1,0 +1,2616 @@
+{
+  "schemaVersion": 1,
+  "scope": "Sequential authenticated synthetic UI lab on local Windows host; no model inference during measurements",
+  "command": "npm.cmd run build; npm.cmd run benchmark:ui",
+  "conditions": "Three cold and three warm navigations per profile. Per-Store disposable fixture and private cookie authentication. CPU profile collected separately after repetitions. 40messages/20long responses. Four labels preserve exploratory, revised baseline, initial candidate and final verified data.",
+  "decision": "Keep native offscreen layout for older messages only, with explicit keyboard reading protection. Final phone warm median1131.8ms versus1452.3ms baseline (22.1percent); all preserved behavior gates pass.",
+  "verification": "Full affected22browser cases pass2.9min, then final focus refinement3cases21.2s; fresh strict build/final types and final12navigation measurements pass.",
+  "limitations": [
+    "Phone-layout uses a desktop Chromium viewport,4xCPU and synthetic80ms/10Mbps/2Mbps network; not calibrated physical Galaxy/Android/Samsung Internet.",
+    "Readiness and keyboard-to-two-frame values are laboratory proxies, not field INP, display-paint time or model latency.",
+    "History driver-inclusive timing includes automation overhead; actual click-to-two-frame timing was added in baseline-v2.",
+    "Initial candidate failed old-code focus and a landscape test setup whose native anchoring prevented its intended gap. Focus behavior repaired; landscape fixture disables native anchoring while retaining all assertions.",
+    "Small sequential sample sets on one host, not population guarantees; screen-reader and physical-phone acceptance remains open.",
+    "Latest two messages remain normally rendered; all content remains in the DOM. No virtual-list library or new runtime dependency."
+  ],
+  "runs": [
+    {
+      "scope": "Local synthetic laboratory; not field INP, physical Android, live inference or remote gateway acceptance",
+      "commit": "a8bded988ab9b1c5d6dc067a2350bbe20f16704a",
+      "buildIndexSha256": "1d5dd9c02752909c16bb578b2bec7450e468dba59d586c57e6b744482506f6d0",
+      "browser": "155.0.8059.39",
+      "platform": "win32",
+      "node": "v24.11.1",
+      "profile": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 1000,
+        "cpu": 1,
+        "latency": 0
+      },
+      "network": {
+        "latencyMs": 0,
+        "downloadBytesPerSecond": -1,
+        "uploadBytesPerSecond": -1
+      },
+      "fixture": {
+        "messages": 40,
+        "assistantResponses": 20,
+        "responseBytes": 12484,
+        "responseSha256": "e3a5aed863f1787f7b00000dc584c01d33545f2a42f8d76b6e59cd29ec208c10"
+      },
+      "summary": {
+        "cold": {
+          "samples": [
+            219.5,
+            225.39999985694885,
+            225.79999995231628
+          ],
+          "median": 225.39999985694885,
+          "min": 219.5,
+          "max": 225.79999995231628
+        },
+        "warm": {
+          "samples": [
+            192.09999990463257,
+            155.19999980926514,
+            209.20000004768372
+          ],
+          "median": 192.09999990463257,
+          "min": 155.19999980926514,
+          "max": 209.20000004768372
+        }
+      },
+      "failures": [],
+      "label": "baseline",
+      "rawReportSha256": "5bb508444f4192487fc6773d9b08a646655240578b67ce5bfa4755a55263d2d8",
+      "cpuProfileSha256": "e804bac029415c290dadc22356ad4c4fb610171d05a846c96c088ff270926749",
+      "samples": [
+        {
+          "repeat": 0,
+          "cache": "cold",
+          "readyMs": 219.5,
+          "historyClickTwoFrameMs": null,
+          "historyDriverInclusiveMs": 122.10000014305115,
+          "typingMedianMs": 4.3999998569488525,
+          "typingMinMs": 3.200000047683716,
+          "typingMaxMs": 11.299999952316284,
+          "longTaskDurationsMs": [
+            103
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 22551
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.077408
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.053573
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.129926
+            },
+            {
+              "name": "TaskDuration",
+              "value": 0.714688
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 18320784
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 49930240
+            }
+          ]
+        },
+        {
+          "repeat": 0,
+          "cache": "warm",
+          "readyMs": 192.09999990463257,
+          "historyClickTwoFrameMs": null,
+          "historyDriverInclusiveMs": 109.40000009536743,
+          "typingMedianMs": 4.3999998569488525,
+          "typingMinMs": 3.0999999046325684,
+          "typingMaxMs": 17.699999809265137,
+          "longTaskDurationsMs": [
+            100
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 39523
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.036538
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.05086
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.120116
+            },
+            {
+              "name": "TaskDuration",
+              "value": 0.655997
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 47022668
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 94294016
+            }
+          ]
+        },
+        {
+          "repeat": 1,
+          "cache": "cold",
+          "readyMs": 225.39999985694885,
+          "historyClickTwoFrameMs": null,
+          "historyDriverInclusiveMs": 114.60000014305115,
+          "typingMedianMs": 4.599999904632568,
+          "typingMinMs": 3.299999952316284,
+          "typingMaxMs": 13.299999952316284,
+          "longTaskDurationsMs": [
+            96
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 38546
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.071297
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.056086
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.119273
+            },
+            {
+              "name": "TaskDuration",
+              "value": 0.750241
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 45144248
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 103530496
+            }
+          ]
+        },
+        {
+          "repeat": 1,
+          "cache": "warm",
+          "readyMs": 155.19999980926514,
+          "historyClickTwoFrameMs": null,
+          "historyDriverInclusiveMs": 104.79999995231628,
+          "typingMedianMs": 5.199999809265137,
+          "typingMinMs": 3.9000000953674316,
+          "typingMaxMs": 12.299999952316284,
+          "longTaskDurationsMs": [
+            85
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 38610
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.036089
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.057452
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.111084
+            },
+            {
+              "name": "TaskDuration",
+              "value": 0.690261
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 23441108
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 98611200
+            }
+          ]
+        },
+        {
+          "repeat": 2,
+          "cache": "cold",
+          "readyMs": 225.79999995231628,
+          "historyClickTwoFrameMs": null,
+          "historyDriverInclusiveMs": 109.29999995231628,
+          "typingMedianMs": 5.099999904632568,
+          "typingMinMs": 3.9000000953674316,
+          "typingMaxMs": 19.899999856948853,
+          "longTaskDurationsMs": [
+            88
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 60210
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.067271
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.054909
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.111569
+            },
+            {
+              "name": "TaskDuration",
+              "value": 0.703659
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 38511264
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 104439808
+            }
+          ]
+        },
+        {
+          "repeat": 2,
+          "cache": "warm",
+          "readyMs": 209.20000004768372,
+          "historyClickTwoFrameMs": null,
+          "historyDriverInclusiveMs": 105,
+          "typingMedianMs": 4.6000001430511475,
+          "typingMinMs": 3.1999998092651367,
+          "typingMaxMs": 12.299999952316284,
+          "longTaskDurationsMs": [
+            114
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 55964
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.0357
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.049029
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.135292
+            },
+            {
+              "name": "TaskDuration",
+              "value": 0.674705
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 56863524
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 134647808
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "scope": "Local synthetic laboratory; not field INP, physical Android, live inference or remote gateway acceptance",
+      "commit": "a8bded988ab9b1c5d6dc067a2350bbe20f16704a",
+      "buildIndexSha256": "1d5dd9c02752909c16bb578b2bec7450e468dba59d586c57e6b744482506f6d0",
+      "browser": "155.0.8059.39",
+      "platform": "win32",
+      "node": "v24.11.1",
+      "profile": {
+        "name": "phone-layout",
+        "width": 390,
+        "height": 844,
+        "cpu": 4,
+        "latency": 80
+      },
+      "network": {
+        "latencyMs": 80,
+        "downloadBytesPerSecond": 1250000,
+        "uploadBytesPerSecond": 250000
+      },
+      "fixture": {
+        "messages": 40,
+        "assistantResponses": 20,
+        "responseBytes": 12484,
+        "responseSha256": "e3a5aed863f1787f7b00000dc584c01d33545f2a42f8d76b6e59cd29ec208c10"
+      },
+      "summary": {
+        "cold": {
+          "samples": [
+            2050.100000143051,
+            1896.7999999523163,
+            1932.4000000953674
+          ],
+          "median": 1932.4000000953674,
+          "min": 1896.7999999523163,
+          "max": 2050.100000143051
+        },
+        "warm": {
+          "samples": [
+            1434.1000001430511,
+            1477.5999999046326,
+            1405.1000001430511
+          ],
+          "median": 1434.1000001430511,
+          "min": 1405.1000001430511,
+          "max": 1477.5999999046326
+        }
+      },
+      "failures": [],
+      "label": "baseline",
+      "rawReportSha256": "6f51219ab9b3f81466b03a1746ce13ee4d11cf0ef72ee182b98f86ff72fc9fa1",
+      "cpuProfileSha256": "8d2e781fce984ee6f801d585928737ea421fb6b44cf97ae094866d2b7f02688f",
+      "samples": [
+        {
+          "repeat": 0,
+          "cache": "cold",
+          "readyMs": 2050.100000143051,
+          "historyClickTwoFrameMs": null,
+          "historyDriverInclusiveMs": 1009.5,
+          "typingMedianMs": 20.09999990463257,
+          "typingMinMs": 17,
+          "typingMaxMs": 40.40000009536743,
+          "longTaskDurationsMs": [
+            605,
+            201,
+            96,
+            69,
+            94
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 22606
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.44284
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.303365
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.716641
+            },
+            {
+              "name": "TaskDuration",
+              "value": 4.301049
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 30636608
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 52518912
+            }
+          ]
+        },
+        {
+          "repeat": 0,
+          "cache": "warm",
+          "readyMs": 1434.1000001430511,
+          "historyClickTwoFrameMs": null,
+          "historyDriverInclusiveMs": 1298.5999999046326,
+          "typingMedianMs": 20.299999952316284,
+          "typingMinMs": 16,
+          "typingMaxMs": 30.799999952316284,
+          "longTaskDurationsMs": [
+            501,
+            68,
+            84
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 39523
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.213926
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.276178
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.591471
+            },
+            {
+              "name": "TaskDuration",
+              "value": 4.247464
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 24045516
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 94953472
+            }
+          ]
+        },
+        {
+          "repeat": 1,
+          "cache": "cold",
+          "readyMs": 1896.7999999523163,
+          "historyClickTwoFrameMs": null,
+          "historyDriverInclusiveMs": 1021.4000000953674,
+          "typingMedianMs": 20.90000009536743,
+          "typingMinMs": 17,
+          "typingMaxMs": 66.60000014305115,
+          "longTaskDurationsMs": [
+            469,
+            188,
+            89,
+            91
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 38566
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.383068
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.296072
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.567785
+            },
+            {
+              "name": "TaskDuration",
+              "value": 4.215471
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 34251156
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 102973440
+            }
+          ]
+        },
+        {
+          "repeat": 1,
+          "cache": "warm",
+          "readyMs": 1477.5999999046326,
+          "historyClickTwoFrameMs": null,
+          "historyDriverInclusiveMs": 1325.4000000953674,
+          "typingMedianMs": 20.700000047683716,
+          "typingMinMs": 17.799999952316284,
+          "typingMaxMs": 24.799999952316284,
+          "longTaskDurationsMs": [
+            541,
+            80,
+            83
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 60166
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.2407
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.276694
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.607934
+            },
+            {
+              "name": "TaskDuration",
+              "value": 4.253612
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 35689700
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 106033152
+            }
+          ]
+        },
+        {
+          "repeat": 2,
+          "cache": "cold",
+          "readyMs": 1932.4000000953674,
+          "historyClickTwoFrameMs": null,
+          "historyDriverInclusiveMs": 900.2000000476837,
+          "typingMedianMs": 20.600000143051147,
+          "typingMinMs": 16.5,
+          "typingMaxMs": 24.799999952316284,
+          "longTaskDurationsMs": [
+            498,
+            168,
+            86,
+            148
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 55979
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.362227
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.292488
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.625128
+            },
+            {
+              "name": "TaskDuration",
+              "value": 4.258967
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 49917916
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 98996224
+            }
+          ]
+        },
+        {
+          "repeat": 2,
+          "cache": "warm",
+          "readyMs": 1405.1000001430511,
+          "historyClickTwoFrameMs": null,
+          "historyDriverInclusiveMs": 1358.1999998092651,
+          "typingMedianMs": 22.700000047683716,
+          "typingMinMs": 19,
+          "typingMaxMs": 27.299999952316284,
+          "longTaskDurationsMs": [
+            481,
+            74,
+            78
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 77357
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.213003
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.279937
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.575443
+            },
+            {
+              "name": "TaskDuration",
+              "value": 4.35805
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 50960468
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 112373760
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "scope": "Local synthetic laboratory; not field INP, physical Android, live inference or remote gateway acceptance",
+      "commit": "582db6b92c788e2bdcc1c242abc3c223e4e4af9f",
+      "buildIndexSha256": "1d5dd9c02752909c16bb578b2bec7450e468dba59d586c57e6b744482506f6d0",
+      "browser": "155.0.8059.39",
+      "platform": "win32",
+      "node": "v24.11.1",
+      "profile": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 1000,
+        "cpu": 1,
+        "latency": 0
+      },
+      "network": {
+        "latencyMs": 0,
+        "downloadBytesPerSecond": -1,
+        "uploadBytesPerSecond": -1
+      },
+      "fixture": {
+        "messages": 40,
+        "assistantResponses": 20,
+        "responseBytes": 12484,
+        "responseSha256": "e3a5aed863f1787f7b00000dc584c01d33545f2a42f8d76b6e59cd29ec208c10"
+      },
+      "summary": {
+        "cold": {
+          "samples": [
+            223.60000014305115,
+            223.30000019073486,
+            217
+          ],
+          "median": 223.30000019073486,
+          "min": 217,
+          "max": 223.60000014305115
+        },
+        "warm": {
+          "samples": [
+            193,
+            180.10000014305115,
+            185.09999990463257
+          ],
+          "median": 185.09999990463257,
+          "min": 180.10000014305115,
+          "max": 193
+        }
+      },
+      "failures": [],
+      "label": "baseline-v2",
+      "rawReportSha256": "63560ae89b19860b91e7135bc12fd445c34130e4a17c557b146bcc5bcae07399",
+      "cpuProfileSha256": "b312369caf256ae43f5330ecd686c4eec538822c4c973e2b4998391816836907",
+      "samples": [
+        {
+          "repeat": 0,
+          "cache": "cold",
+          "readyMs": 223.60000014305115,
+          "historyClickTwoFrameMs": 61.40000009536743,
+          "historyDriverInclusiveMs": 168.90000009536743,
+          "typingMedianMs": 4.299999952316284,
+          "typingMinMs": 3.1999998092651367,
+          "typingMaxMs": 17.600000143051147,
+          "longTaskDurationsMs": [
+            105
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 21352
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.077544
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.053079
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.132658
+            },
+            {
+              "name": "TaskDuration",
+              "value": 0.791667
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 37388432
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 87154688
+            }
+          ]
+        },
+        {
+          "repeat": 0,
+          "cache": "warm",
+          "readyMs": 193,
+          "historyClickTwoFrameMs": 47.69999980926514,
+          "historyDriverInclusiveMs": 125.29999995231628,
+          "typingMedianMs": 4.700000047683716,
+          "typingMinMs": 3.1999998092651367,
+          "typingMaxMs": 21.299999952316284,
+          "longTaskDurationsMs": [
+            98
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 38545
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.036733
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.050371
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.119939
+            },
+            {
+              "name": "TaskDuration",
+              "value": 0.705923
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 45024008
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 125751296
+            }
+          ]
+        },
+        {
+          "repeat": 1,
+          "cache": "cold",
+          "readyMs": 223.30000019073486,
+          "historyClickTwoFrameMs": 30.40000009536743,
+          "historyDriverInclusiveMs": 134.20000004768372,
+          "typingMedianMs": 4.799999952316284,
+          "typingMinMs": 3.799999952316284,
+          "typingMaxMs": 19.799999952316284,
+          "longTaskDurationsMs": [
+            90
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 60117
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.068101
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.055833
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.113585
+            },
+            {
+              "name": "TaskDuration",
+              "value": 0.743993
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 54258016
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 126599168
+            }
+          ]
+        },
+        {
+          "repeat": 1,
+          "cache": "warm",
+          "readyMs": 180.10000014305115,
+          "historyClickTwoFrameMs": 25.09999990463257,
+          "historyDriverInclusiveMs": 122.5,
+          "typingMedianMs": 5.1000001430511475,
+          "typingMinMs": 3.1000001430511475,
+          "typingMaxMs": 18.299999952316284,
+          "longTaskDurationsMs": [
+            89
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 55790
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.038077
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.048914
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.107605
+            },
+            {
+              "name": "TaskDuration",
+              "value": 0.676374
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 47745404
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 106213376
+            }
+          ]
+        },
+        {
+          "repeat": 2,
+          "cache": "cold",
+          "readyMs": 217,
+          "historyClickTwoFrameMs": 47.19999980926514,
+          "historyDriverInclusiveMs": 133.90000009536743,
+          "typingMedianMs": 4.8999998569488525,
+          "typingMinMs": 3.5,
+          "typingMaxMs": 12.800000190734863,
+          "longTaskDurationsMs": [
+            90
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 38546
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.065317
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.053173
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.114254
+            },
+            {
+              "name": "TaskDuration",
+              "value": 0.747225
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 46418160
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 123838464
+            }
+          ]
+        },
+        {
+          "repeat": 2,
+          "cache": "warm",
+          "readyMs": 185.09999990463257,
+          "historyClickTwoFrameMs": 42.90000009536743,
+          "historyDriverInclusiveMs": 127,
+          "typingMedianMs": 4.799999952316284,
+          "typingMinMs": 3.299999952316284,
+          "typingMaxMs": 12.600000143051147,
+          "longTaskDurationsMs": [
+            87
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 60133
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.036962
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.053988
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.107139
+            },
+            {
+              "name": "TaskDuration",
+              "value": 0.685027
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 91618344
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 135172096
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "scope": "Local synthetic laboratory; not field INP, physical Android, live inference or remote gateway acceptance",
+      "commit": "582db6b92c788e2bdcc1c242abc3c223e4e4af9f",
+      "buildIndexSha256": "1d5dd9c02752909c16bb578b2bec7450e468dba59d586c57e6b744482506f6d0",
+      "browser": "155.0.8059.39",
+      "platform": "win32",
+      "node": "v24.11.1",
+      "profile": {
+        "name": "phone-layout",
+        "width": 390,
+        "height": 844,
+        "cpu": 4,
+        "latency": 80
+      },
+      "network": {
+        "latencyMs": 80,
+        "downloadBytesPerSecond": 1250000,
+        "uploadBytesPerSecond": 250000
+      },
+      "fixture": {
+        "messages": 40,
+        "assistantResponses": 20,
+        "responseBytes": 12484,
+        "responseSha256": "e3a5aed863f1787f7b00000dc584c01d33545f2a42f8d76b6e59cd29ec208c10"
+      },
+      "summary": {
+        "cold": {
+          "samples": [
+            2002.2999999523163,
+            1871.2000000476837,
+            1940.2999999523163
+          ],
+          "median": 1940.2999999523163,
+          "min": 1871.2000000476837,
+          "max": 2002.2999999523163
+        },
+        "warm": {
+          "samples": [
+            1468.7000000476837,
+            1424,
+            1452.2999999523163
+          ],
+          "median": 1452.2999999523163,
+          "min": 1424,
+          "max": 1468.7000000476837
+        }
+      },
+      "failures": [],
+      "label": "baseline-v2",
+      "rawReportSha256": "615dcc2adee2e3524fcccd10ba141ac72c974879e6d29fce987701f75c4e07f3",
+      "cpuProfileSha256": "4320bbd2939665a2362278ad6055859eebcd08bb1aeb83105b6c48fdf74f5ebd",
+      "samples": [
+        {
+          "repeat": 0,
+          "cache": "cold",
+          "readyMs": 2002.2999999523163,
+          "historyClickTwoFrameMs": 1056.3999998569489,
+          "historyDriverInclusiveMs": 1439.7999999523163,
+          "typingMedianMs": 20.299999952316284,
+          "typingMinMs": 16.700000047683716,
+          "typingMaxMs": 41.59999990463257,
+          "longTaskDurationsMs": [
+            50,
+            571,
+            212,
+            88,
+            64,
+            87
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 22333
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.445074
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.286975
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.678018
+            },
+            {
+              "name": "TaskDuration",
+              "value": 4.708612
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 22640664
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 54259712
+            }
+          ]
+        },
+        {
+          "repeat": 0,
+          "cache": "warm",
+          "readyMs": 1468.7000000476837,
+          "historyClickTwoFrameMs": 1003.7000000476837,
+          "historyDriverInclusiveMs": 1393.8999998569489,
+          "typingMedianMs": 19.90000009536743,
+          "typingMinMs": 14.400000095367432,
+          "typingMaxMs": 24.40000009536743,
+          "longTaskDurationsMs": [
+            509,
+            71,
+            82
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 41339
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.194402
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.272734
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.619297
+            },
+            {
+              "name": "TaskDuration",
+              "value": 4.370751
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 45771488
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 101605376
+            }
+          ]
+        },
+        {
+          "repeat": 1,
+          "cache": "cold",
+          "readyMs": 1871.2000000476837,
+          "historyClickTwoFrameMs": 1037.9000000953674,
+          "historyDriverInclusiveMs": 1464.6000001430511,
+          "typingMedianMs": 21.100000143051147,
+          "typingMinMs": 18.09999990463257,
+          "typingMaxMs": 26.299999952316284,
+          "longTaskDurationsMs": [
+            463,
+            191,
+            78,
+            84
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 62678
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.362432
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.282381
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.55597
+            },
+            {
+              "name": "TaskDuration",
+              "value": 4.713042
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 53186704
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 103235584
+            }
+          ]
+        },
+        {
+          "repeat": 1,
+          "cache": "warm",
+          "readyMs": 1424,
+          "historyClickTwoFrameMs": 721.7999999523163,
+          "historyDriverInclusiveMs": 1036.9000000953674,
+          "typingMedianMs": 22.299999952316284,
+          "typingMinMs": 15.599999904632568,
+          "typingMaxMs": 28.100000143051147,
+          "longTaskDurationsMs": [
+            473,
+            52,
+            81,
+            59,
+            95
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 84278
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.217269
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.297739
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.574613
+            },
+            {
+              "name": "TaskDuration",
+              "value": 4.277351
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 53310308
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 115331072
+            }
+          ]
+        },
+        {
+          "repeat": 2,
+          "cache": "cold",
+          "readyMs": 1940.2999999523163,
+          "historyClickTwoFrameMs": 670,
+          "historyDriverInclusiveMs": 969.7000000476837,
+          "typingMedianMs": 20,
+          "typingMinMs": 16.59999990463257,
+          "typingMaxMs": 25,
+          "longTaskDurationsMs": [
+            505,
+            183,
+            84,
+            82
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 95638
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.38832
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.283662
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.568694
+            },
+            {
+              "name": "TaskDuration",
+              "value": 4.278904
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 66371072
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 121446400
+            }
+          ]
+        },
+        {
+          "repeat": 2,
+          "cache": "warm",
+          "readyMs": 1452.2999999523163,
+          "historyClickTwoFrameMs": 1045,
+          "historyDriverInclusiveMs": 1485.8000001907349,
+          "typingMedianMs": 21,
+          "typingMinMs": 17.799999952316284,
+          "typingMaxMs": 27.5,
+          "longTaskDurationsMs": [
+            512,
+            77,
+            88
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 117238
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.20187
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.283808
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.635673
+            },
+            {
+              "name": "TaskDuration",
+              "value": 4.586469
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 60047712
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 131153920
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "scope": "Local synthetic laboratory; not field INP, physical Android, live inference or remote gateway acceptance",
+      "commit": "582db6b92c788e2bdcc1c242abc3c223e4e4af9f",
+      "buildIndexSha256": "292d19170ddd3df1dae5b2c01cc39d259d983f4c68a6aead6758756080567dbc",
+      "browser": "155.0.8059.39",
+      "platform": "win32",
+      "node": "v24.11.1",
+      "profile": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 1000,
+        "cpu": 1,
+        "latency": 0
+      },
+      "network": {
+        "latencyMs": 0,
+        "downloadBytesPerSecond": -1,
+        "uploadBytesPerSecond": -1
+      },
+      "fixture": {
+        "messages": 40,
+        "assistantResponses": 20,
+        "responseBytes": 12484,
+        "responseSha256": "e3a5aed863f1787f7b00000dc584c01d33545f2a42f8d76b6e59cd29ec208c10"
+      },
+      "summary": {
+        "cold": {
+          "samples": [
+            146.09999990463257,
+            136.40000009536743,
+            132.60000014305115
+          ],
+          "median": 136.40000009536743,
+          "min": 132.60000014305115,
+          "max": 146.09999990463257
+        },
+        "warm": {
+          "samples": [
+            128.89999985694885,
+            122.5,
+            115.80000019073486
+          ],
+          "median": 122.5,
+          "min": 115.80000019073486,
+          "max": 128.89999985694885
+        }
+      },
+      "failures": [],
+      "label": "containment",
+      "rawReportSha256": "d2047f6e594c757f916c85be9200071cec49f840309a71a3fc3b937822a5b7dd",
+      "cpuProfileSha256": "a9b5a9f3cd931fa12f84f1110807a7f8265b443c9220e87c599969aaae8066c7",
+      "samples": [
+        {
+          "repeat": 0,
+          "cache": "cold",
+          "readyMs": 146.09999990463257,
+          "historyClickTwoFrameMs": 72.20000004768372,
+          "historyDriverInclusiveMs": 149.89999985694885,
+          "typingMedianMs": 4.700000047683716,
+          "typingMinMs": 2,
+          "typingMaxMs": 10.600000143051147,
+          "longTaskDurationsMs": [
+            71
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 22329
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.060597
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.054544
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.127499
+            },
+            {
+              "name": "TaskDuration",
+              "value": 0.690783
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 21768776
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 50192384
+            }
+          ]
+        },
+        {
+          "repeat": 0,
+          "cache": "warm",
+          "readyMs": 128.89999985694885,
+          "historyClickTwoFrameMs": 45.60000014305115,
+          "historyDriverInclusiveMs": 135.20000004768372,
+          "typingMedianMs": 4.400000095367432,
+          "typingMinMs": 1.9000000953674316,
+          "typingMaxMs": 12.299999952316284,
+          "longTaskDurationsMs": [
+            70
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 38758
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.038083
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.052515
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.118239
+            },
+            {
+              "name": "TaskDuration",
+              "value": 0.652688
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 43233576
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 90361856
+            }
+          ]
+        },
+        {
+          "repeat": 1,
+          "cache": "cold",
+          "readyMs": 136.40000009536743,
+          "historyClickTwoFrameMs": 49.5,
+          "historyDriverInclusiveMs": 132.59999990463257,
+          "typingMedianMs": 4.5,
+          "typingMinMs": 2.1999998092651367,
+          "typingMaxMs": 12.200000047683716,
+          "longTaskDurationsMs": [
+            64
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 41476
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.054277
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.057407
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.113316
+            },
+            {
+              "name": "TaskDuration",
+              "value": 0.669664
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 44308504
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 94617600
+            }
+          ]
+        },
+        {
+          "repeat": 1,
+          "cache": "warm",
+          "readyMs": 122.5,
+          "historyClickTwoFrameMs": 43.5,
+          "historyDriverInclusiveMs": 125.89999985694885,
+          "typingMedianMs": 5,
+          "typingMinMs": 2.0999999046325684,
+          "typingMaxMs": 12,
+          "longTaskDurationsMs": [
+            60
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 38611
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.040405
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.0545
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.106499
+            },
+            {
+              "name": "TaskDuration",
+              "value": 0.641966
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 36941460
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 96251904
+            }
+          ]
+        },
+        {
+          "repeat": 2,
+          "cache": "cold",
+          "readyMs": 132.60000014305115,
+          "historyClickTwoFrameMs": 51,
+          "historyDriverInclusiveMs": 143.70000004768372,
+          "typingMedianMs": 4.5,
+          "typingMinMs": 2.0999999046325684,
+          "typingMaxMs": 14.099999904632568,
+          "longTaskDurationsMs": [
+            62
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 38566
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.050392
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.057413
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.112903
+            },
+            {
+              "name": "TaskDuration",
+              "value": 0.67077
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 44144504
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 101031936
+            }
+          ]
+        },
+        {
+          "repeat": 2,
+          "cache": "warm",
+          "readyMs": 115.80000019073486,
+          "historyClickTwoFrameMs": 49.39999985694885,
+          "historyDriverInclusiveMs": 140.60000014305115,
+          "typingMedianMs": 4.599999904632568,
+          "typingMinMs": 2.1000001430511475,
+          "typingMaxMs": 12.100000143051147,
+          "longTaskDurationsMs": [
+            59
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 38566
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.037936
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.054377
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.109294
+            },
+            {
+              "name": "TaskDuration",
+              "value": 0.650087
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 44649272
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 101093376
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "scope": "Local synthetic laboratory; not field INP, physical Android, live inference or remote gateway acceptance",
+      "commit": "582db6b92c788e2bdcc1c242abc3c223e4e4af9f",
+      "buildIndexSha256": "292d19170ddd3df1dae5b2c01cc39d259d983f4c68a6aead6758756080567dbc",
+      "browser": "155.0.8059.39",
+      "platform": "win32",
+      "node": "v24.11.1",
+      "profile": {
+        "name": "phone-layout",
+        "width": 390,
+        "height": 844,
+        "cpu": 4,
+        "latency": 80
+      },
+      "network": {
+        "latencyMs": 80,
+        "downloadBytesPerSecond": 1250000,
+        "uploadBytesPerSecond": 250000
+      },
+      "fixture": {
+        "messages": 40,
+        "assistantResponses": 20,
+        "responseBytes": 12484,
+        "responseSha256": "e3a5aed863f1787f7b00000dc584c01d33545f2a42f8d76b6e59cd29ec208c10"
+      },
+      "summary": {
+        "cold": {
+          "samples": [
+            1772.7999999523163,
+            1682.2999999523163,
+            1670.2999999523163
+          ],
+          "median": 1682.2999999523163,
+          "min": 1670.2999999523163,
+          "max": 1772.7999999523163
+        },
+        "warm": {
+          "samples": [
+            1144.7999999523163,
+            1129,
+            1118.2999999523163
+          ],
+          "median": 1129,
+          "min": 1118.2999999523163,
+          "max": 1144.7999999523163
+        }
+      },
+      "failures": [],
+      "label": "containment",
+      "rawReportSha256": "d5ff0dc45174cf459f346ca2c3418eafa3600c4320c78fc40381204257d9bf7a",
+      "cpuProfileSha256": "d3e7f09a971a80e86ae562120823960ff10779ea78f31de27f9c36d0925e1172",
+      "samples": [
+        {
+          "repeat": 0,
+          "cache": "cold",
+          "readyMs": 1772.7999999523163,
+          "historyClickTwoFrameMs": 836.5,
+          "historyDriverInclusiveMs": 1184.9000000953674,
+          "typingMedianMs": 11.599999904632568,
+          "typingMinMs": 10,
+          "typingMaxMs": 47.80000019073486,
+          "longTaskDurationsMs": [
+            422,
+            51,
+            66,
+            54
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 22329
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.466713
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.312622
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.730212
+            },
+            {
+              "name": "TaskDuration",
+              "value": 4.329192
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 24647012
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 52781056
+            }
+          ]
+        },
+        {
+          "repeat": 0,
+          "cache": "warm",
+          "readyMs": 1144.7999999523163,
+          "historyClickTwoFrameMs": 728.1000001430511,
+          "historyDriverInclusiveMs": 1140.5999999046326,
+          "typingMedianMs": 11,
+          "typingMinMs": 9.700000047683716,
+          "typingMaxMs": 14.5,
+          "longTaskDurationsMs": [
+            329
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 40223
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.216526
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.300026
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.592719
+            },
+            {
+              "name": "TaskDuration",
+              "value": 3.863282
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 35547648
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 89321472
+            }
+          ]
+        },
+        {
+          "repeat": 1,
+          "cache": "cold",
+          "readyMs": 1682.2999999523163,
+          "historyClickTwoFrameMs": 764.0999999046326,
+          "historyDriverInclusiveMs": 1074.5,
+          "typingMedianMs": 10.900000095367432,
+          "typingMinMs": 7.199999809265137,
+          "typingMaxMs": 58.10000014305115,
+          "longTaskDurationsMs": [
+            340,
+            50
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 55804
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.448482
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.309529
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.59184
+            },
+            {
+              "name": "TaskDuration",
+              "value": 4.011527
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 30134836
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 100352000
+            }
+          ]
+        },
+        {
+          "repeat": 1,
+          "cache": "warm",
+          "readyMs": 1129,
+          "historyClickTwoFrameMs": 776.9000000953674,
+          "historyDriverInclusiveMs": 1110.7000000476837,
+          "typingMedianMs": 11.299999952316284,
+          "typingMinMs": 7.599999904632568,
+          "typingMaxMs": 14.600000143051147,
+          "longTaskDurationsMs": [
+            318,
+            51
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 77404
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.210178
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.30556
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.577263
+            },
+            {
+              "name": "TaskDuration",
+              "value": 3.855763
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 28907992
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 108371968
+            }
+          ]
+        },
+        {
+          "repeat": 2,
+          "cache": "cold",
+          "readyMs": 1670.2999999523163,
+          "historyClickTwoFrameMs": 748.2999999523163,
+          "historyDriverInclusiveMs": 1079.4000000953674,
+          "typingMedianMs": 11.400000095367432,
+          "typingMinMs": 8,
+          "typingMaxMs": 16.700000047683716,
+          "longTaskDurationsMs": [
+            340
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 40999
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.398273
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.302645
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.602356
+            },
+            {
+              "name": "TaskDuration",
+              "value": 4.034675
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 29413684
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 104763392
+            }
+          ]
+        },
+        {
+          "repeat": 2,
+          "cache": "warm",
+          "readyMs": 1118.2999999523163,
+          "historyClickTwoFrameMs": 770.7000000476837,
+          "historyDriverInclusiveMs": 1121.2999999523163,
+          "typingMedianMs": 11.900000095367432,
+          "typingMinMs": 9.799999952316284,
+          "typingMaxMs": 14.799999952316284,
+          "longTaskDurationsMs": [
+            293,
+            57
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 57429
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.21274
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.295247
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.555617
+            },
+            {
+              "name": "TaskDuration",
+              "value": 3.847375
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 55420392
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 105820160
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "scope": "Local synthetic laboratory; not field INP, physical Android, live inference or remote gateway acceptance",
+      "commit": "582db6b92c788e2bdcc1c242abc3c223e4e4af9f",
+      "buildIndexSha256": "a7519a42380d38fbd46542eb9642a5ca1c64991cab767f9b04b8f80d58f56497",
+      "browser": "155.0.8059.39",
+      "platform": "win32",
+      "node": "v24.11.1",
+      "profile": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 1000,
+        "cpu": 1,
+        "latency": 0
+      },
+      "network": {
+        "latencyMs": 0,
+        "downloadBytesPerSecond": -1,
+        "uploadBytesPerSecond": -1
+      },
+      "fixture": {
+        "messages": 40,
+        "assistantResponses": 20,
+        "responseBytes": 12484,
+        "responseSha256": "e3a5aed863f1787f7b00000dc584c01d33545f2a42f8d76b6e59cd29ec208c10"
+      },
+      "summary": {
+        "cold": {
+          "samples": [
+            195,
+            133,
+            134.40000009536743
+          ],
+          "median": 134.40000009536743,
+          "min": 133,
+          "max": 195
+        },
+        "warm": {
+          "samples": [
+            127.79999995231628,
+            111.70000004768372,
+            119.29999995231628
+          ],
+          "median": 119.29999995231628,
+          "min": 111.70000004768372,
+          "max": 127.79999995231628
+        }
+      },
+      "failures": [],
+      "label": "verified",
+      "rawReportSha256": "b5a396ee107a2858bc77316a2f06e62b6ed6ac71b61f2525bad86c8b4d96a827",
+      "cpuProfileSha256": "a7c45f69c33cb000e1a108b4a9c06e6380f63353f3631b5cf4f8959c51ca2bcf",
+      "testedAt": "2026-10-12T05:36:40.796Z",
+      "host": {
+        "cpu": "Intel(R) Core(TM) Ultra 7 265KF",
+        "logicalProcessors": 20,
+        "ramBytes": 33847615488
+      },
+      "samples": [
+        {
+          "repeat": 0,
+          "cache": "cold",
+          "readyMs": 195,
+          "historyClickTwoFrameMs": 57.299999952316284,
+          "historyDriverInclusiveMs": 154.5,
+          "typingMedianMs": 5.300000190734863,
+          "typingMinMs": 2.200000047683716,
+          "typingMaxMs": 9.700000047683716,
+          "longTaskDurationsMs": [
+            76
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 22562
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.084784
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.053892
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.130053
+            },
+            {
+              "name": "TaskDuration",
+              "value": 0.721728
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 32687568
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 57008128
+            }
+          ]
+        },
+        {
+          "repeat": 0,
+          "cache": "warm",
+          "readyMs": 127.79999995231628,
+          "historyClickTwoFrameMs": 45.10000014305115,
+          "historyDriverInclusiveMs": 130.09999990463257,
+          "typingMedianMs": 4.900000095367432,
+          "typingMinMs": 2.299999952316284,
+          "typingMaxMs": 12.199999809265137,
+          "longTaskDurationsMs": [
+            72
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 21353
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.039313
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.051851
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.117425
+            },
+            {
+              "name": "TaskDuration",
+              "value": 0.671735
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 37981360
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 89837568
+            }
+          ]
+        },
+        {
+          "repeat": 1,
+          "cache": "cold",
+          "readyMs": 133,
+          "historyClickTwoFrameMs": 47.799999952316284,
+          "historyDriverInclusiveMs": 134.09999990463257,
+          "typingMedianMs": 5.199999809265137,
+          "typingMinMs": 2.3999998569488525,
+          "typingMaxMs": 11.799999952316284,
+          "longTaskDurationsMs": [
+            66
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 38546
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.050373
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.054576
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.111482
+            },
+            {
+              "name": "TaskDuration",
+              "value": 0.673336
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 47374892
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 92258304
+            }
+          ]
+        },
+        {
+          "repeat": 1,
+          "cache": "warm",
+          "readyMs": 111.70000004768372,
+          "historyClickTwoFrameMs": 50.09999990463257,
+          "historyDriverInclusiveMs": 135.39999985694885,
+          "typingMedianMs": 4.400000095367432,
+          "typingMinMs": 2.200000047683716,
+          "typingMaxMs": 11.599999904632568,
+          "longTaskDurationsMs": [
+            61
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 60146
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.038284
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.056799
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.106832
+            },
+            {
+              "name": "TaskDuration",
+              "value": 0.635232
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 57269940
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 103591936
+            }
+          ]
+        },
+        {
+          "repeat": 2,
+          "cache": "cold",
+          "readyMs": 134.40000009536743,
+          "historyClickTwoFrameMs": 47.90000009536743,
+          "historyDriverInclusiveMs": 132.69999980926514,
+          "typingMedianMs": 4.799999952316284,
+          "typingMinMs": 2.200000047683716,
+          "typingMaxMs": 12.200000047683716,
+          "longTaskDurationsMs": [
+            66
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 55804
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.05176
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.054229
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.111664
+            },
+            {
+              "name": "TaskDuration",
+              "value": 0.671283
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 47757348
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 106012672
+            }
+          ]
+        },
+        {
+          "repeat": 2,
+          "cache": "warm",
+          "readyMs": 119.29999995231628,
+          "historyClickTwoFrameMs": 46.59999990463257,
+          "historyDriverInclusiveMs": 133.90000009536743,
+          "typingMedianMs": 4.5,
+          "typingMinMs": 2.4000000953674316,
+          "typingMaxMs": 20.40000009536743,
+          "longTaskDurationsMs": [
+            66
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 38546
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.037909
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.052973
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.112457
+            },
+            {
+              "name": "TaskDuration",
+              "value": 0.679463
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 46886088
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 122589184
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "scope": "Local synthetic laboratory; not field INP, physical Android, live inference or remote gateway acceptance",
+      "commit": "582db6b92c788e2bdcc1c242abc3c223e4e4af9f",
+      "buildIndexSha256": "a7519a42380d38fbd46542eb9642a5ca1c64991cab767f9b04b8f80d58f56497",
+      "browser": "155.0.8059.39",
+      "platform": "win32",
+      "node": "v24.11.1",
+      "profile": {
+        "name": "phone-layout",
+        "width": 390,
+        "height": 844,
+        "cpu": 4,
+        "latency": 80
+      },
+      "network": {
+        "latencyMs": 80,
+        "downloadBytesPerSecond": 1250000,
+        "uploadBytesPerSecond": 250000
+      },
+      "fixture": {
+        "messages": 40,
+        "assistantResponses": 20,
+        "responseBytes": 12484,
+        "responseSha256": "e3a5aed863f1787f7b00000dc584c01d33545f2a42f8d76b6e59cd29ec208c10"
+      },
+      "summary": {
+        "cold": {
+          "samples": [
+            1711.2000000476837,
+            1634,
+            1657.5
+          ],
+          "median": 1657.5,
+          "min": 1634,
+          "max": 1711.2000000476837
+        },
+        "warm": {
+          "samples": [
+            1220.2000000476837,
+            1120.9000000953674,
+            1131.7999999523163
+          ],
+          "median": 1131.7999999523163,
+          "min": 1120.9000000953674,
+          "max": 1220.2000000476837
+        }
+      },
+      "failures": [],
+      "label": "verified",
+      "rawReportSha256": "a12f73c6da077defebff2f4ca91b2738420adf2a32a97e930a02880b0715fed6",
+      "cpuProfileSha256": "2392246601653d4a92e262d5281efe88bd939ac10939f99af94d8d8eb48851fe",
+      "testedAt": "2026-10-12T05:36:59.205Z",
+      "host": {
+        "cpu": "Intel(R) Core(TM) Ultra 7 265KF",
+        "logicalProcessors": 20,
+        "ramBytes": 33847615488
+      },
+      "samples": [
+        {
+          "repeat": 0,
+          "cache": "cold",
+          "readyMs": 1711.2000000476837,
+          "historyClickTwoFrameMs": 806.7999999523163,
+          "historyDriverInclusiveMs": 1138.5999999046326,
+          "typingMedianMs": 12.5,
+          "typingMinMs": 10.299999952316284,
+          "typingMaxMs": 49.799999952316284,
+          "longTaskDurationsMs": [
+            422,
+            68
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 22333
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.454704
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.312697
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.692808
+            },
+            {
+              "name": "TaskDuration",
+              "value": 4.213929
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 24641524
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 52518912
+            }
+          ]
+        },
+        {
+          "repeat": 0,
+          "cache": "warm",
+          "readyMs": 1220.2000000476837,
+          "historyClickTwoFrameMs": 1129.7000000476837,
+          "historyDriverInclusiveMs": 1592.3999998569489,
+          "typingMedianMs": 12.200000047683716,
+          "typingMinMs": 9.5,
+          "typingMaxMs": 23.700000047683716,
+          "longTaskDurationsMs": [
+            401
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 21371
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.209922
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.301682
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.646396
+            },
+            {
+              "name": "TaskDuration",
+              "value": 4.385829
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 13490040
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 90161152
+            }
+          ]
+        },
+        {
+          "repeat": 1,
+          "cache": "cold",
+          "readyMs": 1634,
+          "historyClickTwoFrameMs": 794.2000000476837,
+          "historyDriverInclusiveMs": 1263.2999999523163,
+          "typingMedianMs": 12.299999952316284,
+          "typingMinMs": 10.400000095367432,
+          "typingMaxMs": 16.40000009536743,
+          "longTaskDurationsMs": [
+            340
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 38546
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.26819
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.31419
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.577796
+            },
+            {
+              "name": "TaskDuration",
+              "value": 4.102063
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 41888440
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 92581888
+            }
+          ]
+        },
+        {
+          "repeat": 1,
+          "cache": "warm",
+          "readyMs": 1120.9000000953674,
+          "historyClickTwoFrameMs": 798.5999999046326,
+          "historyDriverInclusiveMs": 1220.6000001430511,
+          "typingMedianMs": 12.200000047683716,
+          "typingMinMs": 8.399999856948853,
+          "typingMaxMs": 15.900000095367432,
+          "longTaskDurationsMs": [
+            331
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 60146
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.219376
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.315303
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.578104
+            },
+            {
+              "name": "TaskDuration",
+              "value": 3.990514
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 42063564
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 104153088
+            }
+          ]
+        },
+        {
+          "repeat": 2,
+          "cache": "cold",
+          "readyMs": 1657.5,
+          "historyClickTwoFrameMs": 750.2999999523163,
+          "historyDriverInclusiveMs": 1140.1000001430511,
+          "typingMedianMs": 12.200000047683716,
+          "typingMinMs": 10.700000047683716,
+          "typingMaxMs": 20.799999952316284,
+          "longTaskDurationsMs": [
+            339
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 58523
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.271139
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.313063
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.565738
+            },
+            {
+              "name": "TaskDuration",
+              "value": 3.962327
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 31759144
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 109457408
+            }
+          ]
+        },
+        {
+          "repeat": 2,
+          "cache": "warm",
+          "readyMs": 1131.7999999523163,
+          "historyClickTwoFrameMs": 789.7000000476837,
+          "historyDriverInclusiveMs": 1130.7999999523163,
+          "typingMedianMs": 12.699999809265137,
+          "typingMinMs": 10.100000143051147,
+          "typingMaxMs": 15.200000047683716,
+          "longTaskDurationsMs": [
+            328
+          ],
+          "domNodes": 4285,
+          "browserMetrics": [
+            {
+              "name": "Nodes",
+              "value": 69950
+            },
+            {
+              "name": "LayoutDuration",
+              "value": 0.217641
+            },
+            {
+              "name": "RecalcStyleDuration",
+              "value": 0.317083
+            },
+            {
+              "name": "ScriptDuration",
+              "value": 0.578172
+            },
+            {
+              "name": "TaskDuration",
+              "value": 3.929647
+            },
+            {
+              "name": "JSHeapUsedSize",
+              "value": 32940312
+            },
+            {
+              "name": "JSHeapTotalSize",
+              "value": 113737728
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

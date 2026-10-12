@@ -69,6 +69,10 @@ test('short landscape conversations follow results and can return from older con
   // Simulate a late text-metric change without another stream/data event.
   // The response must stay followed when larger text changes its layout.
   const layoutGap = await scroller.evaluate(el => {
+    // Force the browser-independent adverse case. Native scroll anchoring may
+    // already follow this reflow; this check specifically exercises Relay's
+    // ResizeObserver recovery when anchoring cannot keep the latest in view.
+    el.style.overflowAnchor='none';void (el as HTMLElement).offsetHeight;
     const before = { height: el.scrollHeight, top: el.scrollTop, viewport: el.clientHeight };
     for (const paragraph of el.querySelectorAll<HTMLElement>('.message-assistant .markdown p')) {
       paragraph.style.fontSize = '32px'; paragraph.style.lineHeight = '2';

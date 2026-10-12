@@ -4,7 +4,7 @@
   "updatedAt": "2026-10-12",
   "baselineCommit": "9d563bc973dbcc177921ab918db88561c8280e48",
   "branch": "modernization/final-evolution",
-  "currentMilestone": "0.1.3: router paused; authenticated replay/context fixes pushed; unchanged coding repeat passes independent/publication/rollback; UI performance and hosted fixture regression in progress",
+  "currentMilestone": "0.1.3: router paused; recovery fixes/live coding repeat pushed; measured conversation rendering improves warm phone-layout median22.1percent with verified focus/history",
   "requirementIds": [
     "A01",
     "A02",
@@ -84,7 +84,9 @@
     "Direct exact-path nested/empty file creation and collision-safe drafts; saved/deleted editors acknowledge before background refresh;31affected browser cases plus short-landscape pending-write verification.",
     "Older superseded structured read/test receipt text can shorten under existing context budget; exact actions, latest receipts and complete durable records preserved.",
     "Authenticated per-session/host activity replay namespace resets obsolete cursors without changing authorization; native HTTP and browser recovery pass.",
-    "coding-vwOFL5 unchanged live repeat6calls/218119ms passes fresh independent9/9, published9/9 and exact rollback; no compaction event; zero sessions after shutdown."
+    "coding-vwOFL5 unchanged live repeat6calls/218119ms passes fresh independent9/9, published9/9 and exact rollback; no compaction event; zero sessions after shutdown.",
+    "Reproducible UI lab with cold/warm desktop and4xCPU phone-layout; native older-message layout lowers warm-phone median1452.3to1131.8ms, latest content/focus/drafts preserved.",
+    "Hosted personal-files retired-copy assertion reproduced then replaced with exact empty count/list/document state and retained permission checks;7affected cases pass."
   ],
   "changedFiles": [
     ".github/workflows/native-integrations.yml",
@@ -286,7 +288,7 @@
     "docs/final-evolution/model-studio-plan.md",
     "docs/validation.md"
   ],
-  "testStatus": "Full strict1,418passed/one skip132files303.13s; production build;12mobile/Workbench cases1.6min and15conversation/approval cases1.9min.",
+  "testStatus": "Last backend strict full1,418passed/one skip; current frontend strict build/final types,22affected browser cases then3final focus/landscape cases;12final performance navigations pass.",
   "lastPassingCommands": [
     "npm.cmd ci",
     "npm.cmd run check (baseline)",
@@ -401,7 +403,7 @@
     "Owner has Android phone; current deployed0.1.2 mobile-data sign-in succeeded after tunnel restart. Modernization physical-device workflows remain untested.",
     "Second authorized Companion computer not established; cloud/email/calendar test accounts not configured (owner confirmed)."
   ],
-  "nextActionableWorkItem": "Fix reproduced hosted personal-files empty-state assertion, retain UI baseline/profile measurements and continue remaining non-router A-G.",
+  "nextActionableWorkItem": "Implement reviewed professional source-editor plan, then continue source Git integration, agent/collaboration reliability, Companion/integrations and remaining A-G. Monitor hosted582db6b/current gates.",
   "remainingDependencies": [
     "A native recovery/restore/retention",
     "B full redesign",
@@ -442,7 +444,7 @@
     "MCP/Settings/notifications: six old-build behavior reds and missing Settings entry; fresh strict build and39/39browser cases pass4.9min; initial20run18pass/two corrected failures retained.",
     "Managed authorization:10negative red/1positive control;72focused pass; npm.cmd run check1375passed/one skip130files286.43s; production build passes."
   ],
-  "latestProductCommit": "a8bded9",
+  "latestProductCommit": "582db6b",
   "latestHostedStatus": {
     "run": 38206913456,
     "host": "in progress on a8bded9",

@@ -16,6 +16,7 @@
     "package": "node scripts/notices.mjs && node scripts/package.mjs",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "benchmark:ui": "playwright test --config playwright.performance.config.ts",
     "check": "npm run typecheck && npm test"
   },
   "dependencies": {

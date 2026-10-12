@@ -27,6 +27,8 @@ Current Windows and Ubuntu WSL evolution verification: **1,194 deterministic tes
 
 ## Commands
 
+Use `npm.cmd run benchmark:ui` only after a production build and with no other fixture/heavy model workload. It serves4319 with disposable authenticated synthetic history; label outputs with RELAY_PERFORMANCE_LABEL. These are browser lab proxies, never physical Android or field INP. Older messages may use native content visibility; keep latest two normally rendered. Focus revealing earlier content pauses following; focusing visible latest copy must not. Full22affected browser cases then3final focus cases, final types/build and12navigation measurements pass.
+
 Activity replay uses an opaque per-Store/session scope, never authorization. Reset obsolete cursors and transient buffers; resume only applied batches. Preserve account filters/live session checks and stream limits. Context fitting may shorten only superseded exact-operation read/test receipt text, never actions/latest results/opaque continuity/required review evidence. Full strict1,418tests/one skip, production build and27affected browser cases pass. The unchanged coding trial still paused; its9/9diagnostic is not end-to-end success.
 
 ProjectFiles acknowledges exact file creation/save/deletion before background list refresh. Use the existing PUT expectedHash:null for new text files, retain collision/draft/busy guards, and seed actual returned file hashes. NewProjectFile shares the responsive editor footer. Strict build,31affected browser cases plus1dark short-landscape guarded-create case and final types pass; no new backend authority or dependency.

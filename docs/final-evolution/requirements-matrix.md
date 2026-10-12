@@ -44,7 +44,7 @@ Status vocabulary: **Complete and verified**, **Implemented but insufficiently v
 | F05 | Useful schedules/notifications/conditional automation (§10) | Partially implemented | Mutation grants/receipts first, missed-run and recovery acceptance |
 | G01 | All fourteen real-world scenarios (§21) | Partially implemented | See acceptance-results; fixture/live evidence separated |
 | G02 | Native OS/hardware and packaging (§11,22) | Implemented but insufficiently verified | Windows/Linux/macOS functional claims and signed release limits |
-| G03 | Performance budgets and comparable measurements (§23) | Not implemented | Startup/input/history/discovery/load/tools/queue/memory/bundle/retrieval |
+| G03 | Performance budgets and comparable measurements (§23) | Partially implemented | Reproducible production-UI long-conversation cold/warm/typing/history measurements and raw evidence on desktop and throttled phone layout. Final warm-phone median improves22.1percent with preserved functional checks. Physical/field, broader UI and backend/model/runtime matrix remain open. |
 | G04 | Threat-model review and security regressions (§11) | Partially implemented | Full boundary inventory and actionable finding closure |
 | G05 | Branch protection and license (§22) | Blocked by unavailable external resources | main currently unprotected; owner approval required for license/admin policy |
 | G06 | Final evidence, screenshots, comparison and scorecard (§25,27) | Not implemented | Honest evidence-based evaluation; no invented scores or unfinished green rows |

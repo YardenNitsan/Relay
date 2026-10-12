@@ -2,6 +2,14 @@
 
 Status: open, internal engineering review; no independent penetration-test claim.
 
+## Managed-file final authorization, 12 October
+
+Before adding parent/child integration, source review found durable authorization missing after asynchronous managed-file preparation. Ten real-file negative regressions reproduced writes/deletions after account disablement, session revocation or task expiry; manual editing, rollback, temporary-file publication and importing synthetic sandbox output had the same gap. The authorized write/delete control passed against the old implementation.
+
+`replaceText` now invokes its optional durable authority callback immediately before rename as well as unlink, followed by the synchronous cancellation/stop guard. Ordinary task writes and sandbox result publication pass `authorizeExecution`; manual editor/upload preserves the live caller callback; the checkpoint rollback API supplies fresh session/workspace and inactive-task checks inside the broker and before each file change. Storage budgets, exact-content conflicts and prepared uncertain-effect checkpoints remain intact.
+
+All72focused cases pass; complete strict check **1375passed/one platform skip across130files in286.43s**, followed by a passing production build. Logs: managed-authorization-red.log (10fail/1pass), managed-authorization-focused.log, managed-authorization-check.log and managed-authorization-build.log. This is a fresh boundary check, not an atomic PostgreSQL/filesystem transaction or an all-or-nothing multi-file rollback guarantee. Synthetic sandbox output proves the publication boundary only. Hosted/native follow-up remains separate.
+
 B06 changes presentation and deliberate-navigation guards only. Dirty editor state survives close, command shortcut, responsive navigation and failed background refetch; forced session/account teardown still unmounts private content. Busy guards do not grant mutation authority. Existing private workspace, source-publication and browser-folder APIs remain authoritative. Internal focused reviews found and fixed draft/focus defects; broader security review remains open.
 
 D01 classification remains advisory and uses only the bounded original objective. Hard provider/account/privacy/context/pricing/hardware eligibility executes independently. Focused Hebrew repair tests confirm an improved intent hint cannot override required local selection, local-only policy, absent provider grants or rejected hardware admission. Output allowance is unchanged. No external classifier or new dependency is installed. Internal source review found no actionable new boundary defect; this is not a full routing security assessment.

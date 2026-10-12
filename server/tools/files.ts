@@ -52,7 +52,7 @@ export async function ensureParent(root: string, path: string): Promise<void> {
   }
 }
 
-export async function replaceText(root: string, path: string, content: string | null, expectedHash: string | null, guard: Guard, beforeDelete?:()=>Promise<void>): Promise<void> {
+export async function replaceText(root: string, path: string, content: string | null, expectedHash: string | null, guard: Guard, beforeMutation?:()=>Promise<void>): Promise<void> {
   safePath(path); if (content !== null) boundedText(content);
   guard();
   if (hashOrNull(await readText(root, path, true)) !== expectedHash) throw new Error(`Content conflict: ${path} changed since it was read`);
@@ -60,7 +60,7 @@ export async function replaceText(root: string, path: string, content: string | 
     const target = await inspectPath(root, path);
     // Deletion never creates missing parents. Durable authorization must be
     // checked after the asynchronous pre-read/traversal, immediately at unlink.
-    await beforeDelete?.();guard(); await unlink(target);
+    await beforeMutation?.();guard(); await unlink(target);
     if (await readText(root, path, true) !== null) throw new Error('File deletion verification failed');
     return;
   }
@@ -72,7 +72,10 @@ export async function replaceText(root: string, path: string, content: string | 
     const handle = await open(temp, 'wx', 0o600); temporaryExists = true;
     try { await handle.writeFile(content, 'utf8'); await handle.sync(); } finally { await handle.close(); }
     if (hashOrNull(await readText(root, path, true)) !== expectedHash) throw new Error(`Content conflict: ${path} changed before commit`);
-    await inspectPath(root, path); guard();
+    await inspectPath(root, path);
+    // Preparation and fsync can outlive the original session/grant check.
+    // Reauthorize at publication, then recheck synchronous cancellation.
+    await beforeMutation?.();guard();
     await rename(temp, target); temporaryExists = false;
     if (hashOrNull(await readText(root, path)) !== sha256(content)) throw new Error('Written content verification failed');
   } finally { if (temporaryExists) await unlink(temp).catch(() => undefined); }

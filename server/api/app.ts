@@ -234,7 +234,12 @@ export async function createApp(services:Services,options:AppOptions={}):Promise
     if(!record.options.workspaceId)throw new AppError('WORKSPACE_REQUIRED','This task has no authorized workspace',403);
     const workspace=await workspaceScope(store.db,record.options.workspaceId);authorizeWorkspace(p,record.options.workspaceId,workspace);
     if(workspace?.ownerUserId!==p.user.id&&p.user.permissions.maxAccess==='read_only')throw new AppError('READ_ONLY','Your current policy does not permit checkpoint changes',403);
-    const body=z.object({checkpointId:z.string().uuid()}).parse(request.body);await engine.mutateWorkspace(record.options.workspaceId,()=>broker.revert(record.id,body.checkpointId));await store.audit(record.id,'CHECKPOINT_REVERTED',{checkpointId:body.checkpointId,userId:principal(request).user.id});return {reverted:true};
+    const authorize=async()=>{
+      await workspaceAccess(p,record.options.workspaceId!,true);
+      const current=await store.task(record.id);
+      if(!['completed','paused','cancelled','failed','waiting_for_user'].includes(current.status))throw new AppError('TASK_ACTIVE','Stop the task before reverting a checkpoint',409);
+    };
+    const body=z.object({checkpointId:z.string().uuid()}).parse(request.body);await engine.mutateWorkspace(record.options.workspaceId,()=>broker.revert(record.id,body.checkpointId,authorize));await store.audit(record.id,'CHECKPOINT_REVERTED',{checkpointId:body.checkpointId,userId:principal(request).user.id});return {reverted:true};
   });
   app.post('/api/approvals/:id',async request=>{
     const {decision}=z.object({decision:z.enum(['allow_once','allow_task','denied'])}).parse(request.body);

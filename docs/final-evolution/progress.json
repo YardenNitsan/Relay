@@ -4,7 +4,7 @@
   "updatedAt": "2026-10-12",
   "baselineCommit": "9d563bc973dbcc177921ab918db88561c8280e48",
   "branch": "modernization/final-evolution",
-  "currentMilestone": "0.1.3: router paused; supporting Studio checkpoint deaaec9 pushed; MCP/Settings/notification fixes pass39browser cases and strict build; managed-file revocation boundary regression next",
+  "currentMilestone": "0.1.3: router paused; UI checkpoints deaaec9/d39347f pushed; managed mutation authority fixed with10red/72focused passes,1375fulltests/one skip and strict build; visible-viewport dialog regressions next",
   "requirementIds": [
     "A01",
     "A02",
@@ -432,9 +432,10 @@
     "npm.cmd run check: 1356passed/one skip,128files,284.56s; npm.cmd run build passes with catalog and Agent Studio source; browser verification separate.",
     "npm.cmd test:1364passed/one platform skip across129files,287.79s; npm.cmd run build passes. supporting-studio-unit.log/supporting-studio-build.log",
     "npm.cmd run test:e2e: supporting-studio-browser.log80/106pass; corrected affected rerun42/42pass5.7min. Prior68case64pass/fourHistoryfocus failures now fixed and verified.",
-    "MCP/Settings/notifications: six old-build behavior reds and missing Settings entry; fresh strict build and39/39browser cases pass4.9min; initial20run18pass/two corrected failures retained."
+    "MCP/Settings/notifications: six old-build behavior reds and missing Settings entry; fresh strict build and39/39browser cases pass4.9min; initial20run18pass/two corrected failures retained.",
+    "Managed authorization:10negative red/1positive control;72focused pass; npm.cmd run check1375passed/one skip130files286.43s; production build passes."
   ],
-  "latestProductCommit": "deaaec9",
+  "latestProductCommit": "d39347f",
   "latestHostedStatus": {
     "run": 38198881075,
     "host": "All three OS host checks pass on deaaec9",

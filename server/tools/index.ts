@@ -125,7 +125,7 @@ export class ToolBroker {
       guard();await authorize?.();const {root,record}=await this.workspace(workspaceId);
       const before=await readText(root,path,true);
       if(hashOrNull(before)!==expectedHash)throw new AppError('FILE_CONFLICT','This file changed. Reload it before replacing or deleting it.',409);
-      await this.commit({taskId:`manual-${randomUUID()}`,workspaceId},root,[{path,before,after:content}],guard);
+      await this.commit({taskId:`manual-${randomUUID()}`,workspaceId},root,[{path,before,after:content}],guard,authorize);
       record.fileCount=(await listTextFiles(root)).length;
       if(this.durableStore)await this.durableStore.saveWorkspace(record);
       return {path,sha256:hashOrNull(content)};
@@ -209,7 +209,7 @@ export class ToolBroker {
         const path = args.path as string; const before = await readText(root, path, true);
         if (hashOrNull(before) !== args.expectedHash) throw new Error('Content conflict: current file differs from expectedHash');
         const after = name === 'file_delete' ? null : args.content as string;
-        const checkpoint = await this.commit(context, root, [{ path, before, after }], guard);
+        const checkpoint = await this.commit(context, root, [{ path, before, after }], guard,()=>this.authorizeExecution(context));
         return { content: JSON.stringify({ path, sha256: hashOrNull(after), checkpointId: checkpoint.id }), evidence: [{ kind: 'file_content', summary: name === 'file_delete' ? `Verified deletion of ${path}` : `Verified written content of ${path}`, passed: true, details: { path, sha256: hashOrNull(after), checkpointId: checkpoint.id } }] };
       }
       return this.terminal(context, root, args.argv as string[], (args.timeoutSeconds as number | undefined) ?? 30, guard, args.profile as DevelopmentProfileId|undefined);
@@ -235,13 +235,13 @@ export class ToolBroker {
     for (const entry of entries) { if (entry.after === null) contents.delete(entry.path); else contents.set(entry.path, entry.after); }
     if (contents.size > FILE_COUNT_LIMIT || [...contents.values()].reduce((sum, value) => sum + Buffer.byteLength(value), 0) > WORKSPACE_LIMIT) throw new Error('Workspace capacity limit exceeded');
   }
-  private async commit(context: Pick<ToolContext, 'taskId' | 'workspaceId'>, root: string, entries: ChangeEntry[], guard: Guard): Promise<Checkpoint> {
+  private async commit(context: Pick<ToolContext, 'taskId' | 'workspaceId'>, root: string, entries: ChangeEntry[], guard: Guard, authorize?:()=>Promise<void>): Promise<Checkpoint> {
     await this.capacity(root, entries); guard();
     const checkpoint: Checkpoint = { id: randomUUID(), taskId: context.taskId, workspaceId: context.workspaceId!, createdAt: new Date().toISOString(), state: 'prepared', entries };
     await new StorageBudget(this.store.root).assertCapacity(2*Buffer.byteLength(JSON.stringify(checkpoint))+entries.reduce((sum,entry)=>sum+Buffer.byteLength(entry.after??''),2*1024*1024));guard();
     await this.store.saveCheckpoint(checkpoint);
     try {
-      for (const entry of entries) await replaceText(root, entry.path, entry.after, hashOrNull(entry.before), guard);
+      for (const entry of entries) await replaceText(root, entry.path, entry.after, hashOrNull(entry.before), guard,authorize);
       checkpoint.state = 'committed'; await this.store.saveCheckpoint(checkpoint);
       const { record } = await this.workspace(context.workspaceId!); record.fileCount = (await listTextFiles(root)).length; await this.store.saveWorkspace(record);
       return checkpoint;
@@ -259,7 +259,7 @@ export class ToolBroker {
       const oldValue = before.get(path) ?? null; const newValue = after.get(path) ?? null;
       if (oldValue !== newValue) entries.push({ path, before: oldValue, after: newValue });
     }
-    const checkpoint = entries.length ? await this.commit(context, root, entries, guard) : null;
+    const checkpoint = entries.length ? await this.commit(context, root, entries, guard,()=>this.authorizeExecution(context)) : null;
     await rm(await inspectPath(this.store.root,`runs/${stage.split(/[\\/]/).at(-1)}`),{recursive:true,force:true,maxRetries:3,retryDelay:25});
     return { content: JSON.stringify({ ...command, checkpointId: checkpoint?.id ?? null, filesChanged: entries.length }), evidence: [{ kind: 'command_exit', summary: `Isolated command exited ${command.exitCode}`, passed: command.exitCode === 0, details: { argv, exitCode: command.exitCode, durationMs: command.durationMs, truncated: command.truncated, imageId:command.imageId, toolchain:command.toolchain } }, ...(checkpoint ? [{ kind: 'file_content', summary: `Verified ${entries.length} changed files`, passed: true, details: { checkpointId: checkpoint.id } }] : [])] };
   }
@@ -280,16 +280,16 @@ export class ToolBroker {
       return result;
     });
   }
-  async revert(taskId: string, checkpointId: string): Promise<void> {
+  async revert(taskId: string, checkpointId: string, authorize?:()=>Promise<void>): Promise<void> {
     const guard = this.guard();
     return this.serial(async () => {
-      guard(); const checkpoint = await this.store.checkpoint(checkpointId);
+      guard();await authorize?.();guard(); const checkpoint = await this.store.checkpoint(checkpointId);
       if (checkpoint.taskId !== taskId) throw new Error('Checkpoint belongs to another task');
       if (checkpoint.state !== 'committed') throw new Error('Checkpoint is not a completed mutation; inspect interrupted operations before recovery');
       const { root, record } = await this.workspace(checkpoint.workspaceId);
       for (const entry of checkpoint.entries) if (hashOrNull(await readText(root, entry.path, true)) !== hashOrNull(entry.after)) throw new Error(`Content conflict: ${entry.path} changed after the checkpoint`);
       await new StorageBudget(this.store.root).assertCapacity(Buffer.byteLength(JSON.stringify(checkpoint))+checkpoint.entries.reduce((sum,entry)=>sum+Buffer.byteLength(entry.before??''),2*1024*1024));guard();
-      for (const entry of [...checkpoint.entries].reverse()) await replaceText(root, entry.path, entry.before, hashOrNull(entry.after), guard);
+      for (const entry of [...checkpoint.entries].reverse()) await replaceText(root, entry.path, entry.before, hashOrNull(entry.after), guard,authorize);
       checkpoint.state = 'reverted'; await this.store.saveCheckpoint(checkpoint);
       record.fileCount = (await listTextFiles(root)).length; await this.store.saveWorkspace(record);
     });

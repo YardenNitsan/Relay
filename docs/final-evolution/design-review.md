@@ -106,3 +106,7 @@ Inspected [MCP phone document](evidence/mcp-studio-390-dark.png), [desktop conne
 ## Source folder review, 12 October
 
 Inspected the actual320px light and1440px dark publication views. Exact planned folder names and retained-folder rollback scope precede the file selector; the bounded list and wrapped paths preserve phone width. [Phone review](evidence/publication-folders-320-light.png) shows both nested folders and the current deletion diff. All5source-publication browser workflows pass, with scoped axe checks and real source/rollback verification. The desktop capture is scrolled to the file diff; it is not a full-page folder-list capture. Physical-device and broader visual completion remain outstanding.
+
+## Direct project authoring
+
+Inspected [320px file creation](evidence/project-new-file-320-light.png), desktop1440px and [844x390 dark editor](evidence/project-new-file-844-dark.png). Phone uses a single document and separate reachable action footer; desktop retains the searchable file index. The short view scrolls path and content without moving Create/Cancel out of reach. Actual draft, collision, pending mutation, saved acknowledgement and accessibility checks pass within31affected cases plus the focused landscape case. Native keyboard and full professional code-editor capabilities remain separate work.

@@ -53,6 +53,9 @@
 .project-files { display: grid; grid-template-columns: minmax(180px, 30%) minmax(0, 1fr); flex: 1; min-width: 0; min-height: 0; }
 .project-file-index { padding: var(--space-4); border-right: 1px solid var(--line); overflow: auto; min-width: 0; }
 .project-file-count { margin: var(--space-3) 0; color: var(--muted); font-size: var(--text-caption); }
+.project-new-file-action { width: 100%; margin-bottom: var(--space-4); min-height: var(--target-touch); }
+.project-new-file .project-new-path { flex: none; min-height: auto; margin-block: var(--space-3) var(--space-4); }
+.project-new-path input { width: 100%; min-height: var(--target-touch); margin-top: var(--space-2); font-family: var(--mono); }
 .project-file-list { list-style: none; margin: 0; padding: 0; }
 .project-file-list button { display: flex; align-items: flex-start; gap: var(--space-2); width: 100%; min-height: var(--target-touch); text-align: left; padding: var(--space-3) var(--space-2); border: 0; border-radius: var(--radius-inset); background: transparent; color: var(--text); }
 .project-file-list button svg { margin-top: 2px; flex-shrink: 0; color: var(--muted); }

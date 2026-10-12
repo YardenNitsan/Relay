@@ -27,6 +27,8 @@ Current Windows and Ubuntu WSL evolution verification: **1,194 deterministic tes
 
 ## Commands
 
+ProjectFiles acknowledges exact file creation/save/deletion before background list refresh. Use the existing PUT expectedHash:null for new text files, retain collision/draft/busy guards, and seed actual returned file hashes. NewProjectFile shares the responsive editor footer. Strict build,31affected browser cases plus1dark short-landscape guarded-create case and final types pass; no new backend authority or dependency.
+
 Original Publication applies returned durable receipts before background history refresh. Successful apply/reconcile callbacks must not await history; cancel obsolete reads before a mutation and retain fresh-receipt inspection after failures. A held phone history GET reproduced disabled rollback; fresh strict build and all5real-file publication browser cases pass after the fix.
 
 Managed child integration uses `Engine.mutateWorkspaces` to reserve child and immutable parent before any await. Require the authentic workspace_creation baseline, reject stale whole-snapshot digests and same-file conflicts, and use per-effect authorization. Prepared parent mutations block integration even from siblings. Rollback has its own prepared checkpoint with optional revertsCheckpointId; reconciliation verifies a complete before/after state and writes no project files. Keep original-source publication separate. Full1399tests/one skip, strict build and31affected browser cases pass;8new browser cases exercise these workflows. See managed-branches.md and branch-integration-plan.md for limits.

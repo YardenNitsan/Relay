@@ -6,9 +6,9 @@ Use the existing managed-file PUT with `expectedHash: null`, which refuses colli
 
 The New file action opens a focused editor pane on phone and desktop. Show the managed destination, relative path, text contents and create/cancel actions. Preserve draft and in-flight guards across navigation. Empty files are valid. After success, seed the exact document and list caches before background refresh, then open the saved editor. Existing save/delete use the same acknowledgement rule and preserve server conflict errors. Deletion removes the document from the local list only after the server succeeds.
 
-- [ ] Browser reds: nested empty creation on phone/desktop, exact-path collision preserves existing contents/draft, dirty navigation guard, held list refresh does not trap successful save/delete/create.
-- [ ] Implement a small NewProjectFile component and ProjectFiles cache acknowledgements; reuse semantic tokens, editor surfaces and touch/focus behavior.
-- [ ] Fresh strict production build, affected project/publication browser checks, real UI captures and accessibility checks.
-- [ ] Record accurate evidence, review and commit/push; continue the non-router backlog.
+- [x] Browser reds: nested empty creation on phone/desktop, exact-path collision preserves existing contents/draft, dirty navigation guard, held list refresh does not trap successful save/delete/create.
+- [x] Implement a small NewProjectFile component and ProjectFiles cache acknowledgements; reuse semantic tokens, editor surfaces and touch/focus behavior.
+- [x] Fresh strict production build, affected project/publication browser checks, real UI captures and accessibility checks.
+- [x] Record accurate evidence, review and commit/push; continue the non-router backlog.
 
 Not included: binary upload, standalone empty directory creation, source Git history, actual model coding reliability or physical phone certification.

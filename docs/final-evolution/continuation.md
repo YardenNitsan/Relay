@@ -33,7 +33,9 @@ Publication acknowledgement follow-up now passes strict build and all5source-pub
 
 Reviewed new-directory publication is now implemented and verified:full1408tests/one skip before the final rollback-ancestor correction; final38publication/reservation tests, strict build and5real-file browser cases pass. Rollback retains folders and later owner contents; see publication-directories-plan.md.
 
-Immediate next: project-file creation and acknowledged save/delete UI (project-file-creation-plan.md;3missing-action browser reds retained), real source Git/history workflows, coding reliability, safe multi-agent cooperation, Companion, authorized integrations, project intelligence, security/recovery and performance. Modernization is still undeployed; physical Android keyboard/remote workflows and real external accounts remain outstanding. Do not call any of these checkpoints final product completion.
+Project file authoring and acknowledged save/delete are now verified:31affected browser cases plus a separate dark short-landscape pending-write case, strict build and final types pass. Initial3missing-action reds and held-refresh editor red retained.
+
+Immediate next: repeat real model-driven coding acceptance without changing the fixed corpus/grader/reserves, then real source Git/history workflows, coding reliability, safe multi-agent cooperation, Companion, authorized integrations, project intelligence, security/recovery and performance. Modernization is still undeployed; physical Android keyboard/remote workflows and real external accounts remain outstanding. Do not call any of these checkpoints final product completion.
 
 ## Router evidence and limitations
 

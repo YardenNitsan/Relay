@@ -4,7 +4,7 @@
   "updatedAt": "2026-10-12",
   "baselineCommit": "9d563bc973dbcc177921ab918db88561c8280e48",
   "branch": "modernization/final-evolution",
-  "currentMilestone": "0.1.3: router paused; reviewed nested-folder source publication passes final focused/build/browser checks; project file creation and editor acknowledgements next",
+  "currentMilestone": "0.1.3: router paused; reviewed source folders committed; direct project file authoring and acknowledged edits pass strict build and32affected browser cases",
   "requirementIds": [
     "A01",
     "A02",
@@ -80,7 +80,8 @@
     "Phone offline drafts and authenticated foreground SSE renewal pass3browser simulations, including blocked cursor storage. Physical Android remains outstanding.",
     "Eight real Engine/broker/file analysis-role regressions pass; scripted provider proposals are not live agent intelligence evidence.",
     "Reviewed managed child-to-parent file integration with immutable baseline, dual reservations, exact stale-review digest, per-effect authority, conservative conflicts, selected files, durable rollback and complete-state reconciliation;17broker tests plus API/reservation and8real-browser cases.",
-    "Reviewed version3 source-folder creation, ordered native-identity receipts, all-ancestor checks including rollback, retained-folder recovery scope and real phone/desktop file publication/rollback."
+    "Reviewed version3 source-folder creation, ordered native-identity receipts, all-ancestor checks including rollback, retained-folder recovery scope and real phone/desktop file publication/rollback.",
+    "Direct exact-path nested/empty file creation and collision-safe drafts; saved/deleted editors acknowledge before background refresh;31affected browser cases plus short-landscape pending-write verification."
   ],
   "changedFiles": [
     ".github/workflows/native-integrations.yml",
@@ -282,7 +283,7 @@
     "docs/final-evolution/model-studio-plan.md",
     "docs/validation.md"
   ],
-  "testStatus": "Full strict check1408passed/one skip131files301.15s before final rollback-ancestor fix; final38publication/reservation cases59.51s, strict build and5publication browser cases pass. Three new-file UI red cases are pending implementation.",
+  "testStatus": "Backend full1408passed/one skip before final directory rollback-ancestor fix; final38publication/reservation tests pass. Project UI strict build,31affected browser cases4.1min plus1landscape case5.6s and final types pass.",
   "lastPassingCommands": [
     "npm.cmd ci",
     "npm.cmd run check (baseline)",
@@ -396,7 +397,7 @@
     "Owner has Android phone; current deployed0.1.2 mobile-data sign-in succeeded after tunnel restart. Modernization physical-device workflows remain untested.",
     "Second authorized Companion computer not established; cloud/email/calendar test accounts not configured (owner confirmed)."
   ],
-  "nextActionableWorkItem": "Implement project-file-creation-plan.md; retain new-file browser reds and verify held-refresh acknowledgement, then continue non-router A-G.",
+  "nextActionableWorkItem": "Repeat actual fixed-corpus model coding acceptance without changing grader/reserves, retain outcomes and continue remaining non-router A-G.",
   "remainingDependencies": [
     "A native recovery/restore/retention",
     "B full redesign",
@@ -437,13 +438,13 @@
     "MCP/Settings/notifications: six old-build behavior reds and missing Settings entry; fresh strict build and39/39browser cases pass4.9min; initial20run18pass/two corrected failures retained.",
     "Managed authorization:10negative red/1positive control;72focused pass; npm.cmd run check1375passed/one skip130files286.43s; production build passes."
   ],
-  "latestProductCommit": "7edc213",
+  "latestProductCommit": "71fa29c",
   "latestHostedStatus": {
-    "run": 38202842049,
-    "host": "In progress on0d28245",
-    "browser": "In progress on0d28245; previousd30fb7b all9host/browser gates passed38200429679",
-    "nativeRun": 38202842051,
-    "native": "success on0d28245"
+    "run": 38204501666,
+    "host": "In progress on71fa29c",
+    "browser": "In progress on71fa29c; previous broad0d28245/7edc213 still pending",
+    "nativeRun": 38204501646,
+    "native": "success on71fa29c"
   },
   "semanticRouterWork": {
     "status": "paused_by_owner",

@@ -2,6 +2,19 @@
 
 Status: **INCOMPLETE — CONTINUATION REQUIRED**. Started 2026-10-12.
 
+## Superseding owner scope: final web and Android completion
+
+The latest owner instruction narrows all remaining work to the complete Dispatch web frontend and native Kotlin/Compose app. No new agent improvements, standalone coding benchmarks, AI routing, unrelated backend features or other roadmap phase. Earlier milestones below remain historical; incomplete agent-cooperation items are no longer a continuation task. Backend changes require a direct secure web/native integration need.
+
+Current implementation sequence:
+
+1. Resolve exact published-head browser failures while preserving useful assertions and security boundaries. Correction3346190 passed all12 host/browser OS jobs; subsequent source changes require fresh published-head acceptance.
+2. Finish Dispatch conversation/composer/execution presentation, then Projects, Models and supporting account/configuration surfaces; preserve drafts, guarded mutations, permissions and real actions. Verify actual rendered desktop/tablet/phone screens in both themes.
+3. Verify the native client against an isolated real authenticated LAN HTTPS backend, then complete secure enrollment/remote flow, native chat/history/stream/task/approval/project/reconnection/notification workflows and original responsive Compose presentation. Do not treat a JVM fixture as physical or installed-app acceptance.
+4. Establish an isolated test instance for the owner's PC, and use only a configured authorized trusted LAN/remote route for phone access. Missing certificate trust, Cloudflare OAuth/client configuration or physical-device access are explicit external gates, not reasons to bypass security. Do not replace production or expose a new public endpoint.
+5. Run web/native/security/CI acceptance, build and install the final APK with stable signing/checksum, verify available URLs, update all relevant README/setup/security/access/troubleshooting/release/acceptance/continuation documents, remove only proven obsolete UI code, review/commit/push intended changes and verify remote HEAD.
+6. Deliver exact commit, verified web URLs, real APK/checksum/instructions and limitations, then STOP development. If a session limit intervenes, commit/push verified progress and mark incomplete; do not claim completion.
+
 > Execution: apply the executing-plans workflow with independent domain research and final review. The owner explicitly authorizes continuous implementation, three rendered concepts, autonomous concept selection, coherent commits and reviewed pushes. No additional design approval is inferred as necessary. This plan organizes the owner's complete directive; it does not reduce its acceptance criteria.
 
 ## Goal and architecture

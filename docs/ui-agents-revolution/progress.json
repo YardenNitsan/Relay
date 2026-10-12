@@ -5,36 +5,40 @@
   "branch": "modernization/ui-agents-revolution",
   "routing": "out_of_scope_unchanged",
   "production": "unchanged",
+  "currentScope": "FINAL_WEB_AND_ANDROID_ONLY_STOP_AFTER_VERIFIED_DELIVERY",
+  "agentImprovements": "out_of_scope_by_latest_owner_instruction",
   "phases": {
     "1_audit_research": "initial_audit_and_research_complete",
     "2_three_concepts": "three_prototypes_reviewed_dispatch_selected",
-    "3_core_web": "implemented_reviewed_local_regressions_hosted_ci_pending",
-    "4_essential_web": "work_and_agents_rebuilt_other_surfaces_pending",
-    "5_agents": "capability_preflight_and_reviewer_handoff_fixed_further_cooperation_pending",
+    "3_core_web": "implemented_local_and_prior_hosted_ci_pass",
+    "4_essential_web": "dispatch_conversation_projects_models_agents_implemented_local_acceptance",
+    "5_agents": "prior_G1_G2_preserved_no_further_agent_work_authorized",
     "6_contracts": "versioned_task_feed_implemented_mobile_contracts_partial",
     "7_android_architecture": "native_kotlin_compose_project_built",
-    "8_android_features": "lan_preview_built_connected_acceptance_pending",
-    "9_remaining_web": "existing_features_preserved_full_redesign_pending",
-    "10_reliability": "automated_regressions_pass_real_model_trials_pending",
+    "8_android_features": "lan_0.2_attachments_encrypted_drafts_29jvm_pass_remote_notifications_incomplete",
+    "9_remaining_web": "supporting_surfaces_implemented_111plus24plus14_corrected_browser_pass",
+    "10_reliability": "prior_two_unchanged_live_trials_pass_no_further_benchmarks_authorized",
     "11_acceptance": "partial_see_acceptance_ledger",
     "12_apk": "testing_apk_built_installed_launched_in_emulator",
     "13_handoff": "in_progress_full_release_incomplete"
   },
   "apk": {
-    "path": "release/android/relay-0.1.0-lan-preview-debug.apk",
-    "sha256": "9c253dc1e642d4b41ad4def9d4cf9a8f2ca42362c34172bf8452881b69733a8f",
-    "bytes": 16713796,
-    "version": "0.1.0-lan-preview",
-    "versionCode": 1,
+    "path": "release/android/relay-0.2.0-lan-preview-debug.apk",
+    "sha256": "4d34e0df0c18bd96d3167c3a72d9a473ed22308a0161d31585facf937a1a649a",
+    "bytes": 12645234,
+    "version": "0.2.0-lan-preview",
+    "versionCode": 2,
     "minSdk": 26,
     "signing": "existing_host_debug_identity_not_production_release",
-    "authenticatedHostVerified": false
+    "authenticatedHostVerified": false,
+    "sourceCommit": "33a80955af045aea25dd46800f21cc71aac68d27"
   },
   "physicalDeviceVerified": false,
   "knownFailures": [
-    "Original Linux HTTP429 reproduced and fixture setup corrected; native project matrix19/19 passes.",
-    "Intermediate short-landscape connection and inspector scroll defects corrected; final12/12 Agent Work/workbench cases pass.",
-    "Native authenticated LAN/remote and physical Samsung acceptance pending; remote auth, attachments, biometric step-up and notifications incomplete."
+    "Original Linux429 fixture issue corrected without changing production limits.",
+    "Tablet composer253px reading-space regression corrected with650px container control breakpoint; unchanged regression passed.",
+    "No running new PC/LAN/remote preview delivered: automatic execution policy rejected background PC preview launch.",
+    "Native remote authentication, background notifications, biometric step-up and installed/physical connected acceptance remain incomplete."
   ],
   "verified": [
     "Full integrated host typecheck/tests:1451 passed/1 skipped,135files,328.44s.",
@@ -42,6 +46,21 @@
     "Initial Dispatch14/14pass; two navigation review regressions observed red then passed in integration.",
     "Integrated Dispatch/Agents/workbench47/48 then corrected12/12; performance2/2browser lab profiles passed.",
     "Navigation migration32/34 exposed phone chained-dialog focus; correction and fresh build followed by11/11 refinement/usage passes.",
-    "Native12JVMpass, lint0errors/6warnings; APK signature/install/emulator cold launch/securewindow verified."
+    "First unchanged real9Bcoding trial7calls/304487ms; final and published grader9/9, exact rollback, private host closed and zero sessions.",
+    "Dispatch surface run92/94; two final corrections covered by subsequent111/111 supporting browser run13.6min.",
+    "Native0.2:29JVM tests/0skip/fail, build/lint0errors9warnings, same signer; emulator upgrade and cold launch1797ms.",
+    "Hosted3346190 host/browser12/12jobs pass across3OS; native33a8095 CI passes29-test configuration.",
+    "Final Schedule/initial landscape24/24pass3.3min; strict landscape red0.840446 intersection fixed and final History/viewport14/14pass1.8min.",
+    "Exactb9201f2 browser performance2/2profiles pass; desktop141/121.5ms cold/warm, throttled phone-layout1717.8/1175.5ms (laboratory only)."
+  ],
+  "nativeJvmRealBackendVerified": true,
+  "installedNativeAuthenticatedHostVerified": false,
+  "previewWebUrl": null,
+  "previewLaunch": "blocked_by_automatic_execution_policy_no_process_created",
+  "latestImplementationCommit": "b9201f2f3b9554221661303f14f16eefc2793b5a",
+  "pendingChecks": [
+    "Latest web/documentation head CI; prior3346190 all12jobs and native33a8095 passed.",
+    "Native remote/notifications/biometric/deeper task-diff completion and connected instrumentation.",
+    "Approved isolated preview launch, trusted LAN endpoint and physical-phone acceptance."
   ]
 }

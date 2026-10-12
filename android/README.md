@@ -30,3 +30,5 @@ Only exact HTTPS origins are accepted. There is no HTTP fallback, custom CA bypa
 For an existing preview installation signed with the recorded certificate, install the next APK over it to preserve app storage. A different signing identity cannot update this installation. Do not uninstall to resolve a signature mismatch unless you intend to discard its stored session and local state. Future builds must increase `versionCode` and retain the established testing key or explicitly migrate to a production signing process.
 
 Optional USB developer installation: `adb install -r release/android/relay-0.2.0-lan-preview-debug.apk`. Actual Samsung Galaxy S26 Ultra installation and host connectivity still require physical-device acceptance.
+
+Troubleshooting invitation expiry, certificate trust, uncertain delivery and signature mismatches: [client testing guide](../docs/ui-agents-revolution/client-troubleshooting.md).

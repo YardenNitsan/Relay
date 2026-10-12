@@ -95,3 +95,7 @@ Independent review flagged short-landscape History search. The stricter test req
 Raw logs: `output/ui-agents-revolution/dispatch-surfaces-browser.log`, `dispatch-supporting-browser.log`, `dispatch-landscape-schedules.log`, `history-landscape-final.log` (strict red), `history-landscape-green.log`; build logs `dispatch-complete-build.log` and `dispatch-final-build.log`. Runs overlap in coverage and should not be added into a distinct-test total. No backend/router/provider implementation or frontend dependency changed in this integration.
 
 Final bundle: main527.02kB/gzip159.91kB, CSS116.58kB/gzip20.59kB. The existing above500kB main-chunk warning remains; it is not hidden. Fresh performance measurement follows this source checkpoint. Browser fixtures verify client behavior against scoped real APIs and explicitly synthetic model/account data, not physical phones or connected AI results.
+
+## Final Dispatch browser laboratory
+
+On exact implementation commitb9201f2f3b9554221661303f14f16eefc2793b5a, both profiles passed in1.1min (three cold and three warm runs each). Desktop median readiness141ms cold/121.5ms warm; throttled390px phone-layout1717.8ms/1175.5ms. Built index SHA256 `c025af60758044ada70036c273af6e8dfc80fa1ec5c788b90ee26b76046ff9f0`; browser155.0.8059.39. [Curated results](evidence/performance-dispatch-complete.json); full raw metrics/CPU profiles/screenshots remain under ignored `output/performance/dispatch-complete-preview/`. No physical Android, field INP, live inference, production remote performance or causal speedup is claimed.

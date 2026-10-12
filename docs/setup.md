@@ -2,6 +2,8 @@
 
 Current release: **0.1.2**. Existing installations should read the [upgrade and backup instructions](release-0.1.2.md#upgrade-and-daily-operation) before replacing a running build.
 
+**Dispatch branch:** the new web/native build is still in acceptance. Existing4317 production is preserved; running setup there reuses that existing installation and does not deliver the new branch. No new LAN/public address has been deployed. A background isolated-preview launch was rejected by the execution policy in this session, so no running Dispatch preview URL is claimed. See [continuation and exact blockers](ui-agents-revolution/continuation.md). Android build, APK checksum and private installation instructions are in [the Android README](../android/README.md).
+
 From the Relay directory, run:
 
 ```powershell

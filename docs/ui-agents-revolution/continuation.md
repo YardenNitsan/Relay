@@ -1,35 +1,41 @@
 # Continuation
 
-**INCOMPLETE — CONTINUATION REQUIRED**
+**INCOMPLETE - CONTINUATION REQUIRED**
 
-Working checkout: `C:/Users/yarde/Documents/codexp/Relay-revolution`. Branch: `modernization/ui-agents-revolution`, descended from reviewed `fda18f490d30befc66be88f25bad4e5f44c49b5d`. Preserve the production `Relay` checkout and unrelated dirty `Relay-modernization` worktree. Read the current `AGENTS.md`, this phase's plan/progress, and the older final-evolution ledger before continuing.
+## Scope and exact source
 
-## Commit and verification checkpoint
+Continue only the Dispatch web frontend and native Kotlin/Compose app, their strictly necessary secure integrations, acceptance, documentation and delivery. No routing, agent improvements, new standalone coding benchmarks or unrelated backend work. Preserve production and do not merge main, deploy publicly or change router/Cloudflare infrastructure. After both applications are genuinely delivered and verified, STOP.
 
-Latest committed checkpoint while this document is being assembled: `59fe79f31d6ed9db7fdb0dbff58de431489e2c75` (native LAN preview). The reviewed frontend and its final navigation regressions are being finalized; update this section with the final implementation commit and hosted results before handoff. Do not interpret the working tree as already pushed.
+Checkout: `C:/Users/yarde/Documents/codexp/Relay-revolution`; branch `modernization/ui-agents-revolution`. Latest application source commit: **b9201f2f3b9554221661303f14f16eefc2793b5a**, pushed to origin. Android0.2 source: **33a80955af045aea25dd46800f21cc71aac68d27**. Real native backend integration: **a60a94e723c598bff78a539f259bf003826b5660**. A following documentation/evidence-only checkpoint records this state; use `git rev-parse HEAD` for that checkpoint's identity. Preserve production `Relay`, unrelated dirty `Relay-modernization`, Harmonia and GuitarScaleViewer.
 
-Implemented: Linux429 test-fixture correction; three actual design prototypes and Dispatch selection; new core web navigation/Work inbox and Agent Studio; G1 verification preflight/G2 reviewer handoff; versioned scoped task feed; native Kotlin/Compose LAN client source and actual APK. See [release notes](release-notes.md) for exact scope and [acceptance](acceptance.md) for all30owner scenarios.
+## Completed and verified this continuation
 
-Local evidence: strict types plus1451host tests passed/one skipped; native12JVM tests, lint0errors/6warnings, signed APK build and emulator install/cold launch. Linux original project matrix19/19 after the reproduced429 correction. Initial Dispatch14/14; later48-case integration47passed/one short-height failure, followed by all12 Agent Work/workbench cases passing after correction. Performance2/2profiles passed. Navigation migration34cases32passed/two phone focus-return failures; fresh build and correction then passed all11refinement/usage cases in1.2min. Full details and raw-log locations: [testing](testing.md).
+- Dispatch presentation implemented across Conversation/Composer/Welcome, Projects, Models, More/Settings, History, Memory, Schedules, Access, external clients, Google Workspace, MCP, connection, host diagnostics and usage. Existing Work/Agent Studio remain. Hooks, guards, account boundaries and source serialization are preserved; no new frontend dependency or backend/router implementation changed.
+- Strict production builds pass. Core browser run92/94 found tablet composer sizing and a build preceding the final Settings minimum-height rule. Fresh supporting run111/111 passes13.6min, including both failures. Schedule/initial landscape run24/24 passes3.3min. A stronger landscape History assertion reproduced84% visible excerpt; shared short-height workspace scrolling fixes it. Final History/viewport14/14 passes1.8min. Actual screenshots were inspected and selected captures committed. Logs and provenance: [testing](testing.md), [design review](design-review.md).
+- Native0.2 implements encrypted unsent drafts/context/uncertain-send state and native text/PDF/DOCX picking, exact destination review and authorized upload. Independent review corrections are incorporated.29JVM tests/8classes pass, including actual isolated HTTPS Relay enrollment, scopes, task lifecycle, streaming replay, logout/revocation/expiry. Gradle build/lint succeeds26s,0errors9warnings. Same signing identity; emulator code1-to-code2 upgrade succeeds, cold launch1797ms, native sign-in hierarchy and secure-window flag verified. Emulator stopped.
+- Hosted3346190 host/browser run38295621755 passed all12 jobs across Windows/Linux/macOS. Native33a8095 run38298445759 passed. Latest web source and documentation-head CI remain to be checked; prior green runs are not current-head acceptance.
+- Previously started coding trials were collected/closed, with sanitized evidence retained; no new trials after the narrowed owner scope. No real model workload remains running.
 
-## Exact next work
+## Actual APK
 
-Commit the reviewed frontend and tests, push the authorized branch, inspect exact-head host/browser/native CI and record any failures. The phone chained-dialog focus correction is independently reviewed and both unchanged regressions pass. Never increase timeouts to hide the original429 or layout defects.
+`C:/Users/yarde/Documents/codexp/Relay-revolution/release/android/relay-0.2.0-lan-preview-debug.apk`
 
-Then continue phase4: implement Dispatch's conversation and project compositions while preserving existing drafts, guarded mutations, source editing, diff/publication and Back/scroll behavior. Phase5 still requires safe cooperative execution and repeated unchanged real coding trials with independent grading. Keep AI routing completely untouched.
+SHA256: `4d34e0df0c18bd96d3167c3a72d9a473ed22308a0161d31585facf937a1a649a`;12645234bytes; version0.2.0-lan-preview/code2; minimum Android8/API26. Adjacent checksum exists. Signature is the retained user debug certificate documented in [Android0.2](android-0.2.md); no private signing key is committed. Artifact is deliberately Git-ignored and is not available merely by cloning the branch. No GitHub APK release exists.
 
-For Android, the next security gate is an isolated trusted-TLS LAN host integration test for enrollment, stream/reconnect, expiry/revocation and logout/host-switch races; then instrumentation and lifecycle/device acceptance. Do not weaken certificate checks or reconfigure production LAN/Cloudflare to obtain a pass. Implement the researched supported native Access flow before advertising remote connectivity. Notifications, attachments, durable drafts, biometric step-up and native diffs/publication remain incomplete.
+This is a **LAN testing preview**. Installed authenticated connection and physical Samsung Galaxy S26 Ultra compatibility are not verified. Installation/upgrade instructions: [Android README](../../android/README.md).
 
-## Android artifact
+## Exact next work and blockers
 
-- Actual local file: `C:/Users/yarde/Documents/codexp/Relay-revolution/release/android/relay-0.1.0-lan-preview-debug.apk`.
-- SHA256: `9c253dc1e642d4b41ad4def9d4cf9a8f2ca42362c34172bf8452881b69733a8f`;16713796bytes.
-- Version0.1.0-lan-preview/code1; minimum API26/Android8. Existing host debug identity, stable for this machine's preview updates; private key remains outside Git.
-- The final emulator was stopped. Authenticated host connection and Samsung Galaxy S26 Ultra are unverified. No production release signing or GitHub APK release exists.
-- Source/build/installation/upgrade instructions: [android/README.md](../../android/README.md). Artifact is intentionally Git-ignored; it must exist locally or be rebuilt with the same signing identity, not assumed available from a source checkout.
+1. Check latest source/head CI and fix concrete failures without weakening rate limits/timeouts/assertions. Finish physical/alternate-browser and complete frontend acceptance; exactb9201f2 performance2/2profiles now passes, with desktop141/121.5ms and throttled phone-layout1717.8/1175.5ms cold/warm median readiness. These are laboratory proxies, not physical or field measurements.
+2. Native remaining implementation includes supported Cloudflare Managed OAuth/PKCE/App Links and token lifecycle, privacy-aware notifications and notification entry, biometric approval step-up, deeper native task/diff controls and final UI polish. Complete ViewModel/session/rotation/process-death/picker/in-flight mutation instrumentation and actual installed-client workflow acceptance. Empty-text selection-only context is intentionally session-only; nonempty drafts are encrypted. Do not mark helper JVM tests as Android Keystore/lifecycle proof.
+3. Establish an approved isolated PC preview execution path. The attempted background preview launch was rejected by automatic execution policy with `blocked by policy`, without a specific reason. That command did not create its script or start a process. Do not bypass the rejection through another launcher or claim a preview URL. The native implementation worker also hit the account usage limit; root completed/reviewed/verified its current draft/upload increment, not the remaining Android product.
+4. Phone access still needs an authorized trusted HTTPS endpoint. Read-only inspection of the existing production process showed only127.0.0.1 listeners4317,4318,4315; no LAN listener was observed. The owner was asked whether a separate trusted LAN endpoint/certificate already exists; no answer was available at this checkpoint. Do not fabricate one, modify production or publish a new endpoint. Existing protected remote production URL is historical and must not be advertised as the new Dispatch build. Native remote Access needs registered public-client/resource/redirect configuration and proven gateway human identity, not copied cookies or service-token bypass.
+5. Re-run release/security acceptance and retain exact current APK/version/signer/hash after further native changes. Update all relevant docs, commit/push and verify remote branch. Only declare completion after actual client/connectivity/CI gates pass, then STOP.
 
-## Outstanding acceptance and operating rules
+No new running web URL was delivered. Production remains unchanged. See [access/troubleshooting](client-troubleshooting.md) for concrete boundaries and [acceptance](acceptance.md) for remaining gates. Final background work must not be implied; only the pushed GitHub CI runs are actually scheduled.
 
-All30owner scenarios are not complete. Remaining web redesign, native secure remote flow, connected notifications, repeated live agent outcomes, physical browsers/devices, Android instrumentation, CodeQL/transitive dependency verification and production security acceptance remain open. Preserve earlier failed coding evidence. Browser fixture results are not live-model success.
+## Operating commands
 
-Use one browser fixture on4319 at a time, build before starting it, and never rebuild while it serves `dist`. Keep heavy inference separate from builds/tests. Raw ignored traces can contain disposable sessions; publish only sanitized summaries. No deployment, main merge, public endpoint, router forwarding or production replacement is authorized by this milestone. Read per-effect authorization and signing rules in `AGENTS.md` before changing those boundaries.
+Build before browser tests and never rebuild while the single4319 fixture serves dist. `npm.cmd run build`; `npm.cmd run test:e2e -- <exact existing spec paths>`. Schedule file is singular `schedule-studio.spec.ts`. Whole host gate: `npm.cmd run check` (prior unchanged host1451pass/1skip); do not rerun unrelated model benchmarks.
+
+Native: set JAVA_HOME to installed Android Studio JBR and ANDROID_HOME to the SDK; set RELAY_NATIVE_INTEGRATION=1; `./android/gradlew.bat -p android :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --console=plain`. Trust injection remains test-only. Keep stable debug signing outside Git; do not distribute ephemeral CI keys as upgrades.

@@ -1,0 +1,74 @@
+{
+  "scope": "Local synthetic laboratory; not field INP, physical Android, live inference or remote gateway acceptance",
+  "commit": "b9201f2f3b9554221661303f14f16eefc2793b5a",
+  "buildIndexSha256": "c025af60758044ada70036c273af6e8dfc80fa1ec5c788b90ee26b76046ff9f0",
+  "browser": "155.0.8059.39",
+  "reports": [
+    {
+      "testedAt": "2026-10-12T19:46:15.662Z",
+      "profile": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 1000,
+        "cpu": 1,
+        "latency": 0
+      },
+      "summary": {
+        "cold": {
+          "samples": [
+            159.19999980926514,
+            141,
+            140
+          ],
+          "median": 141,
+          "min": 140,
+          "max": 159.19999980926514
+        },
+        "warm": {
+          "samples": [
+            135.59999990463257,
+            120.09999990463257,
+            121.5
+          ],
+          "median": 121.5,
+          "min": 120.09999990463257,
+          "max": 135.59999990463257
+        }
+      },
+      "failures": []
+    },
+    {
+      "testedAt": "2026-10-12T19:46:34.230Z",
+      "profile": {
+        "name": "phone-layout",
+        "width": 390,
+        "height": 844,
+        "cpu": 4,
+        "latency": 80
+      },
+      "summary": {
+        "cold": {
+          "samples": [
+            1795.6999998092651,
+            1717.7999999523163,
+            1696.2000000476837
+          ],
+          "median": 1717.7999999523163,
+          "min": 1696.2000000476837,
+          "max": 1795.6999998092651
+        },
+        "warm": {
+          "samples": [
+            1200,
+            1163.3999998569489,
+            1175.5
+          ],
+          "median": 1175.5,
+          "min": 1163.3999998569489,
+          "max": 1200
+        }
+      },
+      "failures": []
+    }
+  ]
+}

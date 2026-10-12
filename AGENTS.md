@@ -27,6 +27,8 @@ Current Windows and Ubuntu WSL evolution verification: **1,194 deterministic tes
 
 ## Commands
 
+Activity replay uses an opaque per-Store/session scope, never authorization. Reset obsolete cursors and transient buffers; resume only applied batches. Preserve account filters/live session checks and stream limits. Context fitting may shorten only superseded exact-operation read/test receipt text, never actions/latest results/opaque continuity/required review evidence. Full strict1,418tests/one skip, production build and27affected browser cases pass. The unchanged coding trial still paused; its9/9diagnostic is not end-to-end success.
+
 ProjectFiles acknowledges exact file creation/save/deletion before background list refresh. Use the existing PUT expectedHash:null for new text files, retain collision/draft/busy guards, and seed actual returned file hashes. NewProjectFile shares the responsive editor footer. Strict build,31affected browser cases plus1dark short-landscape guarded-create case and final types pass; no new backend authority or dependency.
 
 Original Publication applies returned durable receipts before background history refresh. Successful apply/reconcile callbacks must not await history; cancel obsolete reads before a mutation and retain fresh-receipt inspection after failures. A held phone history GET reproduced disabled rollback; fresh strict build and all5real-file publication browser cases pass after the fix.

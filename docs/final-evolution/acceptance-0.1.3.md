@@ -48,7 +48,7 @@ Inspected actual browser captures: [before, desktop](evidence/models-before-1440
 | 26 | Phone approval | Chromium approval fixtures; physical-device acceptance outstanding. |
 | 27 | Phone files/diffs | Actual browser project/publication fixtures; physical-device acceptance outstanding. |
 | 28 | Mobile-data remote connection | Owner physically confirmed mobile-data sign-in to deployed0.1.2 after restarting stopped existing tunnel. Modernization task/streaming/network-interruption checks remain open. |
-| 29 | Session expiry/reconnection | Existing authentication/replay fixtures; physical remote interruptions pending. |
+| 29 | Session expiry/reconnection | Per-session/host replay namespace, native account-filter/resume tests and5phone lifecycle/storage cases pass; full27affected browser cases. Physical remote interruptions pending. |
 | 30 | Database backup/migration | Actual native PostgreSQL and encrypted embedded restore verified in prior increment; current hosted native gate tracked separately. |
 
 Research/benchmark decisions: [router replacement](router-replacement.md). A–G remain authoritative in [requirements matrix](requirements-matrix.md). No mocked provider result, advertised model capability or viewport screenshot is recorded as live acceptance.

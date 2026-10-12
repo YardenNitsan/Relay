@@ -1,6 +1,20 @@
 import {expect,test} from '@playwright/test';
 import {pairBrowser} from './helpers';
 
+test('phone activity recovers from a persisted cursor belonging to an obsolete host session',async({page})=>{
+  await page.addInitScript(()=>{
+    sessionStorage.setItem('relay:event-cursor:v1','9000000');
+    sessionStorage.setItem('relay:event-cursor:v2',JSON.stringify({scope:'0'.repeat(64),cursor:9000000}));
+  });
+  await page.setViewportSize({width:390,height:844});await page.goto('/');await pairBrowser(page);
+  const draft=page.getByRole('textbox',{name:'Your objective',exact:true});await draft.fill('Say hello after obsolete activity state.');await page.getByRole('button',{name:'Send objective',exact:true}).click();
+  await expect(page.locator('.message-assistant .response-copy')).toBeVisible();
+  await expect.poll(()=>page.evaluate(()=>{const saved=JSON.parse(sessionStorage.getItem('relay:event-cursor:v2')??'null') as {scope:string;cursor:number}|null;return !!saved&&saved.scope!=='0'.repeat(64)&&saved.cursor>0&&saved.cursor<9000000;})).toBe(true);
+  await draft.fill('Keep my next draft during recovery.');await page.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));
+  await expect(page.getByText('Local service connected',{exact:true})).toBeVisible();await expect(draft).toHaveValue('Keep my next draft during recovery.');
+  await expect(page.locator('.message-assistant .response-copy')).toHaveCount(1);
+});
+
 test('activity recovery joins one session renewal and keeps its draft',async({page})=>{
   await page.goto('/');await pairBrowser(page);
   const draft=page.getByRole('textbox',{name:'Your objective',exact:true});await draft.fill('Keep this draft during explicit recovery.');
@@ -36,8 +50,8 @@ test('phone network interruption preserves editable draft and reconnects activit
 for(const storageAvailable of [true,false])test(`returning to the phone page renews activity without resetting the draft (storage ${storageAvailable?'available':'blocked'})`,async({page})=>{
   if(!storageAvailable)await page.addInitScript(()=>{
     const get=Storage.prototype.getItem,set=Storage.prototype.setItem;
-    Storage.prototype.getItem=function(key){if(key==='relay:event-cursor:v1')throw new DOMException('Storage denied','SecurityError');return get.call(this,key);};
-    Storage.prototype.setItem=function(key,value){if(key==='relay:event-cursor:v1')throw new DOMException('Storage denied','SecurityError');set.call(this,key,value);};
+    Storage.prototype.getItem=function(key){if(key.startsWith('relay:event-cursor:'))throw new DOMException('Storage denied','SecurityError');return get.call(this,key);};
+    Storage.prototype.setItem=function(key,value){if(key.startsWith('relay:event-cursor:'))throw new DOMException('Storage denied','SecurityError');set.call(this,key,value);};
   });
   const streams:string[]=[];page.on('request',request=>{if(new URL(request.url()).pathname==='/api/events')streams.push(request.url());});
   await page.setViewportSize({width:390,height:844});await page.goto('/');await pairBrowser(page);
@@ -45,8 +59,8 @@ for(const storageAvailable of [true,false])test(`returning to the phone page ren
   await page.getByRole('button',{name:'Send objective',exact:true}).click();
   await expect(page.getByText('Completed',{exact:true}).first()).toBeVisible();
   await expect(page.locator('.message-assistant .response-copy')).toBeVisible();
-  if(storageAvailable)await expect.poll(()=>page.evaluate(()=>Number(sessionStorage.getItem('relay:event-cursor:v1')??0))).toBeGreaterThan(0);
-  const saved=storageAvailable?await page.evaluate(()=>Number(sessionStorage.getItem('relay:event-cursor:v1')??0)):0;
+  if(storageAvailable)await expect.poll(()=>page.evaluate(()=>Number(JSON.parse(sessionStorage.getItem('relay:event-cursor:v2')??'{}').cursor??0))).toBeGreaterThan(0);
+  const saved=storageAvailable?await page.evaluate(()=>Number(JSON.parse(sessionStorage.getItem('relay:event-cursor:v2')??'{}').cursor??0)):0;
   if(storageAvailable)expect(saved).toBeGreaterThan(0);
   await draft.fill('This second draft must survive returning to the app.');const before=streams.length;
   // Deterministic lifecycle simulation; this does not claim physical Android acceptance.

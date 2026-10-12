@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { ActivityEvent } from '../shared/types';
-import { mergeEvents, mergeText } from './realtime-state';
+import { mergeEvents, mergeText,storedActivityCursor,type ActivityCursor } from './realtime-state';
 
 interface StreamText { callId: string; text: string }
 export function useRealtime(enabled: boolean, reconnectGeneration = 0) {
@@ -11,7 +11,7 @@ export function useRealtime(enabled: boolean, reconnectGeneration = 0) {
   const [text, setText] = useState<Record<string, StreamText>>({});
   const [online,setOnline]=useState(()=>navigator.onLine);
   const [resumeGeneration,setResumeGeneration]=useState(0);
-  const flushedCursor = useRef<number | null>(null);
+  const flushedCursor = useRef<ActivityCursor | null>(null);
 
   useEffect(()=>{
     if(!enabled)return;
@@ -38,12 +38,12 @@ export function useRealtime(enabled: boolean, reconnectGeneration = 0) {
     if(!online){setConnection('offline');return;}
     setConnection(previous=>previous==='connecting'?'connecting':'reconnecting');
     if (flushedCursor.current === null) {
-      let saved = 0;
-      try { saved = Number(sessionStorage.getItem('relay:event-cursor:v1') ?? 0); } catch { /* Browser storage may be disabled. */ }
-      flushedCursor.current = Number.isSafeInteger(saved) && saved >= 0 ? saved : 0;
+      let saved:ActivityCursor|null=null;
+      try { saved = storedActivityCursor(sessionStorage.getItem('relay:event-cursor:v2'));sessionStorage.removeItem('relay:event-cursor:v1'); } catch { /* Browser storage may be disabled. */ }
+      flushedCursor.current = saved??{scope:null,cursor:0};
     }
-    let cursor = flushedCursor.current;
-    const source = new EventSource(`/api/events?after=${cursor}`, { withCredentials: true });
+    let {cursor,scope} = flushedCursor.current;
+    const source = new EventSource(`/api/events?after=${cursor}${scope?`&scope=${scope}`:''}`, { withCredentials: true });
     let batch: ActivityEvent[] = [];
     let flushTimer: ReturnType<typeof setTimeout> | undefined;
     let refreshTimer: ReturnType<typeof setTimeout> | undefined;
@@ -69,8 +69,21 @@ export function useRealtime(enabled: boolean, reconnectGeneration = 0) {
       });
       // Resume only after applied batches, even when browser storage is denied.
       // Cleanup discards pending batches so their IDs must remain replayable.
-      flushedCursor.current = cursor;
-      try { sessionStorage.setItem('relay:event-cursor:v1', String(cursor)); } catch { /* The mounted hook retains its flushed cursor. */ }
+      flushedCursor.current = {scope,cursor};
+      try { sessionStorage.setItem('relay:event-cursor:v2', JSON.stringify({scope,cursor})); } catch { /* The mounted hook retains its flushed cursor. */ }
+    };
+    const replay=(message:MessageEvent<string>)=>{
+      let control:ActivityCursor|null=null;
+      try{const value=JSON.parse(message.data) as {scope?:unknown;after?:unknown};control=storedActivityCursor(JSON.stringify({scope:value.scope,cursor:value.after}));}catch{return;}
+      if(!control||control.scope===scope&&control.cursor>=cursor)return;
+      scope=control.scope;cursor=control.cursor;batch=[];
+      if(flushTimer){clearTimeout(flushTimer);flushTimer=undefined;}
+      if(refreshTimer){clearTimeout(refreshTimer);refreshTimer=undefined;}
+      flushedCursor.current=control;setEvents([]);setText({});
+      try{sessionStorage.setItem('relay:event-cursor:v2',JSON.stringify(control));}catch{/* In-memory continuity remains sufficient. */}
+      // Recreate once with the accepted namespace. Native automatic reconnect
+      // otherwise keeps the obsolete scope/cursor embedded in its original URL.
+      source.onopen=null;source.onerror=null;source.close();setResumeGeneration(value=>value+1);
     };
     source.onopen = () => {
       setConnection('live');
@@ -91,8 +104,9 @@ export function useRealtime(enabled: boolean, reconnectGeneration = 0) {
       }, 400);
     };
     source.addEventListener('activity', receive as EventListener);
+    source.addEventListener('replay',replay as EventListener);
     return () => {
-      source.onopen=null;source.onerror=null;source.removeEventListener('activity',receive as EventListener);
+      source.onopen=null;source.onerror=null;source.removeEventListener('activity',receive as EventListener);source.removeEventListener('replay',replay as EventListener);
       source.close();
       if (flushTimer) clearTimeout(flushTimer);
       if (refreshTimer) clearTimeout(refreshTimer);

@@ -16,6 +16,7 @@ import { chatPermissions } from '../server/auth/policy.js';
 import { LocalPairing } from '../server/auth/pairing.js';
 import { LanInvitations } from '../server/auth/lan.js';
 import { Sessions } from '../server/auth/sessions.js';
+import type {TaskOptions} from '../shared/types';
 
 let app:FastifyInstance,store:Store,engine:Engine,directory:string,services:Services;
 let invitations:LanInvitations;
@@ -44,7 +45,31 @@ async function signedIn() {
   const response=await pair();expect(response.statusCode).toBe(200);
   return {host,origin,cookie:response.headers['set-cookie']!.toString().split(';')[0],'x-relay-csrf':response.json().csrfToken as string};
 }
+async function readActivity(url:string,headers:Record<string,string>,marker:string){
+  const controller=new AbortController();controllers.push(controller);
+  const response=await new Promise<Response>((resolve,reject)=>{const request=httpRequest(url,{headers,signal:controller.signal},incoming=>resolve(new Response(Readable.toWeb(incoming) as ReadableStream<Uint8Array>,{status:incoming.statusCode})));request.once('error',reject);request.end();});
+  expect(response.status).toBe(200);const reader=response.body!.getReader(),decoder=new TextDecoder();let text='';const timer=setTimeout(()=>controller.abort(),1500);
+  try{for(;;){const chunk=await reader.read();if(chunk.done)break;text+=decoder.decode(chunk.value,{stream:true});if(text.includes(marker))break;}}catch(error){if(!controller.signal.aborted)throw error;}
+  finally{clearTimeout(timer);controller.abort();await reader.cancel().catch(()=>{});}
+  return text;
+}
 describe('authenticated LAN API boundary',()=>{
+  it('resets stale activity cursors and binds continuation to the authenticated browser session',async()=>{
+    const headers=await signedIn(),url=await app.listen({host:'127.0.0.1',port:0});
+    const options:TaskOptions={depth:'fast',modelId:null,access:'read_only',workspaceId:null,contextTokens:4096,budget:{maxCalls:2,maxSeconds:60,maxIterations:2,maxCostUsd:0,localOnly:true}};
+    const own=await store.createConversation('Private owner'),friend=await store.createConversation('Friend','friend');
+    const ownerTask=(await store.createTask(own.id,'Owner',options)).task,friendTask=(await store.createTask(friend.id,'Friend',options,'friend')).task;
+    await store.append(ownerTask.id,'PRIVATE_MARKER',{text:'private owner fixture'});const first=await store.append(friendTask.id,'PUBLIC_MARKER',{text:'first friend fixture'});
+    const reset=await readActivity(`${url}/api/events?after=9000000&scope=${'0'.repeat(64)}`,headers,'first friend fixture');
+    expect(reset).toContain('event: replay');expect(reset).toContain('first friend fixture');expect(reset).not.toContain('private owner fixture');
+    const control=JSON.parse(reset.match(/event: replay\ndata: ([^\n]+)/)![1]) as {scope:string;after:number};expect(control.after).toBe(0);expect(control.scope).toMatch(/^[a-f0-9]{64}$/);
+    await store.append(friendTask.id,'PUBLIC_MARKER',{text:'second friend fixture'});
+    const resumed=await readActivity(`${url}/api/events?after=${first.id}&scope=${control.scope}`,headers,'second friend fixture');
+    expect(resumed).toContain(`"after":${first.id}`);expect(resumed).not.toContain('first friend fixture');expect(resumed).toContain('second friend fixture');
+    const newer=await signedIn();
+    const changed=await readActivity(`${url}/api/events?after=9000000&scope=${control.scope}`,newer,'first friend fixture');
+    expect(changed).toContain('"after":0');expect(changed).toContain('first friend fixture');expect(changed).not.toContain(`"scope":"${control.scope}"`);
+  });
   it('requires LAN authentication and exact origin, and cannot consume the owner pairing code',async()=>{
     const session=await app.inject({url:'/api/session',headers:{host}});
     expect(session.statusCode).toBe(401);expect(session.json().code).toBe('LAN_PAIRING_REQUIRED');expect(session.headers['set-cookie']).toBeUndefined();

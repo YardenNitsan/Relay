@@ -37,6 +37,10 @@ Project file authoring and acknowledged save/delete are now verified:31affected 
 
 Immediate next: repeat real model-driven coding acceptance without changing the fixed corpus/grader/reserves, then real source Git/history workflows, coding reliability, safe multi-agent cooperation, Companion, authorized integrations, project intelligence, security/recovery and performance. Modernization is still undeployed; physical Android keyboard/remote workflows and real external accounts remain outstanding. Do not call any of these checkpoints final product completion.
 
+## Current recovery checkpoint, 12 October
+
+Context fix a905070 committed: unchanged coding-9HTadP paused after9calls despite a separately passing9/9tree. Exact saved input now fits by shortening3older repeated read/test receipt texts, retaining every action and full durable receipts. Live repeat is next; do not claim completion from the diagnostic. Authenticated replay namespace recovery now passes full strict check1,418tests/one skip132files303.13s, production build and27affected browser cases. Hosted71fa29c all9host/browser and native gates pass. Router remains paused. Next: unchanged live coding trial, measured UI performance and remaining non-router A-G.
+
 ## Router evidence and limitations
 
 V1 independent64 cases (32EN/32HE): phrase baseline25 satisfied, MiniLM26, E5 17, MiniLM NLI13. Selected-on-development MiniLM failed the minimum eight-case improvement gate. V1 then became consumed development data for per-route thresholds. Independently authored/frozen v2: baseline22/64, MiniLM23/64, English regressed11vs12 and forbidden predictions increased9vs4; quality gates failed again.

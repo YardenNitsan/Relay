@@ -87,3 +87,7 @@ Removal now compares exact bigint device/file IDs and rejects an unlinked held h
 ## Publication directory authority
 
 Version3 plans and immediate native-identity receipts bind every planned ancestor. Negative tests prove appeared/replaced parents, lost creation receipts, cancellation and revocation cannot grant file authority. A moved intact inner directory beneath a replaced outer directory is refused, including during file mutation and after a rollback review. Rollback checks its original parent receipt. No recursive source cleanup or model mkdir tool was introduced. Interrupted creation may leave retained folders; complete-before reconciliation verifies file state without replay. Final38publication/reservation tests and5native-file browser workflows pass after the final ancestor fix. This remains path-rechecked same-user coordination, not an atomic OS traversal or multi-file transaction guarantee.
+
+## Replay namespace separation
+
+Replay scope is an HMAC namespace keyed by a per-Store random epoch over user/session/version/remote identity; it grants no authority. Missing, mismatched or beyond-head cursors reset to authorized history. Native HTTP tests verify session changes cannot reuse continuity and private owner events do not leak. Browser storage is untrusted and cannot select an account. The existing authenticated per-account query, live session checks, gateway expiry and stream reservation remain authoritative. Full check and27affected browser cases pass; physical remote-session acceptance remains separate.

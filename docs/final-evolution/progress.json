@@ -4,7 +4,7 @@
   "updatedAt": "2026-10-12",
   "baselineCommit": "9d563bc973dbcc177921ab918db88561c8280e48",
   "branch": "modernization/final-evolution",
-  "currentMilestone": "0.1.3: router paused; reviewed source folders committed; direct project file authoring and acknowledged edits pass strict build and32affected browser cases",
+  "currentMilestone": "0.1.3: router paused; safe context receipt shortening and authenticated session/host replay recovery verified; live coding repeat next",
   "requirementIds": [
     "A01",
     "A02",
@@ -81,7 +81,9 @@
     "Eight real Engine/broker/file analysis-role regressions pass; scripted provider proposals are not live agent intelligence evidence.",
     "Reviewed managed child-to-parent file integration with immutable baseline, dual reservations, exact stale-review digest, per-effect authority, conservative conflicts, selected files, durable rollback and complete-state reconciliation;17broker tests plus API/reservation and8real-browser cases.",
     "Reviewed version3 source-folder creation, ordered native-identity receipts, all-ancestor checks including rollback, retained-folder recovery scope and real phone/desktop file publication/rollback.",
-    "Direct exact-path nested/empty file creation and collision-safe drafts; saved/deleted editors acknowledge before background refresh;31affected browser cases plus short-landscape pending-write verification."
+    "Direct exact-path nested/empty file creation and collision-safe drafts; saved/deleted editors acknowledge before background refresh;31affected browser cases plus short-landscape pending-write verification.",
+    "Older superseded structured read/test receipt text can shorten under existing context budget; exact actions, latest receipts and complete durable records preserved.",
+    "Authenticated per-session/host activity replay namespace resets obsolete cursors without changing authorization; native HTTP and browser recovery pass."
   ],
   "changedFiles": [
     ".github/workflows/native-integrations.yml",
@@ -283,7 +285,7 @@
     "docs/final-evolution/model-studio-plan.md",
     "docs/validation.md"
   ],
-  "testStatus": "Backend full1408passed/one skip before final directory rollback-ancestor fix; final38publication/reservation tests pass. Project UI strict build,31affected browser cases4.1min plus1landscape case5.6s and final types pass.",
+  "testStatus": "Full strict1,418passed/one skip132files303.13s; production build;12mobile/Workbench cases1.6min and15conversation/approval cases1.9min.",
   "lastPassingCommands": [
     "npm.cmd ci",
     "npm.cmd run check (baseline)",
@@ -359,8 +361,8 @@
     "npm.cmd run check (final C02/restore:1305passed/one skip,123files,273.47s)",
     "npm.cmd run build (final C02/restore)"
   ],
-  "lastPassingCommit": "d30fb7b",
-  "lastPassingCommitScope": "Hosted all9host/browser jobs38200429679 plus native38200429677",
+  "lastPassingCommit": "71fa29c",
+  "lastPassingCommitScope": "Hosted all9host/browser gates38204501666 and native38204501646",
   "knownFailures": [
     "Real coding: larger9B RAM admission refusal; smaller9B initial missing-runtime-temp load error repaired;16K context paused;32K wrong activity repair/output-limit pause after7calls. Earlier trials had no publication; later coding-0O93wv succeeds.",
     "Gemma4 12B32K candidate also refused unchanged RAM admission; no inference occurred.",
@@ -381,7 +383,8 @@
     "Ready-made defaults on consumedv2: GLiClass mini15/64,p95362.34ms,RSS1.846GB; Vela2 ONNX30/64,p95289.65ms,RSS1.411GB,peak2.318GB. Neither qualifies under existing quality/latency gates; no product promotion.",
     "GLiNER2.5-multi-Decide default15/64,EN11/HE4,zeroerrors,p95333.21ms,RSS1.895GB/peak3.178GB; source/results independently reviewed, no promotion.",
     "e619455 shard1: stale attachmentnavigation/two historycounts, plusWindows/Ubuntu15pxlayout-follow. Deterministiclargertextrepro136pxgap; resizeobservationfix/build/22browserpass; newhostedgatepending.",
-    "ff15737 hosted Ubuntu browser shard1:122/123pass; latefontfollowgap169px. Priorlocaltestcouldeditzero responseparagraphs; robustsetup/scrollordering investigation continues."
+    "ff15737 hosted Ubuntu browser shard1:122/123pass; latefontfollowgap169px. Priorlocaltestcouldeditzero responseparagraphs; robustsetup/scrollordering investigation continues.",
+    "coding-9HTadP unchanged32K/8192 repeat paused CONTEXT_BUDGET after9calls/378543ms; independent final-tree9/9 but no completion/publication. Exact saved context now fits; fresh live repeat pending."
   ],
   "outstandingSecurityReviews": [
     "Full threat-model review",
@@ -438,11 +441,11 @@
     "MCP/Settings/notifications: six old-build behavior reds and missing Settings entry; fresh strict build and39/39browser cases pass4.9min; initial20run18pass/two corrected failures retained.",
     "Managed authorization:10negative red/1positive control;72focused pass; npm.cmd run check1375passed/one skip130files286.43s; production build passes."
   ],
-  "latestProductCommit": "71fa29c",
+  "latestProductCommit": "a905070",
   "latestHostedStatus": {
     "run": 38204501666,
-    "host": "In progress on71fa29c",
-    "browser": "In progress on71fa29c; previous broad0d28245/7edc213 still pending",
+    "host": "success on71fa29c",
+    "browser": "success on71fa29c; f631c1a38204951845 in progress",
     "nativeRun": 38204501646,
     "native": "success on71fa29c"
   },

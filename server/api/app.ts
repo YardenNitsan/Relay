@@ -44,6 +44,7 @@ import {registerGoogleOAuthRoutes} from './google-oauth.js';
 import type {GoogleOAuth} from '../providers/google-oauth.js';
 import {documentRoutes} from './documents.js';
 import {branchIntegrationRoutes} from './branch-integration.js';
+import {activityReplayCursor,activityReplayScope} from './activity-replay.js';
 import { calibrationRoutes } from './calibration.js';
 import { mcpRoutes } from './mcp.js';
 import { verificationContractSchema } from '../orchestration/required-reads.js';
@@ -330,8 +331,9 @@ export async function createApp(services:Services,options:AppOptions={}):Promise
     await store.audit(null,method==='PUT'?'FILE_EDITED':'FILE_DELETED',{workspaceId:id,path:body.path,userId:p.user.id});return result;
   }});
   app.get('/api/events',async(request,reply)=>{
-    const p=principal(request);const query=z.object({after:z.coerce.number().int().min(0).max(Number.MAX_SAFE_INTEGER).default(0)}).parse(request.query);
-    const header=Number(request.headers['last-event-id']??0);let cursor=Math.max(query.after,Number.isSafeInteger(header)&&header>=0?header:0);
+    const p=principal(request);const query=z.object({after:z.coerce.number().int().min(0).max(Number.MAX_SAFE_INTEGER).default(0),scope:z.string().regex(/^[a-f0-9]{64}$/).optional()}).parse(request.query);
+    const scope=activityReplayScope(store,p),head=Number((await store.db.query('SELECT COALESCE(MAX(id),0) AS id FROM events'))[0].id);
+    let cursor=activityReplayCursor(scope,query.scope,query.after,request.headers['last-event-id'],head);
     const expiresAt=options.remote?identityExpiries.get(request):undefined;
     if(options.remote&&(expiresAt===undefined||expiresAt<=Date.now()))throw new AppError('REMOTE_AUTH','Gateway authentication expired. Reconnect to continue.',401);
     const release=reserveStream(store,p.user.id);
@@ -359,6 +361,7 @@ export async function createApp(services:Services,options:AppOptions={}):Promise
       // HTTP socket timeout otherwise races a quiet stream's heartbeat interval.
       request.raw.socket.setTimeout(0);
       reply.hijack();reply.raw.writeHead(200,{'Content-Type':'text/event-stream','Cache-Control':'no-cache, no-transform','Connection':'keep-alive','X-Accel-Buffering':'no'});await write('retry: 1500\n\n');
+      await write(`event: replay\ndata: ${JSON.stringify({scope,after:cursor})}\n\n`);
       while(!closed) {
       if(options.remote&&!remoteEnabled()||!await sessions.live(p))break;
       const events=await store.events(cursor,100,p.user.id==='owner'&&!p.remote?undefined:p.user.id);

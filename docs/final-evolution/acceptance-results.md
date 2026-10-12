@@ -288,3 +288,7 @@ Fresh strict check1,418passed/one skip across132files303.13s; strict production 
 ## Unchanged live coding repeat, 12 October
 
 Trial coding-vwOFL5 on a8bded9 completes6calls in218119ms. Actual file reads, two guarded writes, approved container tests and git_diff precede the final answer. Fresh independent9/9, published-source9/9 and exact source rollback pass. The private host exited; separate post-shutdown inspection finds0sessions. Source corpus/graders/reserves/permissions unchanged. No compaction event occurred, so the passing outcome does not establish a causal quality or speed improvement from context shortening. Earlier failures remain retained. See evidence/coding-context-repeat-windows.json.
+
+## Hosted file-authoring assertion correction
+
+Hosted f631c1a38204951845 passes all3host and3browser-shard1jobs. Each OS shard2passes180cases and fails the same two personal-files cases: deletion succeeded, but the assertion expected retired No files yet wording. Both320/1440cases reproduce locally. The updated test checks zero file count, empty rendered list, empty backing fixture documents, current creation guidance and enabled New file action, retaining exact hashes and personal/shared permission assertions. All7personal-file/new-file browser cases pass53.3s. No product assertion or timeout was relaxed.

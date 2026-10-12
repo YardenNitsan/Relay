@@ -91,7 +91,11 @@ for (const width of [320, 1440]) {
     expect(documents.size).toBe(1);
     await editor.getByRole('button', { name: 'Delete file', exact: true }).click();
     await editor.getByRole('button', { name: 'Confirm delete', exact: true }).click();
-    await expect(personal.getByText('No files yet.', { exact: false })).toBeVisible();
+    await expect(personal.locator('.project-file-count')).toHaveText('0 files');
+    await expect(personal.locator('.project-file-list button')).toHaveCount(0);
+    await expect(personal.getByText('Create a file here or attach files from the conversation composer.',{exact:true})).toBeVisible();
+    await expect(personal.getByRole('button',{name:'New file',exact:true})).toBeEnabled();
+    expect(documents.size).toBe(0);
     expect(savedBody).toMatchObject({ expectedHash: 'b'.repeat(64) });
     await projectIndex(page);
     await dialog.getByRole('button', { name: 'Open Shared reference', exact: true }).click();

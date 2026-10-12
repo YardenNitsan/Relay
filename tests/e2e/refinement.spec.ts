@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { createHash } from 'node:crypto';
-import {openExecutionOptions,closeExecutionOptions, issuePairingToken, pairBrowser } from './helpers';
+import {openExecutionOptions,closeExecutionOptions, issuePairingToken, openCommands, pairBrowser } from './helpers';
 
 test('phone navigation exposes real destinations and every composer control remains reachable', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 740 });
@@ -113,7 +113,7 @@ test('pairing gates private data, masks the token and persists only the authenti
 test('resource policy remains usable when hardware telemetry is unavailable', async ({ page }) => {
   await page.route('**/api/hardware',route=>route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Telemetry is temporarily unavailable.'})}));
   await page.goto('/');await pairBrowser(page);
-  await page.getByRole('button',{name:'Machine',exact:true}).click();
+  await openCommands(page);await page.getByRole('option',{name:/^Inspect this machine/}).click();
   const dialog=page.getByRole('dialog',{name:'This machine'});
   await expect(dialog.getByRole('alert')).toContainText('Telemetry is temporarily unavailable.');
   await dialog.getByRole('button',{name:'Model safety',exact:true}).click();
@@ -137,7 +137,7 @@ test('resource policy remains usable when hardware telemetry is unavailable', as
 test('resource policy distinguishes drafts, rejected changes and persisted host policy', async ({ page }) => {
   await page.goto('/');
   await pairBrowser(page);
-  await page.getByRole('button', { name: 'Machine', exact: true }).click();
+  await openCommands(page);await page.getByRole('option',{name:/^Inspect this machine/}).click();
   const dialog = page.getByRole('dialog', { name: 'This machine' });
   await dialog.getByRole('button',{name:'Model safety',exact:true}).click();
   const profile = dialog.getByLabel('Resource profile');
@@ -163,7 +163,7 @@ test('resource policy distinguishes drafts, rejected changes and persisted host 
   await expect(dialog.getByText('Resource policy saved', { exact: true })).toBeVisible();
   await expect(dialog.getByText('Applied: Balanced', { exact: true })).toBeVisible();
   await page.reload();
-  await page.getByRole('button', { name: 'Machine', exact: true }).click();
+  await openCommands(page);await page.getByRole('option',{name:/^Inspect this machine/}).click();
   await dialog.getByRole('button',{name:'Model safety',exact:true}).click();
   await expect(profile).toHaveValue('balanced');
   await expect(dialog.getByText('Applied: Balanced', { exact: true })).toBeVisible();
@@ -201,7 +201,7 @@ test('conversation remains readable in both themes, with factual activity availa
   await expect(page.getByRole('heading', { name: 'Execution Workbench' })).toBeVisible();
   await page.screenshot({ path: 'output/playwright/refinement-conversation-light.png', animations: 'disabled' });
   await page.getByRole('button', { name: 'Switch to dark theme', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Relay home', exact: true })).toHaveCSS('color', 'rgb(237, 242, 251)');
+  await expect(page.getByRole('button', { name: 'Relay home', exact: true })).toHaveCSS('color', 'rgb(244, 239, 248)');
   expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([]);
   await page.screenshot({ path: 'output/playwright/refinement-conversation-dark.png', animations: 'disabled' });
 });
@@ -212,6 +212,7 @@ test('revoking the active owner session clears private UI and stops polling unti
   await page.getByLabel('One-use pairing token').fill(await issuePairingToken());
   await page.getByRole('button', { name: 'Pair this browser', exact: true }).click();
   await expect(page.getByText('Local service connected', { exact: true })).toBeVisible();
+  await page.getByRole('button',{name:'Conversation',exact:true}).click();
   await page.getByRole('textbox', { name: 'Objective' }).fill('Explain the execution model');
   await page.getByRole('button', { name: 'Send objective' }).click();
   await expect(page.getByText('Completed', { exact: true }).first()).toBeVisible();
@@ -225,7 +226,7 @@ test('revoking the active owner session clears private UI and stops polling unti
   }, sessionId);
   expect(revoked).toBe(200);
   await page.clock.install();
-  await page.getByRole('button', { name: 'Machine', exact: true }).click();
+  await openCommands(page);await page.getByRole('option',{name:/^Inspect this machine/}).click();
   await expect(page.getByRole('heading', { name: 'Connect this browser' })).toBeVisible();
   await expect(page.getByRole('textbox', { name: 'Objective' })).toHaveCount(0);
   await expect(page.getByText('A deterministic response for browser testing.', { exact: false })).toHaveCount(0);

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import {toggleExecutionOptions, pairBrowser } from './helpers';
+import {toggleExecutionOptions, openCommands, pairBrowser } from './helpers';
 
 for (const [providerId, providerName] of [['openai', 'OpenAI'], ['xai', 'Grok (xAI)'], ['deepseek', 'DeepSeek']] as const) {
 test(`shared-host user manages only their permitted ${providerName} connection on a narrow phone`, async ({ page }) => {
@@ -109,7 +109,7 @@ test('owner saves the remote gateway settings and reviews a pending account with
     const response = await route.fetch(); const users = await response.json();
     await route.fulfill({ response, json: users.map((user: { email: string }) => user.email === email && pending ? { ...user, enabled: false, registrationStatus: 'pending', accessRequestedAt: '2026-10-09T10:00:00Z' } : user) });
   });
-  await page.getByRole('button', { name: 'Access', exact: true }).click();
+  await openCommands(page);await page.getByRole('option',{name:/^Manage access/}).click();
   const dialog = page.getByRole('dialog', { name: 'Access & remote connections', exact: true });
   await dialog.getByText('How to enable remote access', { exact: true }).click();
   const setup = dialog.getByRole('form', { name: 'Remote gateway configuration', exact: true });

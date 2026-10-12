@@ -84,7 +84,7 @@ test('remote-user MCP grants persist independently of network permission', async
     return response.status;
   }, { id: 'browser-grant-fixture', name: 'Browser MCP fixture', url: endpoint, enabled: true, tools: [contract] });
   expect(setup).toBe(200);
-  await page.getByRole('button', { name: 'Access', exact: true }).click();
+  await openCommands(page);await page.getByRole('option',{name:/^Manage access/}).click();
   const dialog = page.getByRole('dialog', { name: 'Access & remote connections' });
   const email = `mcp-browser-${Date.now()}@example.test`;
   await dialog.getByRole('button', { name: 'People', exact: true }).click();

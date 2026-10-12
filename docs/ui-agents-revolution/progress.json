@@ -6,22 +6,42 @@
   "routing": "out_of_scope_unchanged",
   "production": "unchanged",
   "phases": {
-    "1_audit_research": "in_progress",
-    "2_three_concepts": "in_progress",
-    "3_core_web": "not_started",
-    "4_essential_web": "not_started",
-    "5_agents": "audit_in_progress",
-    "6_contracts": "audit_in_progress",
-    "7_android_architecture": "research_in_progress",
-    "8_android_features": "not_started",
-    "9_remaining_web": "not_started",
-    "10_reliability": "not_started",
-    "11_acceptance": "not_started",
-    "12_apk": "not_built",
-    "13_handoff": "not_started"
+    "1_audit_research": "initial_audit_and_research_complete",
+    "2_three_concepts": "three_prototypes_reviewed_dispatch_selected",
+    "3_core_web": "implemented_reviewed_local_regressions_hosted_ci_pending",
+    "4_essential_web": "work_and_agents_rebuilt_other_surfaces_pending",
+    "5_agents": "capability_preflight_and_reviewer_handoff_fixed_further_cooperation_pending",
+    "6_contracts": "versioned_task_feed_implemented_mobile_contracts_partial",
+    "7_android_architecture": "native_kotlin_compose_project_built",
+    "8_android_features": "lan_preview_built_connected_acceptance_pending",
+    "9_remaining_web": "existing_features_preserved_full_redesign_pending",
+    "10_reliability": "automated_regressions_pass_real_model_trials_pending",
+    "11_acceptance": "partial_see_acceptance_ledger",
+    "12_apk": "testing_apk_built_installed_launched_in_emulator",
+    "13_handoff": "in_progress_full_release_incomplete"
   },
-  "apk": null,
+  "apk": {
+    "path": "release/android/relay-0.1.0-lan-preview-debug.apk",
+    "sha256": "9c253dc1e642d4b41ad4def9d4cf9a8f2ca42362c34172bf8452881b69733a8f",
+    "bytes": 16713796,
+    "version": "0.1.0-lan-preview",
+    "versionCode": 1,
+    "minSdk": 26,
+    "signing": "existing_host_debug_identity_not_production_release",
+    "authenticatedHostVerified": false
+  },
   "physicalDeviceVerified": false,
-  "knownFailures": ["Baseline hosted run 38210574875: Linux browser shard 2 failed; Windows shard 2 cancelled. All three host jobs passed. Native Linux local reproduction initially blocked by missing Chromium libnspr4."],
-  "verified": ["Clean worktree from reviewed remote branch tip; locked npm ci --ignore-scripts: 313 packages, zero reported audit vulnerabilities", "Baseline Windows Chrome projects-studio 768x1024: 2 passed in 22.5s"]
+  "knownFailures": [
+    "Original Linux HTTP429 reproduced and fixture setup corrected; native project matrix19/19 passes.",
+    "Intermediate short-landscape connection and inspector scroll defects corrected; final12/12 Agent Work/workbench cases pass.",
+    "Native authenticated LAN/remote and physical Samsung acceptance pending; remote auth, attachments, biometric step-up and notifications incomplete."
+  ],
+  "verified": [
+    "Full integrated host typecheck/tests:1451 passed/1 skipped,135files,328.44s.",
+    "Three concept prototypes:12viewport/theme combinations, zero tagged axe violations or document overflow.",
+    "Initial Dispatch14/14pass; two navigation review regressions observed red then passed in integration.",
+    "Integrated Dispatch/Agents/workbench47/48 then corrected12/12; performance2/2browser lab profiles passed.",
+    "Navigation migration32/34 exposed phone chained-dialog focus; correction and fresh build followed by11/11 refinement/usage passes.",
+    "Native12JVMpass, lint0errors/6warnings; APK signature/install/emulator cold launch/securewindow verified."
+  ]
 }

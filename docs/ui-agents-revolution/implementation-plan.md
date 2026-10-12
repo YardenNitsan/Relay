@@ -42,10 +42,10 @@ Files: `tests/e2e/projects-studio.spec.ts`, `web/features/projects/ProjectFiles.
 
 - [x] Inspect source and baseline commit, establish isolated dependency/build setup.
 - [x] Run unchanged focused Windows case (2 passed; not Linux reproduction).
-- [ ] Run native Linux browser and retrieve CI failure detail.
-- [ ] Produce deterministic regression for confirmed cause, preserving existing assertions/timeouts.
-- [ ] Implement smallest fix; run affected project/source/editor/draft cases and inspect screenshots.
-- [ ] Review, document exact evidence and commit.
+- [x] Run native Linux browser and retrieve CI failure detail.
+- [x] Produce deterministic regression for confirmed cause, preserving existing assertions/timeouts.
+- [x] Implement smallest fix; run affected project/source/editor/draft cases and inspect screenshots.
+- [x] Review, document exact evidence and commit (`754bd01`).
 
 ## Review focus
 

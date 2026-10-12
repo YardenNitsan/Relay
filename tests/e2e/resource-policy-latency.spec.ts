@@ -1,5 +1,5 @@
 import {expect,test} from '@playwright/test';
-import {pairBrowser} from './helpers';
+import {openCommands,pairBrowser} from './helpers';
 
 test('a persisted policy is acknowledged while hardware refresh is still pending',async({page})=>{
   let release!:()=>void;
@@ -10,7 +10,7 @@ test('a persisted policy is acknowledged while hardware refresh is still pending
   });
   try {
     await page.goto('/');await pairBrowser(page);
-    await page.getByRole('button',{name:'Machine',exact:true}).click();
+    await openCommands(page);await page.getByRole('option',{name:/^Inspect this machine/}).click();
     const dialog=page.getByRole('dialog',{name:'This machine'});
     await dialog.getByRole('button',{name:'Model safety',exact:true}).click();
     const profile=dialog.getByLabel('Resource profile');

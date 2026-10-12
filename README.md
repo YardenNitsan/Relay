@@ -12,6 +12,8 @@ Run it with local models alone, or explicitly connect cloud providers. Your host
 
 [0.1.2 release report: changes, verification and remaining work](docs/release-0.1.2.md)
 
+The `modernization/ui-agents-revolution` descendant introduces the Dispatch web shell, task inbox, rebuilt Agent Studio and a native Kotlin/Compose Android LAN preview. A real debug APK was built and emulator-installed; authenticated native connection and physical-phone acceptance remain pending. See [milestone scope and APK details](docs/ui-agents-revolution/release-notes.md), [Android build/install instructions](android/README.md) and [continuation](docs/ui-agents-revolution/continuation.md). **INCOMPLETE — CONTINUATION REQUIRED.** This branch does not replace production.
+
 The modernization branch now targets **0.1.3**. Its Model Studio separates model inspection, connection management and deliberate measurement, with exact model IDs and explicit unknown evidence. See the [0.1.3 acceptance ledger](docs/final-evolution/acceptance-0.1.3.md). This is a development version; the final platform directive remains incomplete.
 
 The `modernization/final-evolution` branch is continuing the [final evolution plan](docs/final-evolution/master-plan.md). It includes the Studio shell, Execution Workbench, focused approvals and a rebuilt Projects workspace, plus verified reliability/security and native development-environment improvements. It is not a completed release: [requirements](docs/final-evolution/requirements-matrix.md), [acceptance evidence](docs/final-evolution/acceptance-results.md) and the [continuation ledger](docs/final-evolution/continuation.md) distinguish working increments from unfinished capabilities. Production is not upgraded by a branch push.

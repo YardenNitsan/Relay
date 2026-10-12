@@ -22,7 +22,10 @@ export function Modal({ title, children, onClose, wide = false, className = '', 
       else {
         const fallback = fallbackFocusId ? document.getElementById(fallbackFocusId) : null;
         if (fallback?.getClientRects().length) { fallback.focus(); return; }
-        const visibleNavigation = Array.from(document.querySelectorAll<HTMLButtonElement>('.mobile-navigation, .command-trigger')).find(element => element.getClientRects().length > 0);
+        // Selector lists follow DOM order; the masthead command now precedes More.
+        // Keep the visible fallback appropriate to the shell's current viewport.
+        const navigationSelectors = matchMedia('(max-width:700px)').matches ? ['.mobile-navigation', '.command-trigger'] : ['.command-trigger', '.mobile-navigation'];
+        const visibleNavigation = navigationSelectors.flatMap(selector => Array.from(document.querySelectorAll<HTMLButtonElement>(selector))).find(element => element.getClientRects().length > 0);
         (visibleNavigation ?? document.querySelector<HTMLButtonElement>('.brand'))?.focus();
       }
     };

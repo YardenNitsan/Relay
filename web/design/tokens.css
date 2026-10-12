@@ -1,8 +1,8 @@
 :root {
   color-scheme: light;
-  --color-canvas: #f3f5f8; --color-surface: #fff; --color-surface-subtle: #eaf0f6;
-  --color-text-primary: #172338; --color-text-secondary: #4b5d75; --color-border: #c7d0dd; --color-control-border: #7c8ba1;
-  --color-action: #244bcb; --color-action-surface: #e9efff;
+  --color-canvas: #f5f3f7; --color-surface: #fff; --color-surface-subtle: #eeeaf2;
+  --color-text-primary: #292335; --color-text-secondary: #645b70; --color-border: #d6cfdd; --color-control-border: #84778e;
+  --color-action: #693a80; --color-action-surface: #eee4f4;
   --color-success: #206346; --color-success-surface: #eaf6ef;
   --color-warning: #80500d; --color-warning-surface: #fff4df;
   --color-danger: #b12b42; --color-danger-surface: #fff0f2;
@@ -11,7 +11,7 @@
   --radius-inset: 4px; --radius-control: 8px; --radius-overlay: 12px;
   --motion-fast: 100ms; --motion-open: 160ms; --motion-pane: 220ms;
   --target-touch: 44px; --target-primary: 48px;
-  --shadow-overlay: 0 16px 64px #17233826;
+  --shadow-overlay: 0 16px 64px #29233526;
   --font-body: 'IBM Plex Sans', system-ui, sans-serif; --font-code: 'IBM Plex Mono', ui-monospace, monospace;
   /* Compatibility roles keep existing feature views coherent during replacement. */
   --canvas: var(--color-canvas); --surface: var(--color-surface); --surface-raised: var(--color-surface); --surface-muted: var(--color-surface-subtle);
@@ -24,9 +24,9 @@
 }
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --color-canvas: #10141d; --color-surface: #171d29; --color-surface-subtle: #202938;
-  --color-text-primary: #edf2fb; --color-text-secondary: #afbdd2; --color-border: #465269; --color-control-border: #71819a;
-  --color-action: #a7bcff; --color-action-surface: #26355b;
+  --color-canvas: #17141c; --color-surface: #211c28; --color-surface-subtle: #2c2535;
+  --color-text-primary: #f4eff8; --color-text-secondary: #bdb1c9; --color-border: #504559; --color-control-border: #887997;
+  --color-action: #d7acec; --color-action-surface: #382842;
   --color-success: #89d9b0; --color-success-surface: #193b2d;
   --color-warning: #f0c47b; --color-warning-surface: #3b301e;
   --color-danger: #ffa8b5; --color-danger-surface: #432530;

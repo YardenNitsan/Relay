@@ -89,6 +89,7 @@ export function useRealtime(enabled: boolean, reconnectGeneration = 0) {
       setConnection('live');
       void client.invalidateQueries({ queryKey: ['conversation'] });
       void client.invalidateQueries({ queryKey: ['task'] });
+      void client.invalidateQueries({ queryKey: ['task-feed'] });
       void client.invalidateQueries({ queryKey: ['status'] });
     };
     source.onerror = () => setConnection('reconnecting');
@@ -100,7 +101,7 @@ export function useRealtime(enabled: boolean, reconnectGeneration = 0) {
       if (!flushTimer) flushTimer = setTimeout(flush, 80);
       if (event.type !== 'MODEL_TEXT' && !refreshTimer) refreshTimer = setTimeout(() => {
         refreshTimer = undefined;
-        for (const key of ['conversation', 'conversations', 'task', 'status']) void client.invalidateQueries({ queryKey: [key] });
+        for (const key of ['conversation', 'conversations', 'task', 'task-feed', 'status']) void client.invalidateQueries({ queryKey: [key] });
       }, 400);
     };
     source.addEventListener('activity', receive as EventListener);

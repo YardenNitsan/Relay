@@ -74,12 +74,12 @@ test('visible viewport resize preserves phone draft and reachable settings contr
   await page.goto('/');await pairBrowser(page);
   const editor=page.getByRole('textbox',{name:'Your objective',exact:true});await editor.fill('Keep this draft while the keyboard changes the viewport.');
   await page.evaluate(()=>{Object.assign(window.visualViewport!,{height:380,offsetTop:0});window.visualViewport!.dispatchEvent(new Event('resize'));});
-  await expect.poll(async()=>Math.round((await page.locator('.studio-frame').boundingBox())!.height)).toBe(380);
+  await expect.poll(async()=>Math.round((await page.locator('.relay-frame').boundingBox())!.height)).toBe(380);
   const send=await page.getByRole('button',{name:'Send objective',exact:true}).boundingBox();expect(send!.y+send!.height).toBeLessThanOrEqual(380);
   await page.getByRole('button',{name:'Execution options',exact:true}).click();
   const close=page.getByRole('button',{name:'Close Execution options',exact:true});const box=await close.boundingBox();expect(box!.y).toBeGreaterThanOrEqual(0);expect(box!.y+box!.height).toBeLessThanOrEqual(380);
   await close.click();await page.evaluate(()=>{Object.assign(window.visualViewport!,{height:844});window.visualViewport!.dispatchEvent(new Event('resize'));});
-  await expect.poll(async()=>Math.round((await page.locator('.studio-frame').boundingBox())!.height)).toBe(844);
+  await expect.poll(async()=>Math.round((await page.locator('.relay-frame').boundingBox())!.height)).toBe(844);
   await expect(editor).toHaveValue('Keep this draft while the keyboard changes the viewport.');
 });
 for(const width of [320,360,390,412,768])test(`touch composer preserves reading space and multiline drafts at ${width}px`,async({page})=>{

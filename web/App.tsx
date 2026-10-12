@@ -1,8 +1,11 @@
 import ModelPicker from './components/ModelPicker';
-import StudioFrame from './layout/StudioFrame';
+import RelayFrame from './layout/RelayFrame';
+import DispatchBoard from './features/work/DispatchBoard';
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Activity as ActivityIcon, PanelRightClose, Radio, X } from 'lucide-react';
+import type {TaskFeedPage} from '../shared/task-feed';
+import type {TaskDetail} from '../shared/types';
 import type { ConversationDetail, SystemStatus, TaskOptions, TaskRecord, Workspace } from '../shared/types';
 import { getAssistantDefinition, type AssistantId } from '../shared/assistants';
 import { api, ApiError, errorMessage, initializeSession, mutation, onSessionInvalidated, refreshSession } from './api';
@@ -39,6 +42,7 @@ interface PendingStart { requestId: string; content: string; options: TaskOption
 const defaults: TaskOptions = { depth: 'balanced', modelId: null, access: 'read_only', workspaceId: null, contextTokens: 8192, cloudPolicy: 'local_only', budget: { maxCalls: 12, maxSeconds: 600, maxIterations: 5, maxCostUsd: null, localOnly: true } };
 
 function currentConversation() { return new URLSearchParams(window.location.search).get('conversation'); }
+function currentScreen(): 'work'|'conversation' {const view=new URLSearchParams(window.location.search).get('view');return view==='work'?'work':view==='conversation'||currentConversation()?'conversation':'work';}
 function currentMessage() { return new URLSearchParams(window.location.search).get('message'); }
 function preferredTheme(): 'dark' | 'light' {
   try { const stored = localStorage.getItem('relay:theme:v1'); if (stored === 'dark' || stored === 'light') return stored; } catch { /* Follow system preference. */ }
@@ -47,7 +51,9 @@ function preferredTheme(): 'dark' | 'light' {
 
 export default function App() {
   const client = useQueryClient();
+  const [screen,setScreen]=useState<'work'|'conversation'>(currentScreen);
   const [conversationId, setConversationId] = useState<string | null>(currentConversation);
+  const [removedConversation,setRemovedConversation]=useState<string|null>(null);
   const [messageId, setMessageId] = useState<string | null>(currentMessage);
   const [historicalTask, setHistoricalTask] = useState<TaskRecord | null>(null);
   const [readerVersion, setReaderVersion] = useState(0);
@@ -110,6 +116,7 @@ export default function App() {
 
   const selectConversation = useCallback((id: string | null, anchor?: string) => {
     navigationVersion.current++;
+    setScreen('conversation');
     setDraftRequest(null);
     if (!id && !sending.current) {
       startRequest.current = null;
@@ -117,12 +124,13 @@ export default function App() {
     }
     setConversationId(id); setMessageId(anchor ?? null); setHistoricalTask(null); setTaskId(null); setActivity(false); setPanel(null);
     const url = new URL(window.location.href);
+    url.searchParams.set('view','conversation');
     if (id) url.searchParams.set('conversation', id); else url.searchParams.delete('conversation');
     if (anchor) url.searchParams.set('message', anchor); else url.searchParams.delete('message');
     window.history.pushState({}, '', url);
   }, [session.data?.user?.id]);
   useEffect(() => {
-    const listener = () => { navigationVersion.current++; setConversationId(currentConversation()); setMessageId(currentMessage()); setHistoricalTask(null); setTaskId(null); setActivity(false); };
+    const listener = () => { setScreen(currentScreen()); navigationVersion.current++; setConversationId(currentConversation()); setMessageId(currentMessage()); setHistoricalTask(null); setTaskId(null); setActivity(false); };
     window.addEventListener('popstate', listener); return () => window.removeEventListener('popstate', listener);
   }, []);
   useEffect(() => {
@@ -145,6 +153,7 @@ export default function App() {
     };
     window.addEventListener('keydown', listener); return () => window.removeEventListener('keydown', listener);
   }, []);
+  const navigateScreen=(next:'work'|'conversation')=>{navigationVersion.current++;setScreen(next);setPanel(null);if(next==='conversation')setActivity(false);const url=new URL(window.location.href);url.searchParams.set('view',next);window.history.pushState({},'',url);};
   const send = async (content: string) => {
     if (sending.current) throw new Error('Another objective is still being sent. Your draft is saved; try again when it finishes.');
     sending.current = true;
@@ -172,10 +181,15 @@ export default function App() {
         setReaderVersion(value => value + 1);
         setTaskId(response.task.id);
       }
-      await Promise.all([client.invalidateQueries({ queryKey: ['conversation', id] }), client.invalidateQueries({ queryKey: ['history'] })]);
+      await Promise.all([client.invalidateQueries({ queryKey: ['conversation', id] }), client.invalidateQueries({ queryKey: ['history'] }),client.invalidateQueries({queryKey:['task-feed']})]);
     } finally { sending.current = false; }
   };
   const conversationDeleted = (id: string) => {
+    setRemovedConversation(id);
+    void client.cancelQueries({queryKey:['task-feed']});
+    client.setQueriesData<TaskFeedPage>({queryKey:['task-feed']},data=>data?{...data,items:data.items.filter(task=>task.conversationId!==id)}:data);
+    client.removeQueries({queryKey:['task'],predicate:query=>(query.state.data as TaskDetail|undefined)?.task?.conversationId===id});
+    void client.invalidateQueries({queryKey:['task-feed']});
     void client.cancelQueries({ queryKey: ['conversation', id] });
     client.removeQueries({ queryKey: ['conversation', id] });
     client.removeQueries({ queryKey: ['history-messages', id] });
@@ -243,7 +257,7 @@ export default function App() {
     ...(owner ? [{ id: 'mcp', label: 'Manage MCP tools', description: 'Review tool contracts and control server access', action: () => setPanel('mcp') }] : []),
     { id: 'workspace', label: 'Manage workspaces', description: 'Import a project or inspect managed files', action: () => setPanel('workspaces') },
     ...(owner ? [{ id: 'hardware', label: 'Inspect this machine', description: 'Measured resource and execution boundary information', action: () => setPanel('hardware') }, { id: 'access', label: 'Manage access', description: 'Remote gateway, allowed users and session revocation', action: () => setPanel('access') }] : []),
-    { id: 'activity', label: 'Open activity', description: 'Work log, approvals, changes and verification', action: () => setActivity(true) },
+    { id: 'activity', label: 'Open activity', description: 'Work log, approvals, changes and verification', action: () => {navigateScreen('conversation');setActivity(true);} },
     { id: 'theme', label: `Switch to ${theme === 'light' ? 'dark' : 'light'} theme`, description: 'Change the reading surface', action: () => setTheme(value => value === 'light' ? 'dark' : 'light') },
     ...(owner ? [{ id: 'stop', label: 'Stop all agents', description: 'Immediately block new work and cancel managed execution', action: () => { void emergencyStop(); }, disabled: !ready || stopped || stopBusy }] : []),
     ...(owner && stopped ? [{ id: 'resume', label: 'Resume Relay service', description: 'Allow new work; existing tasks remain stopped', action: () => { void resumeService(); } }] : []),
@@ -251,13 +265,14 @@ export default function App() {
 
   if (!ready) return <Connection pending={!sessionFailure && session.isPending} error={sessionFailure ?? session.error} onPaired={data => { client.setQueryData(['session'], data); setSessionFailure(null); setNotice(null); }} onRetry={reconnect} />;
 
-  return <StudioFrame workbenchOpen={activity} title={conversation.data?.conversation.title ?? 'New conversation'} hostName={session.data?.hostName} owner={owner} theme={theme} stopped={stopped} stopBusy={stopBusy} onDestination={setPanel} onNew={() => selectConversation(null)} onConversation={() => { setPanel(null); setActivity(false); }} onWorkbench={() => setActivity(true)} onTheme={() => setTheme(value => value === 'light' ? 'dark' : 'light')} onStop={() => { void emergencyStop(); }}>
+  return <RelayFrame screen={screen} onWork={()=>navigateScreen('work')} connection={<div className="connection-status"><span className={`connection-dot ${ready && realtime.connection === 'live' && !backendUnavailable ? 'connected' : ''}`} /><span>{realtime.connection==='offline' ? 'Offline — your draft stays here' : backendUnavailable ? 'Service disconnected' : !ready ? 'Connecting to Relay' : realtime.connection === 'live' ? remote ? `Connected to ${session.data?.hostName ?? 'shared host'}` : 'Local service connected' : realtime.connection === 'reconnecting' ? 'Reconnecting to activity…' : 'Connecting activity…'}</span></div>} workbenchOpen={activity} title={conversation.data?.conversation.title ?? 'New conversation'} owner={owner} theme={theme} stopped={stopped} stopBusy={stopBusy} onDestination={setPanel} onNew={() => selectConversation(null)} onConversation={() => navigateScreen('conversation')} onWorkbench={() => {navigateScreen('conversation');setActivity(true);}} onTheme={() => setTheme(value => value === 'light' ? 'dark' : 'light')} onStop={() => { void emergencyStop(); }}>
     {backendUnavailable && <div className="service-banner error" role="alert"><span>The service is unavailable or this session has expired. Your draft stays in this browser.</span><button disabled={reconnecting} onClick={() => { void reconnect(); }}>{reconnecting?'Reconnecting…':'Reconnect'}</button></div>}
     {!backendUnavailable && realtime.connection === 'reconnecting' && <div className="service-banner"><span>Live activity is reconnecting. Persisted work remains available.</span><button disabled={reconnecting} onClick={() => { void reconnect(); }}>{reconnecting?'Reconnecting…':'Reconnect activity'}</button></div>}
     {stopped && <div className="service-banner warning" role="status"><span><strong>All work is stopped.</strong> {owner ? 'Resume the service to allow new objectives.' : 'The host owner can resume the service.'}</span>{owner && <button disabled={stopBusy} onClick={() => { void resumeService(); }}>Resume Relay</button>}</div>}
     {notice && <div className={`service-banner ${notice.error ? 'error' : ''}`} role={notice.error ? 'alert' : 'status'}><span>{notice.message}</span><button className="icon-button" aria-label="Dismiss notification" onClick={() => setNotice(null)}><X size={16} /></button></div>}
     {notifications.notice && <div className="service-banner" role="status" aria-label="Task completion notification"><span>{notifications.notice}</span><button className="icon-button" aria-label="Dismiss task notification" onClick={notifications.dismiss}><X size={16} /></button></div>}
-    <div className={`workspace-layout ${activity ? 'has-inspector' : ''}`}><main id="main" className="conversation-main"><div className="conversation-toolbar"><div className="connection-status"><span className={`connection-dot ${ready && realtime.connection === 'live' && !backendUnavailable ? 'connected' : ''}`} /><span>{realtime.connection==='offline' ? 'Offline — your draft stays here' : backendUnavailable ? 'Service disconnected' : !ready ? 'Connecting to Relay' : realtime.connection === 'live' ? remote ? `Connected to ${session.data?.hostName ?? 'shared host'}` : 'Local service connected' : realtime.connection === 'reconnecting' ? 'Reconnecting to activity…' : 'Connecting activity…'}</span></div>{remote && <button className="account-indicator" aria-label="Account and host" onClick={() => setPanel('navigation')}>{session.data?.user?.name ?? 'Your account'}</button>}<button id="activity-toggle" className={`activity-toggle ${activity ? 'active' : ''}`} onClick={() => setActivity(value => !value)} aria-expanded={activity}>{activity ? <PanelRightClose size={16} /> : <ActivityIcon size={16} />}<span>Activity</span>{running && <span className="activity-dot" />}</button></div>
+    {screen==='work'&&<DispatchBoard removedConversation={removedConversation} onNew={()=>selectConversation(null)} onOpen={task=>{selectConversation(task.conversationId);setHistoricalTask(task);setTaskId(task.id);setActivity(true);}}/>}
+    <div hidden={screen!=='conversation'} className={`workspace-layout ${activity ? 'has-inspector' : ''}`}><main id="main" className="conversation-main"><div className="conversation-toolbar"><span className="dispatch-eyebrow">CONVERSATION</span>{remote && <button className="account-indicator" aria-label="Account and host" onClick={() => setPanel('navigation')}>{session.data?.user?.name ?? 'Your account'}</button>}<button id="activity-toggle" className={`activity-toggle ${activity ? 'active' : ''}`} onClick={() => setActivity(value => !value)} aria-expanded={activity}>{activity ? <PanelRightClose size={16} /> : <ActivityIcon size={16} />}<span>Activity</span>{running && <span className="activity-dot" />}</button></div>
       <GoogleReturn onModels={() => setPanel('models')} />
       <GoogleWorkspaceReturn onOpen={() => setPanel('google-workspace')} />
       <Conversation onDraft={setDraftRequest} key={`${conversationId ?? 'new'}:${readerVersion}`} focusMessageId={messageId} onReturnLatest={returnLatest} detail={conversation.data} loading={Boolean(conversationId) && conversation.isPending} error={conversation.isError ? conversation.error : null} onRetry={() => { void conversation.refetch(); }} streams={realtime.text} events={realtime.events} models={modelList} onInspect={inspect} onModels={() => setPanel('models')} onWorkspace={() => setPanel('workspaces')} />
@@ -270,7 +285,7 @@ export default function App() {
     {panel === 'settings' && <Modal title="Settings" onClose={() => setPanel(null)} wide className="settings-studio-modal"><Suspense fallback={<Loading>Opening settings…</Loading>}><Settings owner={owner} theme={theme} session={session.data} notifications={notifications} onTheme={setTheme} onDestination={setPanel}/></Suspense></Modal>}
     {panel === 'usage' && <Modal title="Usage" className="usage-drawer" onClose={() => setPanel(null)}><Suspense fallback={<Loading>Opening usage…</Loading>}><Usage /></Suspense></Modal>}
     {panel === 'clients' && <Modal title="External clients" onClose={() => setPanel(null)} wide className="clients-studio-modal"><Suspense fallback={<Loading>Opening client access…</Loading>}><Clients permitted={owner || permissions?.externalModelAccess === true} /></Suspense></Modal>}
-    {panel === 'agents' && <Modal title="Agents" onClose={() => setPanel(null)} wide className="agent-studio-modal"><Suspense fallback={<Loading>Opening agents…</Loading>}><Agents selected={options.assistantId} workspaceSelected={Boolean(options.workspaceId)} onWorkspace={() => setPanel('workspaces')} onSelect={selectAgent} /></Suspense></Modal>}
+    {panel === 'agents' && <Modal title="Agents" onClose={() => setPanel(null)} wide className="agent-studio-modal"><Suspense fallback={<Loading>Opening agents…</Loading>}><Agents onOpenTask={async id=>{const intent=++navigationVersion.current;const {task}=await api<TaskDetail>(`/tasks/${encodeURIComponent(id)}`);if(intent!==navigationVersion.current)return;selectConversation(task.conversationId);setHistoricalTask(task);setTaskId(task.id);setActivity(true);}} selected={options.assistantId} workspaceSelected={Boolean(options.workspaceId)} onWorkspace={() => setPanel('workspaces')} onSelect={selectAgent} /></Suspense></Modal>}
     {pickModel && <ModelPicker open initialModelId={pickModel} onClose={() => setPickModel(null)} models={modelList} providers={models.data?.providers ?? []} options={options} onOptions={setOptions} onConnections={() => setPanel('models')} canUseCloud={owner || Boolean((permissions?.dailyCloudBudgetUsd || permissions?.allowUnpricedCloud) && permissions.providers.some(provider => !['ollama', 'lmstudio'].includes(provider)))} />}
     {panel === 'models' && <Modal title="Models & connections" onClose={() => setPanel(null)} wide className="model-studio-modal"><Suspense fallback={<Loading>Opening models…</Loading>}><Models owner={owner} hostName={session.data?.hostName} accountName={session.data?.user?.name} contextTokens={options.contextTokens} onSelect={id => { setPickModel(id); setPanel(null); }} /></Suspense></Modal>}
     {panel === 'mcp' && owner && <Modal title="MCP tools" onClose={() => setPanel(null)} wide className="mcp-studio-modal"><Suspense fallback={<Loading>Opening tool connections…</Loading>}><Mcp /></Suspense></Modal>}
@@ -281,6 +296,6 @@ export default function App() {
     {panel === 'workspaces' && <Modal title="Workspaces" onClose={() => setPanel(null)} wide className="projects-dialog"><Suspense fallback={<Loading>Opening workspaces…</Loading>}><Workspaces owner={owner} userId={session.data?.user?.id} canWriteShared={permissions?.maxAccess !== undefined && permissions.maxAccess !== 'read_only'} selected={options.workspaceId} onSelect={id => setOptions(value => ({ ...value, workspaceId: id }))} /></Suspense></Modal>}
     {panel === 'access' && owner && <Modal title="Access & remote connections" onClose={() => setPanel(null)} wide className="access-studio-modal"><Suspense fallback={<Loading>Opening access controls…</Loading>}><Access /></Suspense></Modal>}
     {panel === 'commands' && <CommandPalette commands={commands} onClose={() => setPanel(null)} />}
-    {panel === 'navigation' && <Navigation owner={owner} theme={theme} hostName={session.data?.hostName} session={session.data} onDestination={setPanel} onNew={() => selectConversation(null)} onActivity={() => { setPanel(null); setActivity(true); }} onTheme={() => setTheme(value => value === 'light' ? 'dark' : 'light')} onClose={() => setPanel(null)} />}
-  </StudioFrame>;
+    {panel === 'navigation' && <Navigation owner={owner} theme={theme} hostName={session.data?.hostName} session={session.data} onDestination={setPanel} onNew={() => selectConversation(null)} onActivity={() => {navigateScreen('conversation');setActivity(true); }} onTheme={() => setTheme(value => value === 'light' ? 'dark' : 'light')} onClose={() => setPanel(null)} />}
+  </RelayFrame>;
 }

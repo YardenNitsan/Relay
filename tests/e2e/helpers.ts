@@ -62,6 +62,7 @@ export async function pairBrowser(page: Page) {
     await page.context().addCookies(ownerCookies);
     await page.reload();
     await expect(page.getByText('Local service connected', { exact: true })).toBeVisible();
+    await page.getByRole('button',{name:'Conversation',exact:true}).click();
     return;
   }
   const token = await issuePairingToken();
@@ -69,6 +70,7 @@ export async function pairBrowser(page: Page) {
   await page.getByRole('button', { name: 'Pair this browser', exact: true }).click();
   await expect(page.getByText('Local service connected', { exact: true })).toBeVisible();
   ownerCookies = await page.context().cookies();
+  await page.getByRole('button',{name:'Conversation',exact:true}).click();
 }
 
 export async function openCommands(page: Page) {

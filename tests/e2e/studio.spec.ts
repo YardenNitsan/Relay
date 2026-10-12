@@ -3,23 +3,18 @@ import AxeBuilder from '@axe-core/playwright';
 import {pairBrowser} from './helpers';
 
 for(const width of [390,1440])for(const theme of ['light','dark'] as const) {
-  test(`Studio navigation preserves work and host context at ${width}px in ${theme}`,async({page})=>{
+  test(`Dispatch navigation preserves work and host context at ${width}px in ${theme}`,async({page})=>{
     await page.addInitScript(value=>localStorage.setItem('relay:theme:v1',value),theme);
     await page.setViewportSize({width,height:900});await page.goto('/');await pairBrowser(page);
     const draft=page.getByRole('textbox',{name:'Objective'});await draft.fill('Keep this objective while I inspect a project.');
-    if(width>700) {
-      const navigation=page.getByRole('navigation',{name:'Relay studio'});
-      await expect(navigation).toBeVisible();await expect(navigation.getByText('Relay Host',{exact:true})).toBeVisible();
-      await navigation.getByRole('button',{name:'Projects',exact:true}).click();
-    } else {
-      await page.getByRole('button',{name:'Open navigation'}).click();
-      await page.getByRole('button',{name:'Workspaces',exact:true}).click();
-    }
+    const navigation=page.getByRole('navigation',{name:'Relay navigation'});
+    await expect(navigation).toBeVisible();
+    await navigation.getByRole('button',{name:'Projects',exact:true}).click();
     await expect(page.getByRole('dialog',{name:'Workspaces',exact:true})).toBeVisible();
     await page.keyboard.press('Escape');await expect(draft).toHaveValue('Keep this objective while I inspect a project.');
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
     expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze()).violations).toEqual([]);
-    await page.screenshot({path:`output/playwright/studio-shell-${width}-${theme}.png`});
+    await page.screenshot({path:`output/playwright/dispatch-conversation-${width}-${theme}.png`});
   });
 }
 

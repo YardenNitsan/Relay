@@ -1,0 +1,209 @@
+{
+  "scope": "Synthetic authenticated browser laboratory, not field INP or physical Android. Measured working tree before frontend commit; bundle hash identifies source.",
+  "profiles": [
+    {
+      "profile": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 1000,
+        "cpu": 1,
+        "latency": 0
+      },
+      "network": {
+        "latencyMs": 0,
+        "downloadBytesPerSecond": -1,
+        "uploadBytesPerSecond": -1
+      },
+      "fixture": {
+        "messages": 40,
+        "assistantResponses": 20,
+        "responseBytes": 12484,
+        "responseSha256": "e3a5aed863f1787f7b00000dc584c01d33545f2a42f8d76b6e59cd29ec208c10"
+      },
+      "browser": "155.0.8059.39",
+      "baseCommit": "59fe79f31d6ed9db7fdb0dbff58de431489e2c75",
+      "buildIndexSha256": "273ef28aa7f77227fb8850f15533456895e95ab2aeb194e2db1cff6d67b60bdf",
+      "summary": {
+        "cold": {
+          "samples": [
+            204.70000004768372,
+            132.79999995231628,
+            135
+          ],
+          "median": 135,
+          "min": 132.79999995231628,
+          "max": 204.70000004768372
+        },
+        "warm": {
+          "samples": [
+            124.70000004768372,
+            142.70000004768372,
+            114.89999985694885
+          ],
+          "median": 124.70000004768372,
+          "min": 114.89999985694885,
+          "max": 142.70000004768372
+        }
+      },
+      "failures": [],
+      "samples": [
+        {
+          "repeat": 0,
+          "cache": "cold",
+          "readyMs": 204.70000004768372,
+          "typingTwoFrameMedianMs": 4.900000095367432,
+          "historyVisibleMs": 145.29999995231628,
+          "domNodes": 4233,
+          "jsHeapUsedBytes": 21345412
+        },
+        {
+          "repeat": 0,
+          "cache": "warm",
+          "readyMs": 124.70000004768372,
+          "typingTwoFrameMedianMs": 4.700000047683716,
+          "historyVisibleMs": 129.70000004768372,
+          "domNodes": 4233,
+          "jsHeapUsedBytes": 43424668
+        },
+        {
+          "repeat": 1,
+          "cache": "cold",
+          "readyMs": 132.79999995231628,
+          "typingTwoFrameMedianMs": 5,
+          "historyVisibleMs": 137.5,
+          "domNodes": 4233,
+          "jsHeapUsedBytes": 43793372
+        },
+        {
+          "repeat": 1,
+          "cache": "warm",
+          "readyMs": 142.70000004768372,
+          "typingTwoFrameMedianMs": 4.6000001430511475,
+          "historyVisibleMs": 138.70000004768372,
+          "domNodes": 4233,
+          "jsHeapUsedBytes": 68128096
+        },
+        {
+          "repeat": 2,
+          "cache": "cold",
+          "readyMs": 135,
+          "typingTwoFrameMedianMs": 4.900000095367432,
+          "historyVisibleMs": 139.09999990463257,
+          "domNodes": 4233,
+          "jsHeapUsedBytes": 40838636
+        },
+        {
+          "repeat": 2,
+          "cache": "warm",
+          "readyMs": 114.89999985694885,
+          "typingTwoFrameMedianMs": 5.199999809265137,
+          "historyVisibleMs": 133,
+          "domNodes": 4233,
+          "jsHeapUsedBytes": 32583692
+        }
+      ]
+    },
+    {
+      "profile": {
+        "name": "phone-layout",
+        "width": 390,
+        "height": 844,
+        "cpu": 4,
+        "latency": 80
+      },
+      "network": {
+        "latencyMs": 80,
+        "downloadBytesPerSecond": 1250000,
+        "uploadBytesPerSecond": 250000
+      },
+      "fixture": {
+        "messages": 40,
+        "assistantResponses": 20,
+        "responseBytes": 12484,
+        "responseSha256": "e3a5aed863f1787f7b00000dc584c01d33545f2a42f8d76b6e59cd29ec208c10"
+      },
+      "browser": "155.0.8059.39",
+      "baseCommit": "59fe79f31d6ed9db7fdb0dbff58de431489e2c75",
+      "buildIndexSha256": "273ef28aa7f77227fb8850f15533456895e95ab2aeb194e2db1cff6d67b60bdf",
+      "summary": {
+        "cold": {
+          "samples": [
+            1741.2999999523163,
+            1693.2999999523163,
+            1669.4000000953674
+          ],
+          "median": 1693.2999999523163,
+          "min": 1669.4000000953674,
+          "max": 1741.2999999523163
+        },
+        "warm": {
+          "samples": [
+            1183.2999999523163,
+            1140.9000000953674,
+            1148
+          ],
+          "median": 1148,
+          "min": 1140.9000000953674,
+          "max": 1183.2999999523163
+        }
+      },
+      "failures": [],
+      "samples": [
+        {
+          "repeat": 0,
+          "cache": "cold",
+          "readyMs": 1741.2999999523163,
+          "typingTwoFrameMedianMs": 11.799999952316284,
+          "historyVisibleMs": 1128.3999998569489,
+          "domNodes": 4233,
+          "jsHeapUsedBytes": 25707080
+        },
+        {
+          "repeat": 0,
+          "cache": "warm",
+          "readyMs": 1183.2999999523163,
+          "typingTwoFrameMedianMs": 11.199999809265137,
+          "historyVisibleMs": 1187.5999999046326,
+          "domNodes": 4233,
+          "jsHeapUsedBytes": 23988684
+        },
+        {
+          "repeat": 1,
+          "cache": "cold",
+          "readyMs": 1693.2999999523163,
+          "typingTwoFrameMedianMs": 12.200000047683716,
+          "historyVisibleMs": 1198.0999999046326,
+          "domNodes": 4233,
+          "jsHeapUsedBytes": 54616528
+        },
+        {
+          "repeat": 1,
+          "cache": "warm",
+          "readyMs": 1140.9000000953674,
+          "typingTwoFrameMedianMs": 11.700000047683716,
+          "historyVisibleMs": 1148.6999998092651,
+          "domNodes": 4233,
+          "jsHeapUsedBytes": 36894672
+        },
+        {
+          "repeat": 2,
+          "cache": "cold",
+          "readyMs": 1669.4000000953674,
+          "typingTwoFrameMedianMs": 11.899999856948853,
+          "historyVisibleMs": 1182.3999998569489,
+          "domNodes": 4233,
+          "jsHeapUsedBytes": 58401956
+        },
+        {
+          "repeat": 2,
+          "cache": "warm",
+          "readyMs": 1148,
+          "typingTwoFrameMedianMs": 12.199999809265137,
+          "historyVisibleMs": 1111,
+          "domNodes": 4233,
+          "jsHeapUsedBytes": 32338732
+        }
+      ]
+    }
+  ]
+}

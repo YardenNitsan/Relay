@@ -17,3 +17,14 @@ Output: `android/app/build/outputs/apk/debug/app-debug.apk`. The locally deliver
 The separate [Android CI workflow](../.github/workflows/android.yml) builds and checks this module on Ubuntu, verifies the wrapper and publishes verification reports. Its ephemeral runner debug key is not the delivered update identity; CI does not distribute its APK as an upgrade. A configured workflow is not a claim that a hosted run has passed.
 
 Only exact HTTPS origins are accepted. There is no HTTP fallback, custom CA bypass, Access service secret, browser-cookie scraping or owner API access. App sessions are protected with Android Keystore; activity screens are secure and ordinary screen capture is disabled. The app keeps drafts/transcripts in memory and does not provide background push or offline task submission.
+
+## Install this testing APK
+
+1. Transfer `release/android/relay-0.1.0-lan-preview-debug.apk` to the phone using USB or your usual private file transfer.
+2. Open it in the phone's Files application. If Android requests permission, allow installation from that file application, install Relay, then turn that installation permission off again.
+3. Open Relay on the same approved network as the configured host. Enter its exact HTTPS LAN origin and a fresh one-use account invitation from the host owner. The certificate must already be trusted by Android; this app cannot connect to an untrusted self-signed certificate. Android 17 also requires the local-network permission.
+4. Keep the existing web client available: this preview does not support native remote Access login, attachments or background notifications.
+
+For an existing preview installation signed with the recorded certificate, install the next APK over it to preserve app storage. A different signing identity cannot update this installation. Do not uninstall to resolve a signature mismatch unless you intend to discard its stored session and local state. Future builds must increase `versionCode` and retain the established testing key or explicitly migrate to a production signing process.
+
+Optional USB developer installation: `adb install -r release/android/relay-0.1.0-lan-preview-debug.apk`. Actual Samsung Galaxy S26 Ultra installation and host connectivity still require physical-device acceptance.

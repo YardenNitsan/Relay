@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { pairBrowser } from './helpers';
+import { openCommands, pairBrowser } from './helpers';
 
 const report = { periodStart: '2026-10-09T00:00:00Z', periodEnd: '2026-10-10T00:00:00Z', truncated: true, models: [
   { modelId: 'ollama/local-model', provider: 'ollama', name: 'Local reasoning model', local: true, requests: 3, inputTokens: 1800, outputTokens: 400, unreportedCalls: 1, limits: null },
@@ -14,8 +14,8 @@ test('Usage drawer shows measured tokens and honest remaining limits on desktop 
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/'); await pairBrowser(page);
   expect(requests).toBe(0);
-  const trigger = page.getByRole('button', { name: 'Usage', exact: true });
-  await trigger.click();
+  const trigger = page.getByRole('button', { name: 'Open command palette', exact: true });
+  await openCommands(page);await page.getByRole('option',{name:/^Usage/}).click();
   const drawer = page.getByRole('dialog', { name: 'Usage', exact: true });
   await expect(drawer.getByText('5,000', { exact: true })).toBeVisible();
   await expect(drawer.getByText('Reported totals are partial.', { exact: false })).toBeVisible();

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import {chooseExecutionOption, pairBrowser } from './helpers';
+import {chooseExecutionOption, openCommands, pairBrowser } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -9,7 +9,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('owner adds an allowed user, changes persisted grants, and revokes access', async ({ page }) => {
-  await page.getByRole('button', { name: 'Access', exact: true }).click();
+  await openCommands(page);await page.getByRole('option',{name:/^Manage access/}).click();
   const dialog = page.getByRole('dialog', { name: 'Access & remote connections' });
   await expect(dialog.getByText('Remote access is disabled. Local access works independently.')).toBeVisible();
   const email = `browser-${Date.now()}@example.test`;
@@ -38,8 +38,10 @@ test('owner adds an allowed user, changes persisted grants, and revokes access',
 });
 
 test('access modal is keyboard accessible and passes automated checks', async ({ page }) => {
-  const trigger = page.getByRole('button', { name: 'Access', exact: true });
+  const trigger = page.getByRole('button', { name: 'Open command palette', exact: true });
   await trigger.focus(); await page.keyboard.press('Enter');
+  await page.getByRole('combobox',{name:'Search commands',exact:true}).fill('Manage access');
+  await page.keyboard.press('Enter');
   const dialog = page.getByRole('dialog', { name: 'Access & remote connections' });
   await dialog.getByRole('button', { name: 'People', exact: true }).click();
   await dialog.getByRole('button', { name: 'Add allowed user', exact: true }).click();

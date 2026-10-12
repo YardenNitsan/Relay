@@ -70,13 +70,13 @@ test('Workbench shows branching dependencies and long model names without implyi
   }
 });
 
-test('responsive navigation retains keyboard focus when the rail changes to the phone menu',async({page})=>{
+test('responsive navigation retains keyboard focus when the top bar becomes bottom navigation',async({page})=>{
   await page.setViewportSize({width:1440,height:900});await page.goto('/');await pairBrowser(page);
-  await page.getByRole('navigation',{name:'Relay studio'}).getByRole('button',{name:'Projects',exact:true}).focus();
+  await page.getByRole('navigation',{name:'Relay navigation'}).getByRole('button',{name:'Projects',exact:true}).focus();
   await page.setViewportSize({width:390,height:844});
-  await expect(page.getByRole('button',{name:'Open navigation',exact:true})).toBeFocused();
+  await expect(page.getByRole('button',{name:'Projects',exact:true})).toBeFocused();
   await page.setViewportSize({width:1440,height:900});
-  await expect(page.getByRole('navigation',{name:'Relay studio'}).getByRole('button',{name:'Open navigation',exact:true})).toBeFocused();
+  await expect(page.getByRole('navigation',{name:'Relay navigation'}).getByRole('button',{name:'Projects',exact:true})).toBeFocused();
   await page.getByRole('button',{name:'Open execution workbench',exact:true}).click();
   await page.getByRole('button',{name:'Focus workbench',exact:true}).focus();
   await page.setViewportSize({width:844,height:390});

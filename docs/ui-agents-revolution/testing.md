@@ -22,4 +22,36 @@ Raw traces may contain disposable fixture session material: keep them ignored. O
 
 ## Agent verification preflight
 
-See [capability audit and exact red/green evidence](agent-capabilities.md#g1-implementation-plan--authorized-follow-up). Eight regressions reproduced incompatible Browser admission/spending, with three compatible controls passing. Minimal admission/runtime checks now pass64focused tests across4files in62.37s. Existing profiles/tools/required hashes/model selection remain unchanged. Broad integration is pending.
+See [capability audit and exact red/green evidence](agent-capabilities.md#g1-implementation-plan--authorized-follow-up). Eight regressions reproduced incompatible Browser admission/spending, with three compatible controls passing. Minimal admission/runtime checks now pass64focused tests across4files in62.37s. Existing profiles/tools/required hashes/model selection remain unchanged. The subsequent full host check below includes these changes.
+
+## Shared task feed and reviewer handoffs
+
+The versioned, account-scoped task feed initially failed seven authenticated cases with404. After implementation,64focused history/feed/Worker tests passed in19.29s. Coverage includes pagination, cursor account binding, task/conversation ownership, deleted conversations, bounded objectives and authenticated gateway dispatch. It does not imply live Cloudflare acceptance.
+
+Reviewer acceptance suggestions initially failed three cases, with one control passing. Persisted planner suggestions now enter the reviewer context explicitly as untrusted evidence, without changing permission, required-read or routing decisions. Initial/repaired/resumed/oversized/unplanned coverage and related checks passed44tests across4files in31.45s.
+
+The integrated `npm.cmd run check` completed strict typechecking and **1451passed/1skipped across135files in328.44s**, exit0. The first invocation appended `-- --maxWorkers=1`; npm warned that this did not forward a Vitest worker option through the compound script. The actual suite used its existing two-worker configuration. Use `npm.cmd test -- --maxWorkers=1` when serialization is needed. No full-suite claim includes a later backend change.
+
+## Dispatch and Agent Studio
+
+Three working local prototypes were reviewed across12concept/viewport/theme combinations. All had zero document overflow and zero violations in the configured axe checks. These are synthetic concept screens, not product acceptance. Representative screenshots and the written choice are in [evidence](evidence/README.md) and [design decision](design-decision.md).
+
+The old application failed the new Work entry assertion before implementation. The first implemented Dispatch run passed14/14 in1.8min, including12width/theme combinations (320,390,768,1024,1440,2560), real disposable-host task detail/opening, failed refresh and draft preservation. Two review regressions for delayed admission and URL/Back state were observed failing before their fixes and subsequently passed.
+
+An intermediate30-case integration run passed29 and exposed a hidden connection indicator in short landscape. Keeping the real indicator visible corrected that defect. A fresh48-case Dispatch/Agent Studio/agent/workbench run then passed47 and exposed a different short-landscape issue: the fixed execution header left only48px for its scroll body. The inspector now scrolls its header and evidence together at short heights. Neither request limits nor test timeouts were increased.
+
+After the final build, **all12 Agent Work and workbench cases passed in1.6min**, including the failing landscape approval/deny flow, preview keyboard focus, duplicate/failed task opening and opening a task actually created on the disposable backend. The48-case run and12-case rerun overlap; they are not a single60-case run. Review corrections, scope and remaining acceptance are recorded in [independent review](independent-review.md). These tests use real fixture APIs with deterministic provider behavior; they do not establish successful autonomous coding by a live model.
+
+Build completed with main JavaScript523.55kB (158.92kB gzip) and CSS101.38kB (18.33kB gzip). The existing >500kB main-chunk warning remains visible. No dependency was added for the frontend rebuild.
+
+Seven existing navigation/permission/usage/conversation test files ran34cases:32passed and two retained phone focus-return assertions failed. Both exposed a real shared defect: the new header places Command earlier in DOM order than More, so chained-dialog fallback chose Command on phones. Modal now explicitly prefers visible More at≤700px and Command on desktop; original trigger and explicit fallback still take precedence. Stop all's touch target was also raised from40px to44px. After a fresh typecheck/build, **all11 refinement/usage cases passed in1.2min**, including both unchanged failed assertions and desktop chained-dialog focus. Logs: `navigation-migration.log`, `final-focus-build.log`, `final-focus-green.log`. Independent source review accepted the correction and checked that migrated tests retain substantive permission, draft, persistence, latency and accessibility assertions.
+
+## Browser performance
+
+`RELAY_PERFORMANCE_LABEL=dispatch-preview npm run benchmark:ui` passed both profiles in1.1min. Each measured three cold and three warm authenticated synthetic long-conversation loads (40messages/20assistant responses). Desktop ready medians were135ms cold/124.7ms warm. The390×844 phone-layout profile used4× CPU slowdown,80ms latency and1.25MB/s throughput; its medians were1693.3ms cold/1148ms warm. This is a browser laboratory result, not physical Android, live inference or field INP.
+
+The measured frontend was the working tree above base commit59fe79f; generated index SHA256 was `273ef28aa7f77227fb8850f15533456895e95ab2aeb194e2db1cff6d67b60bdf`. The curated [measurement record](evidence/performance.json) retains provenance, per-run measurements and browser version. Raw artifacts remain under ignored `output/performance/dispatch-preview/`.
+
+## Native preview
+
+See [Android validation](android-validation.md) for the actual51-task Gradle build,12JVM tests, lint0errors/6warnings, APK signature, emulator installation and launch. Root independently checked the16713796-byte artifact and SHA256. Authenticated LAN, remote authentication, physical Samsung behavior and Android instrumentation acceptance remain unverified. The debug APK is a testing preview, not a production release.

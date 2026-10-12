@@ -379,34 +379,6 @@ kbd { font: 10px var(--mono); border: 1px solid var(--line); border-radius: 3px;
 .network-policy > label { display: flex; flex-direction: column; gap: 7px; margin: 0 0 16px; }
 .network-policy textarea, .composer .network-policy textarea { width: 100%; min-height: 94px; max-height: 180px; padding: 10px 12px; font-size: 14px; line-height: 1.5; border: 1px solid var(--line-strong); border-radius: 5px; background: var(--surface); resize: vertical; }
 .network-policy .hint, .mcp-task-selection .hint { font-size: 12px; }
-.mcp-boundary { display: flex; gap: 12px; align-items: flex-start; border-left: 2px solid var(--accent); padding: 14px 16px; background: var(--surface-muted); margin: 0 0 28px; }
-.mcp-boundary > svg { color: var(--accent); margin-top: 2px; }
-.mcp-boundary strong { font-size: 14px; }
-.mcp-boundary p { font-size: 13px; color: var(--muted); margin: 5px 0 10px; }
-.mcp-boundary small { display: block; color: var(--muted); font-size: 12px; line-height: 1.6; }
-.mcp-server { padding: 20px 0; border-bottom: 1px solid var(--line); }
-.mcp-server:first-child { padding-top: 0; }
-.mcp-server h3 { margin: 0 0 5px; overflow-wrap: anywhere; }
-.mcp-server .split { align-items: flex-start; }
-.mcp-server .split > div { min-width: 0; }
-.mcp-server .split > button { flex-shrink: 0; }
-.mcp-state { font-size: 12px; color: var(--muted); }
-.mcp-state.enabled { color: var(--success); }
-.mcp-endpoint { display: block; padding: 12px 0; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
-.mcp-server details { margin-bottom: 12px; }
-.mcp-server summary, .mcp-contract summary { font-size: 12px; color: var(--accent); padding: 8px 0; }
-.mcp-pin { padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 12px; }
-.mcp-pin code { display: block; font-size: 11px; color: var(--muted); margin-top: 6px; overflow-wrap: anywhere; }
-.mcp-connect { margin: 28px 0; padding-top: 24px; border-top: 1px solid var(--line); }
-.mcp-connect > h3 { display: flex; gap: 8px; align-items: center; }
-.mcp-connect form > label { display: flex; flex-direction: column; gap: 7px; }
-.mcp-connect form > label + .hint { margin: 12px 0; font-size: 12px; }
-.mcp-catalog { margin-top: 28px; }
-.mcp-contract { padding: 16px 0; border-bottom: 1px solid var(--line); }
-.mcp-contract .check-label { min-height: 32px; font-size: 14px; }
-.mcp-contract p { font-size: 13px; line-height: 1.6; margin: 8px 0; overflow-wrap: anywhere; white-space: pre-wrap; }
-.mcp-contract details > code { color: var(--muted); font-size: 11px; display: block; overflow-wrap: anywhere; }
-.mcp-catalog > button { margin-top: 20px; }
 .mcp-grant-list { display: grid; gap: 8px; }
 .mcp-grant-list .check-label { min-height: 44px; padding: 8px 0; align-items: flex-start; }
 .mcp-grant-list input[type='checkbox'] { flex-shrink: 0; margin-top: 3px; }
@@ -423,10 +395,9 @@ kbd { font: 10px var(--mono); border: 1px solid var(--line); border-radius: 3px;
 .calibration-results dt { color: var(--muted); font-size: 12px; margin-bottom: 5px; }
 .calibration-results dd { margin: 0; font-size: 15px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 @media (max-width: 700px) {
-  .mcp-connect input, .network-policy textarea, .composer .network-policy textarea { min-height: 44px; font-size: 16px; }
+  .network-policy textarea, .composer .network-policy textarea { min-height: 44px; font-size: 16px; }
   .mcp-contract .check-label { min-height: 44px; }
-  .mcp-server summary, .mcp-contract summary, .calibration > summary { min-height: 44px; padding-top: 12px; }
-  .mcp-server .split { flex-wrap: wrap; gap: 12px; }
+  .calibration > summary { min-height: 44px; padding-top: 12px; }
 }
 .access-user .button-row { margin-top: 15px; }
 .access-user .split p { margin: 4px 0 0; }

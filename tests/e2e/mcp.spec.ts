@@ -24,6 +24,7 @@ test('phone owner reviews an untrusted catalog, pins disabled tools, enables exp
   });
   await page.goto('/'); await pairBrowser(page);
   const dialog = await openMcp(page);
+  await dialog.getByRole('button', { name: 'Review a new server', exact: true }).click();
   await dialog.getByRole('textbox', { name: 'Server endpoint', exact: true }).fill(endpoint);
   await dialog.getByRole('button', { name: 'Discover tools', exact: true }).click();
   await expect(dialog.getByRole('alert')).toContainText('discovery unavailable');
@@ -39,11 +40,11 @@ test('phone owner reviews an untrusted catalog, pins disabled tools, enables exp
   expect((await new AxeBuilder({ page }).include('dialog').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([]);
   await page.screenshot({ path: 'output/playwright/mcp-review-phone.png' });
   await dialog.getByRole('button', { name: 'Save selected tools as disabled' }).click();
-  await expect(dialog.getByText('Disabled · 1 pinned tool', { exact: true })).toBeVisible();
+  await expect(dialog.getByRole('region', { name: 'MCP connection inspector', exact: true }).getByText('Disabled · 1 pinned tool', { exact: true })).toBeVisible();
   const stored = await page.evaluate(async () => (await (await fetch('/api/mcp/servers')).json()).servers as { id: string; enabled: boolean; tools: unknown[] }[]);
   expect(stored).toHaveLength(1); expect(stored[0].enabled).toBe(false); expect(stored[0].tools).toEqual([contract]);
   await dialog.getByRole('button', { name: 'Enable server', exact: true }).click();
-  await expect(dialog.getByText('Enabled · 1 pinned tool', { exact: true })).toBeVisible();
+  await expect(dialog.getByRole('region', { name: 'MCP connection inspector', exact: true }).getByText('Enabled · 1 pinned tool', { exact: true })).toBeVisible();
   await page.reload();
   const reopened = await openMcp(page);
   await expect(reopened.getByText('Enabled · 1 pinned tool', { exact: true })).toBeVisible();

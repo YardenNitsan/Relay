@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Activity, BarChart3, Bell, Command, Cpu, FolderOpen, History, Layers, LogOut, Moon, Plus, Plug, ShieldCheck, Sun, UserRound, Workflow, KeyRound } from 'lucide-react';
+import { Activity, BarChart3, Bell, Command, Cpu, FolderOpen, History, Layers, LogOut, Moon, Plus, Plug, Settings, ShieldCheck, Sun, UserRound, Workflow, KeyRound } from 'lucide-react';
 import { mutation, type SessionInfo } from '../api';
 import { ErrorNotice, Modal } from './ui';
 
-export type Destination = 'history' | 'models' | 'hardware' | 'workspaces' | 'commands' | 'access' | 'mcp' | 'agents' | 'clients' | 'usage' | 'notifications' | 'memory' | 'schedules' | 'google-workspace';
+export type Destination = 'history' | 'models' | 'hardware' | 'workspaces' | 'commands' | 'access' | 'mcp' | 'agents' | 'clients' | 'usage' | 'notifications' | 'memory' | 'schedules' | 'google-workspace' | 'settings';
 export default function Navigation({ owner, theme, hostName, session, onDestination, onNew, onActivity, onTheme, onClose }: { owner: boolean; theme: 'dark' | 'light'; hostName?: string; session?: SessionInfo; onDestination: (destination: Destination) => void; onNew: () => void; onActivity: () => void; onTheme: () => void; onClose: () => void }) {
   const [signingOut, setSigningOut] = useState(false);
   const [error, setError] = useState<unknown>(null);
@@ -19,6 +19,7 @@ export default function Navigation({ owner, theme, hostName, session, onDestinat
     <button onClick={() => onDestination('agents')}><Workflow size={20} /><span>Agents</span></button>
     <button onClick={() => onDestination('models')}><Layers size={20} /><span>Models & providers</span></button>
     <button onClick={() => onDestination('usage')}><BarChart3 size={20} /><span>Usage</span></button>
+    <button onClick={() => onDestination('settings')}><Settings size={20} /><span>Settings</span></button>
     <button onClick={() => onDestination('notifications')}><Bell size={20} /><span>Task notifications</span></button>
     <button onClick={() => onDestination('clients')}><KeyRound size={20} /><span>External clients</span></button>
     {owner && <button onClick={() => onDestination('mcp')}><Plug size={20} /><span>MCP tools</span></button>}

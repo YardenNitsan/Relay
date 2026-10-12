@@ -1,5 +1,5 @@
 import {useEffect,useRef,type ReactNode} from 'react';
-import {Activity,BarChart3,ChevronDown,Command,Cpu,FolderOpen,Layers,Menu,MessageSquare,Moon,Plus,ShieldCheck,Square,Sun} from 'lucide-react';
+import {Activity,BarChart3,ChevronDown,Command,Cpu,FolderOpen,Layers,Menu,MessageSquare,Moon,Plus,Settings,ShieldCheck,Square,Sun} from 'lucide-react';
 import type {Destination} from '../components/Navigation';
 import {useRememberedFocus} from './useRememberedFocus';
 import {useVisualViewport} from './useVisualViewport';
@@ -41,6 +41,7 @@ export default function StudioFrame({children,title,hostName,owner,theme,stopped
       <div className="studio-administration">
         <button aria-label="Open navigation" onClick={()=>onDestination('navigation')}><Menu size={19}/><span>More & account</span></button>
         <button aria-label="Usage" onClick={()=>onDestination('usage')}><BarChart3 size={19}/><span>Usage</span></button>
+        <button aria-label="Settings" onClick={()=>onDestination('settings')}><Settings size={19}/><span>Settings</span></button>
         {owner&&<><button aria-label="Machine" onClick={()=>onDestination('hardware')}><Cpu size={19}/><span>Host resources</span></button><button aria-label="Access" onClick={()=>onDestination('access')}><ShieldCheck size={19}/><span>Access</span></button></>}
         <button className="command-trigger" aria-label="Open command palette" onClick={()=>onDestination('commands')}><Command size={19}/><span>Commands</span></button>
         <button aria-label={`Switch to ${theme==='light'?'dark':'light'} theme`} onClick={onTheme}>{theme==='light'?<Moon size={19}/>:<Sun size={19}/>}<span>{theme==='light'?'Dark':'Light'} appearance</span></button>

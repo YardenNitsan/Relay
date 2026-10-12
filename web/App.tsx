@@ -33,7 +33,8 @@ const Mcp = lazy(() => import('./components/Mcp'));
 const Agents = lazy(() => import('./components/Agents'));
 const Clients = lazy(() => import('./components/Clients'));
 const Usage = lazy(() => import('./components/Usage'));
-type Panel = 'history' | 'models' | 'hardware' | 'workspaces' | 'commands' | 'access' | 'navigation' | 'mcp' | 'agents' | 'clients' | 'usage' | 'notifications' | 'memory' | 'schedules' | 'google-workspace' | null;
+const Settings = lazy(() => import('./features/settings/SettingsStudio'));
+type Panel = 'history' | 'models' | 'hardware' | 'workspaces' | 'commands' | 'access' | 'navigation' | 'mcp' | 'agents' | 'clients' | 'usage' | 'notifications' | 'memory' | 'schedules' | 'google-workspace' | 'settings' | null;
 interface PendingStart { requestId: string; content: string; options: TaskOptions }
 const defaults: TaskOptions = { depth: 'balanced', modelId: null, access: 'read_only', workspaceId: null, contextTokens: 8192, cloudPolicy: 'local_only', budget: { maxCalls: 12, maxSeconds: 600, maxIterations: 5, maxCostUsd: null, localOnly: true } };
 
@@ -228,6 +229,7 @@ export default function App() {
     return request;
   };
   const commands: Command[] = [
+    { id: 'settings', label: 'Settings', description: 'Appearance, notifications, connections and host controls', action: () => setPanel('settings') },
     { id: 'notifications', label: 'Task notifications', description: 'Private completion alerts for this browser', action: () => setPanel('notifications') },
     { id: 'new', label: 'New conversation', description: 'Start a new objective', action: () => selectConversation(null) },
     { id: 'history', label: 'Open conversation history', description: 'Return to previous work', action: () => setPanel('history') },
@@ -265,12 +267,13 @@ export default function App() {
     <footer className="app-footer"><span><Radio size={12} />Your work stays accountable.</span><span>{status.data ? `Relay ${status.data.version}` : 'Relay'}<span className="footer-separator" />{options.cloudPolicy === 'local_only' ? 'Local inference only' : 'Cloud access controlled'}</span></footer>
     {panel === 'history' && <Modal title="Conversations" onClose={() => setPanel(null)} wide className="history-studio-modal" initialFocus="#history-search-input"><History onDeleted={conversationDeleted} selected={conversationId} onSelect={selectConversation} onNew={() => selectConversation(null)} /></Modal>}
     {panel === 'notifications' && <Modal title="Task notifications" onClose={() => setPanel(null)}><TaskNotifications controls={notifications} /></Modal>}
+    {panel === 'settings' && <Modal title="Settings" onClose={() => setPanel(null)} wide className="settings-studio-modal"><Suspense fallback={<Loading>Opening settings…</Loading>}><Settings owner={owner} theme={theme} session={session.data} notifications={notifications} onTheme={setTheme} onDestination={setPanel}/></Suspense></Modal>}
     {panel === 'usage' && <Modal title="Usage" className="usage-drawer" onClose={() => setPanel(null)}><Suspense fallback={<Loading>Opening usage…</Loading>}><Usage /></Suspense></Modal>}
     {panel === 'clients' && <Modal title="External clients" onClose={() => setPanel(null)} wide className="clients-studio-modal"><Suspense fallback={<Loading>Opening client access…</Loading>}><Clients permitted={owner || permissions?.externalModelAccess === true} /></Suspense></Modal>}
     {panel === 'agents' && <Modal title="Agents" onClose={() => setPanel(null)} wide className="agent-studio-modal"><Suspense fallback={<Loading>Opening agents…</Loading>}><Agents selected={options.assistantId} workspaceSelected={Boolean(options.workspaceId)} onWorkspace={() => setPanel('workspaces')} onSelect={selectAgent} /></Suspense></Modal>}
     {pickModel && <ModelPicker open initialModelId={pickModel} onClose={() => setPickModel(null)} models={modelList} providers={models.data?.providers ?? []} options={options} onOptions={setOptions} onConnections={() => setPanel('models')} canUseCloud={owner || Boolean((permissions?.dailyCloudBudgetUsd || permissions?.allowUnpricedCloud) && permissions.providers.some(provider => !['ollama', 'lmstudio'].includes(provider)))} />}
     {panel === 'models' && <Modal title="Models & connections" onClose={() => setPanel(null)} wide className="model-studio-modal"><Suspense fallback={<Loading>Opening models…</Loading>}><Models owner={owner} hostName={session.data?.hostName} accountName={session.data?.user?.name} contextTokens={options.contextTokens} onSelect={id => { setPickModel(id); setPanel(null); }} /></Suspense></Modal>}
-    {panel === 'mcp' && owner && <Modal title="MCP tools" onClose={() => setPanel(null)}><Suspense fallback={<Loading>Opening tool connections…</Loading>}><Mcp /></Suspense></Modal>}
+    {panel === 'mcp' && owner && <Modal title="MCP tools" onClose={() => setPanel(null)} wide className="mcp-studio-modal"><Suspense fallback={<Loading>Opening tool connections…</Loading>}><Mcp /></Suspense></Modal>}
     {panel === 'memory' && <Modal title="Your memory" onClose={() => setPanel(null)} wide className="memory-studio-modal"><Suspense fallback={<Loading>Opening memory...</Loading>}><Memory workspaces={workspaces.data ?? []} /></Suspense></Modal>}
     {panel === 'google-workspace' && <Modal title="Google Workspace" onClose={() => setPanel(null)} wide className="google-workspace-studio-modal"><Suspense fallback={<Loading>Opening Google Workspace...</Loading>}><GoogleWorkspace owner={owner} /></Suspense></Modal>}
     {panel === 'schedules' && <Modal title="Scheduled tasks" onClose={() => setPanel(null)} wide className="schedule-studio-modal"><Suspense fallback={<Loading>Opening schedules...</Loading>}><Schedules workspaces={workspaces.data ?? []} onOpenTask={async id => { const {task}=await api<{task:TaskRecord}>(`/tasks/${encodeURIComponent(id)}`);selectConversation(task.conversationId); }} /></Suspense></Modal>}

@@ -1,6 +1,7 @@
 import {expect,test} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {openProjectChooser,pairBrowser,projectIndex} from './helpers';
+import {seedProjectFiles} from './project-fixture';
 
 const sizes=[[320,740],[360,800],[390,844],[768,1024],[1024,768],[1440,960],[1920,1080],[2560,1080],[844,390]] as const;
 for(const [width,height] of sizes)for(const theme of ['light','dark'] as const)test(`project inspector files and search at ${width}x${height} ${theme}`,async({page})=>{
@@ -9,18 +10,19 @@ for(const [width,height] of sizes)for(const theme of ['light','dark'] as const)t
   const name='Customer operations / Billing and reconciliation';
   const path='src/features/billing/international/reconciliation-service.test.ts';
   // Real private fixture-host data, not an asserted medium application or LLM run.
-  await page.evaluate(async({name,path})=>{
+  const projectId=await page.evaluate(async name=>{
     const session=await(await fetch('/api/session')).json() as {csrfToken:string};
     const headers={'content-type':'application/json','x-relay-csrf':session.csrfToken};
     const response=await fetch('/api/workspaces',{method:'POST',headers,body:JSON.stringify({name,personal:true})});if(!response.ok)throw new Error('Project creation failed');
     const project=await response.json() as {id:string};
-    const files=[[path,"// Verified invoice examples\nexport const currencies = ['ILS', 'USD', 'EUR'];\nexport const reconciliation = (amount: number) => Math.round(amount * 100);\n"],...Array.from({length:16},(_,index)=>[`src/modules/account-${index}/index.ts`,`export const account = ${index};\n`])];
-    for(const [path,content] of files){const response=await fetch(`/api/workspaces/${project.id}/files`,{method:'POST',headers,body:JSON.stringify({path,content})});if(!response.ok)throw new Error('Project file fixture failed');}
-  },{name,path});
+    return project.id;
+  },name);
+  await seedProjectFiles(projectId,[[path,"// Verified invoice examples\nexport const currencies = ['ILS', 'USD', 'EUR'];\nexport const reconciliation = (amount: number) => Math.round(amount * 100);\n"],...Array.from({length:16},(_,index)=>[`src/modules/account-${index}/index.ts`,`export const account = ${index};\n`] as const)]);
   await page.reload();await openProjectChooser(page);
   const dialog=await projectIndex(page);
   await dialog.getByRole('searchbox',{name:'Find a project',exact:true}).fill('Billing');
   await dialog.getByRole('button',{name:'Open '+name,exact:true}).click();
+  await expect(dialog.getByText('17 files',{exact:true})).toBeVisible();
   if(width<=760)await expect(dialog.getByRole('region',{name:'Project inspector',exact:true})).toBeFocused();
   await dialog.getByRole('button',{name:'Use for conversation',exact:true}).click();
   await expect(dialog.getByRole('button',{name:'In this conversation',exact:true})).toBeDisabled();

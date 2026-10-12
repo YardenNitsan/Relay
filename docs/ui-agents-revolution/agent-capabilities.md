@@ -1,0 +1,110 @@
+# Agent capability and cooperation audit
+
+Date: 2026-10-12. Baseline: `fda18f4`, branch `modernization/ui-agents-revolution`.
+
+The initial audit used source and retained evidence without model inference, installation, production changes or test execution. The separately authorized G1 implementation and deterministic checks are recorded below. **Observed** means inspected implementation, test assertions, or retained historical reports; **inferred** means a consequence that still needs a regression; **proposal** means unimplemented work. Model selection research and benchmarks are outside this audit.
+
+## Product contract
+
+The ten selectable profiles are trusted instructions plus tool allowlists, not ten separately implemented autonomous services. They are independent of model identity and internal DAG roles. Selection cannot grant access. The actual tool set is the intersection of broker definitions, profile allowlist, step role, task scope and policy; dispatch rechecks durable authority. A ready profile is not a quality certification or a guarantee that the current composer has enabled its tools.
+
+Sources: [profile definitions](../../shared/assistants.ts), [engine tool filtering](../../server/orchestration/engine.ts), [broker execution](../../server/tools/index.ts), [policy](../../server/tools/policy.ts), [README](../../README.md), [security model](../security-model.md). The README already accurately excludes sending, calendar mutation, interactive browser control and desktop automation. Older architecture/handoff documents contain integration-pending statements superseded by current code and the evolution ledger; do not treat those statements as current implementation status.
+
+## Per-profile matrix
+
+Notation: managed reads = `file_list`, `file_read`, `file_search`; managed edits = reads plus `file_write`, `file_delete`; host files = `host_list`, `host_read`, `host_write`, `host_delete`. Listed tools are ceilings, not grants. Every profile can produce a model answer from supplied text without an external integration; that does not verify the answer.
+
+| Profile / advertised purpose | Observed tool ceiling and actual operation | Prerequisites | Unsupported or evidence limit |
+| --- | --- | --- | --- |
+| Email: draft, summarize, prepare replies | Managed reads; `gmail_search`, `gmail_read`. Connected Gmail supplies bounded plain text and message IDs. | Managed workspace for file reads; separate Google Workspace connection and explicit task Gmail opt-in; private reads require local models and retain the conversation's local/read-only restriction. | No send, attachment retrieval or mailbox mutation. Drafting works without a connection. Gemini consent is separate. |
+| Calendar: plan schedules, compare zones, prepare events | Managed reads; `calendar_events`, `calendar_freebusy`, primary calendar only, bounded windows up to 31 days. | Same separate connection/local-only requirements, with explicit Calendar opt-in. | No event creation, edits or invitations. Unknown availability is not free time. |
+| Research: compare sources, synthesize evidence | Managed reads; `http_get`; `mcp_call`. | Workspace for documents; explicit public HTTPS origins/network policy; pinned and selected MCP server/tool plus exact approval and separate network grant. | No generic search-engine tool or unrestricted browsing. Source quality is model judgment; retrieved text remains untrusted. |
+| Coding: inspect code, scoped changes, tests/review | Managed edits; `git_status`, `git_diff`, `terminal`, `http_get`, `mcp_call`. | Authorized managed workspace; write/execute access and exact approval when supervised; verified offline container/profile for commands; separate network/MCP grants. | No native host shell, dependency downloads from isolated commands, unrestricted Git, automatic source publication, or demonstrated broad application-building reliability. Tests require real command receipts. |
+| Files: find, organize, edit text | Managed edits; host files. | Workspace for managed operations; local-owner confirmed unrestricted host-file mode for native paths; expected hashes and checkpoints. | Text operations, not general binary/directory manipulation. Managed copies and original files differ. No terminal or arbitrary host commands. |
+| Personal assistant: plan priorities, task lists | `personal_tasks` plus managed reads. List/create/complete/delete persist per authenticated user. | No workspace needed for task list; mutations require supervised exact approval or workspace autonomy; durable account/session checks. | Saving `dueAt` is not scheduling a notification, sending email or creating an event. Read-only and unrestricted host mode do not authorize personal-task changes. |
+| Browser: read public pages, prepare workflows | `http_get`, `mcp_call`; no managed-file tools. | Public-origin/network grants; separately pinned/selected/approved MCP calls. | Built-in interactive clicks, authenticated browsing, forms and screenshots absent. External MCP behavior depends on its exact pinned contract; profile name does not provide browser automation. |
+| Finance: explain, analyze supplied budgets | Managed reads; `http_get`. | Workspace or supplied data; explicit public origins for retrieval. | No bank connector, payment/trade execution or built-in calculator/account balance feed. Arithmetic and financial conclusions are model output unless independently checked. |
+| Learning: examples, practice, feedback | Managed reads; `http_get`. | Supplied material or authorized workspace/public origin. | No dedicated learner model, assessed teaching efficacy, LMS mutation or persistent progress service. |
+| Computer: guidance, scoped file operations, isolated commands | Managed edits; host files; `git_status`, `git_diff`, `terminal`. | Managed workspace and verified container for commands; separately confirmed local-owner host-file mode for native files. | No mouse/keyboard/app control or native host shell. Containers remain isolated even when host-file mode is confirmed. |
+
+All ten definitions and their explicit prompt limitations are in [shared/assistants.ts](../../shared/assistants.ts). Exact operation schemas and tool descriptions are in [policy.ts](../../server/tools/policy.ts); Google dispatch is in [google-workspace.ts](../../server/tools/google-workspace.ts), personal data in [personal.ts](../../server/tools/personal.ts). Current fixture coverage includes [assistant tests](../../tests/assistants.test.ts) and [readiness tests](../../tests/assistant-readiness.test.ts). These fixture assertions are not live acceptance for each profile.
+
+## Runtime and cooperation
+
+| Internal role or mechanism | Observed behavior | Boundary / limitation |
+| --- | --- | --- |
+| Worker | Sole mutation-capable step. Profile instructions are appended to trusted role context. Uses bounded iterations and durable tool receipts. | Tools still require task/account policy and broker authorization. A profile cannot promote itself to a different allowlist. |
+| Planner | Deep/Maximum emits strict bounded JSON; no tools. Host validates and persists graph adaptation once. | At most two analysis nodes in Deep, three in Maximum. Minimum remaining calls include worker and reviewer. Invalid output retains default graph. |
+| Architect, security reviewer, researcher | Read-only analysis; independent ready branches can run concurrently. Researcher is available in Maximum proposals. | Only permitted read tools; Gmail/Calendar, MCP and personal tools are worker-only. Local inference uses a shared lease, so graph concurrency does not imply simultaneous local generation. |
+| Reviewer | Receives complete candidate answer and recorded checks, can use authorized read tools, must end with `REVIEW: PASS` to pass. | Model opinion, not an executed test. Current review context omits persisted proposed acceptance criteria (gap G2). |
+| Supervisor / coder labels | Present in role types/prompts. | Default graph and proposal compiler do not create distinct supervisor or coder model steps; deterministic Engine coordinates, and Coding profile still uses `worker`. |
+| Fast / Balanced / Deep / Maximum | Fast has worker only. Ordinary capability-free Balanced also uses one worker; specialist/tool-enabled Balanced has worker+reviewer. Deep/Maximum add planner and bounded analysis. | Depth changes work and budgets, not authority. No arbitrary mutation branches or parallel writers. |
+| Handoff | Versioned host-built user-role data includes graph/task identity, direct-dependency findings with provenance, checks, receipt refs and omission counts. | Findings remain untrusted. Only direct dependency output is carried; transitive conclusions depend on intermediaries preserving them. Essential-record overflow fails closed. |
+| Repair/recovery | Balanced/Deep allow two repair rounds, Maximum three, Fast none; task-wide budgets remain. Saved context and receipts persist. Failed branch cancels and joins siblings. | Denial/interrupted or uncertain effects do not invite blind retries. Missing deterministic required evidence prevents final completion independently of reviewer text. |
+
+Implementation: [lifecycle.ts](../../server/orchestration/lifecycle.ts), [workflow.ts](../../server/orchestration/workflow.ts), [planning.ts](../../server/orchestration/planning.ts), [handoff.ts](../../server/orchestration/handoff.ts), [context.ts](../../server/orchestration/context.ts), [engine.ts](../../server/orchestration/engine.ts), [repair.ts](../../server/orchestration/repair.ts). Existing deterministic assertions: [adaptive engine](../../tests/adaptive-engine.test.ts), [engine](../../tests/engine.test.ts), [handoff](../../tests/handoff.test.ts), [workflow](../../tests/workflow.test.ts), [required verification](../../tests/required-verification.test.ts).
+
+## API and permission contracts
+
+- `GET /api/assistants` is authenticated prerequisite information. It returns `available`, `status`, `tools`, `limitations`, and optional integration metadata. `available: true` includes text-only assistance. The endpoint examines permitted tool classes, connection state and all four sandbox profiles; any available profile makes the catalog's terminal prerequisite true. It does not certify a particular command/runtime or current task options. Source: [app.ts, assistants route](../../server/api/app.ts).
+- Task options persist `assistantId` separately from model/depth/access. The API validates the known profile enumeration. Independent task options select workspace, host confirmation, network origins, MCP IDs, Google read scopes and verification requirements. Authenticated mutations require the existing session/CSRF protections. Source: [task options schema](../../server/api/app.ts), [authorizeOptions](../../server/auth/policy.ts).
+- `verification.requiredReads` is an API caller contract: one to eight unique safe relative paths and expected whole-file hashes. It requires actual successful read receipts after the latest workspace change; model prose/write read-back does not satisfy it. No UI contract editor is implied. Source: [required-reads.ts](../../server/orchestration/required-reads.ts), [ADR013](../adr-013-required-verification-contracts.md).
+- Presentation cannot grant access. Scope checks are repeated inside serialized broker dispatch, with fresh authorization at filesystem effects. Expected hashes, stop generation, uncertain effects, workspace ownership and exact approvals remain authoritative. Tool descriptions and collaborator content cannot alter those checks. Source: [ToolBroker](../../server/tools/index.ts), [policy](../../server/tools/policy.ts), [security model](../security-model.md).
+- External inference clients are a separate API surface; their tools run on their own computers. Selecting a Relay profile does not provision an external coding client or transfer Relay broker authority. Source: [external clients](../external-clients.md).
+
+## Historical live coding evidence
+
+The retained corpus is a fixed public Relay snapshot with 514 permitted text files, two seeded faults and independent grading. It is source-scale targeted repair, not a full build or unseen task population. Results below are historical report observations, not fresh checks of this branch.
+
+| Trial | Retained result | What it establishes |
+| --- | --- | --- |
+| Initial trials | Admission refusal, load error, context/output limits and incomplete repairs retained. | Environment and model limits were material. No success should be inferred from a started task. |
+| `coding-0O93wv` | 32K context / 8192 output, 8 calls / 256,978 ms; visible 2/2, independent 9/9, published 9/9, exact rollback. | One completed tightly scoped supervised repair/publication workflow. |
+| `coding-IORGAe` | Same configuration fresh-workspace repeat; 9 calls / 293,050 ms, visible 2/2 but extra unapproved command denied; independent 8/9; no publication. | Completion was inconsistent; passing visible tests alone missed incorrect activity filtering. Correct denial is not a permission bug. |
+| `coding-9HTadP` | 9 calls / 378,543 ms, `CONTEXT_BUDGET` pause; independent final-tree 9/9 but no completed/published task. | Correct files do not establish end-to-end task completion. Saved-context replay is separate evidence. |
+| `coding-vwOFL5` | Later unchanged live repeat: 6 calls / 218,119 ms; independent 9/9, published 9/9, exact rollback; no compaction event; zero sessions after shutdown. | Another narrow success; it does not prove compaction caused success, broad reliability, or a measured speedup. |
+
+Reports: [acceptance plan](../final-evolution/coding-acceptance-plan.md), [initial results](../final-evolution/evidence/coding-acceptance-windows.json), [first success](../final-evolution/evidence/coding-acceptance-success-windows.json), [failed repeat](../final-evolution/evidence/coding-acceptance-repeat-windows.json), [independent failure diagnosis](../final-evolution/evidence/coding-repeat-independent-windows.json), [context pause](../final-evolution/evidence/coding-context-pause-windows.json), [later repeat](../final-evolution/evidence/coding-context-repeat-windows.json), [progress ledger](../final-evolution/progress.json).
+
+The latest report explicitly says exact model weight digest and sampling seed are not established. These consumed, fixed tasks cannot justify a population success rate or claims about every profile. Browser fixtures, portable host checks and live model quality remain separate evidence categories.
+
+## Bounded reliability priorities
+
+### G1 — Required verification preflight ignores profile exclusion
+
+**Observed:** [authorizeOptions](../../server/auth/policy.ts) validates the required-read contract and requires a workspace, but does not check profile compatibility. [Engine.runStep](../../server/orchestration/engine.ts) checks globally defined `file_read` before running a worker. Later it filters tools through `assistant.allowedTools`. Browser excludes `file_read`. [Existing required-verification test](../../tests/required-verification.test.ts) checks the globally missing tool case only.
+
+**Inferred consequence:** an API task with `assistantId: browser`, an authorized workspace and valid `requiredReads` can pass these preconditions, then receive instructions to invoke a tool its profile cannot receive. It may spend model calls before bounded continuation pauses. The completion boundary still prevents false success; this is an avoidable admission/reliability problem, not an authority bypass. No new runtime reproduction was executed during this audit.
+
+**Proposal, first priority:** reject contradictory profile/required-read options at shared task admission, and retain a runtime preflight against the effective worker capability for restored/historical tasks. Reject clearly before provider spending; never add `file_read` to Browser merely to satisfy the predicate. Keep globally absent broker-tool failure handling.
+
+**Regression acceptance:** Browser + workspace + required read yields the documented refusal and zero provider calls; a historical incompatible task is caught before inference; Coding/Learning with permitted read remains accepted; no-profile behavior stays compatible; denied profile tools remain denied and no final assistant message is committed without evidence. Use deterministic API, authorization and Engine fixtures in `tests/api.test.ts`, `tests/required-verification.test.ts`, and `tests/assistants.test.ts`. Cover Deep/Maximum admission so planner calls cannot be wasted first.
+
+### G2 — Reviewer does not receive persisted proposed acceptance criteria
+
+**Observed:** [Engine.runStep](../../server/orchestration/engine.ts) loads `plan_decision` and inserts `Proposed acceptance checks` only inside the non-reviewer branch, and only for the worker. [buildReviewContext](../../server/orchestration/context.ts) accepts objective, candidate, checks and previous tool context; no persisted acceptance argument. Reviewer also bypasses the structured handoff branch. Existing adaptive tests confirm the worker receives criteria, but do not assert reviewer receipt of them.
+
+**Inferred consequence:** when a planner derives a relevant criterion that the worker omits from its answer, reviewer context has no explicit copy of that criterion. The reviewer can rediscover it from the original objective, but cooperation depends on that inference. This is a context-quality gap; proposed criteria are not executable verification and must never become authoritative instructions.
+
+**Proposal, second priority:** pass the small persisted acceptance list to review as attributed untrusted suggestions with an explicit distinction from required caller verification and actual checks. Reserve it in context fitting; preserve it when rebuilding review after repair/restart. Avoid expanding to arbitrary full agent transcripts or converting suggestions into permission/verification grants.
+
+**Regression acceptance:** a deterministic Deep graph supplies a criterion absent from the candidate and reviewer still receives it; malicious criterion text remains user-role data and changes no tools/grants; oversized required review input fails before a provider call; repaired/restarted reviewer uses the same persisted criteria; tasks without a plan remain compatible. Extend `tests/adaptive-engine.test.ts` and focused context tests. The regression proves delivery and boundaries, not real-model review quality.
+
+Readiness wording and transitive handoff retention are additional design considerations, not proven execution bugs. Preserve the current truthful distinction between prerequisite availability, enabled task capability and observed successful outcome. Broader live acceptance across profiles should follow these deterministic fixes under a separately authorized, frozen protocol, retaining both failures and successes.
+
+## G1 implementation plan — authorized follow-up
+
+Scope: G1 only; G2 remains proposed. Use shared `authorizeOptions` to reject a required-read contract when the selected profile excludes `file_read`, returning `VERIFICATION_CAPABILITY` without creating a task. Guard Engine execution before any graph step/model call for historical incompatible options and globally unavailable read capability. The implementation path is `server/orchestration/engine.ts`, not `server/engine.ts`. No profile allowlist, tool authority, required evidence, model selection, budget or public API shape changes.
+
+1. Add failing authenticated API admission regressions across all depths and runtime regressions that load persisted incompatible options, including Deep/Maximum, with zero-call assertions. Retain positive compatible-profile and existing missing-tool checks.
+2. Run the focused regressions to observe the actual failure before production edits.
+3. Add the minimal admission and pre-execution guards, preserving the existing worker capability guard, then rerun focused admission, required-verification and profile security tests.
+4. Record exact results here. The integrating agent owns broad suite, type/build and browser verification; this worker runs no models or full suite.
+
+### Reproduction and implementation evidence
+
+The previously inferred G1 failure was reproduced on 2026-10-12 before production edits. Command: `npm.cmd test -- tests/required-verification.test.ts tests/api.test.ts -t "historical.*Browser|incompatible.*Browser|persists compatible" --maxWorkers=1`. Result: **8 failed, 3 passed, 38 skipped**, 14.77 seconds. All four API-depth cases returned HTTP 200 instead of the intended 403. Historical Fast/Balanced fixtures made six model-double calls; Deep/Maximum made eight, instead of zero. These deterministic provider doubles performed no live inference.
+
+The minimal implementation adds a profile compatibility check to shared `authorizeOptions` (covering API, durable task creation and resume admission), returning `VERIFICATION_CAPABILITY`/403. Engine now checks profile compatibility and globally available `file_read` before any graph step, protecting already-persisted incompatible tasks and preventing planner spending; the existing worker-level availability guard remains. No tools are granted, options rewritten, required hashes weakened or completion checks bypassed. Tests also retain compatible no-profile/Coding/Learning admission and unchanged unsafe-path rejection.
+
+Green command: `npm.cmd test -- tests/required-verification.test.ts tests/api.test.ts tests/assistants.test.ts tests/auth.test.ts --maxWorkers=1`. Result: **64 passed across 4 files**, exit 0, 62.37 seconds. This includes all eight reproduced regressions, compatible-profile admission, real required-receipt/finalization behavior and the existing profile-escape denial case. `git diff --check` also passed. These are focused deterministic results; full suite, strict types/build and browser checks belong to integration, and no live inference or deployment was performed. G2 remains unimplemented.

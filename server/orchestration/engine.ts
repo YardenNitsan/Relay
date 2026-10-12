@@ -151,6 +151,13 @@ export class Engine {
     assertTaskDeadline(task);
     const user=row<User>((await this.store.db.query('SELECT * FROM users WHERE id=$1',[task.userId]))[0]);
     if(!user.enabled)throw new AppError('USER_DISABLED','Account disabled',403);
+    // Previously admitted tasks may no longer have a satisfiable contract.
+    // Check before any graph step, including planners, can spend a model call.
+    if(task.options.verification?.requiredReads.length){
+      const assistant=getAssistantDefinition(task.options.assistantId);
+      if(assistant&&!assistant.allowedTools.includes('file_read'))throw new AppError('VERIFICATION_CAPABILITY','Required file_read verification is unavailable for the selected specialist. Start a new task with compatible verification and specialist options.',403);
+      if(!this.tools.definitions().some(tool=>tool.name==='file_read'))throw new AppError('VERIFICATION_CAPABILITY','The required file_read capability is unavailable. No model call was started.');
+    }
     const budget=await ExecutionBudget.start(this.store,id,controller);
     try {
       const signal=controller.signal;

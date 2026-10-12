@@ -1,5 +1,13 @@
 # Relay operating guide
 
+## UI and agents revolution (12 October 2026)
+
+The new owner directive is tracked in `docs/ui-agents-revolution/`. Read its implementation plan, progress and continuation alongside the preserved final-evolution ledger. Work in ordinary sibling `Relay-revolution`, branch `modernization/ui-agents-revolution`, descended from reviewed `fda18f4`. `Relay-modernization` contains unrelated uncommitted work; preserve it. Production is not deployed by this phase. Routing research, benchmarks and decision changes are explicitly out of scope.
+
+The Linux tablet search failure was HTTP429 from repeated fixture uploads exhausting the real shared IP limiter, not a layout defect. `tests/e2e/project-fixture.ts` seeds sample text through the native broker only after authenticated workspace creation and disposable-root validation. Never import this helper into production or relax request limits. Keep all UI reads/actions authenticated. Build before browser tests; one4319fixture at a time.
+
+Required-read contracts must be compatible with the selected assistant's tool ceiling. `authorizeOptions` rejects incompatible admission, and Engine preflight protects already persisted tasks before planner/model spending. Keep final durable evidence checks and broker authority unchanged. Focused command: `npm.cmd test -- tests/required-verification.test.ts tests/api.test.ts tests/assistants.test.ts tests/auth.test.ts --maxWorkers=1` (64passed for this increment). Native Android build/acceptance commands belong here only after actual verification.
+
 Relay is the local-first AI execution platform specified in the user's MASTER BUILD DIRECTIVE (2026-10-04). It is independent of `../Harmonia` and `../GuitarScaleViewer`; do not modify either project.
 
 Read `docs/product-spec.md`, `docs/architecture.md`, and `docs/implementation-plan.md` before changing architecture. Record evidence and remaining limitations in `docs/validation.md`. Never present fixtures, estimates, model assertions or unavailable features as verified results.

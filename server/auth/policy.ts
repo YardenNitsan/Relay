@@ -3,6 +3,7 @@ import {assertWorkspaceOptions} from '../integrations/workspace-policy.js';
 import type { AccessMode, ProviderId, TaskOptions, Workspace } from '../../shared/types.js';
 import { AppError } from '../core/errors.js';
 import { verificationContractSchema } from '../orchestration/required-reads.js';
+import { getAssistantDefinition } from '../../shared/assistants.js';
 import { networkOriginSchema, networkPolicySchema } from '../tools/network-policy.js';
 
 export const permissionSchema=z.object({
@@ -48,6 +49,8 @@ export function authorizeOptions(principal:Principal,options:TaskOptions,workspa
   if(options.verification){
     options={...options,verification:verificationContractSchema.parse(options.verification)};
     if(!options.workspaceId)throw new AppError('VERIFICATION_WORKSPACE','Required file verification needs an authorized workspace.',403);
+    const assistant=getAssistantDefinition(options.assistantId);
+    if(assistant&&!assistant.allowedTools.includes('file_read'))throw new AppError('VERIFICATION_CAPABILITY','Required file_read verification is unavailable for the selected specialist. Choose a specialist with managed-file read access or start without this contract.',403);
   }
   const access:AccessMode[]=['read_only','supervised','workspace','unrestricted'];
   if(options.access==='unrestricted') {

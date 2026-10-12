@@ -285,10 +285,18 @@ describe('local HTTP boundary',()=>{
     expect(revert.statusCode).toBe(409);expect(revert.json().code).toBe('WORKSPACE_BUSY');
     expect(upload.statusCode).toBe(409);expect(upload.json().code).toBe('WORKSPACE_BUSY');
   });
-  it('persists an explicit verification contract and rejects unsafe requirements at admission',async()=>{
+  it.each(['fast','balanced','deep','maximum'] as const)('rejects incompatible %s Browser verification before task admission',async depth=>{
+    const headers={host,cookie,'x-relay-csrf':csrf};const workspace=await (engine.tools as ToolBroker).createWorkspace('Browser contract');await store.saveWorkspace(workspace);
+    const conversation=await store.createConversation();
+    const options:TaskOptions={assistantId:'browser',depth,modelId:null,access:'read_only',workspaceId:workspace.id,contextTokens:16384,budget:{maxCalls:8,maxSeconds:60,maxIterations:3,maxCostUsd:null,localOnly:true},verification:{requiredReads:[{path:'result.txt',expectedSha256:'a'.repeat(64)}]}};
+    const response=await app.inject({method:'POST',url:`/api/conversations/${conversation.id}/messages`,headers,payload:{content:'Read required file',options}});
+    expect(response.statusCode,response.body).toBe(403);expect(response.json().code).toBe('VERIFICATION_CAPABILITY');
+    const unchanged=await store.conversation(conversation.id);expect(unchanged.tasks).toEqual([]);expect(unchanged.messages).toEqual([]);
+  });
+  it.each([undefined,'coding','learning'] as const)('persists compatible %s verification and rejects unsafe requirements at admission',async assistantId=>{
     const headers={host,cookie,'x-relay-csrf':csrf};const workspace=(await app.inject({method:'POST',url:'/api/workspaces',headers,payload:{name:'Required checks'}})).json() as {id:string};
     const conversation=await store.createConversation();const contract={requiredReads:[{path:'result.txt',expectedSha256:'a'.repeat(64)}]};
-    const options:TaskOptions={depth:'fast',modelId:null,access:'workspace',workspaceId:workspace.id,contextTokens:8192,budget:{maxCalls:4,maxSeconds:60,maxIterations:3,maxCostUsd:null,localOnly:true},verification:contract};
+    const options:TaskOptions={assistantId,depth:'fast',modelId:null,access:'workspace',workspaceId:workspace.id,contextTokens:8192,budget:{maxCalls:4,maxSeconds:60,maxIterations:3,maxCostUsd:null,localOnly:true},verification:contract};
     const enqueue=vi.spyOn(engine,'enqueue').mockImplementation(()=>{});
     try{
       const bad=await app.inject({method:'POST',url:`/api/conversations/${conversation.id}/messages`,headers,payload:{content:'Read required file',options:{...options,verification:{requiredReads:[{...contract.requiredReads[0],path:'../secret'}]}}}});expect(bad.statusCode).toBe(400);

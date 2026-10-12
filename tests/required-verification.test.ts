@@ -14,15 +14,30 @@ const done:ModelChunk={type:'done',finishReason:'stop'};
 const write:ToolRequest={id:'write',name:'file_write',arguments:{path:'result.txt',content:'Expected file contents',expectedHash:null}};
 const read=(id='read',path='result.txt'):ToolRequest=>({id,name:'file_read',arguments:{path}});
 async function until(test:()=>Promise<boolean>){const end=Date.now()+6000;while(Date.now()<end){if(await test())return;await new Promise(resolve=>setTimeout(resolve,10));}throw new Error('Task did not settle');}
-async function setup(stream:(request:ModelRequest)=>AsyncIterable<ModelChunk>,readHash:string|(()=>string)=sha256,readCapability=true) {
+async function setup(stream:(request:ModelRequest)=>AsyncIterable<ModelChunk>,readHash:string|(()=>string)=sha256,readCapability=true,historicalOptions?:Partial<TaskOptions>) {
   store=new Store(await openDatabase());await store.init();opened=true;let writes=0;
   const tools:ExecutionTools={definitions:()=>['file_write',...(readCapability?['file_read']:[]),'terminal'].map(name=>({name,description:name,parameters:{type:'object'}})),decide:()=>({decision:'allow',reason:'Workspace grant',risk:'write'}),execute:async(_context,request)=>{if(request.name==='file_write')writes++;return {content:JSON.stringify({path:request.arguments.path,sha256:request.name==='file_read'?(typeof readHash==='function'?readHash():readHash):sha256,content:'Expected file contents'}),evidence:[{kind:request.name==='file_read'?'file_read':'file_content',summary:'Actual tool result',passed:true}]};},stopAll:async()=>{},changes:async()=>[]};
   const gateway={listModels:async()=>[model],statuses:async()=>[],stream};engine=new Engine(store,gateway,tools,{admit:async()=>admission});
-  const {task}=await store.createTask((await store.createConversation()).id,'Create the file and read it back',options);engine.enqueue(task.id);
+  const {task}=await store.createTask((await store.createConversation()).id,'Create the file and read it back',options);
+  // Model an already-persisted task admitted by an earlier release, without
+  // weakening current admission or exposing a production bypass.
+  if(historicalOptions)await store.db.query('UPDATE tasks SET options=$1 WHERE id=$2',[JSON.stringify({...task.options,...historicalOptions}),task.id]);
+  engine.enqueue(task.id);
   return {task,tools,gateway,writes:()=>writes};
 }
 
 describe('trusted required-read verification',()=>{
+  it.each(['fast','balanced','deep','maximum'] as const)('pauses historical %s Browser contracts before any model call without granting file access',async depth=>{
+    let calls=0;
+    const {task}=await setup(async function*(){calls++;yield {type:'text',text:'Unsupported read claim'};yield done;},sha256,true,{assistantId:'browser',depth});
+    await until(async()=>['paused','waiting_for_user','completed'].includes((await store.task(task.id)).status));
+    const current=await store.task(task.id);
+    expect(calls).toBe(0);expect(current.callsUsed).toBe(0);expect(current.status).toBe('paused');
+    expect(current.error).toMatch(/file_read.*selected specialist/i);
+    expect(current.options.assistantId).toBe('browser');expect(current.options.verification).toEqual(options.verification);
+    expect(await store.db.query('SELECT id FROM tool_calls WHERE task_id=$1',[task.id])).toEqual([]);
+    expect((await store.conversation(task.conversationId)).messages.some(message=>message.role==='assistant')).toBe(false);
+  });
   it('does not accept an unsupported read claim and requires a real later read before completion',async()=>{
     let calls=0;let feedbackSeen=false;
     const {task,writes}=await setup(async function*(request){calls++;if(calls===1)yield {type:'tool_call',call:write};else if(calls===3){feedbackSeen=request.messages.some(message=>message.content.includes('Required verification is incomplete'));yield {type:'tool_call',call:read()};}else yield {type:'text',text:'I used file_read and verified the exact hash.'};yield done;});

@@ -1,6 +1,6 @@
 import {randomUUID} from 'node:crypto';
 import {lstat,open,readdir} from 'node:fs/promises';
-import {dirname,join} from 'node:path';
+import {dirname,join,relative} from 'node:path';
 import {z} from 'zod';
 import {publicationSchema,publicationConfirmationSchema,type Publication,type PublicationSummary} from '../../shared/publication';
 import {authorizeOwner,type Principal} from '../auth/policy';
@@ -21,7 +21,10 @@ const identity=async(path:string)=>{const info=await lstat(path,{bigint:true});r
 const sameIdentity=(a:{dev:string;ino:string},b:{dev:string;ino:string})=>a.dev===b.dev&&a.ino===b.ino;
 const optionalIdentity=async(path:string)=>{try{return await identity(path);}catch(error){if((error as NodeJS.ErrnoException).code==='ENOENT')return null;throw error;}};
 const createdIdentity=(record:Publication,path:string)=>record.createdIdentities&&Object.hasOwn(record.createdIdentities,path)?record.createdIdentities[path]:undefined;
-const digest=(record:Publication)=>sha256(JSON.stringify({version:record.version,id:record.id,workspaceId:record.workspaceId,userId:record.userId,sessionVersion:record.sessionVersion,stopGeneration:record.stopGeneration,sourcePath:record.sourcePath,sourceIdentity:record.sourceIdentity,direction:record.direction,parentId:record.parentId,expiresAt:record.expiresAt,entries:record.entries.map(({before:_,after:__,...entry})=>entry)}));
+const createdDirectoryIdentity=(record:Publication,path:string)=>record.createdDirectoryIdentities&&Object.hasOwn(record.createdDirectoryIdentities,path)?record.createdDirectoryIdentities[path]:undefined;
+const parentPath=(path:string)=>path.includes('/')?path.slice(0,path.lastIndexOf('/')):'';
+const relativeDirectory=(source:string,path:string)=>safePath(relative(source,path).replaceAll('\\','/'));
+const digest=(record:Publication)=>sha256(JSON.stringify({version:record.version,id:record.id,workspaceId:record.workspaceId,userId:record.userId,sessionVersion:record.sessionVersion,stopGeneration:record.stopGeneration,sourcePath:record.sourcePath,sourceIdentity:record.sourceIdentity,direction:record.direction,parentId:record.parentId,expiresAt:record.expiresAt,entries:record.entries.map(({before:_,after:__,...entry})=>entry),...(record.version===3?{directories:record.directories}:{})}));
 
 /** Owner UI only. No tool definition exposes original-project publication to a model. */
 export class PublicationService {
@@ -49,6 +52,7 @@ export class PublicationService {
     z.string().uuid().parse(id);await this.init();const path=await inspectPath(this.tools.root,`publications/${id}.json`);let file;
     try{file=await open(path,readFlags());const info=await file.stat();if(!info.isFile()||info.nlink!==1||info.size>MAX_JOURNAL_BYTES)throw new Error('Invalid publication journal');
       const record=publicationSchema.parse(JSON.parse(await file.readFile('utf8')));
+      for(const directory of record.directories??[])safePath(directory.path);
       if(record.id!==id||record.entries.some(entry=>{safePath(entry.path);if(entry.before!==null)boundedText(entry.before);if(entry.after!==null)boundedText(entry.after);return hashOrNull(entry.before)!==entry.beforeHash||hashOrNull(entry.after)!==entry.afterHash;})||digest(record)!==record.digest)throw new Error('Publication journal integrity failed');
       return record;
     }finally{await file?.close();}
@@ -61,10 +65,35 @@ export class PublicationService {
     const path=await sourceRoot(record.sourcePath,this.dataDir);
     if(path!==record.sourcePath||!sameIdentity(await identity(path),record.sourceIdentity))throw new AppError('PUBLICATION_IDENTITY','Original project directory identity changed.',409);
   }
+  private async inspectDirectoryAncestors(record:Publication,path:string){
+    // An inner directory can be moved intact beneath a replacement ancestor.
+    // Verify every planned ancestor, not just the file's immediate parent.
+    // A rollback's existing-file review retains the original creation authority
+    // through its immutable parent receipt, including at each mutation boundary.
+    const original=record.direction==='rollback'&&record.parentId?await this.read(record.parentId):record;
+    if(original.workspaceId!==record.workspaceId||original.sourcePath!==record.sourcePath||!sameIdentity(original.sourceIdentity,record.sourceIdentity))throw new AppError('PUBLICATION_SCOPE','Rollback directory authority changed.',409);
+    for(const directory of original.directories??[]){
+      if(!path.startsWith(`${directory.path}/`))continue;
+      const expected=createdDirectoryIdentity(original,directory.path),actual=await optionalIdentity(join(record.sourcePath,directory.path));
+      if(expected?(!actual||!sameIdentity(expected,actual)):actual!==null)throw new AppError('PUBLICATION_IDENTITY',`Planned directory identity changed or appeared: ${directory.path}`,409);
+    }
+  }
   private async inspectEntry(record:Publication,entry:Publication['entries'][number],side:'before'|'after',actor:Principal){
     await this.scope(record);const path=join(record.sourcePath,safePath(entry.path));
-    const state=await this.host.inspectFile(path,()=>this.authorize(actor).then(()=>{}));
-    if(entry.parentIdentity&&!sameIdentity(state.parentIdentity,entry.parentIdentity))throw new AppError('PUBLICATION_IDENTITY',`Original parent identity changed: ${entry.path}`,409);
+    const plan=await this.host.planPublicationFile(path,()=>this.authorize(actor).then(()=>{}));
+    await this.inspectDirectoryAncestors(record,entry.path);
+    if(!plan.state){
+      if(record.version!==3||side!=='before'||entry.before!==null)throw new AppError('PUBLICATION_CONFLICT',`Original file or directory changed: ${entry.path}`,409);
+      for(const missing of plan.directories){
+        const rel=relativeDirectory(record.sourcePath,missing.path),expected=record.directories?.find(item=>item.path===rel);
+        if(!expected||createdDirectoryIdentity(record,rel))throw new AppError('PUBLICATION_IDENTITY',`Planned directory identity changed: ${rel}`,409);
+        const expectedParent=expected.parentIdentity??createdDirectoryIdentity(record,parentPath(rel));
+        if(missing.parentIdentity?(!expectedParent||!sameIdentity(missing.parentIdentity,expectedParent)):expectedParent!=null)throw new AppError('PUBLICATION_IDENTITY',`Directory parent identity changed: ${rel}`,409);
+      }
+      return {hash:null,identity:null,parentIdentity:null};
+    }
+    const state=plan.state,expectedParent=entry.parentIdentity??(record.version===3?createdDirectoryIdentity(record,parentPath(entry.path)):undefined);
+    if(record.version===3&&!expectedParent||expectedParent&&!sameIdentity(state.parentIdentity,expectedParent))throw new AppError('PUBLICATION_IDENTITY',`Original parent identity changed or a planned directory appeared: ${entry.path}`,409);
     const expectedHash=side==='before'?entry.beforeHash:entry.afterHash;
     if(state.hash!==expectedHash)throw new AppError('PUBLICATION_CONFLICT',`Original file changed: ${entry.path}. No overwrite is permitted.`,409);
     if(expectedHash!==null){
@@ -75,17 +104,20 @@ export class PublicationService {
   }
   private async authorizeMutation(actor:Principal,record:Publication,entry:Publication['entries'][number],signal:AbortSignal){
     checkSignal(signal);await this.authorize(actor,record,true);await this.scope(record);
+    await this.inspectDirectoryAncestors(record,entry.path);
     const path=join(record.sourcePath,safePath(entry.path));
-    if(entry.parentIdentity&&!sameIdentity(await identity(dirname(path)),entry.parentIdentity))throw new AppError('PUBLICATION_IDENTITY','Original parent identity changed before writing.',409);
+    const expectedParent=entry.parentIdentity??(record.version===3?createdDirectoryIdentity(record,parentPath(entry.path)):undefined);
+    if(record.version===3&&!expectedParent||expectedParent&&!sameIdentity(await identity(dirname(path)),expectedParent))throw new AppError('PUBLICATION_IDENTITY','Original parent identity changed before writing.',409);
     const expected=createdIdentity(record,entry.path)??entry.identity,actual=await optionalIdentity(path);
     if(expected===null?actual!==null:!actual||!sameIdentity(actual,expected))throw new AppError('PUBLICATION_IDENTITY','Original file identity changed before writing.',409);
   }
-  private async newRecord(actor:Principal,workspace:Workspace,entries:Publication['entries'],direction:'publish'|'rollback',parentId:string|null,records:Publication[]):Promise<Publication>{
+  private async newRecord(actor:Principal,workspace:Workspace,entries:Publication['entries'],direction:'publish'|'rollback',parentId:string|null,records:Publication[],directories:NonNullable<Publication['directories']>=[]):Promise<Publication>{
     if(records.length>=MAX_RECORDS)throw new AppError('PUBLICATION_CAPACITY','Publication history reached 100 reviews. Preserve recovery records and perform owner maintenance.',409);
     if(!entries.length)throw new AppError('PUBLICATION_EMPTY','No file changes are available to review.',409);
     if(entries.length>20||entries.reduce((sum,entry)=>sum+Buffer.byteLength(entry.before??'')+Buffer.byteLength(entry.after??''),0)>MAX_CONTENT_BYTES)throw new AppError('PUBLICATION_LIMIT','Publish at most 20 files and 2 MiB of combined before/after text per review.',409);
+    if(directories.length>32)throw new AppError('PUBLICATION_DIRECTORY_LIMIT','Create at most 32 directories per reviewed publication.',409);
     const control=await this.authorize(actor,undefined,true),createdAt=new Date(this.now()).toISOString();
-    const record:Publication={version:2,id:randomUUID(),sequence:(records.at(-1)?.sequence??0)+1,userId:actor.user.id,sessionVersion:actor.user.sessionVersion,stopGeneration:control.generation,workspaceId:workspace.id,sourcePath:workspace.sourcePath!,sourceIdentity:await identity(workspace.sourcePath!),direction,parentId,createdAt,expiresAt:new Date(this.now()+600_000).toISOString(),digest:'0'.repeat(64),status:'preview',completed:[],error:null,entries,createdIdentities:{}};
+    const record:Publication={version:directories.length?3:2,id:randomUUID(),sequence:(records.at(-1)?.sequence??0)+1,userId:actor.user.id,sessionVersion:actor.user.sessionVersion,stopGeneration:control.generation,workspaceId:workspace.id,sourcePath:workspace.sourcePath!,sourceIdentity:await identity(workspace.sourcePath!),direction,parentId,createdAt,expiresAt:new Date(this.now()+600_000).toISOString(),digest:'0'.repeat(64),status:'preview',completed:[],error:null,entries,createdIdentities:{},...(directories.length?{directories,createdDirectoryIdentities:{}}:{})};
     record.digest=digest(record);for(const entry of entries)await this.inspectEntry(record,entry,'before',actor);
     await this.authorize(actor,record,true);await new StorageBudget(this.dataDir).assertCapacity(2*Buffer.byteLength(JSON.stringify(record))+2*1024*1024);await this.save(record);return record;
   }
@@ -97,17 +129,16 @@ export class PublicationService {
     await sourceRoot(workspace.sourcePath!,this.dataDir);const current=await snapshot(await this.tools.workspaceRoot(workspaceId),true),baseline=await readGitBaseline(this.tools,workspaceId,current,()=>{});
     if(baseline.metadata.kind!=='workspace_creation')throw new AppError('PUBLICATION_BASELINE','This project has no authentic import baseline. Import a fresh managed copy.',409);
     for(const record of records)if(record.workspaceId===workspaceId&&record.sourcePath===workspace.sourcePath&&record.status==='completed')for(const entry of record.entries){if(entry.after===null)baseline.files.delete(entry.path);else baseline.files.set(entry.path,entry.after);}
-    const entries:Publication['entries']=[];
+    const entries:Publication['entries']=[],directories=new Map<string,NonNullable<Publication['directories']>[number]>();
     for(const path of [...new Set([...baseline.files.keys(),...current.keys()])].sort()){
       const before=baseline.files.get(path)??null,after=current.get(path)??null;if(before===after)continue;
-      const state=await this.host.inspectFile(join(workspace.sourcePath!,safePath(path)),()=>this.authorize(actor).then(()=>{})).catch(error=>{
-        if((error as NodeJS.ErrnoException).code==='ENOENT')throw new AppError('PUBLICATION_PARENT',`Publication requires an existing destination directory: ${dirname(path)}.`,409);
-        throw error;
-      });
+      const plan=await this.host.planPublicationFile(join(workspace.sourcePath!,safePath(path)),()=>this.authorize(actor).then(()=>{}));
+      const state=plan.state??{hash:null,identity:null,parentIdentity:null};
+      for(const directory of plan.directories){const rel=relativeDirectory(workspace.sourcePath!,directory.path),prior=directories.get(rel);if(prior&&JSON.stringify(prior.parentIdentity)!==JSON.stringify(directory.parentIdentity))throw new AppError('PUBLICATION_IDENTITY','Directory parent changed during planning.',409);directories.set(rel,{path:rel,parentIdentity:directory.parentIdentity});}
       if(state.hash!==hashOrNull(before))throw new AppError('PUBLICATION_CONFLICT',`Original file changed: ${path}. No overwrite is permitted.`,409);
       entries.push({path,before,after,beforeHash:hashOrNull(before),afterHash:hashOrNull(after),identity:state.identity,parentIdentity:state.parentIdentity});
     }
-    return this.newRecord(actor,workspace,entries,'publish',null,records);
+    return this.newRecord(actor,workspace,entries,'publish',null,records,[...directories.values()].sort((a,b)=>a.path.split('/').length-b.path.split('/').length||a.path.localeCompare(b.path)));
   }));}
   async get(actor:Principal,id:string):Promise<Publication>{return this.serial(async()=>{await this.authorize(actor);const record=await this.read(id);await this.authorize(actor,record);return record;});}
   async list(actor:Principal,workspaceId:string):Promise<PublicationSummary[]>{return this.serial(async()=>{await this.authorize(actor);const records=await this.records();await this.authorize(actor);return records.filter(record=>record.userId===actor.user.id&&record.workspaceId===workspaceId).reverse().map(({id,workspaceId,direction,createdAt,status,completed,error,parentId,entries})=>({id,workspaceId,direction,createdAt,status,completed,error,parentId,files:entries.length}));});}
@@ -129,6 +160,16 @@ export class PublicationService {
         for(const entry of record.entries)await this.inspectEntry(record,entry,'before',actor);
         checkSignal(signal);record.status='applying';await this.save(record);
         try{
+          for(const directory of record.directories??[]){
+            const expectedParent=directory.parentIdentity??createdDirectoryIdentity(record,parentPath(directory.path));
+            if(!expectedParent)throw new AppError('PUBLICATION_IDENTITY','A planned parent directory has no creation receipt.',409);
+            const target=join(record.sourcePath,directory.path),authorize=async()=>{
+              checkSignal(signal);await this.authorize(actor,record,true);await this.scope(record);
+              await this.inspectDirectoryAncestors(record,directory.path);
+              if(!sameIdentity(await identity(dirname(target)),expectedParent))throw new AppError('PUBLICATION_IDENTITY','Directory parent identity changed before creation.',409);
+            };
+            await this.host.createPublicationDirectory(target,expectedParent,authorize,signal,async created=>{record.createdDirectoryIdentities={...record.createdDirectoryIdentities,[directory.path]:created};await this.save(record);});
+          }
           for(const entry of record.entries){
             await this.authorize(actor,record,true);await this.inspectEntry(record,entry,'before',actor);
             const authorize=()=>this.authorizeMutation(actor,record,entry,signal);

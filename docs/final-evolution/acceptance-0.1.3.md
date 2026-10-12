@@ -4,7 +4,7 @@
 
 ## Current increment
 
-12 October follow-up: reviewed managed-child file integration into its recorded parent, conservative conflicts, exact consent, durable rollback and complete-state receipt verification now pass full1399tests/one platform skip, strict build and31affected browser cases. This includes8integration workflows across phone/desktop and short landscape. Original Git history/merge commits and source publication into new directories remain open. Hosted History pagination and intermediate theme-contrast failures were reproduced and repaired; fresh hosted gates still need confirmation.
+12 October follow-up: reviewed managed-child file integration into its recorded parent, conservative conflicts, exact consent, durable rollback and complete-state receipt verification now pass full1399tests/one platform skip, strict build and31affected browser cases. This includes8integration workflows across phone/desktop and short landscape. Original Git history/merge commits remain open; the subsequent reviewed-directory increment is recorded below. Hosted History pagination and intermediate theme-contrast failures were reproduced and repaired; fresh hosted gates still need confirmation.
 
 12 October: supporting Studio views, connection recovery, MCP management and grouped Settings are integrated. Complete backend1,364tests/one skip and strict build passed before the subsequent managed-file authorization increment. Supporting browser evidence is80/106followed by42/42corrected affected cases; MCP/Settings/notification/shell39/39passes. Mutation acknowledgements, drafts, cached refresh failures and exact owner/account scopes have real browser evidence. Google/MCP discovery fixtures are not live service acceptance. Managed-file authorization now passes1,375tests/one skip and strict build; visible-viewport modal coverage passes47affected browser cases after four geometry reds and an additional History content-collapse regression; full physical mobile and the material engineering backlog remain open.
 
@@ -35,7 +35,7 @@ Inspected actual browser captures: [before, desktop](evidence/models-before-1440
 | 13 | Independent verification | Real container grader used on coding corpus; general specialist acceptance pending. |
 | 14 | Collaboration | Bounded graph/handoff primitives; parallel isolated integration and comparative utility pending. |
 | 15 | Worktree integration | Real managed forks, reviewed parent file integration, conservative conflicts, rollback and interrupted receipt verification pass.8new browser cases within31affected passes; full1399tests/one skip. Original repository history and actual Git merge commits remain incomplete. |
-| 16 | Original publication/rollback | Real-file backend plus fresh browser checks pass within existing-directory publication scope. |
+| 16 | Original publication/rollback | Real-file backend and5fresh browser cases verify reviewed nested folders, additions/deletions/rename pairs, conflict refusal and rollback retaining folders/owner contents. Final38publication/reservation tests and strict build pass. |
 | 17 | Approval denial | Existing backend/browser negative coverage; broader final suite pending. |
 | 18 | Revocation during execution | Real-file mid-mutation regressions pass; entire integration matrix remains open. |
 | 19 | Emergency stop | Existing actual isolated-container and deterministic checks; final suite pending. |

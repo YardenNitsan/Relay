@@ -10,3 +10,6 @@
 .publication-path { word-break: break-all; }
 .publication button { min-height: 44px; white-space: normal; max-width: 100%; }
 .publication details > summary { cursor: pointer; padding-block: 10px; }
+.publication-directories { min-width: 0; border-block: 1px solid var(--line); padding-block: 12px; }
+.publication-directories h5 { font-size: inherit; margin: 0; }
+.publication-directories ul { padding-inline-start: 20px; max-height: 160px; overflow: auto; }

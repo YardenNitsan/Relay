@@ -14,6 +14,7 @@ import { UncertainToolEffect } from './errors';
 import type {PublicationFileIdentity} from '../../shared/publication';
 
 export interface HostFileState {hash:string|null;identity:PublicationFileIdentity|null;parentIdentity:PublicationFileIdentity}
+export interface HostDestinationPlan {state:HostFileState|null;directories:Array<{path:string;parentIdentity:PublicationFileIdentity|null}>}
 type CreationObserver=(identity:PublicationFileIdentity)=>Promise<void>;
 const fileIdentity=async(path:string):Promise<PublicationFileIdentity>=>{const info=await lstat(path,{bigint:true});return {dev:String(info.dev),ino:String(info.ino)};};
 
@@ -106,6 +107,39 @@ export class HostFileBroker {
       const parentAfter=await fileIdentity(dirname(path));
       if(parentAfter.dev!==parentIdentity.dev||parentAfter.ino!==parentIdentity.ino)throw new AppError('PUBLICATION_IDENTITY','Original parent identity changed during inspection.',409);
       return {hash:hashOrNull(content),identity,parentIdentity};
+    });
+    this.queue=operation.catch(()=>undefined);return operation;
+  }
+
+  /** Owner publication planning only. No host tool exposes directory creation. */
+  async planPublicationFile(value:string,authorize:()=>Promise<void>):Promise<HostDestinationPlan>{
+    try{return {state:await this.inspectFile(value,authorize),directories:[]};}
+    catch(error){if((error as NodeJS.ErrnoException).code!=='ENOENT')throw error;}
+    const operation=this.queue.then(async()=>{
+      await authorize();const path=this.validatePath(value),missing:string[]=[];let cursor=dirname(path);
+      for(;;){
+        try{
+          await this.inspect(cursor,false,()=>{});const info=await lstat(cursor,{bigint:true});
+          if(!info.isDirectory())throw new Error('Publication file parent must be a directory');
+          if(!missing.length)throw new AppError('PUBLICATION_CHANGED','Destination changed during planning. Refresh the review.',409);
+          const parentIdentity={dev:String(info.dev),ino:String(info.ino)};await authorize();
+          return {state:null,directories:missing.reverse().map((path,index)=>({path,parentIdentity:index===0?parentIdentity:null}))};
+        }catch(error){if((error as NodeJS.ErrnoException).code!=='ENOENT')throw error;}
+        missing.push(cursor);const parent=dirname(cursor);if(parent===cursor||missing.length>64)throw new Error('Publication directory plan exceeds its path boundary');cursor=parent;
+      }
+    });
+    this.queue=operation.catch(()=>undefined);return operation;
+  }
+
+  async createPublicationDirectory(value:string,expectedParent:PublicationFileIdentity,authorize:()=>Promise<void>,signal:AbortSignal,onCreated:CreationObserver):Promise<PublicationFileIdentity>{
+    const check=()=>{if(signal.aborted)throw new AppError('CANCELLED','Directory creation was cancelled',409);};
+    const operation=this.queue.then(async()=>{
+      check();await authorize();check();const path=this.validatePath(value);await this.inspect(path,true,check);
+      const parent=await fileIdentity(dirname(path));if(parent.dev!==expectedParent.dev||parent.ino!==expectedParent.ino)throw new AppError('PUBLICATION_IDENTITY','Directory parent identity changed before creation.',409);
+      await authorize();check();await mkdir(path,{mode:0o700});
+      // Creation must be recorded even if authority expires immediately after
+      // mkdir. Recording an already-created identity grants no further access.
+      const created=await fileIdentity(path);await this.inspect(path,false,()=>{});await onCreated(created);check();return created;
     });
     this.queue=operation.catch(()=>undefined);return operation;
   }

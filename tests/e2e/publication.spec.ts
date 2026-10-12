@@ -77,7 +77,7 @@ for(const width of [320,390,1440])test(`reviewed original publication and rollba
   }finally{holdHistory=false;releaseHistory();await page.unrouteAll({behavior:'wait'});await rm(source,{recursive:true,force:true});}
 });
 
-for(const width of [320,1440])test(`presence-aware publication reviews and rolls back a rename and empty addition at ${width}px`,async({page})=>{
+for(const width of [320,1440])test(`presence-aware publication reviews and rolls back nested folders, a rename and empty addition at ${width}px`,async({page})=>{
   const parent=resolve('..'),source=await mkdtemp(join(parent,'relay-publication-e2e-'));
   if(dirname(source)!==parent||!basename(source).startsWith('relay-publication-e2e-'))throw new Error('Unexpected publication fixture boundary');
   const original='export const answer = 42;\n';await writeFile(join(source,'old-name.ts'),original);
@@ -95,7 +95,7 @@ for(const width of [320,1440])test(`presence-aware publication reviews and rolls
     expect(await page.evaluate(async({id,original})=>{
       const session=await(await fetch('/api/session')).json() as {csrfToken:string};const headers={'content-type':'application/json','x-relay-csrf':session.csrfToken};
       const states=[];
-      for(const [path,content] of [['new-name.ts',original],['empty.txt','']])states.push((await fetch(`/api/workspaces/${id}/files`,{method:'POST',headers,body:JSON.stringify({path,content})})).status);
+      for(const [path,content] of [['features/answer/new-name.ts',original],['empty.txt','']])states.push((await fetch(`/api/workspaces/${id}/files`,{method:'POST',headers,body:JSON.stringify({path,content})})).status);
       const file=await(await fetch(`/api/workspaces/${id}/file?path=old-name.ts`)).json() as {sha256:string};
       states.push((await fetch(`/api/workspaces/${id}/file`,{method:'DELETE',headers,body:JSON.stringify({path:'old-name.ts',expectedHash:file.sha256})})).status);return states;
     },{id:workspace.id,original})).toEqual([200,200,200]);
@@ -105,7 +105,11 @@ for(const width of [320,1440])test(`presence-aware publication reviews and rolls
     const preparing=page.waitForResponse(response=>response.url().endsWith('/publications/preview')&&response.request().method()==='POST');
     await publication.getByRole('button',{name:'Prepare publication review',exact:true}).click();expect((await preparing).ok()).toBe(true);
     const select=publication.getByRole('combobox',{name:'Reviewed file',exact:true});
-    await expect(select.locator('option')).toHaveText(['Add / empty.txt','Add / new-name.ts','Delete / old-name.ts']);
+    await expect(select.locator('option')).toHaveText(['Add / empty.txt','Add / features/answer/new-name.ts','Delete / old-name.ts']);
+    const folders=publication.getByRole('region',{name:'Reviewed new folders',exact:true});
+    await expect(folders.getByRole('listitem')).toHaveText(['features','features/answer']);
+    await expect(folders).toContainText('Rollback keeps them');
+    await expect(lstat(join(source,'features'))).rejects.toMatchObject({code:'ENOENT'});
     await expect(publication.locator('.publication-operation')).toContainText('does not exist');
     await publication.getByText('Inspect exact before and after contents',{exact:true}).click();
     await expect(publication.getByText('Empty file (0 bytes)',{exact:true})).toBeVisible();
@@ -116,10 +120,12 @@ for(const width of [320,1440])test(`presence-aware publication reviews and rolls
     await select.scrollIntoViewIfNeeded();await page.screenshot({path:`output/playwright/publication-presence-${width}.png`,animations:'disabled'});
     const approve=publication.getByRole('checkbox',{name:'I approve these exact changes to the original files',exact:true});await approve.check();
     await publication.getByRole('button',{name:'Publish approved changes',exact:true}).click();await expect(publication.getByRole('status')).toContainText('published');
-    expect(await readFile(join(source,'new-name.ts'),'utf8')).toBe(original);expect(await readFile(join(source,'empty.txt'),'utf8')).toBe('');await expect(lstat(join(source,'old-name.ts'))).rejects.toMatchObject({code:'ENOENT'});
+    expect(await readFile(join(source,'features/answer/new-name.ts'),'utf8')).toBe(original);expect(await readFile(join(source,'empty.txt'),'utf8')).toBe('');await expect(lstat(join(source,'old-name.ts'))).rejects.toMatchObject({code:'ENOENT'});
+    await writeFile(join(source,'features/answer/owner.txt'),'Independent owner addition');
     const rollbackPreview=page.waitForResponse(response=>response.url().endsWith('/rollback-preview')&&response.request().method()==='POST');
     await publication.getByRole('button',{name:'Prepare rollback review',exact:true}).click();expect((await rollbackPreview).ok()).toBe(true);await expect(publication.getByRole('heading',{name:'Review rollback',exact:true})).toBeFocused();
     await approve.check();await publication.getByRole('button',{name:'Apply approved rollback',exact:true}).click();await expect(publication.getByRole('status')).toContainText('rollback completed');
-    expect(await readFile(join(source,'old-name.ts'),'utf8')).toBe(original);for(const path of ['new-name.ts','empty.txt'])await expect(lstat(join(source,path))).rejects.toMatchObject({code:'ENOENT'});
+    expect(await readFile(join(source,'old-name.ts'),'utf8')).toBe(original);for(const path of ['features/answer/new-name.ts','empty.txt'])await expect(lstat(join(source,path))).rejects.toMatchObject({code:'ENOENT'});
+    expect(await readFile(join(source,'features/answer/owner.txt'),'utf8')).toBe('Independent owner addition');expect((await lstat(join(source,'features/answer'))).isDirectory()).toBe(true);
   }finally{await rm(source,{recursive:true,force:true});}
 });

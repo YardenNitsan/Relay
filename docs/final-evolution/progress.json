@@ -4,7 +4,7 @@
   "updatedAt": "2026-10-12",
   "baselineCommit": "9d563bc973dbcc177921ab918db88561c8280e48",
   "branch": "modernization/final-evolution",
-  "currentMilestone": "0.1.3: router paused; reviewed parent integration0d28245 pushed and native CI green; publication acknowledgement fix passes strict build and5real-file browser cases; safe new-directory publication next",
+  "currentMilestone": "0.1.3: router paused; reviewed nested-folder source publication passes final focused/build/browser checks; project file creation and editor acknowledgements next",
   "requirementIds": [
     "A01",
     "A02",
@@ -79,7 +79,8 @@
     "History timeline retains exact-message search and opaque paging; four initial-focus failures corrected through post-showModal focus, fresh rerun pending.",
     "Phone offline drafts and authenticated foreground SSE renewal pass3browser simulations, including blocked cursor storage. Physical Android remains outstanding.",
     "Eight real Engine/broker/file analysis-role regressions pass; scripted provider proposals are not live agent intelligence evidence.",
-    "Reviewed managed child-to-parent file integration with immutable baseline, dual reservations, exact stale-review digest, per-effect authority, conservative conflicts, selected files, durable rollback and complete-state reconciliation;17broker tests plus API/reservation and8real-browser cases."
+    "Reviewed managed child-to-parent file integration with immutable baseline, dual reservations, exact stale-review digest, per-effect authority, conservative conflicts, selected files, durable rollback and complete-state reconciliation;17broker tests plus API/reservation and8real-browser cases.",
+    "Reviewed version3 source-folder creation, ordered native-identity receipts, all-ancestor checks including rollback, retained-folder recovery scope and real phone/desktop file publication/rollback."
   ],
   "changedFiles": [
     ".github/workflows/native-integrations.yml",
@@ -281,7 +282,7 @@
     "docs/final-evolution/model-studio-plan.md",
     "docs/validation.md"
   ],
-  "testStatus": "Fresh strict check1399passed/one platform skip across131files299.73s; production build passes; final31affected browser cases pass4.1min. Earlier viewport increment47browser cases passed6.2min. Native run38200429677 passes d30fb7b; new hosted gates pending.",
+  "testStatus": "Full strict check1408passed/one skip131files301.15s before final rollback-ancestor fix; final38publication/reservation cases59.51s, strict build and5publication browser cases pass. Three new-file UI red cases are pending implementation.",
   "lastPassingCommands": [
     "npm.cmd ci",
     "npm.cmd run check (baseline)",
@@ -395,7 +396,7 @@
     "Owner has Android phone; current deployed0.1.2 mobile-data sign-in succeeded after tunnel restart. Modernization physical-device workflows remain untested.",
     "Second authorized Companion computer not established; cloud/email/calendar test accounts not configured (owner confirmed)."
   ],
-  "nextActionableWorkItem": "Commit publication acknowledgement fix; implement reviewed new-directory source publication with identity receipts and explicit rollback limits, then continue unfinished non-router A-G work.",
+  "nextActionableWorkItem": "Implement project-file-creation-plan.md; retain new-file browser reds and verify held-refresh acknowledgement, then continue non-router A-G.",
   "remainingDependencies": [
     "A native recovery/restore/retention",
     "B full redesign",
@@ -436,7 +437,7 @@
     "MCP/Settings/notifications: six old-build behavior reds and missing Settings entry; fresh strict build and39/39browser cases pass4.9min; initial20run18pass/two corrected failures retained.",
     "Managed authorization:10negative red/1positive control;72focused pass; npm.cmd run check1375passed/one skip130files286.43s; production build passes."
   ],
-  "latestProductCommit": "0d28245",
+  "latestProductCommit": "7edc213",
   "latestHostedStatus": {
     "run": 38202842049,
     "host": "In progress on0d28245",

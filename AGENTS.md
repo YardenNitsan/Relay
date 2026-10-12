@@ -27,6 +27,8 @@ Current Windows and Ubuntu WSL evolution verification: **1,194 deterministic tes
 
 ## Commands
 
+Original Publication applies returned durable receipts before background history refresh. Successful apply/reconcile callbacks must not await history; cancel obsolete reads before a mutation and retain fresh-receipt inspection after failures. A held phone history GET reproduced disabled rollback; fresh strict build and all5real-file publication browser cases pass after the fix.
+
 Managed child integration uses `Engine.mutateWorkspaces` to reserve child and immutable parent before any await. Require the authentic workspace_creation baseline, reject stale whole-snapshot digests and same-file conflicts, and use per-effect authorization. Prepared parent mutations block integration even from siblings. Rollback has its own prepared checkpoint with optional revertsCheckpointId; reconciliation verifies a complete before/after state and writes no project files. Keep original-source publication separate. Full1399tests/one skip, strict build and31affected browser cases pass;8new browser cases exercise these workflows. See managed-branches.md and branch-integration-plan.md for limits.
 
 All native Modal views share `web/layout/dialog-viewport.css` and the single useVisualViewport observer. Set visible-height/offset constraints only at scale1 when the visible area differs from the layout; release on zoom/cleanup. Compact History must scroll search and results together so toolbar height cannot erase all rows. Four geometry reds plus a content-collapse regression precede47affected browser passes and strict build; physical keyboards remain separate acceptance.

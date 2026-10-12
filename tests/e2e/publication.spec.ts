@@ -10,6 +10,7 @@ for(const width of [320,390,1440])test(`reviewed original publication and rollba
   const parent=resolve('..'),source=await mkdtemp(join(parent,'relay-publication-e2e-'));
   if(dirname(source)!==parent||!basename(source).startsWith('relay-publication-e2e-'))throw new Error('Unexpected publication fixture boundary');
   const original='export const answer = 1;\n',replacement='export const answer = 2;\n';
+  let releaseHistory=()=>{},holdHistory=false;
   await writeFile(join(source,'example.ts'),original);await writeFile(join(source,'owner-notes.txt'),'Unrelated owner draft');
   try{
     await page.setViewportSize({width,height:900});await page.goto('/');await pairBrowser(page);
@@ -30,6 +31,7 @@ for(const width of [320,390,1440])test(`reviewed original publication and rollba
     await writeFile(join(source,'owner-notes.txt'),'Unrelated owner edit after import');
     await dialog.getByRole('button',{name:'Original source & review',exact:true}).click();
     const publication=dialog.getByRole('region',{name:'Original project publication',exact:true});
+    if(width===320){const held=new Promise<void>(resolve=>{releaseHistory=resolve;});await page.route('**/api/workspaces/*/publications',async route=>{if(holdHistory)await held;await route.continue();});}
     await publication.getByRole('button',{name:'Review publication to original',exact:true}).click();
     let releasePreview:()=>void=()=>{};
     const previewHeld=new Promise<void>(resolve=>{releasePreview=resolve;});
@@ -57,9 +59,11 @@ for(const width of [320,390,1440])test(`reviewed original publication and rollba
     await publication.scrollIntoViewIfNeeded();await page.screenshot({path:`output/playwright/publication-${width}.png`,animations:'disabled'});
     if(width!==390)expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze()).violations).toEqual([]);
     const applying=page.waitForResponse(response=>response.url().endsWith('/apply')&&response.request().method()==='POST');
+    holdHistory=true;
     await publication.getByRole('button',{name:'Publish approved changes',exact:true}).click();const applied=await applying;expect(applied.ok()).toBe(true);expect(applied.request().postDataJSON()).toMatchObject({confirmed:true});
     await expect(publication.getByRole('status')).toContainText('published');
     expect(await readFile(join(source,'example.ts'),'utf8')).toBe(replacement);expect(await readFile(join(source,'owner-notes.txt'),'utf8')).toBe('Unrelated owner edit after import');
+    await expect(publication.getByRole('button',{name:'Prepare rollback review',exact:true})).toBeEnabled();
     const rollbackPreview=page.waitForResponse(response=>response.url().endsWith('/rollback-preview')&&response.request().method()==='POST');
     await publication.getByRole('button',{name:'Prepare rollback review',exact:true}).click();expect((await rollbackPreview).ok()).toBe(true);
     await expect(publication.getByRole('heading',{name:'Review rollback',exact:true})).toBeFocused();
@@ -68,7 +72,9 @@ for(const width of [320,390,1440])test(`reviewed original publication and rollba
     await publication.getByRole('button',{name:'Apply approved rollback',exact:true}).click();expect((await rollingBack).ok()).toBe(true);
     await expect(publication.getByRole('status')).toContainText('rollback completed');expect(await readFile(join(source,'example.ts'),'utf8')).toBe(original);
     expect(await readFile(join(source,'owner-notes.txt'),'utf8')).toBe('Unrelated owner edit after import');
-  }finally{await rm(source,{recursive:true,force:true});}
+    await expect(publication.getByRole('button',{name:'Prepare publication review',exact:true})).toBeEnabled();
+    await dialog.getByRole('button',{name:'Close Workspaces',exact:true}).click();await expect(dialog).toHaveCount(0);
+  }finally{holdHistory=false;releaseHistory();await page.unrouteAll({behavior:'wait'});await rm(source,{recursive:true,force:true});}
 });
 
 for(const width of [320,1440])test(`presence-aware publication reviews and rolls back a rename and empty addition at ${width}px`,async({page})=>{

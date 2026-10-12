@@ -34,7 +34,7 @@ Inspected actual browser captures: [before, desktop](evidence/models-before-1440
 | 12 | Security Agent | Actual broker read and denied-write/cancellation/revocation evidence from the eight-case analysis-role integration run; scripted provider. Independently graded supported-findings quality remains pending. |
 | 13 | Independent verification | Real container grader used on coding corpus; general specialist acceptance pending. |
 | 14 | Collaboration | Bounded graph/handoff primitives; parallel isolated integration and comparative utility pending. |
-| 15 | Worktree integration | Real managed forks and encrypted relocated restore pass; source history/merge/conflicts incomplete. |
+| 15 | Worktree integration | Real managed forks, reviewed parent file integration, conservative conflicts, rollback and interrupted receipt verification pass.8new browser cases within31affected passes; full1399tests/one skip. Original repository history and actual Git merge commits remain incomplete. |
 | 16 | Original publication/rollback | Real-file backend plus fresh browser checks pass within existing-directory publication scope. |
 | 17 | Approval denial | Existing backend/browser negative coverage; broader final suite pending. |
 | 18 | Revocation during execution | Real-file mid-mutation regressions pass; entire integration matrix remains open. |

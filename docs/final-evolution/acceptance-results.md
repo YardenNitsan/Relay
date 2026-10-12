@@ -1,5 +1,11 @@
 # Acceptance results
 
+## 12 October: original-publication acknowledgement
+
+Holding the history GET after a real successful source write reproduced a disabled rollback action (`publication-ack-red.log`). Publication now applies the authoritative returned receipt to local history, cancels obsolete pre-mutation reads and refreshes in the background. Successful write/reconciliation callbacks no longer await telemetry-style history reads. Failed writes still inspect their current durable receipt before enabling reviewed recovery. Fresh strict build and all5source publication/rollback browser cases pass (`publication-ack-build.log`, `publication-ack-green.log`,38.2s), including a held phone history refresh through publication, approved rollback and dismissal. Actual native source bytes, unrelated edits, conflicts, renamed/empty files and consent checks remain asserted.
+
+Hosted d30fb7b run38200429679 completed all9host/browser jobs successfully, plus native38200429677. The newer managed-integration0d28245 native run38202842051 also passed; its broad host/browser run38202842049 was still active. These are commit-specific results, not a final release claim.
+
 ## 12 October: reviewed parent integration and theme contrast
 
 Local owners can now review selected child changes against the authentic fork baseline and current managed parent, inspect exact versions/diffs, integrate up to20 safe files and review durable receipts. Both workspaces are reserved synchronously. Divergent same-file edits, missing/noncreation baselines, stale full-snapshot digests, wrong parent, revoked authority and cancellation refuse writes. Existing path/quota/checkpoint protections remain. Rollback uses its own prepared receipt and refuses later parent edits; reconciliation closes only complete before/after states without writing project files. Prepared parent mutations block sibling integrations too. This is conservative managed-text integration, not source Git history import, a Git merge commit or an atomic batch.

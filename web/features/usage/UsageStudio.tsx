@@ -12,7 +12,7 @@ export default function UsageStudio(){
   const report=query.data;
   const totals=report?.models.reduce((sum,model)=>({tokens:sum.tokens+model.inputTokens+model.outputTokens,requests:sum.requests+model.requests,missing:sum.missing+model.unreportedCalls}),{tokens:0,requests:0,missing:0});
   return <div className="usage-studio">
-    <header className="usage-studio-intro"><div><h3>Your account, today</h3><p>Usage recorded by this Relay host. Other accounts and activity outside Relay are not included.</p></div><button className="icon-button" aria-label="Refresh usage" disabled={query.isFetching} onClick={()=>{void query.refetch();}}><RefreshCw size={18} aria-hidden="true"/></button></header>
+    <header className="usage-studio-intro"><div><span className="usage-report-label">RELAY / USAGE REPORT</span><h3>Your account, today</h3><p>Usage recorded by this Relay host. Other accounts and activity outside Relay are not included.</p></div><button className="icon-button" aria-label="Refresh usage" disabled={query.isFetching} onClick={()=>{void query.refetch();}}><RefreshCw size={18} aria-hidden="true"/></button></header>
     {query.isError&&<div className="usage-studio-error"><ErrorNotice error={query.error} retry={()=>{void query.refetch();}}/>{report&&<p>Showing the last loaded report.</p>}</div>}
     {query.isPending&&<Loading>Loading your usage…</Loading>}
     {report&&totals&&<>

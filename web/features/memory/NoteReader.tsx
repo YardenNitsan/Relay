@@ -10,11 +10,12 @@ export function NoteReader({note,workspaces,busy,deleting,removing,error,heading
   const keep=useRef<HTMLButtonElement>(null),remove=useRef<HTMLButtonElement>(null);
   useEffect(()=>{if(deleting)keep.current?.focus();},[deleting]);
   return <article className="memory-reader memory-document-scroll" aria-labelledby={`memory-title-${note.id}`}>
-    <p className="memory-scope" dir="auto">{scopeName(note,workspaces)}</p>
+    <header className="memory-reading-heading"><p className="memory-scope" dir="auto">{scopeName(note,workspaces)}</p>
     <h3 id={`memory-title-${note.id}`} ref={headingRef} tabIndex={-1} dir="auto">{note.title}</h3>
-    <div className="memory-document-meta"><span>{note.enabled?'Enabled for future tasks':'Disabled for future tasks'}</span><span>Revision {note.revision}</span></div>
+    <div className="memory-document-meta"><span data-enabled={note.enabled}>{note.enabled?'Enabled for future tasks':'Disabled for future tasks'}</span><span>Revision {note.revision}</span></div></header>
     <div className="memory-note-prose" dir="auto">{note.content}</div>
     <div className="memory-note-controls">
+      <h4>How this note is used</h4>
       <label className="check-label memory-check"><input type="checkbox" aria-label={`Use ${note.title} in future tasks`} checked={note.enabled} disabled={busy} onChange={onToggle}/>Use in future tasks</label>
       <p className="hint">Only your account can use this note. Enabled notes provide context, never permission to act.</p>
       <div className="memory-note-actions"><button className="button" disabled={busy} onClick={onEdit}>Edit</button><button ref={remove} className="text-button" disabled={busy} onClick={onDelete}>Delete</button></div>

@@ -1,25 +1,30 @@
-.modal.host-studio-modal { width:min(1080px,calc(100vw - 48px));height:min(88dvh,900px);max-height:calc(100dvh - 32px);overflow:hidden; }
+.modal.host-studio-modal { width:min(1160px,calc(100vw - 48px));height:min(88dvh,900px);max-height:calc(100dvh - 32px);overflow:hidden; }
 .host-studio-modal[open] { display:flex;flex-direction:column; }
 .host-studio-modal > .modal-content { padding:0;overflow:hidden;display:flex;min-height:0;flex:1;flex-direction:column; }
 .host-studio-modal > .modal-heading { flex:none; }
 .host-studio { display:flex;flex:1;flex-direction:column;min-width:0;min-height:0; }
 .host-studio :is(button,input,select,summary) { min-height:44px; }
-.host-studio-intro { display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 24px;border-bottom:1px solid var(--color-border); }
+.host-studio-intro { display:flex;align-items:center;justify-content:space-between;gap:16px;padding:24px 32px;border-bottom:1px solid var(--color-border); }
 .host-studio-intro p { margin:0; }
+.host-eyebrow {font:11px var(--font-code);letter-spacing:.08em;color:var(--muted)}
+.host-studio-intro h3 {font-size:clamp(22px,2.2vw,30px);font-weight:500;letter-spacing:-.7px;margin:6px 0;line-height:1.2}
 .host-studio-intro .hint { margin-top:4px; }
 .host-restoration-notice { display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 16px;background:var(--color-warning-surface);color:var(--color-warning);border-bottom:1px solid var(--color-border); }
-.host-studio-layout { display:grid;grid-template-columns:200px minmax(0,1fr);min-height:0;flex:1; }
-.host-studio-nav { display:flex;flex-direction:column;padding:12px;gap:4px;background:var(--color-surface-subtle);border-right:1px solid var(--color-border); }
-.host-studio-nav button { display:flex;flex-direction:column;align-items:flex-start;text-align:start;padding:14px 12px;min-height:48px;border:1px solid transparent;border-radius:6px;background:transparent;color:var(--text);font:inherit; }
+.host-studio-layout { display:flex;flex-direction:column;min-height:0;flex:1; }
+.host-studio-nav { display:flex;flex:none;flex-direction:row;padding:0 24px;gap:16px;border-bottom:1px solid var(--color-border); }
+.host-studio-nav button { display:flex;flex-direction:column;align-items:flex-start;text-align:start;padding:12px 8px;min-height:48px;border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;color:var(--text);font:inherit; }
 .host-studio-nav button small { color:var(--muted);font-size:12px;margin-top:4px; }
-.host-studio-nav button[aria-current] { background:var(--color-action-surface);border-color:var(--color-border);color:var(--accent); }
+.host-studio-nav button[aria-current] { background:transparent;border-bottom-color:var(--accent);color:var(--accent); }
 .host-studio-nav button:hover { background:var(--color-action-surface); }
-.host-studio-body { overflow:auto;min-height:0;padding:16px 28px 32px;scrollbar-gutter:stable;overscroll-behavior:contain; }
+.host-studio-body { overflow:auto;min-height:0;flex:1;padding:24px 40px 32px;scrollbar-gutter:stable;overscroll-behavior:contain; }
 .host-studio-body > section[hidden] { display:none; }
 .host-studio-body .hardware-section { padding:24px 0;margin:0; }
 .host-studio-body .hardware-section:first-child { padding-top:16px; }
 .host-studio-body .hardware-name { font-size:20px;line-height:1.4;overflow-wrap:anywhere; }
-.host-studio-body .hardware-section h3 { display:flex;align-items:center;gap:8px; }
+.host-studio-body .hardware-section h3 { display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);font-weight:500; }
+.host-studio-body .facts-grid {background:transparent;border:0;padding:0}
+.host-studio-body .facts-grid > div {border-left:2px solid var(--line);padding-left:16px}
+.host-studio-body .facts-grid dd {font-family:var(--font-code)}
 .host-studio-body .facts-grid { grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); }
 .host-studio-body .resident-list article { overflow-wrap:anywhere; }
 .host-studio-body .sample-time { margin-top:0; }
@@ -39,6 +44,9 @@
 @media(max-height:500px) {
   .modal.host-studio-modal { height:100dvh;max-height:100dvh;margin-block:0; }
   .host-studio-intro { padding:8px 16px; }
-  .host-studio-intro .hint { display:none; }
+  .host-studio-intro .hint,.host-eyebrow { display:none; }
+  .host-studio-intro h3 {font-size:18px;margin:0}
+  .host-studio-nav button small {display:none}
+  .host-studio-nav {padding-inline:12px}
   .host-studio-body { padding-block:12px; }
 }

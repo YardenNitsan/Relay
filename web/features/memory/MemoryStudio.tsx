@@ -70,7 +70,7 @@ export default function MemoryStudio({workspaces}:{workspaces:Workspace[]}){
   const selectedNote=notes.data?.find(note=>note.id===selected);
   const edit=(note:Note)=>{clearEditor();setBaseline({...note});setDraft(draftFrom(note));setMode('edit');focusTarget.current='heading';};
   const filtered=(notes.data??[]).filter(note=>`${note.title}\n${note.content}\n${scopeName(note,workspaces)}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
-  return <div className={`memory-studio ${showDetail?'memory-show-detail':''}`}>
+  return <div className={`memory-studio dispatch-memory ${showDetail?'memory-show-detail':''}`}>
     <div className="memory-studio-intro"><p>A notebook for future tasks.</p><p className="hint">Save the context you choose. Notes belong to your account and never grant permission to act.</p></div>
     {message&&<p className="memory-feedback" role="status">{message}</p>}
     <div className="memory-notebook" onFocusCapture={event=>{paneFocus.current=event.target;}}>
@@ -80,7 +80,7 @@ export default function MemoryStudio({workspaces}:{workspaces:Workspace[]}){
         <div className="memory-index-scroll">
           {notes.isPending&&<Loading>Reading your memory…</Loading>}
           {notes.isError&&<ErrorNotice error={notes.error} retry={()=>{void notes.refetch();}}/>}
-          {filtered.length?<ul className="memory-index-list">{filtered.map(note=><li key={note.id}><button ref={node=>{if(node)rows.current.set(note.id,node);else rows.current.delete(note.id);}} aria-label={`Open ${note.title}`} aria-current={selected===note.id?'true':undefined} disabled={busy} onClick={()=>inspect(note.id)}><span><strong dir="auto">{note.title}</strong><span className="memory-row-scope" dir="auto">{scopeName(note,workspaces)}</span><small>{note.enabled?'Enabled':'Disabled'}</small></span><ChevronRight size={17} aria-hidden="true"/></button></li>)}</ul>:
+          {filtered.length?<ul className="memory-index-list">{filtered.map(note=><li key={note.id}><button ref={node=>{if(node)rows.current.set(note.id,node);else rows.current.delete(note.id);}} aria-label={`Open ${note.title}`} aria-current={selected===note.id?'true':undefined} disabled={busy} onClick={()=>inspect(note.id)}><span><strong dir="auto">{note.title}</strong><span className="memory-row-excerpt" dir="auto">{note.content}</span><span className="memory-row-meta"><span className="memory-row-scope" dir="auto">{scopeName(note,workspaces)}</span><small data-enabled={note.enabled}>{note.enabled?'Enabled':'Disabled'}</small></span></span><ChevronRight size={17} aria-hidden="true"/></button></li>)}</ul>:
             !notes.isPending&&!notes.isError&&<div className="memory-index-empty"><NotebookPen size={28} aria-hidden="true"/><h4>{query?'No matching notes':'Your notebook starts here'}</h4><p>{query?'Try another title, phrase or scope.':'Add a preference or project fact you want to keep. Nothing is remembered automatically.'}</p>{query&&<button className="text-button" onClick={()=>{setQuery('');search.current?.focus();}}>Clear search</button>}</div>}
         </div>
         <div className="memory-index-footer"><button className="text-button" disabled={busy||notes.isFetching} onClick={()=>{void notes.refetch();}}><RefreshCw size={16} aria-hidden="true"/>Refresh notes</button><button className="text-button" disabled={busy||!notes.data?.length} onClick={()=>exportNotes.mutate()}><Download size={16} aria-hidden="true"/>Export JSON</button>{exportNotes.isError&&<ErrorNotice error={exportNotes.error}/>}</div>

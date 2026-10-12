@@ -55,7 +55,7 @@ export default function GoogleWorkspaceStudio({owner}:{owner:boolean}){
     else{const result=await api<Availability>(root+'/calendar/freebusy',{method:'POST',body:{...window,calendarIds:['primary']},signal});if(!signal.aborted){setAvailability(result);setEvents(null);}}
   });};
   return <div className="google-studio">
-    <div className="google-studio-intro"><h3>Your account. Read-only access.</h3><p>Read selected Gmail messages and your primary calendar. Nothing is fetched until you ask, and these results are not sent to models or conversations.</p></div>
+    <div className="google-studio-intro"><span className="google-intro-icon" aria-hidden="true"><Mail size={24}/></span><div><h3>Your account. Read-only access.</h3><p>Read selected Gmail messages and your primary calendar. Nothing is fetched until you ask, and these results are not sent to models or conversations.</p></div></div>
     <section className="google-studio-connection" aria-label="Google Workspace connection">
       {status.isPending&&<Loading>Checking account connection…</Loading>}
       {status.isError&&<div className="google-studio-connection-error"><ErrorNotice error={status.error} retry={()=>{void status.refetch();}}/>{status.data&&<p className="hint">Showing the last loaded connection state.</p>}</div>}

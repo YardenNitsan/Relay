@@ -8,16 +8,23 @@ import { api } from '../api';
 import Markdown from './Markdown';
 import Welcome from './Welcome';
 import { ConversationSkeleton, ErrorNotice, isActive, Loading, Status } from './ui';
+import '../features/conversation/conversation.css';
+
+function MessageTime({value}:{value:string}) {
+  const date=new Date(value);
+  if(Number.isNaN(date.getTime()))return null;
+  return <time dateTime={value} title={date.toLocaleString()}>{date.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'})}</time>;
+}
 
 function CopyResponse({ content }: { content: string }) {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<unknown>(null);
-  return <><button className="text-button response-copy" onClick={() => { void navigator.clipboard.writeText(content).then(() => setCopied(true)).catch(setError); }}>{copied ? <Check size={13} /> : <Copy size={13} />}{copied ? 'Copied' : 'Copy response'}</button>{error != null && <ErrorNotice error={error} />}</>;
+  return <div className="response-actions"><button className="text-button response-copy" onClick={() => { void navigator.clipboard.writeText(content).then(() => setCopied(true)).catch(setError); }}>{copied ? <Check size={15} aria-hidden="true" /> : <Copy size={15} aria-hidden="true" />}{copied ? 'Copied' : 'Copy response'}</button>{error != null && <ErrorNotice error={error} />}</div>;
 }
 
 function TaskReceipt({ task, onInspect, stream, events }: { task: TaskRecord; onInspect: (id: string) => void; stream?: string; events:ActivityEvent[] }) {
   const active = isActive(task.status);
-  return <div className={`task-receipt ${active ? 'receipt-active' : ''}`}><div className="receipt-line"><span className="receipt-node"><GitBranch size={14} /></span><button className="receipt-button" onClick={() => onInspect(task.id)}><Status status={task.status} /><span>{active ? 'Inspect live activity' : 'Execution record'}</span><ArrowUpRight size={13} /></button></div>{task.error && <div className="receipt-error"><p>{task.error}</p><button className="text-button" onClick={() => onInspect(task.id)}>Inspect task details</button></div>}{active && <div className="stream-response"><p className="small muted" role="status">{taskProgress(task, events)}</p>{stream ? <Markdown content={stream} /> : <div className="working-indicator" role="status"><span /><p>{task.status === 'waiting_for_approval' ? 'Waiting for your approval. Open activity to review the action.' : 'The task is in progress. Activity will appear as work executes.'}</p></div>}</div>}{['paused', 'waiting_for_user'].includes(task.status) && <p className="receipt-pause">Work is preserved. Inspect the record before resuming.</p>}</div>;
+  return <div className={`task-receipt ${active ? 'receipt-active' : ''}`}><div className="receipt-line"><span className="receipt-node"><GitBranch size={16} aria-hidden="true" /></span><button className="receipt-button" onClick={() => onInspect(task.id)}><span className="receipt-label">{active ? 'Inspect live activity' : 'Execution record'}</span><Status status={task.status} /><ArrowUpRight size={16} aria-hidden="true" /></button></div>{task.error && <div className="receipt-error"><p>{task.error}</p><button className="text-button" onClick={() => onInspect(task.id)}>Inspect task details</button></div>}{active && <div className="stream-response"><p className="small muted" role="status">{taskProgress(task, events)}</p>{stream ? <Markdown content={stream} /> : <div className="working-indicator" role="status"><span /><p>{task.status === 'waiting_for_approval' ? 'Waiting for your approval. Open activity to review the action.' : 'The task is in progress. Activity will appear as work executes.'}</p></div>}</div>}{['paused', 'waiting_for_user'].includes(task.status) && <p className="receipt-pause">Work is preserved. Inspect the record before resuming.</p>}</div>;
 }
 
 type PageAnchor = { before?: string; after?: string; beforeId?: string; around?: string };
@@ -77,7 +84,7 @@ export default function Conversation({ detail, loading, error, onRetry, streams,
   const earlier = anchor ? history.data?.olderCursor : messages.length === 80 ? messages[0]?.id : null;
   const newer = anchor ? history.data?.newerCursor : null;
   const hasConversation = Boolean(detail?.messages.length);
-  return <div className="conversation-scroll" ref={scrollRef} onFocusCapture={event=>{
+  return <div className="conversation-scroll conversation-dispatch" ref={scrollRef} onFocusCapture={event=>{
     // Keyboard readers own their position. Revealing an offscreen code region
     // can resize its message before the native scroll event arrives.
     const target=event.target as HTMLElement,scroller=event.currentTarget;
@@ -94,13 +101,14 @@ export default function Conversation({ detail, loading, error, onRetry, streams,
     setHistoryNavHidden(element.scrollTop > 140);
   }} aria-label="Conversation">
     <div ref={contentRef} className={`conversation-content ${!hasConversation && !loading && error == null ? 'conversation-empty' : ''}`}>
-      {loading ? <ConversationSkeleton /> : error != null ? <ErrorNotice error={error} retry={onRetry} /> : !hasConversation ? <Welcome modelCount={models.length} onModels={onModels} onWorkspace={onWorkspace} onDraft={onDraft} /> : <>
+      {loading ? <div className="conversation-state"><ConversationSkeleton /></div> : error != null ? <div className="conversation-state conversation-state-error"><h2>Conversation unavailable</h2><ErrorNotice error={error} retry={onRetry} /></div> : !hasConversation ? <Welcome modelCount={models.length} onModels={onModels} onWorkspace={onWorkspace} onDraft={onDraft} /> : <>
+        <header className="conversation-document-heading"><p>{anchor?'Saved conversation':'Conversation'}</p><h1>{detail?.conversation.title}</h1></header>
         {(anchor || earlier) && <nav className="message-pagination" aria-label="Conversation pages"><div><span className="small muted">{anchor ? 'Reading saved history' : 'Latest messages'}</span>{anchor && <button className="text-button" onClick={latest}>Return to latest<ArrowDown size={14} /></button>}</div><div><button className="button" disabled={!earlier || history.isFetching} onClick={() => { if (earlier) navigate(anchor ? { before: earlier } : { beforeId: earlier }); }}><ArrowUp size={14} />Earlier messages</button>{anchor && <button className="button" disabled={!newer || history.isFetching} onClick={() => { if (newer) navigate({ after: newer }); }}>Newer messages<ArrowDown size={14} /></button>}</div></nav>}
         {anchor && history.isPending ? <Loading>Opening saved messages…</Loading> : anchor && history.isError ? <ErrorNotice error={history.error} retry={() => { void history.refetch(); }} /> : <>
         {anchor && !messages.length && <p className="history-boundary" role="status">You have reached the beginning of this conversation.</p>}
         {messages.map(message => {
           const task = message.taskId ? taskMap.get(message.taskId) : undefined;
-          return <Fragment key={message.id}><article id={`message-${message.id}`} tabIndex={-1} className={`message message-${message.role} ${anchor?.around === message.id ? 'message-found' : ''}`} aria-label={message.role === 'user' ? 'Your message' : 'Relay response'}><div className="message-label">{message.role === 'user' ? 'You' : <><span className="mini-mark" />Relay</>}</div>{message.role === 'user' ? <div className="user-message" dir="auto">{message.content}</div> : <>{task&&<TaskReceipt task={task} onInspect={id=>onInspect(id,task)} events={events}/>}<Markdown content={message.content} /><CopyResponse content={message.content} /></>}</article>{message.role==='user'&&task&&!answeredTasks.has(task.id)&&<article className="message message-assistant" aria-label="Relay response"><div className="message-label"><span className="mini-mark"/>Relay</div><TaskReceipt task={task} onInspect={id=>onInspect(id,task)} stream={streams[task.id]?.text} events={events}/></article>}</Fragment>;
+          return <Fragment key={message.id}><article id={`message-${message.id}`} tabIndex={-1} className={`message message-${message.role} ${anchor?.around === message.id ? 'message-found' : ''}`} aria-label={message.role === 'user' ? 'Your message' : 'Relay response'}><div className="message-label"><span>{message.role === 'user' ? 'You' : <><span className="mini-mark" aria-hidden="true" />Relay</>}</span><MessageTime value={message.createdAt}/></div><div className="message-body">{message.role === 'user' ? <div className="user-message" dir="auto">{message.content}</div> : <>{task&&<TaskReceipt task={task} onInspect={id=>onInspect(id,task)} events={events}/>}<Markdown content={message.content} /><CopyResponse content={message.content} /></>}</div></article>{message.role==='user'&&task&&!answeredTasks.has(task.id)&&<article className="message message-assistant" aria-label="Relay response"><div className="message-label"><span><span className="mini-mark" aria-hidden="true"/>Relay</span></div><div className="message-body"><TaskReceipt task={task} onInspect={id=>onInspect(id,task)} stream={streams[task.id]?.text} events={events}/></div></article>}</Fragment>;
         })}
         </>}
       </>}

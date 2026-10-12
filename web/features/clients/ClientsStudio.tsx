@@ -57,7 +57,7 @@ export default function ClientsStudio({permitted}:{permitted:boolean}){
   };
   if(!permitted)return <Empty title="External client access needs a grant">The host owner must enable external model access for your account. A browser session does not grant API access to other applications.</Empty>;
   return <div className="clients-studio">
-    <header className="clients-studio-intro"><p>Connect an application. Keep control of its access.</p><p className="hint">Each token is a separate grant to your account’s model gateway.</p></header>
+    <header className="clients-studio-intro"><span className="clients-intro-icon" aria-hidden="true"><KeyRound size={24}/></span><div><h3>Application access</h3><p className="hint">Each token is a separate grant to your account’s model gateway.</p></div></header>
     <div className="clients-studio-workspace"><div className="clients-primary">
       {error!=null&&<ErrorNotice error={error}/>}{message&&<p className="clients-feedback" role="status">{message}</p>}
       {access.isError&&<ErrorNotice error={access.error} retry={()=>{void access.refetch();}}/>}

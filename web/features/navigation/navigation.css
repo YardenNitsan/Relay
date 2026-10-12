@@ -1,0 +1,42 @@
+.modal.dispatch-navigation { width: min(720px, calc(100vw - 48px)); max-height: calc(var(--relay-viewport-height, 100dvh) - 48px); }
+.dispatch-navigation > .modal-heading { padding: 18px 28px; }
+.dispatch-navigation > .modal-heading h2 { font-size: 17px; }
+.dispatch-navigation > .modal-heading .icon-button { min-width: 44px; min-height: 44px; }
+.dispatch-navigation > .modal-content { padding: 0 28px 24px; }
+.dispatch-navigation .navigation-identity { gap: 14px; padding: 22px 0; margin: 0 0 26px; }
+.navigation-avatar { display: flex; justify-content: center; align-items: center; width: 44px; height: 44px; flex: 0 0 44px; border-radius: 50%; background: var(--accent-wash); color: var(--accent); }
+.dispatch-navigation .navigation-identity strong { font-size: 18px; line-height: 1.4; }
+.dispatch-navigation .navigation-identity dl { margin-top: 14px; gap: 5px 14px; line-height: 1.5; }
+.dispatch-navigation .navigation-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 32px; }
+.navigation-group { min-width: 0; }
+.navigation-group h3 { margin: 0 0 5px; font-size: 15px; font-weight: 500; }
+.navigation-group > p { margin: 0 0 12px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.dispatch-navigation .navigation-list button { width: 100%; min-height: 46px; padding: 8px; gap: 10px; font-size: 13px; border-radius: 6px; }
+.dispatch-navigation .navigation-list button > span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.dispatch-navigation .navigation-list button > svg { color: var(--muted); }
+.dispatch-navigation .navigation-list button > svg:last-child { opacity: .65; }
+.dispatch-navigation .navigation-list .navigation-new { margin-bottom: 4px; background: var(--accent-wash); color: var(--accent); }
+.dispatch-navigation .navigation-list .navigation-new > svg { color: inherit; }
+.dispatch-navigation .navigation-secondary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 24px; padding-top: 16px; margin-top: 28px; }
+.dispatch-navigation .navigation-secondary button { min-height: 46px; font-size: 12px; padding: 8px; gap: 10px; }
+.dispatch-navigation .navigation-secondary kbd { white-space: nowrap; }
+.navigation-session { grid-column: 1 / -1; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+.navigation-session > button { color: var(--text); }
+.dispatch-navigation .navigation-signout-hint { padding: 0 8px; font-size: 12px; }
+@media (max-width: 700px) {
+  .modal.dispatch-navigation { width: 100%; height: var(--relay-viewport-height, 100dvh); max-height: var(--relay-viewport-height, 100dvh); margin: 0; border: 0; border-radius: 0; }
+  .dispatch-navigation > .modal-heading { padding: 12px 18px; }
+  .dispatch-navigation > .modal-content { padding: 0 18px max(24px, env(safe-area-inset-bottom)); }
+  .dispatch-navigation .navigation-identity { padding-block: 18px; margin-bottom: 22px; }
+  .dispatch-navigation .navigation-list { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .navigation-group > p { margin-bottom: 9px; }
+  .dispatch-navigation .navigation-list button { min-height: 48px; font-size: 14px; }
+  .navigation-group + .navigation-group { padding-top: 22px; border-top: 1px solid var(--line); }
+  .dispatch-navigation .navigation-secondary { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .dispatch-navigation .navigation-secondary button { font-size: 13px; }
+}
+@media (max-height: 540px) {
+  .modal.dispatch-navigation { max-height: calc(var(--relay-viewport-height, 100dvh) - 16px); }
+  .dispatch-navigation > .modal-heading { padding-block: 5px; }
+  .dispatch-navigation .navigation-identity { padding-block: 14px; }
+}

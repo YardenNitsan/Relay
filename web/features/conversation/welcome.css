@@ -1,29 +1,56 @@
 .conversation-empty { container-type: inline-size; container-name: welcome; }
-.studio-welcome { width: 100%; min-width: 0; padding-block: var(--space-6); }
-.studio-welcome h1 { max-width: 24ch; font-size: clamp(28px, 3vw, 38px); font-weight: 500; line-height: 1.2; letter-spacing: -.9px; margin: 0 0 var(--space-4); }
-.studio-welcome > p { max-width: 54ch; color: var(--color-text-secondary); margin-bottom: var(--space-8); font-size: var(--text-body); }
-.studio-starting-points { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); margin-bottom: var(--space-8); }
-.studio-starting-points button { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); text-align: start; padding: var(--space-3) 0; min-height: var(--target-touch); border-bottom: 1px solid var(--color-control-border); font-size: var(--text-ui); }
-.studio-starting-points button:hover { color: var(--color-action); border-color: var(--color-action); }
-.studio-connections { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
-.studio-connections button { display: flex; align-items: center; gap: var(--space-3); text-align: start; min-height: 64px; padding: var(--space-3); border-radius: var(--radius-control); color: var(--color-text-secondary); }
-.studio-connections button:hover { color: var(--color-action); background: var(--color-surface-subtle); }
-.studio-connections strong { display: block; font-size: var(--text-ui); font-weight: 500; color: var(--color-text-primary); }
-.studio-connections small { display: block; margin-top: var(--space-1); font-size: var(--text-caption); }
-@container welcome (max-width: 540px) {
-  .studio-welcome { padding-block: var(--space-4); }
-  .studio-welcome > p { margin-bottom: var(--space-4); }
-  .studio-starting-points { grid-template-columns: minmax(0, 1fr); gap: 0; margin-bottom: var(--space-4); }
-  .studio-connections { gap: var(--space-1); }
-  .studio-connections button { padding-inline: 0; gap: var(--space-2); }
+.dispatch-welcome { width: 100%; min-width: 0; padding-block: 20px; }
+.welcome-introduction { display: flex; gap: 24px; align-items: flex-start; margin-bottom: 44px; }
+.welcome-symbol { display: flex; align-items: center; gap: 5px; flex: 0 0 42px; height: 46px; padding-top: 3px; color: var(--accent); }
+.welcome-symbol i { display: block; width: 8px; height: 23px; background: currentColor; transform: skewY(-24deg); border-radius: 2px; }
+.welcome-symbol i:nth-child(2) { height: 37px; }
+.welcome-symbol i:nth-child(3) { height: 27px; align-self: flex-start; margin-top: 3px; }
+.dispatch-welcome h1 { max-width: 22ch; font-size: clamp(28px, 4cqi, 42px); font-weight: 400; line-height: 1.16; letter-spacing: -1.2px; margin: 0 0 15px; text-wrap: balance; }
+.welcome-introduction p { max-width: 49ch; color: var(--muted); font-size: 15px; line-height: 1.7; margin: 0; }
+.welcome-section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.welcome-section-heading h2 { font-size: 13px; font-weight: 500; letter-spacing: 0; margin: 0; }
+.welcome-section-heading > span { color: var(--muted); font-size: 12px; }
+.dispatch-welcome .studio-starting-points { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; margin: 0 0 28px; }
+.dispatch-welcome .studio-starting-points button { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-content: start; gap: 16px 8px; min-height: 164px; padding: 22px 0 18px; text-align: start; border-bottom: 1px solid var(--line-strong); }
+.dispatch-welcome .starter-icon { grid-column: 1 / -1; color: var(--accent); }
+.dispatch-welcome .studio-starting-points button > span { min-width: 0; }
+.dispatch-welcome .studio-starting-points strong { display: block; font-size: 14px; line-height: 1.5; font-weight: 500; }
+.dispatch-welcome .studio-starting-points small { display: block; margin-top: 7px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.dispatch-welcome .studio-starting-points button > svg:last-child { align-self: start; margin-top: 3px; color: var(--muted); }
+.dispatch-welcome .studio-starting-points button:hover { border-color: var(--accent); }
+.dispatch-welcome .studio-starting-points button:hover strong, .dispatch-welcome .studio-starting-points button:hover > svg:last-child { color: var(--accent); }
+.dispatch-welcome .studio-connections { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.dispatch-welcome .studio-connections button { display: flex; align-items: center; gap: 12px; text-align: start; min-height: 68px; padding: 10px 0; border-radius: 6px; color: var(--muted); }
+.dispatch-welcome .studio-connections button > span { flex: 1; min-width: 0; }
+.dispatch-welcome .studio-connections button:hover { color: var(--accent); background: var(--surface-muted); }
+.dispatch-welcome .studio-connections strong { display: block; font-size: 13px; font-weight: 500; color: var(--text); }
+.dispatch-welcome .studio-connections small { display: block; margin-top: 4px; font-size: 12px; line-height: 1.5; }
+@container welcome (max-width: 580px) {
+  .dispatch-welcome { padding-block: 10px; }
+  .welcome-introduction { gap: 16px; margin-bottom: 28px; }
+  .welcome-symbol { flex-basis: 31px; gap: 4px; height: 35px; }
+  .welcome-symbol i { width: 6px; height: 18px; }
+  .welcome-symbol i:nth-child(2) { height: 29px; }
+  .welcome-symbol i:nth-child(3) { height: 21px; }
+  .dispatch-welcome h1 { font-size: 30px; letter-spacing: -.8px; margin-bottom: 12px; }
+  .welcome-introduction p { font-size: 14px; }
+  .welcome-section-heading { display: block; padding-bottom: 10px; }
+  .welcome-section-heading > span { display: block; margin-top: 5px; }
+  .dispatch-welcome .studio-starting-points { grid-template-columns: minmax(0, 1fr); gap: 0; margin-bottom: 16px; }
+  .dispatch-welcome .studio-starting-points button { grid-template-columns: 24px minmax(0, 1fr) 17px; align-items: center; gap: 12px; min-height: 82px; padding: 15px 0; }
+  .dispatch-welcome .starter-icon { grid-column: auto; }
+  .dispatch-welcome .studio-starting-points button > svg:last-child { align-self: center; margin: 0; }
+  .dispatch-welcome .studio-starting-points small { margin-top: 3px; }
+  .dispatch-welcome .studio-connections { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .dispatch-welcome .studio-connections button { min-height: 62px; }
 }
-@container welcome (max-width: 300px) {
-  .studio-connections { grid-template-columns: minmax(0, 1fr); }
-  .studio-welcome h1 { font-size: 28px; }
+@container welcome (max-width: 310px) {
+  .welcome-introduction { display: block; }
+  .welcome-symbol { margin-bottom: 16px; }
+  .dispatch-welcome h1 { font-size: 28px; }
 }
 @media (max-height: 540px) {
-  .studio-welcome { padding-block: var(--space-2); }
-  .studio-welcome h1 { font-size: 28px; }
-  .studio-welcome > p { margin-bottom: var(--space-3); }
-  .studio-starting-points { margin-bottom: var(--space-3); }
+  .dispatch-welcome { padding-block: 4px; }
+  .welcome-introduction { margin-bottom: 22px; }
+  .dispatch-welcome h1 { font-size: 28px; }
 }

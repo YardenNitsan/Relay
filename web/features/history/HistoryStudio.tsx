@@ -69,8 +69,8 @@ export default function HistoryStudio({selected,onSelect,onNew,onDeleted}:Props)
     finally{lock.current=false;setDeleting(false);}
   };
   const readyItems=query.data?.items??[];
-  return <div className="history-studio">
-    <div className="history-studio-intro"><div><p>Pick up a saved conversation.</p><p className="hint">Browse your timeline or find the exact message you need.</p></div><button className="button" disabled={deleting||pendingDelete!=null} onClick={()=>request(onNew)}><Plus size={17} aria-hidden="true"/>New</button></div>
+  return <div className="history-studio dispatch-history">
+    <div className="history-studio-intro"><div><p className="history-intro-title">Pick up where you left off.</p><p className="hint">Find a conversation or return to an exact saved message.</p></div><button className="button" disabled={deleting||pendingDelete!=null} onClick={()=>request(onNew)}><Plus size={17} aria-hidden="true"/>New</button></div>
     {notice&&<p className="history-studio-notice" role="status">{notice}</p>}
     {pendingDelete&&<DeleteConversation conversation={pendingDelete} busy={deleting} error={deleteError} cancelRef={cancelRef} onCancel={cancelDelete} onDelete={()=>{void removeConversation();}}/>}
     <div className="history-studio-workspace" hidden={pendingDelete!=null}>

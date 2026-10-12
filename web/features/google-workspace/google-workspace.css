@@ -9,18 +9,20 @@
 .google-studio button { white-space: normal; }
 .google-studio h3 { margin: 0; font-size: 20px; font-weight: 500; line-height: 1.4; }
 .google-studio .hint { font-size: var(--text-caption); line-height: 1.6; color: var(--color-text-secondary); }
-.google-studio-intro { flex: none; padding: var(--space-4) var(--space-6); }
-.google-studio-intro h3 { font-size: var(--text-body); }
+.google-studio-intro { display: flex; align-items: center; gap: var(--space-4); flex: none; padding: 20px var(--space-6); background: var(--canvas); }
+.google-intro-icon { display: grid; place-items: center; flex: 0 0 44px; height: 44px; color: var(--accent); background: var(--surface); border: 1px solid var(--line); border-radius: 50%; }
+.google-studio-intro > div { min-width: 0; }
+.google-studio-intro h3 { font-size: 21px; line-height: 1.35; letter-spacing: -.02em; }
 .google-studio-intro p { margin: var(--space-1) 0 0; color: var(--color-text-secondary); max-width: 80ch; font-size: var(--text-caption); }
-.google-studio-connection { display: flex; align-items: center; flex: none; flex-wrap: wrap; gap: var(--space-3); padding: var(--space-3) var(--space-6); border-block: 1px solid var(--color-border); background: var(--color-surface-subtle); }
+.google-studio-connection { display: flex; align-items: center; flex: none; flex-wrap: wrap; gap: var(--space-3); padding: var(--space-3) var(--space-6); border-block: 1px solid var(--color-border); background: var(--surface); }
 .google-studio-connection > p { flex: 1 1 220px; margin: 0; }
 .google-studio-connection > .button { flex: none; }
 .google-studio-connection > .icon-button { flex: none; width: var(--target-touch); }
 .google-studio-connection-error { flex-basis: 100%; }
 .google-studio-connection-error > p { margin: var(--space-1) 0 0; }
 .google-studio-nav { display: flex; flex: none; gap: var(--space-2); padding-inline: var(--space-6); border-bottom: 1px solid var(--color-border); }
-.google-studio-nav button { display: flex; align-items: center; justify-content: center; gap: var(--space-2); padding: var(--space-3); border-bottom: 2px solid transparent; color: var(--color-text-secondary); }
-.google-studio-nav button[aria-pressed='true'] { border-color: var(--color-action); color: var(--color-action); background: var(--color-action-surface); }
+.google-studio-nav button { display: flex; align-items: center; justify-content: center; gap: var(--space-2); padding: var(--space-3); border-bottom: 3px solid transparent; color: var(--color-text-secondary); }
+.google-studio-nav button[aria-pressed='true'] { border-color: var(--color-action); color: var(--color-action); font-weight: 600; }
 .google-studio-nav button:last-child:not(:nth-child(2)) { margin-inline-start: auto; }
 .google-studio-feedback { flex: none; margin: 0; padding: var(--space-2) var(--space-6); }
 .google-studio-content { display: flex; flex: 1; min-width: 0; min-height: 0; }
@@ -41,24 +43,29 @@
 .google-studio-redirects { padding-inline-start: var(--space-6); }
 .google-studio-warning { border-inline-start: 2px solid var(--color-warning); padding-inline-start: var(--space-3); color: var(--color-warning); }
 .google-studio-mail { flex: 1; display: grid; grid-template-columns: minmax(280px,36%) minmax(0,1fr); min-width: 0; min-height: 0; }
-.google-studio-mail-index { background: var(--color-surface-subtle); border-inline-end: 1px solid var(--color-border); }
+.google-studio-mail-index { background: var(--canvas); border-inline-end: 1px solid var(--color-border); }
 .google-studio-mail-results { margin-top: var(--space-6); }
 .google-studio-mail-results > [role='status'] { font-size: var(--text-caption); color: var(--color-text-secondary); }
 .google-studio-mail-row { padding-block: var(--space-4); border-top: 1px solid var(--color-border); }
+.google-studio-mail-row:last-child { border-bottom: 1px solid var(--line); }
+.google-studio-mail-row > p:not(.hint) { font-size: var(--text-ui); line-height: 1.65; }
 .google-studio-mail-row h4 { font-size: var(--text-body); margin: 0 0 var(--space-2); line-height: 1.5; font-weight: 500; }
 .google-studio-mail-row p { margin: var(--space-2) 0; }
 .google-studio-mail-row button[aria-current='true'] { color: var(--color-action); background: var(--color-action-surface); }
-.google-studio-message > h3 { margin-block: var(--space-4); }
+.google-studio-message { background: var(--surface); }
+.google-studio-message > h3 { margin-block: var(--space-6) var(--space-4); font-size: 24px; letter-spacing: -.02em; }
 .google-studio-mail-meta { margin: 0 0 var(--space-6); font-size: var(--text-caption); }
+.google-studio-mail-meta { padding-bottom: var(--space-4); border-bottom: 1px solid var(--line); }
 .google-studio-mail-meta > div { display: grid; grid-template-columns: 44px minmax(0,1fr); gap: var(--space-3); margin-top: var(--space-2); }
 .google-studio-mail-meta dt { color: var(--color-text-secondary); }
 .google-studio-mail-meta dd { margin: 0; }
-.google-studio-message pre { white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; font-family: var(--font-body); font-size: var(--text-body); line-height: 1.7; margin: 0; }
+.google-studio-message pre { white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; font-family: var(--font-body); font-size: var(--text-body); line-height: 1.75; max-width: 72ch; margin: 0; }
 .google-studio-reader-empty { padding-top: var(--space-8); color: var(--color-text-secondary); max-width: 42ch; }
 .google-studio-reader-empty h3 { margin-block: var(--space-4) var(--space-2); color: var(--color-text-primary); }
 .google-studio-dates { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--space-4); }
 .google-studio-events,.google-studio-availability { margin-top: var(--space-6); max-width: 78ch; }
 .google-studio-events article { border-top: 1px solid var(--color-border); padding-block: var(--space-4); }
+.google-studio-events article:last-child { border-bottom: 1px solid var(--line); }
 .google-studio-events h4 { margin-bottom: var(--space-2); font-size: var(--text-body); font-weight: 500; }
 .google-studio-events p { margin-bottom: var(--space-2); }
 .google-studio-description { white-space: pre-wrap; }
@@ -72,6 +79,9 @@
   .modal.google-workspace-studio-modal { width: 100vw; height: 100dvh; max-height: 100dvh; margin: 0; border: 0; border-radius: 0; }
   .google-workspace-studio-modal > .modal-heading { padding: max(var(--space-3),env(safe-area-inset-top)) var(--space-4) var(--space-3); }
   .google-studio-intro,.google-studio-scroll { padding: var(--space-4); }
+  .google-studio-intro { align-items: flex-start; gap: var(--space-3); }
+  .google-studio-intro h3 { font-size: 18px; }
+  .google-intro-icon { flex-basis: 36px; height: 36px; }
   .google-studio-connection,.google-studio-feedback { padding-inline: var(--space-4); }
   .google-studio-nav { padding-inline: var(--space-2); gap: 0; }
   .google-studio-nav button { flex: 1; padding-inline: var(--space-2); gap: var(--space-1); }

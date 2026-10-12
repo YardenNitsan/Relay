@@ -73,7 +73,8 @@ export default function ModelStudio({ onSelect, contextTokens, owner = true, hos
     moveFocus.current = next; setView(next); if (next === 'catalog') setShowInspector(false);
   };
   const select = (id: string) => request(() => onSelect(id));
-  return <ModelOperationContext.Provider value={reportOperation}><div ref={root} className={`model-studio ${showInspector ? 'model-show-inspector' : ''}`}>
+  return <ModelOperationContext.Provider value={reportOperation}><div ref={root} className={`model-studio model-dispatch ${showInspector ? 'model-show-inspector' : ''}`}>
+    <header className="model-library-heading"><div><span className="model-library-label">RELAY / MODEL LIBRARY</span><h3>Choose with confidence.</h3><p>Inspect capabilities and evidence. Keep control of where your work runs.</p></div><div className="model-library-context"><span>{query.data ? `${query.data.models.length} discovered models` : query.isError ? 'Model discovery unavailable' : 'Discovering your models'}</span><strong dir="auto">{hostName ?? 'Your Relay host'}</strong><span dir="auto">{accountName ?? 'Your account'}</span></div></header>
     <nav className="model-studio-nav" aria-label="Model Studio views"><button aria-current={view === 'catalog' ? 'page' : undefined} onClick={() => navigate('catalog')}>Model catalog</button><button aria-current={view === 'connections' ? 'page' : undefined} onClick={() => navigate('connections')}>Connections</button><button className="icon-button" aria-label="Refresh models" disabled={query.isFetching||inspectorBusy} onClick={() => { void query.refetch(); }}><RefreshCw size={18} aria-hidden="true" className={query.isFetching ? 'spin' : ''} /></button></nav>
     {blocked&&<div className="model-studio-feedback"><p role="status">Wait for the current operation to finish before inspecting another model.</p></div>}
     {query.isPending && <div className="model-studio-feedback"><Loading>Discovering models…</Loading></div>}

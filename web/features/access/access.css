@@ -3,21 +3,27 @@
 .access-studio-modal > .modal-heading { flex: none; padding: var(--space-4) var(--space-6); }
 .access-studio-modal > .modal-content { display: flex; flex: 1; min-height: 0; padding: 0; overflow: hidden; }
 .access-studio { display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; color: var(--color-text-primary); }
-.access-studio-intro { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--space-4) var(--space-6); flex: none; }
+.access-studio-intro { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: 20px var(--space-6); flex: none; background: var(--canvas); border-bottom: 1px solid var(--line); }
+.access-intro-icon { display: grid; place-items: center; flex: 0 0 44px; height: 44px; color: var(--accent); background: var(--surface); border: 1px solid var(--line); border-radius: 50%; }
+.access-studio-intro > div { flex: 1; min-width: 0; }
+.access-studio-intro h3 { margin: 0; font-size: 21px; font-weight: 500; line-height: 1.35; letter-spacing: -.02em; }
+.access-studio-intro > .icon-button { flex: none; width: 44px; height: 44px; }
 .access-studio-intro p { margin: 0; }
 .access-studio-intro .hint { margin-top: var(--space-1); }
 .access-section-nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); flex: none; padding: 0 var(--space-6); border-bottom: 1px solid var(--color-border); }
 .access-section-nav > button { min-width: 0; min-height: 52px; padding: var(--space-2); background: transparent; color: var(--color-text-secondary); border: 0; border-bottom: 3px solid transparent; font-size: var(--text-ui); font-weight: 600; display: flex; gap: var(--space-2); align-items: center; justify-content: center; flex-wrap: wrap; }
-.access-section-nav > button[aria-current] { color: var(--color-action); border-bottom-color: var(--color-action); background: var(--color-action-surface); }
+.access-section-nav > button[aria-current] { color: var(--color-action); border-bottom-color: var(--color-action); }
 .access-section-nav > button span { font-size: var(--text-caption); color: var(--color-text-primary); }
 .access-feedback { margin: 0; padding: var(--space-3) var(--space-6); font-size: var(--text-ui); background: var(--color-action-surface); border-bottom: 1px solid var(--color-border); flex: none; }
 .access-section-scroll, .access-person-scroll, .access-people-scroll { min-height: 0; overflow: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
 .access-section-scroll { flex: 1; padding: var(--space-6); }
-.access-document { width: min(100%, 880px); margin: 0 auto; }
+.access-document { width: min(100%, 880px); margin: 0 auto; padding-bottom: var(--space-4); }
 .access-document > h3, .access-person h3, .access-create h3 { margin: 0 0 var(--space-3); font-size: var(--text-title); letter-spacing: -.025em; line-height: 1.2; overflow-wrap: anywhere; }
 .access-document > p { max-width: 72ch; }
 .access-document h4 { font-size: var(--text-body); margin: 0; }
 .access-gateway { border-top: 1px solid var(--color-border); margin-top: var(--space-6); padding-top: var(--space-6); }
+.access-gateway > .split { align-items: center; padding-bottom: var(--space-2); }
+.access-gateway h4 > svg { color: var(--accent); }
 .access-gateway h4 { display: flex; align-items: center; gap: var(--space-2); }
 .access-studio .gateway-setup, .access-studio .lan-summary { margin-top: var(--space-6); }
 .access-studio .gateway-setup summary { min-height: var(--target-touch); display: flex; align-items: center; cursor: pointer; font-weight: 600; list-style: none; }
@@ -30,9 +36,9 @@
 .access-studio .gateway-url code { min-width: 0; }
 .access-studio .remote-config-fields { border: 0; margin: 0; padding: 0; }
 .access-studio .remote-config-form { padding: var(--space-6) 0; border-top: 1px solid var(--color-border); }
-.access-people { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(260px, .8fr) minmax(0, 1.7fr); }
+.access-people { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(260px, 30%) minmax(0, 1fr); }
 .access-people-index, .access-person-pane { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-.access-people-index { border-inline-end: 1px solid var(--color-border); background: var(--color-surface-subtle); }
+.access-people-index { border-inline-end: 1px solid var(--color-border); background: var(--canvas); }
 .access-people-tools { padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); flex: none; }
 .access-people-tools > label { font-size: var(--text-caption); font-weight: 600; margin-top: var(--space-3); }
 .access-people-tools > div { position: relative; }
@@ -41,7 +47,8 @@
 .access-people-scroll { flex: 1; }
 .access-people-scroll > ul, .access-session-list, .access-work-list { list-style: none; margin: 0; padding: 0; }
 .access-people-scroll li { border-top: 1px solid var(--color-border); }
-.access-people-scroll li > button { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); width: 100%; min-height: 100px; padding: var(--space-4); text-align: start; border: 0; border-inline-start: 3px solid transparent; border-radius: 0; background: transparent; color: var(--color-text-primary); }
+.access-people-scroll li > button { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); width: 100%; min-height: 92px; padding: var(--space-4); text-align: start; border: 0; border-inline-start: 3px solid transparent; border-radius: 0; background: transparent; color: var(--color-text-primary); }
+.access-people-scroll li > button:hover { background: var(--surface-muted); }
 .access-people-scroll li > button[aria-current] { border-inline-start-color: var(--color-action); background: var(--color-action-surface); }
 .access-people-scroll li > button > span { display: grid; gap: var(--space-1); min-width: 0; }
 .access-people-scroll strong, .access-people-scroll small { overflow-wrap: anywhere; }
@@ -49,13 +56,13 @@
 .access-people-scroll small { font-size: var(--text-caption); color: var(--color-text-secondary); }
 .access-person-back { display: none; border-bottom: 1px solid var(--color-border); flex: none; padding: 0 var(--space-4); }
 .access-person-back button { min-height: var(--target-touch); }
-.access-person-scroll { flex: 1; padding: var(--space-6); }
+.access-person-scroll { flex: 1; padding: var(--space-6) var(--space-8); background: var(--surface); }
 .access-person-heading { padding-bottom: var(--space-4); border-bottom: 1px solid var(--color-border); margin-bottom: var(--space-6); }
 .access-person-heading > p { margin: var(--space-2) 0 0; overflow-wrap: anywhere; }
 .access-person-heading > svg { color: var(--color-action); margin-bottom: var(--space-3); }
 .access-policy-fields { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; gap: var(--space-4); }
-.access-policy-fields > fieldset { margin: 0; padding: var(--space-4); min-width: 0; border: 1px solid var(--color-border); border-radius: var(--radius-control); }
-.access-policy-fields legend { font-size: var(--text-ui); font-weight: 600; }
+.access-policy-fields > fieldset { margin: 0; padding: var(--space-4) 0; min-width: 0; border: 0; border-top: 1px solid var(--color-border); border-radius: 0; }
+.access-policy-fields legend { padding-inline: 0 var(--space-3); font-size: var(--text-body); font-weight: 500; }
 .access-policy-fields .hint { margin: 0; }
 .access-policy-fields .policy-checkboxes { margin-top: var(--space-2); }
 .access-studio .check-label { min-height: var(--target-touch); align-items: center; font-size: var(--text-ui); }
@@ -79,6 +86,7 @@
 .access-empty h3 { color: var(--color-text-primary); font-size: 20px; }
 .access-session-list { margin-top: var(--space-6); }
 .access-session-list > li { padding: var(--space-6) 0; border-top: 1px solid var(--color-border); }
+.access-session-list > li:last-child { border-bottom: 1px solid var(--line); }
 .access-session-list header { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
 .access-session-list h4 { overflow-wrap: anywhere; }
 .access-user-agent { font-size: var(--text-ui); overflow-wrap: anywhere; color: var(--color-text-secondary); }
@@ -102,6 +110,8 @@
   .access-studio-modal > .modal-heading { padding: var(--space-3) var(--space-4); }
   .access-studio-intro { padding: var(--space-3) var(--space-4); gap: var(--space-2); font-size: var(--text-ui); }
   .access-studio-intro .hint { display: none; }
+  .access-studio-intro h3 { font-size: 18px; }
+  .access-intro-icon { flex-basis: 36px; height: 36px; }
   .access-section-nav { padding: 0 var(--space-2); }
   .access-section-nav > button { font-size: var(--text-caption); padding-inline: var(--space-1); gap: var(--space-1); }
   .access-section-nav > button span { width: 100%; }

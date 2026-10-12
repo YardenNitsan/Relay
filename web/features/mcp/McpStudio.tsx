@@ -1,6 +1,6 @@
 import {useEffect,useLayoutEffect,useRef,useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
-import {ArrowLeft,ChevronRight,Plus,RefreshCw,Search} from 'lucide-react';
+import {ArrowLeft,ChevronRight,Plus,RefreshCw,Search,Plug} from 'lucide-react';
 import {api} from '../../api';
 import {Empty,ErrorNotice,Loading} from '../../components/ui';
 import {useGuardedModalAction,useModalDraftGuard} from '../../components/modal-guard';
@@ -48,7 +48,7 @@ export default function McpStudio(){
   const server=config.data?.servers.find(item=>item.id===selected);
   const filtered=config.data?.servers.filter(item=>`${item.name} ${item.url}`.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()))??[];
   return <div className="mcp-studio" data-view={view}>
-    <header className="mcp-studio-intro"><p>Connected tools, with a defined scope.</p><p className="hint">Review the exact contracts your host may expose to authorized tasks.</p></header>
+    <header className="mcp-studio-intro"><span className="mcp-intro-icon" aria-hidden="true"><Plug size={24}/></span><div><h3>Tool connections</h3><p className="hint">Review the exact contracts your host may expose to authorized tasks.</p></div></header>
     <div className="mcp-feedback">{error!=null&&<ErrorNotice error={error}/>} {notice&&<p role="status">{notice}</p>}{config.isError&&<ErrorNotice error={config.error} retry={()=>{void config.refetch();}}/>}</div>
     <div className="mcp-workspace">
       <div ref={index} className="mcp-index">

@@ -85,8 +85,8 @@ describe('trusted required-read verification',()=>{
     const item={path:'result.txt',expectedSha256:sha256};
     for(const contract of [{requiredReads:[{...item,path:'../secret'}]},{requiredReads:[{...item,path:'.env'}]},{requiredReads:[{...item,expectedSha256:'not-a-hash'}]},{requiredReads:[item,item]},{requiredReads:Array.from({length:9},(_,index)=>({...item,path:`file-${index}`}))},{requiredReads:[item],permissions:'unrestricted'}])expect(verificationContractSchema.safeParse(contract).success).toBe(false);
   });
-  it('pauses before spending model calls when the required read capability is unavailable',async()=>{
-    let calls=0;const {task}=await setup(async function*(){calls++;yield {type:'text',text:'Unsupported claim'};yield done;},sha256,false);
-    await until(async()=>(await store.task(task.id)).status==='paused');expect(calls).toBe(0);expect((await store.task(task.id)).error).toContain('file_read capability is unavailable');
+  it.each(['fast','balanced','deep','maximum'] as const)('pauses %s before spending model calls when the required read capability is unavailable',async depth=>{
+    let calls=0;const {task}=await setup(async function*(){calls++;yield {type:'text',text:'Unsupported claim'};yield done;},sha256,false,{depth});
+    await until(async()=>(await store.task(task.id)).status==='paused');expect(calls).toBe(0);expect((await store.task(task.id)).callsUsed).toBe(0);expect((await store.task(task.id)).error).toContain('file_read capability is unavailable');
   });
 });

@@ -39,6 +39,7 @@ import { getHardware, assessModel } from '../hardware/index.js';
 import { getResourcePolicy } from '../hardware/config.js';
 import { resourceRoutes } from './resources.js';
 import { registerHistoryRoutes } from './history.js';
+import { registerTaskFeedRoutes } from './task-feed.js';
 import {registerUsageRoutes} from './usage.js';
 import {registerGoogleOAuthRoutes} from './google-oauth.js';
 import type {GoogleOAuth} from '../providers/google-oauth.js';
@@ -137,6 +138,7 @@ export async function createApp(services:Services,options:AppOptions={}):Promise
   scheduleRoutes(app,services.schedules??new ScheduleService(store,engine),owner);
   app.post('/api/admin/diagnostics',async request=>{const {user}=owner(request);return exportDiagnostics(store.db,{id:user.id,sessionVersion:user.sessionVersion},request.body??{});});
   registerHistoryRoutes(app,store,principal);
+  registerTaskFeedRoutes(app,store,principal);
   registerUsageRoutes(app,store,providers,principal);
   if(services.googleOAuth)registerGoogleOAuthRoutes(app,services.googleOAuth,providers,store,principal,owner,p=>sessions.live(p),(userId,work)=>serializeProviderMutation(store,`${userId}/gemini`,work));
   calibrationRoutes(app,store,engine,providers,owner);

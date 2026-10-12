@@ -114,6 +114,15 @@ describe('fixed Cloudflare VPC browser gateway', () => {
     const f = fixture(); const response = await f.worker.fetch(incoming(await sign(), '/', { headers: { 'sec-fetch-site': 'cross-site', 'sec-fetch-mode': 'navigate', 'sec-fetch-dest': 'document' } }), f.env);
     expect(response.status).toBe(200); expect(f.seen).toHaveLength(1);
   });
+  it('forwards the authenticated task collection with its cursor while preserving Access and origin gates', async () => {
+    const path='/api/tasks?limit=40&before=opaque_cursor',token=await sign(),f=fixture();
+    const response=await f.worker.fetch(incoming(token,path),f.env);
+    expect(response.status).toBe(200);expect(f.seen).toHaveLength(1);
+    expect(new URL(f.seen[0].url).pathname+new URL(f.seen[0].url).search).toBe(path);
+    expect(f.seen[0].method).toBe('GET');
+    const anonymous=fixture();expect((await anonymous.worker.fetch(incoming(undefined,path),anonymous.env)).status).toBe(401);expect(anonymous.seen).toHaveLength(0);
+    const foreign=fixture();expect((await foreign.worker.fetch(incoming(token,path,{headers:{origin:'https://evil.example'}}),foreign.env)).status).toBe(403);expect(foreign.seen).toHaveLength(0);
+  });
   it.each(['/v1/models', '/api/admin/users', '/api/session/pair', '/api/stop', '/api/resume', '/.env', '/api//session', '/api/%2fadmin', '/api/session%00', '/unknown'])('denies out-of-scope or ambiguous routes %s', async path => {
     const f = fixture(); expect((await f.worker.fetch(incoming(await sign(), path), f.env)).status).toBe(404); expect(f.seen).toHaveLength(0);
   });

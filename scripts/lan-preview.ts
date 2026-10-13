@@ -2,6 +2,7 @@
 // Run only after reviewing this launcher, its TLS material and the LAN address.
 import {lstat,mkdir,open,readdir,realpath} from 'node:fs/promises';
 import {networkInterfaces,type NetworkInterfaceInfo} from 'node:os';
+import {isIP} from 'node:net';
 import {basename,isAbsolute,join,parse,relative,resolve} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {lanConfig,loadLanTls,type LanConfig} from '../server/auth/lan-config.js';
@@ -9,10 +10,13 @@ import {privateDirectory,readPrivate} from '../server/host/private-storage.js';
 import {SecretManager} from '../server/providers/secrets.js';
 import {AppError} from '../server/core/errors.js';
 
-const previewHost='10.100.102.30';
 const marker='lan-preview.json';
 const markerText=JSON.stringify({format:1,purpose:'isolated-lan-preview',ownerPort:4327,lanPort:4443});
 interface PreviewOptions {dataDir:string;ownerHost:'127.0.0.1';ownerPort:4327;lan:LanConfig;}
+function assertPrivateIPv4(host:string):void {
+  const [a,b]=host.split('.').map(Number);
+  if(isIP(host)!==4||!(a===10||a===172&&b>=16&&b<=31||a===192&&b===168))throw Error('Preview requires one explicit RFC1918 IPv4 address');
+}
 function previewPath(value:string):string {
   if(!isAbsolute(value)||/^[\\/]{2}/.test(value)||/[\x00-\x1f\x7f]/.test(value)||value.split(/[\\/]/).some(part=>part==='.'||part==='..'))throw Error('Preview data requires an absolute local path without traversal');
   if(process.platform==='win32'&&(!/^[a-z]:[\\/]/i.test(value)||value.slice(2).includes(':')||value.slice(3).split(/[\\/]/).some(part=>/[. ]$/.test(part))))throw Error('Invalid Windows preview data path');
@@ -22,13 +26,15 @@ function previewPath(value:string):string {
 }
 export function parseLanPreviewOptions(args:string[]):PreviewOptions {
   const values=new Map<string,string>();
-  for(const arg of args){const match=/^--(data-dir|listen|cert|key)=(.+)$/.exec(arg);if(!match||values.has(match[1]))throw Error('Use exactly --data-dir=ABSOLUTE --listen=10.100.102.30 --cert=ABSOLUTE --key=ABSOLUTE');values.set(match[1],match[2]);}
-  if(values.size!==4||values.get('listen')!==previewHost)throw Error('All four explicit preview options and the approved LAN address are required');
+  for(const arg of args){const match=/^--(data-dir|listen|cert|key)=(.+)$/.exec(arg);if(!match||match[0]!==arg||values.has(match[1]))throw Error('Use exactly --data-dir=ABSOLUTE --listen=PRIVATE_IPV4 --cert=ABSOLUTE --key=ABSOLUTE');values.set(match[1],match[2]);}
+  if(values.size!==4)throw Error('All four explicit preview options are required');
+  const previewHost=values.get('listen')!;assertPrivateIPv4(previewHost);
   const dataDir=previewPath(values.get('data-dir')!);
   const lan=lanConfig({RELAY_LAN_ENABLED:'1',RELAY_LAN_HOST:previewHost,RELAY_LAN_ORIGIN:`https://${previewHost}:4443`,RELAY_LAN_CERT_FILE:values.get('cert'),RELAY_LAN_KEY_FILE:values.get('key')})!;
   return {dataDir,ownerHost:'127.0.0.1',ownerPort:4327,lan};
 }
-export function assertPreviewInterface(interfaces:NodeJS.Dict<NetworkInterfaceInfo[]>=networkInterfaces()):void {
+export function assertPreviewInterface(previewHost:string,interfaces:NodeJS.Dict<NetworkInterfaceInfo[]>=networkInterfaces()):void {
+  assertPrivateIPv4(previewHost);
   if(!Object.values(interfaces).flat().some(item=>item?.family==='IPv4'&&!item.internal&&item.address===previewHost))throw Error('Approved LAN address is not assigned to an active local IPv4 interface');
 }
 export async function preparePreviewDirectory(input:string):Promise<void> {
@@ -69,7 +75,7 @@ export function createPreviewShutdown(actions:{engine:()=>Promise<unknown>;liste
 }
 
 export async function runLanPreview(args:string[]):Promise<{close:()=>Promise<void>}> {
-  const options=parseLanPreviewOptions(args);assertPreviewInterface();
+  const options=parseLanPreviewOptions(args);assertPreviewInterface(options.lan.host);
   if(process.env.RELAY_DEV==='1')throw Error('Unset RELAY_DEV before starting the isolated LAN preview');
   const tls=await loadLanTls(options.lan);
   let engine:import('../server/orchestration/engine.js').Engine|undefined,store:import('../server/db/store.js').Store|undefined,lock:{release:()=>Promise<void>}|undefined;

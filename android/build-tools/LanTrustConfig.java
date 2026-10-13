@@ -10,7 +10,6 @@ import java.util.regex.Pattern;
 
 /** Build-time public certificate resource generator. Never linked into the APK. */
 public final class LanTrustConfig {
-    public static final String HOST = "10.100.102.30";
     private static final int MAX_CERTIFICATE_BYTES = 65536;
     private static final Pattern PEM = Pattern.compile(
         "\\A\\s*-----BEGIN CERTIFICATE-----\\s*([A-Za-z0-9+/=\\s]+)-----END CERTIFICATE-----\\s*\\z");
@@ -43,9 +42,14 @@ public final class LanTrustConfig {
     }
 
     public static String networkConfig(String host) {
-        // Do not interpolate an arbitrary domain or URL into XML. This profile is
-        // intentionally valid for one owner-authorized literal IP only.
-        if (!HOST.equals(host)) throw new IllegalArgumentException("LAN trust is restricted to " + HOST);
+        // Only canonical RFC1918 IPv4 literals can enter this one-domain XML.
+        // No DNS lookup, wildcard, URL or subdomain trust is permitted.
+        if (host == null || !host.matches("(?:0|[1-9][0-9]{0,2})(?:\\.(?:0|[1-9][0-9]{0,2})){3}"))
+            throw new IllegalArgumentException("LAN trust requires one explicit private IPv4 address.");
+        int[] parts = Arrays.stream(host.split("\\.")).mapToInt(Integer::parseInt).toArray();
+        if (Arrays.stream(parts).anyMatch(part -> part > 255) ||
+            !(parts[0] == 10 || parts[0] == 172 && parts[1] >= 16 && parts[1] <= 31 || parts[0] == 192 && parts[1] == 168))
+            throw new IllegalArgumentException("LAN trust requires one explicit private IPv4 address.");
         return """
             <?xml version="1.0" encoding="utf-8"?>
             <network-security-config>
@@ -53,11 +57,11 @@ public final class LanTrustConfig {
                     <trust-anchors><certificates src="system" /></trust-anchors>
                 </base-config>
                 <domain-config cleartextTrafficPermitted="false">
-                    <domain includeSubdomains="false">10.100.102.30</domain>
+                    <domain includeSubdomains="false">%s</domain>
                     <trust-anchors><certificates src="@raw/relay_lan_ca" /></trust-anchors>
                 </domain-config>
             </network-security-config>
-            """;
+            """.formatted(host);
     }
 
     public static void main(String[] args) throws Exception {

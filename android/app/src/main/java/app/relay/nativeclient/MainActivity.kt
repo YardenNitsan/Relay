@@ -26,6 +26,7 @@ import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
@@ -40,14 +41,34 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import org.json.JSONObject
 
 class MainActivity : ComponentActivity() {
+    private var notificationToken by mutableStateOf<String?>(null)
+    private fun readNotificationIntent(value: Intent?) {
+        val action = value?.action ?: return
+        if (action.startsWith(TaskNotifications.TAP_PREFIX)) {
+            val token = action.removePrefix(TaskNotifications.TAP_PREFIX)
+            if (Regex("^[0-9a-f-]{36}$").matches(token)) notificationToken = token
+            value.action = null
+        }
+    }
+    override fun onNewIntent(intent: Intent) { super.onNewIntent(intent); readNotificationIntent(intent) }
+    override fun onSaveInstanceState(outState: Bundle) { outState.putString("notificationToken", notificationToken); super.onSaveInstanceState(outState) }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        notificationToken = savedInstanceState?.getString("notificationToken")
+        readNotificationIntent(intent)
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         enableEdgeToEdge()
         setContent {
             val dark = isSystemInDarkTheme()
             MaterialTheme(colorScheme = if (dark) darkColorScheme(primary = Color(0xFFD7ACEC), secondary = Color(0xFFBDB1C9), background = Color(0xFF17141C), surface = Color(0xFF211C28)) else lightColorScheme(primary = Color(0xFF693A80), secondary = Color(0xFF645B70), background = Color(0xFFF5F3F7), surface = Color(0xFFFFFFFF))) {
-                LocalNetworkPermission { val vm: RelayViewModel = viewModel(); RelayApp(vm) }
+                LocalNetworkPermission {
+                    val vm: RelayViewModel = viewModel()
+                    val state by vm.state.collectAsStateWithLifecycle()
+                    LaunchedEffect(notificationToken, state.session, state.busy) {
+                        if (state.session != null && !state.busy) notificationToken?.let { vm.openNotification(it); notificationToken = null }
+                    }
+                    RelayApp(vm)
+                }
             }
         }
     }
@@ -98,7 +119,7 @@ class MainActivity : ComponentActivity() {
             if (state.session != null) NavigationBar {
                 listOf("Chat", "Agents", "Projects", "Account").forEach { name ->
                     NavigationBarItem(selected = state.tab == name, onClick = { vm.tab(name) },
-                        icon = { Text(name.take(1), style = MaterialTheme.typography.titleMedium) }, label = { Text(name) })
+                        icon = { Icon(painterResource(when (name) { "Chat" -> R.drawable.ic_nav_chat; "Agents" -> R.drawable.ic_nav_agents; "Projects" -> R.drawable.ic_nav_projects; else -> R.drawable.ic_nav_account }), contentDescription = null) }, label = { Text(name) })
                 }
             }
         }
@@ -139,9 +160,18 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable private fun ConnectScreen(state: RelayUi, vm: RelayViewModel) {
-    var origin by remember { mutableStateOf(state.origin) }
+    var origin by remember(state.origin) { mutableStateOf(state.origin) }
     var invitation by remember { mutableStateOf("") }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+        if (state.canRetrySession) {
+            Text("Reconnect to your host", style = MaterialTheme.typography.headlineLarge)
+            Text(state.origin, style = MaterialTheme.typography.bodyLarge)
+            Text("Your saved connection is still protected on this device. Your work will appear after the host verifies your session.")
+            Button(onClick = vm::retrySavedConnection, enabled = !state.busy, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)) { Text("Retry saved connection") }
+            TextButton(onClick = vm::forgetSavedConnection, enabled = !state.busy) { Text("Forget saved connection") }
+            Text("Forgetting removes this device's saved session and drafts. You will need a new invitation to connect again.", style = MaterialTheme.typography.bodySmall)
+            return@Column
+        }
         Text("Your work, within reach.", style = MaterialTheme.typography.headlineLarge)
         Text("Connect to the Relay host on your local network. Your tasks run on the host while you review them here.", style = MaterialTheme.typography.bodyLarge)
         OutlinedTextField(value = origin, onValueChange = { origin = it }, label = { Text("LAN HTTPS address") }, placeholder = { Text("https://relay.example.com:4319") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, autoCorrectEnabled = false), modifier = Modifier.fillMaxWidth(), enabled = !state.busy)
@@ -285,6 +315,12 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable private fun AccountScreen(s: RelayUi, vm: RelayViewModel) {
+    val context = LocalContext.current
+    var permissionSession by remember { mutableStateOf<Long?>(null) }
+    val requestNotifications = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) permissionSession?.let { vm.setTaskNotifications(true, it) }
+        permissionSession = null
+    }
     var confirm by remember { mutableStateOf(false) }
     if (confirm) AlertDialog(onDismissRequest = { confirm = false }, title = { Text("Sign out of Relay?") }, text = { Text("This clears the session on this phone. Tasks already running on the host are not cancelled.") }, confirmButton = { TextButton(onClick = { confirm = false; vm.disconnect() }) { Text("Sign out") } }, dismissButton = { TextButton(onClick = { confirm = false }) { Text("Stay connected") } })
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
@@ -292,8 +328,19 @@ class MainActivity : ComponentActivity() {
         Text(s.session?.optJSONObject("user")?.label("name", "Connected account") ?: "", style = MaterialTheme.typography.titleLarge)
         Text(s.origin); Text("LAN HTTPS · ${s.stream}")
         Text("The host enforces your account permissions. Your phone cannot grant computer access, spend on cloud models or use local-owner controls.")
-        Text("Drafts are encrypted on this device and deleted on sign-out. This preview follows activity while open. It does not provide background push notifications or Cloudflare Access sign-in.")
+        Text("Drafts are encrypted on this device and deleted on sign-out. Cloudflare Access sign-in is not available in this LAN client.")
+        HorizontalDivider()
+        Text("Private task updates", style = MaterialTheme.typography.titleLarge)
+        Text("Watch tasks you submit or open here for completion, failure and approval updates. Up to 20 tasks are watched for seven days. Updates contain no task text and are hidden on the lock screen.")
+        Text("While closed, Android checks about every 15 minutes or later when battery and network conditions allow. This is best-effort monitoring, not push.", style = MaterialTheme.typography.bodySmall)
+        OutlinedButton(onClick = {
+            if (s.taskNotifications) vm.setTaskNotifications(false)
+            else if (Build.VERSION.SDK_INT >= 33 && context.checkSelfPermission("android.permission.POST_NOTIFICATIONS") != PackageManager.PERMISSION_GRANTED) {
+                permissionSession = vm.notificationPermissionSession(); requestNotifications.launch("android.permission.POST_NOTIFICATIONS")
+            } else vm.setTaskNotifications(true)
+        }, enabled = !s.busy, modifier = Modifier.fillMaxWidth()) { Text(if (s.taskNotifications) "Disable task notifications" else "Enable task notifications") }
+        TextButton(onClick = { context.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)) }) { Text("Android notification settings") }
         OutlinedButton(onClick = { confirm = true }, enabled = !s.busy, modifier = Modifier.fillMaxWidth()) { Text("Sign out") }
-        Text("Native preview 0.3-lan · debug testing build", style = MaterialTheme.typography.labelSmall)
+        Text("Native preview 0.4-lan · debug testing build", style = MaterialTheme.typography.labelSmall)
     }
 }

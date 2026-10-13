@@ -53,21 +53,28 @@ public final class LanTrustConfigTest {
             Path wrongUsage = temporary.resolve("wrong-usage.der");
             keytool("-exportcert", "-alias", "wrong-usage", "-keystore", store, "-storepass", "fixture-only", "-file", wrongUsage.toString());
             rejects(() -> LanTrustConfig.validateCertificate(Files.readAllBytes(wrongUsage)), "CA without signing usage rejected");
-            for (String host : new String[]{"10.100.102.31", "10.100.102.30 ", "https://10.100.102.30", "*.local", "10.100.102.30</domain>"})
+            for (String host : new String[]{"8.8.8.8", "127.0.0.1", "0.0.0.0", "169.254.1.2", "100.64.0.1", "172.15.0.1", "172.32.0.1", "192.169.1.2", "10.256.0.1", "10.01.0.1", "10.1", "0x0a000001", "fd00::1", "localhost", "10.100.102.13:4443", "10.100.102.13 ", "https://10.100.102.13", "*.local", "10.100.102.13</domain>", "10.100.102.13@evil.example", "10.100.102.13\n", "10.100.102.13\r\n"})
                 rejects(() -> LanTrustConfig.networkConfig(host), "Other domain rejected");
             var factory = DocumentBuilderFactory.newInstance();
             factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-            var xml = factory.newDocumentBuilder().parse(new ByteArrayInputStream(LanTrustConfig.networkConfig(LanTrustConfig.HOST).getBytes(StandardCharsets.UTF_8)));
+            var xml = factory.newDocumentBuilder().parse(new ByteArrayInputStream(LanTrustConfig.networkConfig("10.100.102.13").getBytes(StandardCharsets.UTF_8)));
             var xpath = javax.xml.xpath.XPathFactory.newInstance().newXPath();
-            check(xpath.evaluate("/network-security-config/domain-config/domain", xml).equals(LanTrustConfig.HOST), "Exact IP domain");
+            for (String host : new String[]{"10.100.102.30", "10.0.0.1", "172.16.0.1", "172.31.255.254", "192.168.1.2"}) {
+                var scoped = factory.newDocumentBuilder().parse(new ByteArrayInputStream(LanTrustConfig.networkConfig(host).getBytes(StandardCharsets.UTF_8)));
+                check(xpath.evaluate("/network-security-config/domain-config/domain", scoped).equals(host), "Selected private IP preserved exactly");
+                check(xpath.evaluate("count(//domain)", scoped).equals("1"), "Exactly one domain");
+            }
+            rejects(() -> LanTrustConfig.networkConfig(null), "Missing host rejected");
+            rejects(() -> LanTrustConfig.networkConfig(""), "Empty host rejected");
+            check(xpath.evaluate("/network-security-config/domain-config/domain", xml).equals("10.100.102.13"), "Exact IP domain");
             check(xpath.evaluate("/network-security-config/domain-config/domain/@includeSubdomains", xml).equals("false"), "No subdomains");
             check(xpath.evaluate("/network-security-config/base-config/trust-anchors/certificates/@src", xml).equals("system"), "System-only base");
             check(xpath.evaluate("/network-security-config/domain-config/trust-anchors/certificates/@src", xml).equals("@raw/relay_lan_ca"), "Private CA only within domain");
             check(xpath.evaluate("count(//debug-overrides | //certificates[@src='user'] | //*[@cleartextTrafficPermitted='true'])", xml).equals("0"), "No broadening bypass");
             Path generated = temporary.resolve("res");
-            LanTrustConfig.main(new String[]{pem.toString(), LanTrustConfig.HOST, generated.toString()});
+            LanTrustConfig.main(new String[]{pem.toString(), "10.100.102.13", generated.toString()});
             check(Arrays.equals(raw, Files.readAllBytes(generated.resolve("raw/relay_lan_ca.der"))), "Generator copies public DER only");
-            check(Files.readString(generated.resolve("xml/relay_lan_network_security_config.xml")).equals(LanTrustConfig.networkConfig(LanTrustConfig.HOST)), "Generated XML exact");
+            check(Files.readString(generated.resolve("xml/relay_lan_network_security_config.xml")).equals(LanTrustConfig.networkConfig("10.100.102.13")), "Generated XML exact");
             System.out.println("LAN build trust checks passed: " + passed);
         } finally {
             try (var paths = Files.walk(temporary)) {

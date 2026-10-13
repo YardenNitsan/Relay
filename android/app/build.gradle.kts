@@ -5,7 +5,7 @@ android {
     namespace = "app.relay.nativeclient"
     compileSdk = 37
     defaultConfig {
-        applicationId = "app.relay.nativeclient"; minSdk = 26; targetSdk = 37; versionCode = 3; versionName = "0.3-lan"
+        applicationId = "app.relay.nativeclient"; minSdk = 26; targetSdk = 37; versionCode = 4; versionName = "0.4-lan"
         manifestPlaceholders["relayNetworkSecurityConfig"] = "@xml/network_security_config"
     }
     buildFeatures { compose = true }
@@ -34,17 +34,19 @@ val checkLanTrustConfig = tasks.register<Exec>("checkLanTrustConfig") {
 }
 tasks.matching { it.name == "check" }.configureEach { dependsOn(checkLanTrustConfig) }
 val lanCaFile = providers.gradleProperty("relayLanCaFile")
+val lanHost = providers.gradleProperty("relayLanHost")
+require(lanCaFile.isPresent == lanHost.isPresent) { "Provide both relayLanCaFile and relayLanHost, or neither." }
 if (lanCaFile.isPresent) {
     require(lanCaFile.get().isNotBlank()) { "relayLanCaFile must name one public CA PEM or DER file." }
     val certificate = rootProject.file(lanCaFile.get())
     val generateLanTrustConfig = tasks.register<Exec>("generateLanTrustConfig") {
         dependsOn(compileLanTrustGenerator)
         inputs.file(certificate)
-        inputs.property("exactLanHost", "10.100.102.30")
+        inputs.property("exactLanHost", lanHost.get())
         outputs.dir(generatedLanResources)
         // Revalidate certificate dates even when the file has not changed.
         outputs.upToDateWhen { false }
-        commandLine(jdkBin.resolve("java$executableSuffix").absolutePath, "-cp", generatorClasses.get().asFile.absolutePath, "LanTrustConfig", certificate.absolutePath, "10.100.102.30", generatedLanResources.get().asFile.absolutePath)
+        commandLine(jdkBin.resolve("java$executableSuffix").absolutePath, "-cp", generatorClasses.get().asFile.absolutePath, "LanTrustConfig", certificate.absolutePath, lanHost.get(), generatedLanResources.get().asFile.absolutePath)
     }
     android.sourceSets.getByName("debug").res.directories.add(generatedLanResources.get().asFile.absolutePath)
     android.buildTypes.getByName("debug").manifestPlaceholders["relayNetworkSecurityConfig"] = "@xml/relay_lan_network_security_config"
@@ -59,6 +61,7 @@ dependencies {
     implementation("androidx.compose.material3.adaptive:adaptive:1.3.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.11.0")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.11.0")
+    implementation("androidx.work:work-runtime-ktx:2.12.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
     implementation("com.squareup.okhttp3:okhttp:5.5.0")
     testImplementation("junit:junit:4.13.2")

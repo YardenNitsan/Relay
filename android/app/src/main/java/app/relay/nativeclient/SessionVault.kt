@@ -30,4 +30,8 @@ class SessionVault(context: Context) {
         if (origin == null || encoded == null) null else Protocol.origin(origin) to SessionEnvelope.decrypt(key(), origin, Base64.decode(encoded, Base64.NO_WRAP))
     } catch (_: Exception) { clear(); null }
     fun clear() { prefs.edit().clear().commit() }
+    internal fun protectNotifications(value: String): String = Base64.encodeToString(
+        SessionEnvelope.encrypt(key(), "relay-notification-ledger-v1", value), Base64.NO_WRAP)
+    internal fun unprotectNotifications(value: String): String = SessionEnvelope.decrypt(
+        key(), "relay-notification-ledger-v1", Base64.decode(value, Base64.NO_WRAP))
 }

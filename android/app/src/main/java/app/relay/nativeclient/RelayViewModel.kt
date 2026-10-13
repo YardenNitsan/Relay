@@ -26,13 +26,17 @@ data class RelayUi(
     val models: List<JSONObject> = emptyList(), val selectedWorkspace: String? = null, val selectedAssistant: String? = null,
     val selectedModel: String? = null, val draft: String = "", val tab: String = "Chat", val stream: String = "Disconnected",
     val events: List<JSONObject> = emptyList(), val liveText: String = "", val uncertain: Boolean = false,
-    val draftStatus: String = "", val attachment: AttachmentReview? = null, val notice: String? = null
+    val draftStatus: String = "", val attachment: AttachmentReview? = null, val notice: String? = null,
+    val taskNotifications: Boolean = false, val canRetrySession: Boolean = false
 )
 data class AttachmentReview(val name: String, val bytes: Int, val document: Boolean, val workspaceId: String?, val workspaceName: String)
 data class AttachmentTarget(val epoch: Long, val conversation: String)
 
 class RelayViewModel(application: Application) : AndroidViewModel(application) {
     private val vault = SessionVault(application)
+    private val sessionRecovery = SessionRecovery(vault::load, vault::clear)
+    private val notifications = TaskNotifications(application)
+    private var notificationBinding: TaskNotifications.Binding? = null
     private val draftRepository = DraftVault(application).repository
     private val mutable = MutableStateFlow(RelayUi())
     val state = mutable.asStateFlow()
@@ -88,6 +92,8 @@ class RelayViewModel(application: Application) : AndroidViewModel(application) {
         val origin = try { Protocol.origin(url) } catch (e: IllegalArgumentException) { update { it.copy(error = e.message) }; return }
         if (invitation != null && !Regex("^[A-Za-z0-9_-]{43}$").matches(invitation.trim())) { update { it.copy(error = "Enter the one-use invitation supplied by the host owner.") }; return }
         epoch++; actionJob?.cancel(); stopRealtime(); client?.close(); preparedAttachment = null; pendingAttachmentTarget = null; drafts.clear()
+        notificationBinding = null
+        if (invitation != null) notifications.clear()
         val c = RelayClient(origin, saved); client = c
         val generation = epoch
         update { RelayUi(busy = true, origin = origin) }
@@ -95,11 +101,15 @@ class RelayViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val session = c.session(invitation?.trim()); valid(c, generation)
                 withContext(Dispatchers.IO) { vault.save(origin, c.storedCookie()) }; valid(c, generation)
+                val binding = notifications.binding(origin, session.getJSONObject("user").getString("id"), c.storedCookie())
+                notificationBinding = binding
+                notifications.activate(binding)
                 draftEpoch = draftRepository.activate(origin, session.getJSONObject("user").getString("id"))
                 val draft = loadDraft("new"); valid(c, generation)
-                update { it.copy(session = session, error = null) }
+                update { it.copy(session = session, error = null, taskNotifications = notifications.enabled(binding)) }
                 update { restored(it, draft) }
                 refreshLists(c, generation)
+                sessionRecovery.verified()
                 startRealtime()
             } catch (e: CancellationException) { throw e }
             catch (e: Exception) {
@@ -109,14 +119,29 @@ class RelayViewModel(application: Application) : AndroidViewModel(application) {
                         val deletionWarning = state.value.error
                         update { RelayUi(origin = origin, error = listOfNotNull(friendly(e), deletionWarning).joinToString(" ")) }
                     } else {
-                        c.close(); client = null; vault.clear(); drafts.clear(); preparedAttachment = null; pendingAttachmentTarget = null
-                        update { RelayUi(origin = origin, error = friendly(e)) }
+                        val canRetry = withContext(Dispatchers.IO) { sessionRecovery.failed(origin, e) }; valid(c, generation)
+                        c.close(); client = null; notificationBinding = null; drafts.clear(); preparedAttachment = null; pendingAttachmentTarget = null
+                        if (!canRetry) notifications.clear()
+                        update { RelayUi(origin = origin, error = friendly(e), canRetrySession = canRetry) }
                     }
                 }
             }
             finally { if (epoch == generation) update { it.copy(busy = false) } }
         }
     }
+    fun retrySavedConnection() {
+        if (state.value.busy || !state.value.canRetrySession) return
+        val generation = epoch
+        update { it.copy(busy = true, error = null) }
+        actionJob = viewModelScope.launch {
+            val saved = withContext(Dispatchers.IO) { sessionRecovery.retry() }
+            if (epoch != generation) return@launch
+            update { it.copy(busy = false) }
+            if (saved == null) update { RelayUi(origin = it.origin, error = "The saved connection is no longer available. Ask the owner for a new invitation.") }
+            else connect(saved.first, null, saved.second)
+        }
+    }
+    fun forgetSavedConnection() { if (!state.value.busy) disconnect(false) }
     private fun friendly(e: Exception): String = when (e) {
         is RelayError -> e.message ?: "The host refused this request."
         is SSLException -> "The HTTPS certificate is not trusted or does not match this host. Ask the owner to configure a valid LAN certificate."
@@ -159,7 +184,7 @@ class RelayViewModel(application: Application) : AndroidViewModel(application) {
         update { it.copy(conversation = detail) }
         val taskId = state.value.task?.optJSONObject("task")?.label("id") ?: detail.objects("tasks").firstOrNull()?.label("id")
         if (!taskId.isNullOrBlank()) {
-            val task = c.json("/api/tasks/$taskId") as JSONObject; valid(c, generation)
+            val task = notifications.readTask(c, taskId, notificationBinding, watch = true); valid(c, generation)
             if (state.value.conversation?.optJSONObject("conversation")?.label("id") == id && (state.value.task == null || state.value.task?.optJSONObject("task")?.label("id") == taskId)) update { it.copy(task = task) }
         }
     }
@@ -219,6 +244,7 @@ class RelayViewModel(application: Application) : AndroidViewModel(application) {
                 valid(c, generation)
                 admitted = true
                 val id = result.getJSONObject("task").getString("conversationId")
+                notificationBinding?.let { notifications.watch(it, result) }
                 val acknowledged = acknowledgedDraft(record(), text)
                 drafts[submittedKey] = acknowledged
                 update { restored(it, acknowledged) }
@@ -249,7 +275,34 @@ class RelayViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
     fun acknowledgeUncertain() { update { it.copy(uncertain = false, error = null) }; persistDraft() }
-    fun inspectTask(id: String) = action { c, generation -> val task = c.json("/api/tasks/$id") as JSONObject; valid(c, generation); liveCallId = null; update { it.copy(task = task, liveText = "") } }
+    fun inspectTask(id: String) = action { c, generation -> val task = notifications.readTask(c, id, notificationBinding, watch = true); valid(c, generation); liveCallId = null; update { it.copy(task = task, liveText = "") } }
+    fun notificationPermissionSession() = epoch
+    fun setTaskNotifications(enabled: Boolean, expectedSession: Long = epoch) {
+        val binding = notificationBinding ?: return
+        if (state.value.busy || expectedSession != epoch) return
+        if (!enabled) notifications.clear()
+        else if (!notifications.enable(binding)) {
+            update { it.copy(notice = "Allow Relay notifications in Android settings, then enable task notifications here.") }; return
+        }
+        update { it.copy(taskNotifications = enabled, notice = null) }
+        if (enabled) state.value.task?.let { notifications.watch(binding, it) }
+    }
+    fun openNotification(token: String) = action { c, generation ->
+        val binding = notificationBinding ?: return@action
+        val id = notifications.resolve(binding, token) ?: run {
+            update { it.copy(notice = "This task notification has expired or belongs to a different session.") }; return@action
+        }
+        val task = notifications.readTask(c, id, binding); valid(c, generation)
+        val conversationId = task.getJSONObject("task").getString("conversationId")
+        require(NotificationLedger.safeId(conversationId))
+        val conversation = c.json("/api/conversations/$conversationId") as JSONObject; valid(c, generation)
+        if (notifications.resolve(binding, token) != id) return@action
+        drafts[draftKey()] = record()
+        val draft = loadDraft(conversationId); valid(c, generation)
+        pendingStart = null; liveCallId = null
+        notifications.dismiss(token)
+        update { restored(it.copy(conversation = conversation, task = task, liveText = "", tab = "Chat", file = null, filePath = null, notice = null), draft) }
+    }
     fun cancelTask(id: String) = action { c, generation -> c.json("/api/tasks/$id/cancel", "POST"); valid(c, generation); refreshSelection(c, generation) }
     fun approve(id: String, allow: Boolean) = action { c, generation ->
         c.json("/api/approvals/$id", "POST", JSONObject().put("decision", if (allow) "allow_once" else "denied")); valid(c, generation); refreshSelection(c, generation)
@@ -351,7 +404,13 @@ class RelayViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
-    fun foreground(active: Boolean) { foreground = active; if (active) startRealtime() else stopRealtime() }
+    fun foreground(active: Boolean) {
+        foreground = active
+        if (active) {
+            notificationBinding?.let { binding -> update { it.copy(taskNotifications = notifications.enabled(binding)) } }
+            startRealtime()
+        } else stopRealtime()
+    }
     private fun stopRealtime() { streamJob?.cancel(); streamJob = null; refreshJob?.cancel(); refreshJob = null }
     private fun startRealtime() {
         val c = client ?: return
@@ -386,6 +445,16 @@ class RelayViewModel(application: Application) : AndroidViewModel(application) {
                                     old.copy(events = (old.events + data).takeLast(100), liveText = text)
                                 }
                                 cursor = id
+                                val snapshot = if (data.label("type") in setOf("TASK_COMPLETED", "TASK_FAILED", "TOOL_APPROVAL_REQUIRED", "APPROVAL_DECIDED", "TASK_CANCELLED", "TASK_PAUSED")) notifications.snapshot() else null
+                                if (snapshot != null && snapshot.binding == notificationBinding && data.label("taskId") in snapshot.ids &&
+                                    data.label("type") in setOf("TASK_COMPLETED", "TASK_FAILED", "TOOL_APPROVAL_REQUIRED", "APPROVAL_DECIDED", "TASK_CANCELLED", "TASK_PAUSED")) {
+                                    try {
+                                        notifications.readTask(c, data.label("taskId"), snapshot.binding, expected = snapshot); valid(c, generation)
+                                    } catch (error: RelayError) {
+                                        if (error.status == 401) throw error
+                                        if (error.status in listOf(403, 404)) notifications.forget(snapshot, data.label("taskId"))
+                                    }
+                                }
                             }
                         }
                         failures = 0; update { it.copy(stream = "Live") }
@@ -404,9 +473,10 @@ class RelayViewModel(application: Application) : AndroidViewModel(application) {
     }
     fun disconnect(sendLogout: Boolean = true) {
         val old = client
+        notifications.clear(); notificationBinding = null
         epoch++; client = null; actionJob?.cancel(); stopRealtime(); cursor = 0; scope = null; pendingStart = null; drafts.clear(); preparedAttachment = null; pendingAttachmentTarget = null
         val cleared = runCatching { draftRepository.clear() }.isSuccess
-        vault.clear(); update { RelayUi(error = if (cleared) null else "Signed out. Android could not confirm deletion of protected drafts; clear the app's storage in Android settings if needed.") }
+        sessionRecovery.forget(); update { RelayUi(error = if (cleared) null else "Signed out. Android could not confirm deletion of protected drafts; clear the app's storage in Android settings if needed.") }
         if (old != null) viewModelScope.launch {
             try { if (sendLogout) old.json("/api/session/logout", "POST") }
             catch (_: Exception) { if (client == null) update { it.copy(error = "Signed out on this device. The host could not confirm session termination; ask the owner to revoke it if needed.") } }

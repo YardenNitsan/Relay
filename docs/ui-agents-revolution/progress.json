@@ -59,8 +59,15 @@
   "previewLaunch": "blocked_by_automatic_execution_policy_no_process_created",
   "latestImplementationCommit": "b9201f2f3b9554221661303f14f16eefc2793b5a",
   "pendingChecks": [
-    "Latest web/documentation head CI; prior3346190 all12jobs and native33a8095 passed.",
+    "New-head CI after awaiting shared-host intercepted requests at teardown; prior head native passed, host/browser11 of12jobs passed.",
     "Native remote/notifications/biometric/deeper task-diff completion and connected instrumentation.",
     "Approved isolated preview launch, trusted LAN endpoint and physical-phone acceptance."
-  ]
+  ],
+  "latestCheckedCi": {
+    "head": "1cd3b1cdb118c3c319699909d84964838fd0dff3",
+    "native": "success",
+    "hostBrowser": "11 jobs passed; Windows browser shard3 failed in intercepted-request teardown",
+    "hostRun": 38300123275,
+    "nativeRun": 38300123129
+  }
 }

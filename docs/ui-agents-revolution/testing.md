@@ -99,3 +99,7 @@ Final bundle: main527.02kB/gzip159.91kB, CSS116.58kB/gzip20.59kB. The existing a
 ## Final Dispatch browser laboratory
 
 On exact implementation commitb9201f2f3b9554221661303f14f16eefc2793b5a, both profiles passed in1.1min (three cold and three warm runs each). Desktop median readiness141ms cold/121.5ms warm; throttled390px phone-layout1717.8ms/1175.5ms. Built index SHA256 `c025af60758044ada70036c273af6e8dfc80fa1ec5c788b90ee26b76046ff9f0`; browser155.0.8059.39. [Curated results](evidence/performance-dispatch-complete.json); full raw metrics/CPU profiles/screenshots remain under ignored `output/performance/dispatch-complete-preview/`. No physical Android, field INP, live inference, production remote performance or causal speedup is claimed.
+
+## 13 October hosted cleanup correction
+
+Head1cd3b1c native CI38300123129 passed; host/browser38300123275 passed11jobs and failed Windows browser shard3 after132passes. Its shared-host Grok case finished while an intercepted models route.fetch was still pending. Added file-local awaited unrouteAll with behavior wait; product code, assertions, rate limits and timeouts are unchanged. Unchanged local six-case file passed43.9s, so local deterministic reproduction is not claimed. After cleanup, `npm.cmd run test:e2e -- tests/e2e/shared-host.spec.ts` passed6/6 in36.7s, exit0. Logs: ignored output/ui-agents-revolution/shared-host-before-cleanup.log and shared-host-awaited-cleanup.log. Fresh hosted CI remains pending.

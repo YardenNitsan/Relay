@@ -2,6 +2,12 @@ import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {toggleExecutionOptions, openCommands, pairBrowser } from './helpers';
 
+test.afterEach(async ({ page }) => {
+  // Model refreshes and session polling can outlive the final UI assertion.
+  // Finish their intercepted responses before Playwright closes the page.
+  await page.unrouteAll({ behavior: 'wait' });
+});
+
 for (const [providerId, providerName] of [['openai', 'OpenAI'], ['xai', 'Grok (xAI)'], ['deepseek', 'DeepSeek']] as const) {
 test(`shared-host user manages only their permitted ${providerName} connection on a narrow phone`, async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 740 });

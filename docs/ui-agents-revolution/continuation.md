@@ -2,6 +2,12 @@
 
 **INCOMPLETE - CONTINUATION REQUIRED**
 
+## 13 October connection checkpoint
+
+The existing PC host returned HTTP200 at http://127.0.0.1:4317/. The existing remote endpoint returned HTTP302 to Cloudflare Access without following redirects or supplying credentials. Both are the preserved installation, not the Dispatch branch. The native0.2 APK hash was freshly verified unchanged. See [connection delivery](connection-delivery.md) for exact evidence and the proposed, unapplied trusted-LAN setup. No authenticated installed-app or remote workflow is claimed.
+
+Latest checked head1cd3b1c: native CI38300123129 passed. Host/browser38300123275 passed11jobs; Windows browser shard3 failed after132passing cases because a shared-host route.fetch handler outlived test teardown. Awaited file-local route cleanup passes all6cases locally in36.7s (exit0); new-head CI is required. The unchanged local six-case file passed43.9s, so the hosted timing failure did not recur locally.
+
 ## Scope and exact source
 
 Continue only the Dispatch web frontend and native Kotlin/Compose app, their strictly necessary secure integrations, acceptance, documentation and delivery. No routing, agent improvements, new standalone coding benchmarks or unrelated backend work. Preserve production and do not merge main, deploy publicly or change router/Cloudflare infrastructure. After both applications are genuinely delivered and verified, STOP.

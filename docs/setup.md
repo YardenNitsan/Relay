@@ -69,3 +69,7 @@ Final handover checks on 9 October: strict types and 369 deterministic tests pas
 
 The Windows launcher passed actual cold build/start, repeat-start reuse, private graceful shutdown, restart and automatic browser/private pairing-file opening. The detached host remains available at http://127.0.0.1:4317. Missing-Node bootstrap, a genuinely fresh dependency installation, Linux/macOS launcher execution and native installers remain unverified. README.md and docs/user-guide.md describe architecture and the complete implemented user experience; docs/setup.md describes one-command setup. Optional model runtimes and model weights are not silently installed.
 For an interrupted startup lock, use the conservative offline procedure in [service startup ownership](startup-lock.md). Do not delete an active service or backup lock to force startup.
+
+## Owner-authorized Dispatch LAN preview
+
+The isolated modernization instance now has an authenticated private LAN HTTPS listener and an optional exact-host native CA build. See [current addresses, certificate, pairing, restart and tested limitations](ui-agents-revolution/lan-local-setup.md). It does not replace the existing production installation, forward physical-router ports or change Cloudflare. The APK custom trust is scoped to this one private address; browser trust remains an explicit user action.

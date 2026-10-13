@@ -618,3 +618,7 @@ The local owner can open **Manage schedules** to save a disabled one-time or rep
 Expand **Where the time went** in task activity to inspect recorded execution, model, tool and waiting intervals. Unknown measurements stay unknown; overlapping intervals must not be added together. The local owner can export a bounded metadata-only diagnostic bundle in **Machine**, or review an explicit **Data retention** cleanup preview there. No automatic destructive cleanup is enabled. See [diagnostics](diagnostics.md), [retention](retention.md) and [offline backups](backups.md).
 
 **Models → Evaluate executable coding** offers an optional synthetic coding suite using an approved isolated Node environment. It requires explicit compute confirmation and a configured, available sandbox; otherwise the action stays disabled. Reports bind the exact model and container configuration. They do not yet change Auto ranking or prove broad coding quality. See [coding evaluations](code-evaluation.md).
+
+## Dispatch on the current private LAN
+
+For the separate authorized Dispatch preview and native0.3 APK, use the [LAN setup and sign-in instructions](ui-agents-revolution/lan-local-setup.md). The PC owner browser issues short-lived invitations for the LAN phone account. The native host-specific build already contains its public certificate trust; phone browser trust requires deliberate installation. Production history stays in the preserved production installation.

@@ -1,5 +1,9 @@
 # Dispatch web and Android0.2 testing milestone
 
+## 13 October: Native0.3 and running Dispatch LAN preview
+
+The owner-authorized private preview is running at https://10.100.102.30:4443 with owner http://127.0.0.1:4327. Installed native0.3 verifies scoped-CA sign-in, genuine task events, history, restoration, cancel and corrected logout.30JVM tests and40launcher/TLS tests pass (one platform skip); full phase remains incomplete. See [exact artifact/checksum, running state and limitations](lan-local-setup.md) and [native build/crash regression evidence](../../android/lan-trust-build.md). Earlier0.2/no-listener statements below are historical.
+
 **INCOMPLETE - CONTINUATION REQUIRED.** This branch is not a production deployment or completion of the owner directive.
 
 Dispatch now provides a new task-led entry point and navigation, document-style conversations and writing-first composer, redesigned Projects and Models, Agent Studio, grouped More navigation and preference-document Settings. History, Memory, Schedules, Access, external clients, Google Workspace, MCP, host diagnostics, usage and signed-out entry have matching readable lists/documents and compact layouts. Existing actions, scoped API calls, guarded drafts, source bytes, consent and authorization remain intact. No new frontend dependency or routing change was introduced.

@@ -15,7 +15,7 @@
     "5_agents": "prior_G1_G2_preserved_no_further_agent_work_authorized",
     "6_contracts": "versioned_task_feed_implemented_mobile_contracts_partial",
     "7_android_architecture": "native_kotlin_compose_project_built",
-    "8_android_features": "lan_0.2_attachments_encrypted_drafts_29jvm_pass_remote_notifications_incomplete",
+    "8_android_features": "lan_0.3_scoped_ca_real_installed_connection_tasks_history_restore_cancel_logout_verified_30jvm_pass_other_features_incomplete",
     "9_remaining_web": "supporting_surfaces_implemented_111plus24plus14_corrected_browser_pass",
     "10_reliability": "prior_two_unchanged_live_trials_pass_no_further_benchmarks_authorized",
     "11_acceptance": "partial_see_acceptance_ledger",
@@ -23,22 +23,22 @@
     "13_handoff": "in_progress_full_release_incomplete"
   },
   "apk": {
-    "path": "release/android/relay-0.2.0-lan-preview-debug.apk",
-    "sha256": "4d34e0df0c18bd96d3167c3a72d9a473ed22308a0161d31585facf937a1a649a",
-    "bytes": 12645234,
-    "version": "0.2.0-lan-preview",
-    "versionCode": 2,
+    "path": "release/android/relay-0.3-lan-debug.apk",
+    "sha256": "5e3d7c769ada6ed12f86d222315e83460fba6e982de44f904813805ce8eba64c",
+    "bytes": 12943914,
+    "version": "0.3-lan",
+    "versionCode": 3,
     "minSdk": 26,
     "signing": "existing_host_debug_identity_not_production_release",
-    "authenticatedHostVerified": false,
-    "sourceCommit": "33a80955af045aea25dd46800f21cc71aac68d27"
+    "authenticatedHostVerified": true,
+    "sourceCommit": "6cab6d08aac18f632bee7327e97b06a043054913",
+    "authenticatedHostEvidence": "installed API36.1 emulator; physical phone pending"
   },
   "physicalDeviceVerified": false,
   "knownFailures": [
-    "Original Linux429 fixture issue corrected without changing production limits.",
-    "Tablet composer253px reading-space regression corrected with650px container control breakpoint; unchanged regression passed.",
-    "No running new PC/LAN/remote preview delivered: automatic execution policy rejected background PC preview launch.",
-    "Native remote authentication, background notifications, biometric step-up and installed/physical connected acceptance remain incomplete."
+    "Real9B native-submitted task paused at existing RAM safety reserve; no generated answer claimed.",
+    "Physical Samsung and phone-browser trust/connectivity still require owner testing.",
+    "Native remote authentication, background notifications, biometric step-up and broader complete-client acceptance remain incomplete."
   ],
   "verified": [
     "Full integrated host typecheck/tests:1451 passed/1 skipped,135files,328.44s.",
@@ -51,23 +51,26 @@
     "Native0.2:29JVM tests/0skip/fail, build/lint0errors9warnings, same signer; emulator upgrade and cold launch1797ms.",
     "Hosted3346190 host/browser12/12jobs pass across3OS; native33a8095 CI passes29-test configuration.",
     "Final Schedule/initial landscape24/24pass3.3min; strict landscape red0.840446 intersection fixed and final History/viewport14/14pass1.8min.",
-    "Exactb9201f2 browser performance2/2profiles pass; desktop141/121.5ms cold/warm, throttled phone-layout1717.8/1175.5ms (laboratory only)."
+    "Exactb9201f2 browser performance2/2profiles pass; desktop141/121.5ms cold/warm, throttled phone-layout1717.8/1175.5ms (laboratory only).",
+    "Head57a6490 hosted host/browser CI38341960522 passed all12jobs across3OS.",
+    "LAN launcher/TLS40passed1skipped; exactIP HTTPS200 and unauthenticated APIs401; authenticated desktop Chrome rendered without overflow.",
+    "Installed0.3 native exactIP TLS enrollment, live task events, history, session restoration after upgrade/cold launch and cancel verified.",
+    "Actual Android Conscrypt logout crash reproduced; off-main cleanup fix returns to sign-in with no fatal exception;30JVM tests pass."
   ],
   "nativeJvmRealBackendVerified": true,
-  "installedNativeAuthenticatedHostVerified": false,
-  "previewWebUrl": null,
-  "previewLaunch": "blocked_by_automatic_execution_policy_no_process_created",
-  "latestImplementationCommit": "b9201f2f3b9554221661303f14f16eefc2793b5a",
+  "installedNativeAuthenticatedHostVerified": true,
+  "previewWebUrl": "https://10.100.102.30:4443",
+  "previewLaunch": "running_reviewed_foreground_session_53431_pid_34620",
+  "latestImplementationCommit": "6cab6d08aac18f632bee7327e97b06a043054913",
   "pendingChecks": [
-    "New-head CI after awaiting shared-host intercepted requests at teardown; prior head native passed, host/browser11 of12jobs passed.",
-    "Native remote/notifications/biometric/deeper task-diff completion and connected instrumentation.",
-    "Approved isolated preview launch, trusted LAN endpoint and physical-phone acceptance."
+    "Latest LAN/native source CI after push.",
+    "Physical phone/browser certificate installation and actual local network path.",
+    "Complete remaining native features and full product acceptance; existing memory reserve prevents observed9B generation."
   ],
   "latestCheckedCi": {
-    "head": "1cd3b1cdb118c3c319699909d84964838fd0dff3",
-    "native": "success",
-    "hostBrowser": "11 jobs passed; Windows browser shard3 failed in intercepted-request teardown",
-    "hostRun": 38300123275,
-    "nativeRun": 38300123129
-  }
+    "head": "57a6490106bf1e58a1ce33ce46d6f7bcce99dbb5",
+    "hostBrowser": "all12jobs passed",
+    "hostRun": 38341960522
+  },
+  "previewOwnerUrl": "http://127.0.0.1:4327"
 }

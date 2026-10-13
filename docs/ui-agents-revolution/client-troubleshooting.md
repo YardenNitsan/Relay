@@ -1,5 +1,7 @@
 # Client testing and access boundaries
 
+**13 October update:** the owner-authorized private LAN instance is now running and the scoped-CA native APK has authenticated in an emulator. See [current setup](lan-local-setup.md). Earlier launch/no-listener observations below describe the previous checkpoint. Existing production is still unchanged.
+
 The Dispatch branch is not deployed over the existing installation. A successful branch build or push does not replace a running host. The latest local production-process inspection found only loopback listeners4317(owner browser),4318(protected gateway origin) and4315(model client API). No configured LAN listener was observed for that process. These observations do not prove a signed-in remote browser session.
 
 An attempted separate PC preview background launch was rejected by automatic execution policy with `blocked by policy` and no more specific reason. That command did not create its script or launch a process. Do not advertise a new preview URL, retry through another launcher to bypass that restriction, expose the owner service to a phone or replace production. Continuing requires an approved execution path for a reviewed isolated preview. Existing deployment instructions remain in [setup](../setup.md), [LAN access](../lan-access.md) and [protected remote access](../remote-setup.md).

@@ -16,6 +16,10 @@ import org.junit.Test
 import java.io.IOException
 import java.net.InetAddress
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.AbstractExecutorService
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.SSLException
 
@@ -43,7 +47,7 @@ class HttpsTransportTest {
     }
     private fun origin(server: MockWebServer) = "https://relay.test:${server.port}"
 
-    private fun client(server: MockWebServer, saved: String? = null, listener: EventListener = EventListener.NONE): RelayClient {
+    private fun client(server: MockWebServer, saved: String? = null, listener: EventListener = EventListener.NONE, executor: ExecutorService? = null): RelayClient {
         val client = RelayClient(Protocol.origin(origin(server)), saved)
         // Keep the real transport's redirect/retry/timeouts/hostname verifier. Reflection is
         // confined to src/test so production has no configurable trust or network bypass.
@@ -55,7 +59,7 @@ class HttpsTransportTest {
             .dns { hostname ->
                 require(hostname == "relay.test") { "Test transport may contact only its loopback peer" }
                 listOf(InetAddress.getLoopbackAddress())
-            }.eventListener(listener).build())
+            }.eventListener(listener).apply { if (executor != null) dispatcher(okhttp3.Dispatcher(executor)) }.build())
         clients += client
         return client
     }
@@ -133,9 +137,60 @@ class HttpsTransportTest {
 
     private class Progress : EventListener() {
         val headers = CountDownLatch(1)
+        val bodyStarted = CountDownLatch(1)
         val failed = CountDownLatch(1)
         override fun responseHeadersEnd(call: Call, response: Response) { headers.countDown() }
+        override fun responseBodyStart(call: Call) { bodyStarted.countDown() }
         override fun callFailed(call: Call, ioe: IOException) { failed.countDown() }
+    }
+
+    private class GatedExecutor : AbstractExecutorService() {
+        private val delegate = Executors.newCachedThreadPool()
+        val queued = ConcurrentLinkedQueue<Runnable>()
+        @Volatile var hold = false
+        @Volatile var cleanupThread: Thread? = null
+        val finished = CountDownLatch(1)
+        override fun execute(command: Runnable) { if (hold) queued.add(command) else delegate.execute(command) }
+        fun releaseCleanup() { delegate.execute { try { cleanupThread = Thread.currentThread(); queued.remove().run() } finally { finished.countDown() } } }
+        override fun shutdown() = delegate.shutdown()
+        override fun shutdownNow(): MutableList<Runnable> = delegate.shutdownNow()
+        override fun isShutdown() = delegate.isShutdown
+        override fun isTerminated() = delegate.isTerminated
+        override fun awaitTermination(timeout: Long, unit: TimeUnit) = delegate.awaitTermination(timeout, unit)
+    }
+
+    @Test fun closingIdleTlsPoolErasesSessionBeforeDisposingSocketOffCallerThread() = runBlocking {
+        val server = server()
+        server.enqueue(json().build())
+        var socket: java.net.Socket? = null
+        val executor = GatedExecutor()
+        val listener = object : EventListener() {
+            override fun connectionAcquired(call: Call, connection: okhttp3.Connection) { socket = connection.socket() }
+        }
+        val client = client(server, cookie, listener, executor)
+        try {
+            client.json("/api/session")
+            assertNotNull("real TLS connection established", socket)
+            val establishedSocket = requireNotNull(socket)
+            assertFalse("connection remains pooled", establishedSocket.isClosed)
+            executor.hold = true
+            val caller = Thread.currentThread()
+            client.close()
+            assertThrows(IOException::class.java) { client.storedCookie() }
+            assertEquals("Session is closed.", failure { client.json("/api/session") }.message)
+            assertEquals("cleanup queued independently of caller lifecycle", 1, executor.queued.size)
+            assertFalse("no socket disposal on calling thread", establishedSocket.isClosed)
+            client.close()
+            assertEquals("close is idempotent", 1, executor.queued.size)
+            executor.releaseCleanup()
+            assertTrue("cleanup completes", executor.finished.await(3, TimeUnit.SECONDS))
+            assertNotSame("cleanup uses another thread", caller, executor.cleanupThread)
+            assertTrue("actual idle TLS socket disposed", establishedSocket.isClosed)
+        } finally {
+            executor.hold = false
+            client.close()
+            executor.shutdown()
+        }
     }
 
     @Test fun cancellingCoroutineCancelsInFlightTlsBodyAndRejectsLateCookie() = runBlocking {
@@ -155,11 +210,12 @@ class HttpsTransportTest {
     @Test fun closingDuringTlsResponseCannotRestoreCookieOrPermitAnotherRequest() = runBlocking {
         val server = server()
         server.enqueue(json().addHeader("Set-Cookie", cookie.replace("test-session", "late-session"))
-            .bodyDelay(1, TimeUnit.DAYS).build())
+            .throttleBody(1, 1, TimeUnit.DAYS).build())
         val progress = Progress()
         val client = client(server, cookie, progress)
         val request = async(Dispatchers.Default) { failure { client.json("/api/session") } }
         assertTrue("response headers received", progress.headers.await(5, TimeUnit.SECONDS))
+        assertTrue("response body reading began before close", progress.bodyStarted.await(5, TimeUnit.SECONDS))
         client.close()
         withTimeout(3000) { request.await() }
         assertTrue("socket call cancelled", progress.failed.await(3, TimeUnit.SECONDS))

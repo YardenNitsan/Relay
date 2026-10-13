@@ -1,6 +1,6 @@
 # Relay native LAN preview
 
-Real Kotlin/Compose Android client for the existing Relay LAN HTTPS listener. Requires Android8/API26 or later, a system-trusted host certificate, an approved Relay account and a five-minute one-use invitation issued by the host owner. Android17/API37 additionally requests local-network permission before connecting. Cloudflare remote native sign-in is not implemented.
+Real Kotlin/Compose Android client for the existing Relay LAN HTTPS listener. Requires Android8/API26 or later, a trusted host certificate, an approved Relay account and a five-minute one-use invitation issued by the host owner. Default builds use system certificate authorities only; the optional host-specific build below can embed one dedicated public LAN CA. Android17/API37 additionally requests local-network permission before connecting. Cloudflare remote native sign-in is not implemented.
 
 See [validation, artifact and limitations](../docs/ui-agents-revolution/android-validation.md), [architecture](../docs/ui-agents-revolution/android-architecture.md) and [threat model](../docs/ui-agents-revolution/threat-model.md). No host configuration or API changes are part of this app.
 
@@ -32,3 +32,21 @@ For an existing preview installation signed with the recorded certificate, insta
 Optional USB developer installation: `adb install -r release/android/relay-0.2.0-lan-preview-debug.apk`. Actual Samsung Galaxy S26 Ultra installation and host connectivity still require physical-device acceptance.
 
 Troubleshooting invitation expiry, certificate trust, uncertain delivery and signature mismatches: [client testing guide](../docs/ui-agents-revolution/client-troubleshooting.md).
+
+## Optional host-specific 0.3 LAN build
+
+For the owner-authorized PC at `10.100.102.30`, supply the dedicated **public root CA certificate** explicitly at build time. Do not supply a server certificate, private key, certificate bundle or a generic user CA store. No CA file or private key is committed. This debug profile adds trust for that exact IP only; other hosts and all ordinary/release builds retain system trust. It requires no device-wide CA installation for this app.
+
+```powershell
+$env:JAVA_HOME='C:/Program Files/Android/Android Studio/jbr'
+$env:ANDROID_HOME="$env:LOCALAPPDATA/Android/Sdk"
+./android/gradlew.bat -p android :app:checkLanTrustConfig :app:testDebugUnitTest :app:lintDebug :app:assembleDebug '-PrelayLanCaFile=C:/Users/yarde/AppData/Local/RelayDispatchLan/tls/relay-lan-ca.pem' --console=plain
+```
+
+The public PEM/DER path may differ on another authorized workstation. Relative paths resolve from `android/`. The generator rejects expired/non-CA certificates, absent certificate-signing usage, non-self-signed roots, multiple certificates, trailing data and private-key PEM. Valid input is normalized to DER under ignored `android/app/build/generated/lan-trust/res/`. The generated XML uses `includeSubdomains="false"`, rejects cleartext, and trusts this CA only inside the `10.100.102.30` domain configuration. Hostname/IP SAN, server-certificate expiry and chain verification still use Android/OkHttp normally; there is no permissive runtime trust manager or hostname verifier. Android does not apply public Certificate Transparency requirements to custom trust anchors.
+
+The flag affects only the `debug` source set and its manifest. Omit it to produce a system-only APK, even immediately after an opt-in build without cleaning. No host URL is prefilled. This build is version code **3**, version name **0.3-lan**, using the existing local debug signing identity; build flags never choose or replace a signing key. Keep the previous released testing artifact until the new one is verified.
+
+`checkLanTrustConfig` exercises the JDK generator and XML boundary, not Android's network stack. JVM transport tests and static APK inspection cannot establish that a literal-IP domain rule is honored by a device; installed Android connection, wrong-host/untrusted-certificate failures and physical-phone acceptance must be recorded separately. See [LAN build verification](lan-trust-build.md).
+
+Implementation follows [Android's domain-scoped Network Security Configuration](https://developer.android.com/privacy-and-security/security-config) and [Gradle task input/output declarations](https://docs.gradle.org/current/userguide/implementing_custom_tasks.html). We deliberately do not use `debug-overrides`, which would grant the CA broader app trust.

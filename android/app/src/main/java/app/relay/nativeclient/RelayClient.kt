@@ -26,7 +26,23 @@ class RelayClient(val origin: String, savedCookie: String? = null) {
     @Volatile private var csrf: String? = null
     private fun validCookie(value: Cookie) = value.name == "__Host-relay_remote" && value.secure && value.httpOnly && value.hostOnly && value.path == "/" && value.domain == origin.toHttpUrl().host && value.expiresAt > System.currentTimeMillis()
     fun storedCookie(): String = cookie?.toString() ?: throw IOException("The host did not issue a secure LAN session.")
-    @Synchronized fun close() { closed = true; http.dispatcher.cancelAll(); http.connectionPool.evictAll(); cookie = null; csrf = null }
+    @Synchronized fun close() {
+        if (closed) return
+        closed = true; cookie = null; csrf = null
+        // TLS socket close can perform network I/O. This executor outlives the
+        // ViewModel, so teardown also runs after onCleared cancels its scope.
+        http.dispatcher.executorService.execute {
+            try { http.dispatcher.cancelAll() }
+            finally { http.connectionPool.evictAll() }
+        }
+    }
+    private fun cancel(call: Call) { http.dispatcher.executorService.execute { call.cancel() } }
+    @Synchronized private fun enqueue(call: Call, callback: Callback) {
+        // Building headers is not admission: a close between request() and
+        // enqueue must never send those captured credentials afterwards.
+        if (closed) throw IOException("Session is closed.")
+        call.enqueue(callback)
+    }
     @Synchronized private fun acceptCookie(value: Cookie) { if (!closed && validCookie(value)) cookie = value }
     @Synchronized private fun request(path: String, method: String = "GET", payload: JSONObject? = null): Request {
         if (closed) throw IOException("Session is closed.")
@@ -51,8 +67,8 @@ class RelayClient(val origin: String, savedCookie: String? = null) {
     }
     suspend fun json(path: String, method: String = "GET", payload: JSONObject? = null): Any = suspendCancellableCoroutine { continuation ->
         val call = http.newCall(request(path, method, payload))
-        continuation.invokeOnCancellation { call.cancel() }
-        call.enqueue(object : Callback {
+        continuation.invokeOnCancellation { cancel(call) }
+        if (continuation.isActive) enqueue(call, object : Callback {
             override fun onFailure(call: Call, e: IOException) { if (continuation.isActive) continuation.resumeWithException(e) }
             override fun onResponse(call: Call, response: Response) {
                 try {
@@ -69,6 +85,7 @@ class RelayClient(val origin: String, savedCookie: String? = null) {
                         for (header in it.headers("Set-Cookie")) Cookie.parse(origin.toHttpUrl(), header)?.let(::acceptCookie)
                         JSONTokener(text).nextValue()
                     }
+                    if (closed) throw IOException("Session is closed.")
                     if (continuation.isActive) continuation.resume(parsed)
                 } catch (error: Exception) { if (continuation.isActive) continuation.resumeWithException(error) }
             }
@@ -77,7 +94,7 @@ class RelayClient(val origin: String, savedCookie: String? = null) {
     fun events(after: Long, scope: String?) = callbackFlow {
         val path = "/api/events?after=$after" + (scope?.let { "&scope=$it" } ?: "")
         val call = http.newCall(request(path).newBuilder().header("Accept", "text/event-stream").build())
-        call.enqueue(object : Callback {
+        enqueue(call, object : Callback {
             override fun onFailure(call: Call, e: IOException) { close(e) }
             override fun onResponse(call: Call, response: Response) {
                 try {
@@ -98,6 +115,6 @@ class RelayClient(val origin: String, savedCookie: String? = null) {
                 } catch (error: Exception) { close(error) }
             }
         })
-        awaitClose { call.cancel() }
+        awaitClose { cancel(call) }
     }
 }

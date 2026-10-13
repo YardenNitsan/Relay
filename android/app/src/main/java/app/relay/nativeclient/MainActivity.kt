@@ -235,6 +235,18 @@ class MainActivity : ComponentActivity() {
     OutlinedCard(Modifier.fillMaxWidth()) { Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text("Execution", style = MaterialTheme.typography.titleLarge)
         Text(task.label("status").replace('_', ' '), color = MaterialTheme.colorScheme.primary)
+        val taskError = task.label("error")
+        if (taskError.isNotBlank()) {
+            Text("Task error", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.error)
+            SelectionContainer { Text(taskError.take(8_000), style = MaterialTheme.typography.bodyMedium) }
+            if (taskError.length > 8_000) Text("Showing the first 8,000 characters. Open this task in the web client to read the full error.", style = MaterialTheme.typography.bodySmall)
+        }
+        val taskResult = task.label("result")
+        if (taskResult.isNotBlank()) {
+            Text("Result", style = MaterialTheme.typography.titleSmall)
+            SelectionContainer { Text(taskResult.take(16_000), style = MaterialTheme.typography.bodyMedium) }
+            if (taskResult.length > 16_000) Text("Showing the first 16,000 characters. Open this task in the web client to read the full result.", style = MaterialTheme.typography.bodySmall)
+        }
         detail.objects("steps").forEach { step -> Column { Text("${step.label("role")} · ${step.label("status")}", style = MaterialTheme.typography.labelMedium); Text(step.label("title")); Text(step.label("modelId", "Model not assigned"), style = MaterialTheme.typography.bodySmall) } }
         detail.objects("approvals").filter { it.label("status") == "pending" }.forEach { approval -> Button(onClick = { review = approval }, enabled = !s.busy, modifier = Modifier.fillMaxWidth()) { Text("Review ${approval.label("tool")}") } }
         detail.objects("verification").takeLast(8).forEach { proof -> Text("${if (proof.optBoolean("passed")) "Verified" else "Not verified"}: ${proof.label("summary")}", style = MaterialTheme.typography.bodySmall) }
@@ -282,6 +294,6 @@ class MainActivity : ComponentActivity() {
         Text("The host enforces your account permissions. Your phone cannot grant computer access, spend on cloud models or use local-owner controls.")
         Text("Drafts are encrypted on this device and deleted on sign-out. This preview follows activity while open. It does not provide background push notifications or Cloudflare Access sign-in.")
         OutlinedButton(onClick = { confirm = true }, enabled = !s.busy, modifier = Modifier.fillMaxWidth()) { Text("Sign out") }
-        Text("Native preview 0.2.0 · debug testing build", style = MaterialTheme.typography.labelSmall)
+        Text("Native preview 0.3-lan · debug testing build", style = MaterialTheme.typography.labelSmall)
     }
 }

@@ -1,12 +1,54 @@
+import java.io.File
+
 plugins { id("com.android.application"); id("org.jetbrains.kotlin.plugin.compose") }
 android {
     namespace = "app.relay.nativeclient"
     compileSdk = 37
-    defaultConfig { applicationId = "app.relay.nativeclient"; minSdk = 26; targetSdk = 37; versionCode = 2; versionName = "0.2.0-lan-preview" }
+    defaultConfig {
+        applicationId = "app.relay.nativeclient"; minSdk = 26; targetSdk = 37; versionCode = 3; versionName = "0.3-lan"
+        manifestPlaceholders["relayNetworkSecurityConfig"] = "@xml/network_security_config"
+    }
     buildFeatures { compose = true }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     buildTypes { release { isMinifyEnabled = true; isShrinkResources = true; proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro") } }
     testOptions { unitTests.isReturnDefaultValues = true }
+}
+
+// Public trust material is an explicit local debug-build input, never an app
+// preference. Omitting it does not include generated resources from prior builds.
+val generatorClasses = layout.buildDirectory.dir("lan-trust/classes")
+val generatedLanResources = layout.buildDirectory.dir("generated/lan-trust/res")
+val jdkBin = File(System.getProperty("java.home"), "bin")
+val executableSuffix = if (System.getProperty("os.name").startsWith("Windows")) ".exe" else ""
+val compileLanTrustGenerator = tasks.register<Exec>("compileLanTrustGenerator") {
+    val sources = rootProject.files("build-tools/LanTrustConfig.java", "build-tools/LanTrustConfigTest.java")
+    inputs.files(sources)
+    inputs.property("jdkVersion", System.getProperty("java.version"))
+    outputs.dir(generatorClasses)
+    doFirst { generatorClasses.get().asFile.mkdirs() }
+    commandLine(listOf(jdkBin.resolve("javac$executableSuffix").absolutePath, "--release", "17", "-d", generatorClasses.get().asFile.absolutePath) + sources.files.map { it.absolutePath })
+}
+val checkLanTrustConfig = tasks.register<Exec>("checkLanTrustConfig") {
+    dependsOn(compileLanTrustGenerator)
+    commandLine(jdkBin.resolve("java$executableSuffix").absolutePath, "-cp", generatorClasses.get().asFile.absolutePath, "LanTrustConfigTest")
+}
+tasks.matching { it.name == "check" }.configureEach { dependsOn(checkLanTrustConfig) }
+val lanCaFile = providers.gradleProperty("relayLanCaFile")
+if (lanCaFile.isPresent) {
+    require(lanCaFile.get().isNotBlank()) { "relayLanCaFile must name one public CA PEM or DER file." }
+    val certificate = rootProject.file(lanCaFile.get())
+    val generateLanTrustConfig = tasks.register<Exec>("generateLanTrustConfig") {
+        dependsOn(compileLanTrustGenerator)
+        inputs.file(certificate)
+        inputs.property("exactLanHost", "10.100.102.30")
+        outputs.dir(generatedLanResources)
+        // Revalidate certificate dates even when the file has not changed.
+        outputs.upToDateWhen { false }
+        commandLine(jdkBin.resolve("java$executableSuffix").absolutePath, "-cp", generatorClasses.get().asFile.absolutePath, "LanTrustConfig", certificate.absolutePath, "10.100.102.30", generatedLanResources.get().asFile.absolutePath)
+    }
+    android.sourceSets.getByName("debug").res.directories.add(generatedLanResources.get().asFile.absolutePath)
+    android.buildTypes.getByName("debug").manifestPlaceholders["relayNetworkSecurityConfig"] = "@xml/relay_lan_network_security_config"
+    tasks.matching { it.name == "preDebugBuild" }.configureEach { dependsOn(generateLanTrustConfig) }
 }
 dependencies {
     implementation(platform("androidx.compose:compose-bom:2026.09.00"))

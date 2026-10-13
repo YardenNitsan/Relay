@@ -1,5 +1,7 @@
 # Host-specific LAN build verification
 
+Current address is `10.100.102.13`; see [renewal evidence](../docs/ui-agents-revolution/lan-address-renewal.md). Supply both `-PrelayLanCaFile=<public CA>` and `-PrelayLanHost=<exact private IPv4>` for current opt-in builds. The sections below preserve the original0.3 verification; they are not the latest artifact instructions.
+
 13 October 2026. Authorized build profile for PC `10.100.102.30`; no Cloudflare, forwarding, runtime trust override or system-wide certificate-store modification. Owner-provided public CA input: `C:/Users/yarde/AppData/Local/RelayDispatchLan/tls/relay-lan-ca.pem`. Its private key remains outside the repository and is never a build input.
 
 ## Implementation boundary

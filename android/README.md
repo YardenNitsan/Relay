@@ -1,52 +1,43 @@
-# Relay native LAN preview
+# Relay for Android ? LAN testing build
 
-Real Kotlin/Compose Android client for the existing Relay LAN HTTPS listener. Requires Android8/API26 or later, a trusted host certificate, an approved Relay account and a five-minute one-use invitation issued by the host owner. Default builds use system certificate authorities only; the optional host-specific build below can embed one dedicated public LAN CA. Android17/API37 additionally requests local-network permission before connecting. Cloudflare remote native sign-in is not implemented.
+Native Kotlin/Jetpack Compose client for the authenticated Relay host. Minimum Android8/API26; current version0.4-lan/code4. The host performs inference and enforces permissions. The APK contains no account credentials or private signing/TLS keys.
 
-See [validation, artifact and limitations](../docs/ui-agents-revolution/android-validation.md), [architecture](../docs/ui-agents-revolution/android-architecture.md) and [threat model](../docs/ui-agents-revolution/threat-model.md). No host configuration or API changes are part of this app.
+## Install and connect
 
-Build from repository root with JDK17+ and Android SDK37/build tools36.0.0:
+1. Transfer `release/android/relay-0.4-lan-debug.apk` to your phone, open it in Files and temporarily permit installation from that file app if requested. Disable that installation permission afterward.
+2. Use the same LAN as the PC and enter **`https://10.100.102.13:4443`** in Relay. This optional host-specific APK embeds the dedicated public CA for this exact IP; the native app needs no device-wide CA installation.
+3. On the PC open **`http://127.0.0.1:4327`**. In **More ? Access & remote connections**, create a fresh invitation for **LAN phone** and enter it in the app. Invitations are one-use/five-minute. Never transfer owner pairing credentials to a phone.
+4. Choose the existing9B model for the manually verified local chat path. Hardware admission remains enforced. Enable optional private task notifications from Account; Android permission is required.
 
-```powershell
-$env:JAVA_HOME='C:/Program Files/Android/Android Studio/jbr'
-$env:ANDROID_HOME="$env:LOCALAPPDATA/Android/Sdk"
-./android/gradlew.bat -p android :app:testDebugUnitTest :app:lintDebug :app:assembleDebug --console=plain
-```
+Actual APK SHA256: `78d847910396eeeff4fa7355b86c44ca6123d724c1cbbd1e69816e348d4ad60e`,13,085,533bytes. Bundle: `release/android/relay-0.4-lan-install.zip`, including APK/checksum/public browser CA/installation instructions. These are existing ignored local artifacts, not files provided by cloning the repository. [Build and installed evidence](../docs/ui-agents-revolution/android-0.4.md).
 
-Output: `android/app/build/outputs/apk/debug/app-debug.apk`. The locally delivered testing APK and checksum are in ignored `release/android/`; its signature is recorded in the validation report. Keep the existing user's `.android/debug.keystore` outside the repository for consistent local testing updates. This is not production release signing.
+The retained debug signer is `9b855084b949dd2048daa45d0d17a322210c7031d168b12d9d3cb52096cc9b8d`. Install updates over the existing app to preserve storage. Do not uninstall to work around an unexpected signature mismatch. Keep the original user's `.android/debug.keystore` private and securely backed up; other developers/CI have different debug keys. Production release signing is not configured. Version0.3 targeted the previousIP30; Forget its saved connection and enroll with a new invitation forIP13.
 
-The separate [Android CI workflow](../.github/workflows/android.yml) builds and checks this module on Ubuntu, verifies the wrapper and publishes verification reports. Its ephemeral runner debug key is not the delivered update identity; CI does not distribute its APK as an upgrade. A configured workflow is not a claim that a hosted run has passed.
+Optional USB install: `adb install -r release/android/relay-0.4-lan-debug.apk`. Physical Samsung installation is not yet verified; installed emulator launch, actual LAN sign-in/AI response, private notification/cold tap and offline draft-preserving recovery are verified.
 
-For the opt-in real Relay backend test, install repository npm dependencies with the lockfile, make Node24+ available, set `RELAY_NATIVE_INTEGRATION=1`, then run `./android/gradlew.bat -p android :app:testDebugUnitTest --console=plain`. The latest opted-in run passes29 tests including a real isolated HTTPS LAN API lifecycle. The test creates only a loopback fixture and deletes its temporary workspace; it does not connect the installed APK or configure your host. See [integration boundaries and evidence](../docs/ui-agents-revolution/android-integration.md).
+## Reproduce the build
 
-Only exact HTTPS origins are accepted. There is no HTTP fallback, custom CA bypass, Access service secret, browser-cookie scraping or owner API access. App sessions are protected with Android Keystore; activity screens are secure and ordinary screen capture is disabled. Unsent drafts and their context are encrypted with a separate Keystore key and removed on sign-out/revocation; empty-text selection context remains session-only. Transcripts remain in memory. Native file picking supports reviewed text/PDF/DOCX copies. Background push and offline task submission are not available. See [0.2 verification and actual checksum](../docs/ui-agents-revolution/android-0.2.md).
-
-## Install this testing APK
-
-1. Transfer `release/android/relay-0.2.0-lan-preview-debug.apk` to the phone using USB or your usual private file transfer.
-2. Open it in the phone's Files application. If Android requests permission, allow installation from that file application, install Relay, then turn that installation permission off again.
-3. Open Relay on the same approved network as the configured host. Enter its exact HTTPS LAN origin and a fresh one-use account invitation from the host owner. The certificate must already be trusted by Android; this app cannot connect to an untrusted self-signed certificate. Android 17 also requires the local-network permission.
-4. Keep the existing web client available: this preview does not support native remote Access login or background notifications.
-
-For an existing preview installation signed with the recorded certificate, install the next APK over it to preserve app storage. A different signing identity cannot update this installation. Do not uninstall to resolve a signature mismatch unless you intend to discard its stored session and local state. Future builds must increase `versionCode` and retain the established testing key or explicitly migrate to a production signing process.
-
-Optional USB developer installation: `adb install -r release/android/relay-0.2.0-lan-preview-debug.apk`. Actual Samsung Galaxy S26 Ultra installation and host connectivity still require physical-device acceptance.
-
-Troubleshooting invitation expiry, certificate trust, uncertain delivery and signature mismatches: [client testing guide](../docs/ui-agents-revolution/client-troubleshooting.md).
-
-## Optional host-specific 0.3 LAN build
-
-For the owner-authorized PC at `10.100.102.30`, supply the dedicated **public root CA certificate** explicitly at build time. Do not supply a server certificate, private key, certificate bundle or a generic user CA store. No CA file or private key is committed. This debug profile adds trust for that exact IP only; other hosts and all ordinary/release builds retain system trust. It requires no device-wide CA installation for this app.
+Use the pinned Gradle wrapper with Android SDK37/build-tools36.0.0 and a supported JDK (this host uses Android Studio's JBR):
 
 ```powershell
 $env:JAVA_HOME='C:/Program Files/Android/Android Studio/jbr'
 $env:ANDROID_HOME="$env:LOCALAPPDATA/Android/Sdk"
-./android/gradlew.bat -p android :app:checkLanTrustConfig :app:testDebugUnitTest :app:lintDebug :app:assembleDebug '-PrelayLanCaFile=C:/Users/yarde/AppData/Local/RelayDispatchLan/tls/relay-lan-ca.pem' --console=plain
+$env:RELAY_NATIVE_INTEGRATION='1'
+./android/gradlew.bat -p android '-PrelayLanCaFile=C:/Users/yarde/AppData/Local/RelayDispatchLan/tls-10-100-102-13/relay-lan-ca.pem' '-PrelayLanHost=10.100.102.13' :app:checkLanTrustConfig :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --console=plain
 ```
 
-The public PEM/DER path may differ on another authorized workstation. Relative paths resolve from `android/`. The generator rejects expired/non-CA certificates, absent certificate-signing usage, non-self-signed roots, multiple certificates, trailing data and private-key PEM. Valid input is normalized to DER under ignored `android/app/build/generated/lan-trust/res/`. The generated XML uses `includeSubdomains="false"`, rejects cleartext, and trusts this CA only inside the `10.100.102.30` domain configuration. Hostname/IP SAN, server-certificate expiry and chain verification still use Android/OkHttp normally; there is no permissive runtime trust manager or hostname verifier. Android does not apply public Certificate Transparency requirements to custom trust anchors.
+Both optional properties must be supplied together; quote them in PowerShell. Relative certificate paths resolve from `android/`. The generator accepts one bounded valid public signing root and canonical private IPv4, rejecting bundles, private-key PEM, malformed/injected/public addresses and expired certificates. Android validates the actual server's chain/expiry/exact SAN normally. Generated public resources are debug-only and ignored; release and builds with neither property retain system-only trust. Do not disable certificate or hostname validation. [Trust design/history](lan-trust-build.md).
 
-The flag affects only the `debug` source set and its manifest. Omit it to produce a system-only APK, even immediately after an opt-in build without cleaning. No host URL is prefilled. This build is version code **3**, version name **0.3-lan**, using the existing local debug signing identity; build flags never choose or replace a signing key. Keep the previous released testing artifact until the new one is verified.
+Output: `android/app/build/outputs/apk/debug/app-debug.apk`. The opted-in real-backend JVM test also needs locked npm dependencies and Node24+. It creates an isolated disposable HTTPS fixture; it never configures production. Latest coordinated run:46JVM tests/0failures/errors/skips,51generator checks, build/lint passed (0errors/10warnings). [Android CI](../.github/workflows/android.yml) builds/tests on Ubuntu and publishes verification reports; its ephemeral signing identity is not an upgrade artifact.
 
-`checkLanTrustConfig` exercises the JDK generator and XML boundary, not Android's network stack. JVM transport tests and static APK inspection cannot establish that a literal-IP domain rule is honored by a device; installed Android connection, wrong-host/untrusted-certificate failures and physical-phone acceptance must be recorded separately. See [LAN build verification](lan-trust-build.md).
+## Privacy and behavior
 
-Implementation follows [Android's domain-scoped Network Security Configuration](https://developer.android.com/privacy-and-security/security-config) and [Gradle task input/output declarations](https://docs.gradle.org/current/userguide/implementing_custom_tasks.html). We deliberately do not use `debug-overrides`, which would grant the CA broader app trust.
+Only exact HTTPS origins and authenticated LAN sessions are accepted. No redirects, cleartext fallback, Access service secret or browser-cookie scraping. Keystore protects sessions and per-origin/account drafts; backups and ordinary screen capture are disabled. Logout/revocation clears private state. Offline startup hides private UI and offers Retry using the protected saved session or Forget; Retry revalidates with the host before showing work. Failed unconfirmed uploads/sends remain explicit uncertain outcomes.
+
+Chat/history, model/profile choice, task initiation/status/cancellation, approvals and permitted workspace/file browsing use the existing host APIs. New tasks remain local-only/read-only with zero cloud spending. Attachments use Android's file picker and a reviewed text/PDF/DOCX copy flow. [Attachment/draft design](../docs/ui-agents-revolution/android-0.2.md).
+
+[Private task notifications](notifications.md) watch up to20 submitted/opened tasks for seven days. Generic completion/failure/approval alerts hide task text and use secret lock-screen visibility. Tap reauthenticates before opening the task. Background polling is15minutes or later under Android battery/network policy, not instant push; no mandatory messaging service. Foreground events update immediately.
+
+Native Cloudflare Access authentication, biometric step-up, richer project/diff workflows and full premium-client acceptance remain incomplete. System light/dark themes are supported. Android17/API37 also requests local-network permission. For phone-browser CA trust, see [LAN setup](../docs/ui-agents-revolution/lan-local-setup.md); this is a deliberate device trust change, not a certificate-warning bypass.
+
+Troubleshooting: [client guide](../docs/ui-agents-revolution/client-troubleshooting.md). Architecture/security: [native architecture](../docs/ui-agents-revolution/android-architecture.md), [threat model](../docs/ui-agents-revolution/threat-model.md). **INCOMPLETE ? CONTINUATION REQUIRED** for the full product phase.

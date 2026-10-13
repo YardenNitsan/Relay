@@ -1,41 +1,40 @@
 # Continuation
 
-**INCOMPLETE - CONTINUATION REQUIRED** for the complete web/native product phase.
+**INCOMPLETE ? CONTINUATION REQUIRED** for the complete web/native product phase.
 
-## Latest source and authorized scope
+## Latest source and scope
 
-Checkout `C:/Users/yarde/Documents/codexp/Relay-revolution`, branch `modernization/ui-agents-revolution`. Latest runtime/native source: **6cab6d08aac18f632bee7327e97b06a043054913**. A following documentation checkpoint records this state; use `git rev-parse HEAD` for that commit. Web assets remain the verifiedb9201f2 build; native0.3 includes scoped CA and the corrected TLS teardown.
+Checkout `C:/Users/yarde/Documents/codexp/Relay-revolution`, branch `modernization/ui-agents-revolution`. Latest verified implementation/APK source: **9da48c3d7ff06c801ebe0fff4850e3fcfc6c4833**. Following documentation checkpoints record delivery; obtain exact checkoutHEAD with `git rev-parse HEAD`. Web assets remain the verifiedb9201f2 build. Native0.4 is a real installed/tested artifact, not full phase completion.
 
-The owner explicitly asked to run both clients on the PC's current LAN without port forwarding or Cloudflare changes. Only web/native secure integration remains authorized: no routing changes, agent improvements or unrelated roadmap. Preserve production and all other checkouts. Do not merge main or deploy publicly. Full completion still requires the remaining product gates; stop after delivery, not another phase.
+Only web/native secure integration remains authorized. No AI routing, agent improvements, unrelated roadmap, main merge, public deployment, router forwarding or Cloudflare changes. Preserve production data and other checkouts. The owner explicitly authorizes the current PC LAN. Continue until verified delivery, then stop rather than starting another phase.
 
-## Actually running now
+## Running applications
 
-- Reviewed foreground launcher `scripts/lan-preview.ts`, tool session53431, PID34620. Owner `http://127.0.0.1:4327`; LAN `https://10.100.102.30:4443`. Exact private Ethernet10.100.102.30/24. API unauthenticated session/admin requests reject401; web200 with explicit CA verification.
-- Dedicated authenticated Chrome PC window is open, separate private profile `%LOCALAPPDATA%/RelayDispatchLan/browser`, tool session57905. The owner can use it to issue LAN invitations under Access. Do not close it unnecessarily or expose its credentials.
-- Data `%LOCALAPPDATA%/RelayDispatchLan/relay-lan-preview`; server TLS `%LOCALAPPDATA%/RelayDispatchLan/tls`; CA signer separately `%LOCALAPPDATA%/RelayDispatchLanIssuer`. No keys in Git/APK. No router, Cloudflare, system trust-store or production changes. Earlier opaque background launch rejection was not retried; this reviewed, scoped foreground execution succeeded.
-- Attempt to add a narrower firewall rule failed OS error5; no firewall change occurred. Existing Node TCP Private Allow rule already permits traffic. Physical phone network path remains unverified.
-- ProductionPID20332 remains on4317/4318. Preview has separate new data/credentials; provider keys session-only, OAuth persistence unavailable, schedule runner/external inference listener not started. No automatic model service startup. This is not a production replacement.
-- Do not rebuild dist while the preview serves it. Stop it cleanly before changing its served build. Restart/pairing/certificate instructions: [LAN setup](lan-local-setup.md).
+- PreviewPID13284/tool session2542: owner `http://127.0.0.1:4327`, LAN `https://10.100.102.13:4443`. Ethernet changed fromIP30 toIP13; previous listeners were stopped at inspection. Production was neither restarted nor replaced.
+- Authenticated owner Chrome is open, private `%LOCALAPPDATA%/RelayDispatchLan/browser-current13`, tool session45274. More ? Access & remote connections ? LAN phone ? Create LAN invitation supplies a one-use/five-minute phone code. Do not log/commit tokens or reuse owner credentials on LAN.
+- Existing isolated data `%LOCALAPPDATA%/RelayDispatchLan/relay-lan-preview` retained. New dedicated server TLS `%LOCALAPPDATA%/RelayDispatchLan/tls-10-100-102-13`; issuer key separately `%LOCALAPPDATA%/RelayDispatchLanIssuer/ip-10-100-102-13`. OldIP30 material preserved. No trust-store/firewall/router/Cloudflare modifications.
+- Approved foreground launcher requires an explicit active privateIPv4, fixed owner4327/LAN4443 and marked private storage. Session-only provider credentials; OAuth persistence, scheduler runner and external inference listener disabled in this preview. Existing safe helper started LM Studio only on localhost1234.
+- Never rebuild `dist` while this preview serves it. Stop it cleanly before a web rebuild; restart using [LAN setup](lan-local-setup.md). Do not delete preview data or manually remove service locks.
 
-## Real Android artifact and verification
+## Delivered Android0.4
 
-`release/android/relay-0.3-lan-debug.apk`,12,943,914bytes; SHA256 **5e3d7c769ada6ed12f86d222315e83460fba6e982de44f904813805ce8eba64c**. Version0.3-lan/code3, minAndroid8/API26. Retained signer verified; checksum sidecar exists. Native debug build includes only the public dedicated CA for exactIP10.100.102.30. Default/release builds stay system-only; private key never supplied. Public browser CA artifact `release/android/relay-lan-ca.crt`, fingerprint in setup doc. These artifacts are ignoredGit, not supplied by cloning.
+`release/android/relay-0.4-lan-debug.apk`,13,085,533bytes; SHA256 **78d847910396eeeff4fa7355b86c44ca6123d724c1cbbd1e69816e348d4ad60e**. Install bundle `release/android/relay-0.4-lan-install.zip` includes APK/checksum/publicCA/INSTALL-LAN-0.4.txt. Version0.4-lan/code4/minAPI26, retained debug signer verified. Artifacts exist locally and are ignored by Git. No public download URL or production release signature is claimed.
 
-Actual API36.1 installed emulator connected through HTTPS with normal platform validation, displayed genuine Live state, submitted a real task, showed events, reopened history, restored session after upgrade/cold launch and cancelled the task. The9B model paused at the unchanged physical-RAM safety reserve; no successful AI response is claimed. Task error/result display now gives the real explanation.
+Installed API36.1 emulator authenticated to currentIP13 through normal TLS. Native-submitted task12d01e75-d037-4f71-b839-7253c784f436 returned exactly `Relay Android connected.`. Generic secret-visibility OS notification arrived; actual notification tap after process death restored session and correct task. Offline cold start retained protected credentials, hid privateUI and recovered the exact draft through Retry after networking returned. [Full0.4 evidence](android-0.4.md).
 
-Final sign-out exposed and reproduced an actual Conscrypt NetworkOnMainThreadException from pool eviction. Central cleanup now invalidates credentials immediately, rejects late enqueue and disposes/cancels sockets off-main. A meaningful pooled-TLS regression failed before and passed after. Final installed app sign-out returned to Connect securely, removed private account UI and showed no AndroidRuntime fatal exception. Emulator was stopped after testing. Final APK cold launch1048ms. Physical Samsung remains untested.
+No physical Samsung test has occurred. Native remote Access login, biometric step-up, richer project/diff/markdown and full premium-client acceptance remain open. Native new tasks are still local-only/read-only. Notifications are best-effort15-minute polling when backgrounded, not push.
 
-## Checks
+## Verification
 
-- Launcher/LAN TLS40passed/1skipped; strict TypeScript passes. Independent source/security review accepted launcher, trust profile and cleanup fix.
-- Native30JVM tests/8classes,0failures/errors/skips incl real isolated backend;22build-generator checks. Build/lint pass,0errors10warnings. Default APK rebuilt after opt-in had no stale customCA; release manifest stays system-only. Root verified final signature/hash and XML counts.
-- Existing web source hosted57a6490 CI38341960522 passes all12host/browser jobs across3OS. New source/docs CI must be checked after this push.
-- Earlier corrected rendered checks111+24+14 and performance2profiles remain valid for unchanged web source. New actual signed owner1440x960 screenshot inspected, no overflow.
-- Raw ignored evidence: `output/ui-agents-revolution/lan-emulator-*.xml`, `lan-logout-crash.log`, `lan-logout-green.log/xml`, `lan-web-owner-1440.png`; [native evidence](../../android/lan-trust-build.md).
+- Native coordinated generator/tests/build/lint:46JVM tests0failures/errors/skips (includes real isolated host);51generator checks; build44s; lint0errors10warnings. Signature/install/coldlaunch2512ms verified.
+- LAN launcher/config64passed/1skipped; typecheck passed. Independent source/security review accepted explicit-host validation, notifications and offline recovery. Notification ordering regression was reproduced and fixed; encrypted session recovery had3red tests before5green.
+- Actual live Chrome Work/Agents/Projects at320,390,768,1440,2560px in both themes:30combinations no document overflow; representative screenshots inspected. Existing111+24+14browser and2performance profile results retained; web source unchanged.
+- Latest previously checkedHEAD4ebc0edde9561252a8d58394206f6384c1dceadb passed all12host/browser jobs38345708075 and nativeCI38345708063. Check the new pushedHEAD separately.
 
 ## Next work
 
-1. Check pushed-head CI; fix concrete failures without weaker assertions/timeouts/security.
-2. Owner installs APK on the phone, enters LAN origin and a fresh non-owner invitation from Access. Native profile already trusts its dedicated CA; phone web requires deliberate public-CA installation with fingerprint verification. Do not bypass certificate warnings. Confirm actual Samsung and LAN network path.
-3. Remaining native notifications, supported remote authentication, biometric approval step-up, deeper task/diff UX and complete lifecycle/workflow acceptance remain implementation work. The LAN increment does not mark them done. Full web/native acceptance still open.
-4. Keep running preview/PC window usable; preserve production. Update actual evidence, build stable-signer APK after changes, commit/push and verify remote. Do not claim full phase completion until its gates pass.
+Complete remaining native project/file/diff workflows and safe markdown/code presentation using existing authenticated contracts, then broader native/web acceptance. Current parallel ownership: agent_audit owns native Projects/VM project actions; design_research owns safe chat markdown composables and narrow ChatScreen/TaskPanel edits. Their post0.4 work is not part of the deliveredAPK until separately built/reviewed. Inspect `git status` before touching shared files. Preserve serialized notification fetch/publication, epochs, origin/account scoping and uncertain-send safeguards.
+
+Current emulator5580 runs in tool session11875. Background task38904be8-990c-4b3a-b7b3-a5f924b3801e completed while app backgrounded. Natural WorkManager notification/revocation acceptance is pending: manually forcing the OS job before the15-minute due time was correctly deferred by WorkManager, not a successful worker test. Do not shorten intervals or bypass safeguards to claim success. After checks, sign out/stop emulator without touching physical devices or production.
+
+Root owns README/ledger/release updates and APK delivery. Commit coherent reviewed increments, push this branch, verify remoteHEAD/CI. Save accurate incomplete state if execution ends; never claim physical-device/remote/full-product completion without evidence.

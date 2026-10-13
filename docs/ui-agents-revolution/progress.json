@@ -15,7 +15,7 @@
     "5_agents": "prior_G1_G2_preserved_no_further_agent_work_authorized",
     "6_contracts": "versioned_task_feed_implemented_mobile_contracts_partial",
     "7_android_architecture": "native_kotlin_compose_project_built",
-    "8_android_features": "lan_0.3_scoped_ca_real_installed_connection_tasks_history_restore_cancel_logout_verified_30jvm_pass_other_features_incomplete",
+    "8_android_features": "0.4_real_LAN_chat_notifications_cold_tap_offline_recovery_verified_remaining_native_completion_in_progress",
     "9_remaining_web": "supporting_surfaces_implemented_111plus24plus14_corrected_browser_pass",
     "10_reliability": "prior_two_unchanged_live_trials_pass_no_further_benchmarks_authorized",
     "11_acceptance": "partial_see_acceptance_ledger",
@@ -23,22 +23,21 @@
     "13_handoff": "in_progress_full_release_incomplete"
   },
   "apk": {
-    "path": "release/android/relay-0.3-lan-debug.apk",
-    "sha256": "5e3d7c769ada6ed12f86d222315e83460fba6e982de44f904813805ce8eba64c",
-    "bytes": 12943914,
-    "version": "0.3-lan",
-    "versionCode": 3,
+    "path": "release/android/relay-0.4-lan-debug.apk",
+    "sha256": "78d847910396eeeff4fa7355b86c44ca6123d724c1cbbd1e69816e348d4ad60e",
+    "bytes": 13085533,
+    "version": "0.4-lan",
+    "versionCode": 4,
     "minSdk": 26,
     "signing": "existing_host_debug_identity_not_production_release",
     "authenticatedHostVerified": true,
-    "sourceCommit": "6cab6d08aac18f632bee7327e97b06a043054913",
-    "authenticatedHostEvidence": "installed API36.1 emulator; physical phone pending"
+    "sourceCommit": "9da48c3d7ff06c801ebe0fff4850e3fcfc6c4833",
+    "authenticatedHostEvidence": "installed API36.1 emulator realIP13 TLS/chat/notification/coldtap/offline recovery; physical phone pending"
   },
   "physicalDeviceVerified": false,
   "knownFailures": [
-    "Real9B native-submitted task paused at existing RAM safety reserve; no generated answer claimed.",
-    "Physical Samsung and phone-browser trust/connectivity still require owner testing.",
-    "Native remote authentication, background notifications, biometric step-up and broader complete-client acceptance remain incomplete."
+    "Physical Samsung and phone-browser CA trust/connectivity remain unverified.",
+    "Native remote authentication, biometric step-up, richer project/diff/markdown presentation and broader full-client acceptance remain incomplete."
   ],
   "verified": [
     "Full integrated host typecheck/tests:1451 passed/1 skipped,135files,328.44s.",
@@ -55,22 +54,28 @@
     "Head57a6490 hosted host/browser CI38341960522 passed all12jobs across3OS.",
     "LAN launcher/TLS40passed1skipped; exactIP HTTPS200 and unauthenticated APIs401; authenticated desktop Chrome rendered without overflow.",
     "Installed0.3 native exactIP TLS enrollment, live task events, history, session restoration after upgrade/cold launch and cancel verified.",
-    "Actual Android Conscrypt logout crash reproduced; off-main cleanup fix returns to sign-in with no fatal exception;30JVM tests pass."
+    "Actual Android Conscrypt logout crash reproduced; off-main cleanup fix returns to sign-in with no fatal exception;30JVM tests pass.",
+    "Latest priorHEAD4ebc0ed hosted CI38345708075 all12host/browser jobs and38345708063 native passed.",
+    "CurrentIP13 launcher/TLS64passed1skipped,51generator checks; actual authenticated Chrome30responsive/theme/surface combinations no document overflow.",
+    "0.4 coordinated46JVM tests0fail/error/skip, APK/lintpass0errors10warnings; independently reviewed session recovery/notification race corrections.",
+    "Installed0.4 native realLANtask completed exactly Relay Android connected; privateOSnotification and coldtasktap passed; offlinecoldstart retains protectedsession and Retry restores draft."
   ],
   "nativeJvmRealBackendVerified": true,
   "installedNativeAuthenticatedHostVerified": true,
-  "previewWebUrl": "https://10.100.102.30:4443",
-  "previewLaunch": "running_reviewed_foreground_session_53431_pid_34620",
-  "latestImplementationCommit": "6cab6d08aac18f632bee7327e97b06a043054913",
+  "previewWebUrl": "https://10.100.102.13:4443",
+  "previewLaunch": "running_reviewed_foreground_session_2542_pid_13284",
+  "latestImplementationCommit": "9da48c3d7ff06c801ebe0fff4850e3fcfc6c4833",
   "pendingChecks": [
-    "Latest LAN/native source CI after push.",
-    "Physical phone/browser certificate installation and actual local network path.",
-    "Complete remaining native features and full product acceptance; existing memory reserve prevents observed9B generation."
+    "Current0.4 source hostedCI after push.",
+    "Natural Android background notification scheduling, host revocation and final logout acceptance.",
+    "Physical Samsung/phonebrowser acceptance and remainingnative product features."
   ],
   "latestCheckedCi": {
-    "head": "57a6490106bf1e58a1ce33ce46d6f7bcce99dbb5",
+    "head": "4ebc0edde9561252a8d58394206f6384c1dceadb",
     "hostBrowser": "all12jobs passed",
-    "hostRun": 38341960522
+    "hostRun": 38345708075,
+    "native": "passed",
+    "nativeRun": 38345708063
   },
   "previewOwnerUrl": "http://127.0.0.1:4327"
 }

@@ -1,5 +1,9 @@
 # Owner acceptance ledger
 
+## Current0.4 checkpoint ?13 October2026
+
+Native0.4 source9da48c3:46JVM tests,51generator checks, build/lint, signature/install/realLANchat/privateOSnotification/coldtap/offline draft-preserving recovery verified. CurrentLANIP13; physical Samsung and full native acceptance remain incomplete. [Exact artifact and boundaries](android-0.4.md).
+
 ## 13 October: Private LAN installed-client acceptance
 
 The owner-authorized private preview is running at https://10.100.102.30:4443 with owner http://127.0.0.1:4327. Installed native0.3 verifies scoped-CA sign-in, genuine task events, history, restoration, cancel and corrected logout.30JVM tests and40launcher/TLS tests pass (one platform skip); full phase remains incomplete. See [exact artifact/checksum, running state and limitations](lan-local-setup.md) and [native build/crash regression evidence](../../android/lan-trust-build.md). Earlier0.2/no-listener statements below are historical.

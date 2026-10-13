@@ -1,5 +1,7 @@
 # Native Android preview validation
 
+Latest actual artifact is [Android0.4](android-0.4.md), including currentIP13 real installed connectivity/generation/notification/recovery evidence. The0.1 details below are historical.
+
 Date: 12 October 2026. Source worktree: `Relay-revolution`, branch `modernization/ui-agents-revolution`, derived from `fda18f4`. This is a real native Kotlin/Compose **LAN-only debug testing APK**. A later [isolated real-host JVM integration](android-integration.md) verifies the unchanged native transport against actual LAN APIs. Authenticated installed-app/device connectivity, remote Access login, physical device and production release acceptance remain unverified.
 
 ## Delivered artifact

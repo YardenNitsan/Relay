@@ -1,5 +1,9 @@
 # Independent review: bounded revolution increment
 
+## Current0.4 checkpoint ?13 October2026
+
+Source9da48c3 independently accepted: explicit canonical privateIPv4/exact-interface/debug-only trust profile; session-bound encrypted private notifications; fixed read-ordering race; same-origin offline session retry with no privateUI before revalidation. Review caught the stale notification regression, which was observed red then corrected. Final expiry/settled-task revocation and offline recovery reviews found no blocking source issue. Installed0.4 checks are separate [evidence](android-0.4.md).
+
 Reviewed on 12 October 2026 in `Relay-revolution`, branch `modernization/ui-agents-revolution`. The reviewer was separate from the implementation agents. Initial scope was `fda18f490d30befc66be88f25bad4e5f44c49b5d..754bd01` plus the task-feed working changes; subsequent source reviews covered G2, Dispatch navigation, Agent Studio recent work and the Android LAN preview, including corrections made during review. This records the inspected source, not a certification of the entire product or production readiness.
 
 The backend, Dispatch, Agent Studio and native source findings below were corrected and reinspected, including the subsequent native fixture portability/cleanup and credential-documentation corrections. No blocking source finding remains in this bounded review. Wider browser acceptance, installed-app native integration, physical-device security and release supply-chain gates remain open.

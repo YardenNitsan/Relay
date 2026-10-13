@@ -6,6 +6,8 @@ Status: **INCOMPLETE — CONTINUATION REQUIRED**. Started 2026-10-12.
 
 The latest owner instruction narrows all remaining work to the complete Dispatch web frontend and native Kotlin/Compose app. No new agent improvements, standalone coding benchmarks, AI routing, unrelated backend features or other roadmap phase. Earlier milestones below remain historical; incomplete agent-cooperation items are no longer a continuation task. Backend changes require a direct secure web/native integration need.
 
+Current native completion milestone after verified0.4: separate project browsing from task context to prevent stale cross-workspace file navigation; render real host-recorded task patches read-only; add bounded safe native Markdown/code presentation. Preserve authenticated contracts, approvals and all security boundaries. No new backend or routing features. [0.4 delivery and limits](android-0.4.md).
+
 Current implementation sequence:
 
 1. Resolve exact published-head browser failures while preserving useful assertions and security boundaries. Correction3346190 passed all12 host/browser OS jobs; subsequent source changes require fresh published-head acceptance.

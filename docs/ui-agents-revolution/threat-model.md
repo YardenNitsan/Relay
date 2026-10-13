@@ -1,5 +1,9 @@
 # UI, agents and Android threat model
 
+## Current0.4 checkpoint ?13 October2026
+
+Native0.4 adds encrypted bounded notification watches scoped to exact origin/account/session, generic SECRET alerts, immutable random-token taps with fresh authorization, serialized fetch/publication, expiry and revocation cleanup. Offline recovery preserves encrypted credentials only for the confirmed same origin, exposes no privateUI until revalidation, and still clears on401/Forget. NewIP13 trust is explicit; no runtime TLS bypass or remote exposure. Independent review accepted these boundaries; physical/remote/complete-product gates remain open. [Evidence](android-0.4.md).
+
 Date: 12 October 2026. Audited source: `fda18f490d30befc66be88f25bad4e5f44c49b5d`. Initial status was source/document review with read-only toolchain checks. A later authorized native increment has actual build, JVM and disconnected-emulator evidence in [Android validation](android-validation.md). No penetration test, production authentication experiment, authenticated native-host acceptance or exploit reproduction was performed. Findings distinguish existing behavior from risks introduced by the proposed native client. See [Android architecture](android-architecture.md) for dependency and authentication research.
 
 ## Assets and boundaries

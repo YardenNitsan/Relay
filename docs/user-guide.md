@@ -621,4 +621,4 @@ Expand **Where the time went** in task activity to inspect recorded execution, m
 
 ## Dispatch on the current private LAN
 
-For the separate authorized Dispatch preview and native0.3 APK, use the [LAN setup and sign-in instructions](ui-agents-revolution/lan-local-setup.md). The PC owner browser issues short-lived invitations for the LAN phone account. The native host-specific build already contains its public certificate trust; phone browser trust requires deliberate installation. Production history stays in the preserved production installation.
+For the separate authorized Dispatch preview and native0.4 APK, use the [LAN setup and sign-in instructions](ui-agents-revolution/lan-local-setup.md). The PC owner browser issues short-lived invitations for the LAN phone account. The native host-specific build already contains its public certificate trust; phone browser trust requires deliberate installation. Production history stays in the preserved production installation.

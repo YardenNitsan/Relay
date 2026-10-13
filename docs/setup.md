@@ -2,7 +2,7 @@
 
 Current release: **0.1.2**. Existing installations should read the [upgrade and backup instructions](release-0.1.2.md#upgrade-and-daily-operation) before replacing a running build.
 
-**Dispatch branch:** the new web/native build is still in acceptance. Existing4317 production is preserved; running setup there reuses that existing installation and does not deliver the new branch. No new LAN/public address has been deployed. A background isolated-preview launch was rejected by the execution policy in this session, so no running Dispatch preview URL is claimed. See [continuation and exact blockers](ui-agents-revolution/continuation.md). Android build, APK checksum and private installation instructions are in [the Android README](../android/README.md).
+**Dispatch branch:** the separate owner-authorized preview runs at `http://127.0.0.1:4327` on this PC and `https://10.100.102.13:4443` on its private LAN. It preserves the existing installation/data. See [LAN certificate/pairing/restart instructions](ui-agents-revolution/lan-local-setup.md) and [actual Android APK/install instructions](../android/README.md). No router forwarding, public deployment or Cloudflare change.
 
 From the Relay directory, run:
 
@@ -67,7 +67,7 @@ Windows `setup.cmd --help` and `setup.cmd --check` were executed against the exi
 
 Final handover checks on 9 October: strict types and 369 deterministic tests passed across 40 files; production build passed. The 30-case browser run passed 29 cases and hit one connection-indicator timeout; that exact keyboard/accessibility case passed on its focused rerun. The running production host passed desktop/phone inspection of persisted execution, discovered models and hardware. No fresh successful local greeting is claimed.
 
-The Windows launcher passed actual cold build/start, repeat-start reuse, private graceful shutdown, restart and automatic browser/private pairing-file opening. The detached host remains available at http://127.0.0.1:4317. Missing-Node bootstrap, a genuinely fresh dependency installation, Linux/macOS launcher execution and native installers remain unverified. README.md and docs/user-guide.md describe architecture and the complete implemented user experience; docs/setup.md describes one-command setup. Optional model runtimes and model weights are not silently installed.
+The Windows launcher passed actual cold build/start, repeat-start reuse, private graceful shutdown, restart and automatic browser/private pairing-file opening. At that earlier launcher checkpoint, the detached host used http://127.0.0.1:4317; check active listeners rather than assuming it is still running. Missing-Node bootstrap, a genuinely fresh dependency installation, Linux/macOS launcher execution and native installers remain unverified. README.md and docs/user-guide.md describe architecture and the complete implemented user experience; docs/setup.md describes one-command setup. Optional model runtimes and model weights are not silently installed.
 For an interrupted startup lock, use the conservative offline procedure in [service startup ownership](startup-lock.md). Do not delete an active service or backup lock to force startup.
 
 ## Owner-authorized Dispatch LAN preview

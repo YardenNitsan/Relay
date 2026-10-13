@@ -1,19 +1,16 @@
-# Client testing and access boundaries
+# Client testing and troubleshooting
 
-**13 October update:** the owner-authorized private LAN instance is now running and the scoped-CA native APK has authenticated in an emulator. See [current setup](lan-local-setup.md). Earlier launch/no-listener observations below describe the previous checkpoint. Existing production is still unchanged.
+Current separate preview: PC `http://127.0.0.1:4327`, LAN `https://10.100.102.13:4443`. [Setup, trust and restart](lan-local-setup.md); [actual0.4 APK/checksum/evidence](android-0.4.md). Production/data remain unchanged. A branch push does not deploy production or provide remote access.
 
-The Dispatch branch is not deployed over the existing installation. A successful branch build or push does not replace a running host. The latest local production-process inspection found only loopback listeners4317(owner browser),4318(protected gateway origin) and4315(model client API). No configured LAN listener was observed for that process. These observations do not prove a signed-in remote browser session.
+- **PC page unavailable:** check that the dedicated foreground preview still runs on4327/4443. Restart only with its marked private data directory and reviewed launcher. Do not replace production or delete active locks. It is not an installed auto-start service.
+- **Phone cannot reach host:** use the same approved LAN and currentIP13. Do not forward router ports or change Cloudflare. The earlierIP30 address/CA/APK are obsolete for current connectivity; old artifacts/keys remain preserved.
+- **Certificate error:**0.4's optional debug APK trusts only the dedicated public CA for exactIP13. Other addresses use system anchors. Phone browsers need deliberate installation of the verified public CA; the native APK does not. Never disable TLS/hostname validation or accept a warning. If IP changes, provision a deliberate new exact-IP certificate/build; the old constrained CA may not authorize it.
+- **Invitation rejected:** create a fresh five-minute one-use invitation for LAN phone in the PC owner's Access screen. Never use owner pairing on a phone. Expiry/revocation/account limits are enforced by the host.
+- **Offline restart:** private UI stays hidden. Restore the network and choose Retry saved connection to revalidate the protected session. Forget removes local credentials and drafts and requires a new invitation.401/revocation clears private state automatically.
+- **Send/upload response lost:** inspect history/Projects before explicitly retrying. The client does not silently repeat mutations. Unsent drafts are encrypted by origin/account/conversation and survive process death; logout/revocation deletes them.
+- **No notification:** enable in Account and grant Android permission. Only up to20 tasks submitted/opened while enabled are watched, for seven days. Background checks run about every15minutes or later under Android battery/network policy; there is no instant push. Content is generic/hidden on the lock screen. Taps require a valid saved session and fresh host authorization.
+- **Model paused:** inspect the actual task reason. Memory/resource safeguards remain enabled. The existing9B model succeeded in installed-client acceptance on this PC; that is not a guarantee while other workloads consume RAM/VRAM. Do not relax safeguards to force execution.
+- **Update/signature mismatch:** install code4 over earlier builds signed by the recorded stable debug certificate. Renaming an APK does not fix a different signer. Uninstall only if you intend to discard local app state. PreviousIP30 sessions require Forget and a newIP13 invitation.
+- **Remote login page:** native Cloudflare Access sign-in is not implemented. Use only existing separately authorized browser remote access; no new remote URL is claimed.
 
-An attempted separate PC preview background launch was rejected by automatic execution policy with `blocked by policy` and no more specific reason. That command did not create its script or launch a process. Do not advertise a new preview URL, retry through another launcher to bypass that restriction, expose the owner service to a phone or replace production. Continuing requires an approved execution path for a reviewed isolated preview. Existing deployment instructions remain in [setup](../setup.md), [LAN access](../lan-access.md) and [protected remote access](../remote-setup.md).
-
-For the Android testing APK:
-
-- An untrusted/mismatched certificate is a host trust-provisioning problem. Do not disable TLS checks or accept a browser warning as native trust. The app trusts Android's system anchors, not arbitrary user-installed certificates.
-- Use a fresh five-minute invitation for an approved non-owner account. A code is single-use; revocation invalidates it. Request a new invitation after resolving account/session limits.
-- A Cloudflare login page is not the native LAN API. Native remote Access OAuth is still incomplete; browser remote sign-in does not automatically authenticate the APK.
-- After a lost send response, inspect history before explicitly permitting another send. After a lost upload response, inspect Projects before selecting that attachment again. The client does not silently repeat either mutation.
-- Drafts with unsent text are encrypted and scoped to host/account/conversation. Sign-out/revocation removes them; empty-text selection preferences do not persist. Device key loss or clearing app storage makes retained ciphertext unavailable.
-- Install code2 over code1 using the same recorded debug certificate. A signature mismatch is not fixed by renaming an APK. Uninstalling discards app state; preserve the stable signing identity for updates.
-- System background notifications, biometric approvals and native remote sign-in are not delivered yet. Foreground task streaming is not background push.
-
-See [actual APK and checksum](android-0.2.md). Physical Samsung installation, Android37 permission behavior and real installed-client host connectivity remain separate acceptance steps.
+Physical Samsung/phone-browser trust, native remote login/biometric step-up and the complete native product remain unverified or unfinished. [Continuation](continuation.md) records exact next work; do not treat mocked/JVM checks as installed or physical-device evidence.

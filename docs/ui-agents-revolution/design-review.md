@@ -1,5 +1,9 @@
 # Dispatch rendered review
 
+## Current0.4 checkpoint ?13 October2026
+
+Current live Dispatch Work/Agents/Projects reviewed at320/390/768/1440/2560px in both themes (30combinations); no document overflow, representative screenshots inspected. Native0.4 uses original outline navigation icons, explicit private notification permission/copy and offline Retry/Forget states. Secure-screen UIAutomator evidence is interaction evidence, not visual screenshot proof. Full premium native design remains in progress. [Acceptance](android-0.4.md).
+
 These observations cover actual browser renders of the new implementation, using disposable authenticated fixture data. They are not generated design mockups, physical-device evidence or live-model results. The three original concepts and selection rationale remain in [design decision](design-decision.md).
 
 | Surface inspected | Observation |
